@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, RotateCcw, Map, MapPin } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
@@ -46,6 +46,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const wheelLockRef = useRef(false);
   const dragLockRef = useRef(false);
   const activeDragRef = useRef(false);
+  const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const { toggleLike, isLiked, swipeDislike, swipeUndo } = useSavedStore();
   const { openListingDetail, setActivePanel } = useUIStore();
@@ -119,15 +120,38 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     }, 520);
   };
 
-  const handleTrackDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    pointerStartRef.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
+    activeDragRef.current = false;
+  };
+
+  const handleTrackPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = pointerStartRef.current;
+    if (!start || start.id !== event.pointerId) return;
+    if (Math.abs(event.clientX - start.x) > 8) activeDragRef.current = true;
+  };
+
+  const handleTrackPointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = pointerStartRef.current;
+    if (!start || start.id !== event.pointerId) return;
+    pointerStartRef.current = null;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) {
+      window.setTimeout(() => {
+        activeDragRef.current = false;
+      }, 90);
+      return;
+    }
+    activeDragRef.current = true;
     window.setTimeout(() => {
       activeDragRef.current = false;
-    }, 80);
-    if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -650) {
+    }, 90);
+    if (dx < 0) {
       navigateCard('next');
       return;
     }
-    if (info.offset.x > SWIPE_THRESHOLD || info.velocity.x > 650) navigateCard('previous');
+    navigateCard('previous');
   };
 
   const handleTrackWheel = (event: React.WheelEvent<HTMLDivElement>) => {
@@ -177,18 +201,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <div
         className="flex-1 relative px-3 pt-3 pb-2 min-h-0 overflow-hidden"
         onWheel={handleTrackWheel}
+        onPointerDownCapture={handleTrackPointerDown}
+        onPointerMoveCapture={handleTrackPointerMove}
+        onPointerUpCapture={handleTrackPointerEnd}
+        onPointerCancelCapture={() => { pointerStartRef.current = null; activeDragRef.current = false; }}
       >
         <motion.div
           className="flex h-full"
-          drag="x"
-          dragDirectionLock
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.08}
-          dragMomentum={false}
           animate={{ x: -currentIndex * (cardWidth + CARD_GAP) }}
-          transition={{ type: 'spring', damping: 34, stiffness: 360, mass: 0.9 }}
-          onDragStart={() => { activeDragRef.current = true; }}
-          onDragEnd={handleTrackDragEnd}
+          transition={{ type: 'tween', duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
           style={{
             gap: CARD_GAP,
             willChange: 'transform',

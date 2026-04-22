@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
@@ -50,6 +50,23 @@ export default function MapPage() {
   const filteredListings = applyFilters(MOCK_LISTINGS, filters);
   const cardsModeListings = filteredListings.filter((l) => !dislikedListingIds.has(l.id));
   const isAreaSelect = activePanel === 'area-select';
+
+  useEffect(() => {
+    let edgeTouch = false;
+    const handleTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      edgeTouch = touch.clientX < 24 || touch.clientX > window.innerWidth - 24;
+    };
+    const handleTouchMove = (event: TouchEvent) => {
+      if (edgeTouch) event.preventDefault();
+    };
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
 
   const toggleNeighborhood = (id: string) => {
     setSelectedNeighborhoods((prev) => {

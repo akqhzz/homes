@@ -8,9 +8,15 @@ import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
-const CAROUSEL_TOTAL_HEIGHT = 268;
+const CAROUSEL_TOTAL_HEIGHT = 248;
 const CAROUSEL_INFO_HEIGHT = CAROUSEL_TOTAL_HEIGHT - CAROUSEL_IMAGE_HEIGHT;
 const IMAGE_SWIPE_THRESHOLD = 24;
+const LISTING_IMAGE_FALLBACKS = [
+  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
+  'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
+  'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=80',
+  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80',
+];
 
 interface ListingCardProps {
   listing: Listing;
@@ -23,8 +29,8 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const isLiked = useSavedStore((s) => s.isLiked(listing.id));
   const toggleLike = useSavedStore((s) => s.toggleLike);
   const openListingDetail = useUIStore((s) => s.openListingDetail);
-  const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
+  const imagePointerMoved = useRef(false);
   const wheelLockRef = useRef(false);
 
   const stopCarouselDrag = (e: React.TouchEvent | React.PointerEvent) => {
@@ -39,23 +45,6 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const showPreviousImage = () => {
     if (listing.images.length <= 1) return;
     setImgIndex((index) => (index - 1 + listing.images.length) % listing.images.length);
-  };
-
-  const handleImageTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    stopCarouselDrag(e);
-    imageTouchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  };
-
-  const handleImageTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    if (!imageTouchStart.current) return;
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - imageTouchStart.current.x;
-    const dy = touch.clientY - imageTouchStart.current.y;
-    imageTouchStart.current = null;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < IMAGE_SWIPE_THRESHOLD) return;
-    if (dx < 0 || dy < 0) showNextImage();
-    else showPreviousImage();
   };
 
   const handleImageWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -73,7 +62,17 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const handleImagePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.stopPropagation();
     imagePointerStart.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    imagePointerMoved.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleImagePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const start = imagePointerStart.current;
+    if (!start || start.id !== e.pointerId) return;
+    if (Math.abs(e.clientX - start.x) > 6 || Math.abs(e.clientY - start.y) > 6) {
+      imagePointerMoved.current = true;
+    }
   };
 
   const handleImagePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -89,7 +88,16 @@ export default function ListingCard({ listing, variant = 'carousel', className }
       else showPreviousImage();
       return;
     }
-    if (dy < 0) showNextImage();
+  };
+
+  const handleImageTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    if (imagePointerMoved.current) {
+      imagePointerMoved.current = false;
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (e.clientX - rect.left >= rect.width / 2) showNextImage();
     else showPreviousImage();
   };
 
@@ -105,11 +113,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         }}
       >
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#F5F6F7]">
-          <img
-            src={listing.images[0]}
-            alt={listing.address}
-            className="w-full h-full object-cover"
-          />
+          <ListingImage src={listing.images[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
           <button
             className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
             onClick={(e) => { e.stopPropagation(); toggleLike(listing.id); }}
@@ -132,7 +136,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
     return (
       <div className={cn('flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
         <div className="relative aspect-video overflow-hidden bg-[#F5F6F7]">
-          <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+          <ListingImage src={listing.images[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
           <button
             className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
             onClick={() => toggleLike(listing.id)}
@@ -170,16 +174,15 @@ export default function ListingCard({ listing, variant = 'carousel', className }
           height: CAROUSEL_IMAGE_HEIGHT,
           touchAction: 'none',
         }}
-        onTouchStart={handleImageTouchStart}
+        onClick={handleImageTap}
         onTouchMove={stopCarouselDrag}
-        onTouchEnd={handleImageTouchEnd}
         onPointerDown={handleImagePointerDown}
-        onPointerMove={stopCarouselDrag}
+        onPointerMove={handleImagePointerMove}
         onPointerUp={handleImagePointerUp}
         onPointerCancel={() => { imagePointerStart.current = null; }}
         onWheel={handleImageWheel}
       >
-        <img src={listing.images[imgIndex]} alt="" className="h-full w-full object-cover" draggable={false} />
+        <ListingImage src={listing.images[imgIndex]} alt="" fallbackIndex={imgIndex} className="h-full w-full object-cover" />
       </div>
 
       {/* Image dots */}
@@ -210,7 +213,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
 
       {/* Info — static, touching this area lets horizontal carousel scroll */}
       <button
-        className="absolute bottom-0 left-0 right-0 bg-white px-3.5 py-2 text-left"
+        className="absolute bottom-0 left-0 right-0 bg-white px-3.5 py-1.5 text-left"
         style={{ height: CAROUSEL_INFO_HEIGHT, touchAction: 'pan-x' }}
         onClick={() => openListingDetail(listing.id)}
       >
@@ -220,7 +223,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
             <p className="text-xs text-[#6B7280] mt-0.5 truncate">
               {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
             </p>
-            <p className="mt-0.5 text-[11px] leading-tight text-[#9CA3AF] line-clamp-2">
+            <p className="mt-0.5 text-[11px] leading-tight text-[#9CA3AF] line-clamp-1">
               {listing.address}
             </p>
           </div>
@@ -230,5 +233,31 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         </div>
       </button>
     </div>
+  );
+}
+
+function ListingImage({
+  src,
+  alt,
+  fallbackIndex,
+  className,
+}: {
+  src: string;
+  alt: string;
+  fallbackIndex: number;
+  className?: string;
+}) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const fallbackSrc = LISTING_IMAGE_FALLBACKS[fallbackIndex % LISTING_IMAGE_FALLBACKS.length];
+  return (
+    <img
+      src={failedSrc === src ? fallbackSrc : src}
+      alt={alt}
+      className={className}
+      draggable={false}
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailedSrc(src)}
+    />
   );
 }

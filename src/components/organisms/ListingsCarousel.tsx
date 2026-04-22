@@ -68,7 +68,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     <div className={cn('w-full', className)}>
       <div
         ref={scrollRef}
-        className="flex overflow-x-auto scrollbar-hide pb-1"
+        className="flex overflow-x-auto scrollbar-hide py-3"
         style={{
           scrollSnapType: 'x mandatory',
           WebkitOverflowScrolling: 'touch',
@@ -85,8 +85,8 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
             <motion.div
               key={listing.id}
               style={{ scrollSnapAlign: 'center', flexShrink: 0 }}
-              animate={{ scale: isSelected ? 1.035 : 0.9, opacity: isSelected ? 1 : 0.74 }}
-              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              animate={{ scale: isSelected ? 1.02 : 0.9, opacity: isSelected ? 1 : 0.72 }}
+              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
             >
               <ListingCard
                 listing={listing}

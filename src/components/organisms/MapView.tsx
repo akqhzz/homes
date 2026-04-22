@@ -101,7 +101,8 @@ export default function MapView({
     onAreaMapClick?.({ lat: e.lngLat.lat, lng: e.lngLat.lng });
   }, [handleMapClick, onAreaMapClick, showListings]);
 
-  const renderNeighborhoods = getRenderNeighborhoods(isAreaMode);
+  const useAreaNeighborhoodGeometry = isAreaMode || Boolean(includedNeighborhoodIds?.size);
+  const renderNeighborhoods = getRenderNeighborhoods(useAreaNeighborhoodGeometry);
   const boundaryNeighborhoods = renderNeighborhoods.filter(
     (nbh) => nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
   );
@@ -293,7 +294,8 @@ function MockMap({
   showAmenities?: boolean;
   isAreaMode?: boolean;
 }) {
-  const renderNeighborhoods = getRenderNeighborhoods(isAreaMode);
+  const useAreaNeighborhoodGeometry = isAreaMode || Boolean(includedNeighborhoodIds?.size);
+  const renderNeighborhoods = getRenderNeighborhoods(useAreaNeighborhoodGeometry);
   const boundaryNeighborhoods = renderNeighborhoods.filter(
     (nbh) => nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
   );
