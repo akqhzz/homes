@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils/cn';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
+import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
 const SWIPE_THRESHOLD = 38;
@@ -42,6 +43,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [showMapDrawer, setShowMapDrawer] = useState(false);
   const [showDetailDrawer, setShowDetailDrawer] = useState(false);
   const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
+  const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
   const [likePulse, setLikePulse] = useState(false);
   const wheelLockRef = useRef(false);
   const dragLockRef = useRef(false);
@@ -50,7 +52,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  const { toggleLike, isLiked, swipeDislike, swipeUndo } = useSavedStore();
+  const { isLiked, swipeDislike, swipeUndo } = useSavedStore();
   const { openListingDetail, setActivePanel } = useUIStore();
   const { setViewState, setSelectedListingId } = useMapStore();
 
@@ -112,10 +114,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     });
   }, [currentIndex, listings]);
 
-  const advance = (action: 'like' | 'dislike') => {
+  const passListing = () => {
     if (!listing) return;
-    if (action === 'like') toggleLike(listing.id);
-    else swipeDislike(listing.id);
+    swipeDislike(listing.id);
     setCurrentIndex((i) => i + 1);
   };
 
@@ -125,9 +126,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     setCurrentIndex((i) => Math.max(0, i - 1));
   };
 
-  const handleLike = () => {
-    if (!listing) return;
-    toggleLike(listing.id);
+  const handleSaved = () => {
     setLikePulse(true);
     window.setTimeout(() => {
       setLikePulse(false);
@@ -195,8 +194,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   };
 
   const handleTrackWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 24) return;
     event.preventDefault();
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 24) return;
     if (wheelLockRef.current) return;
     wheelLockRef.current = true;
     navigateCard(event.deltaX > 0 ? 'next' : 'previous');
@@ -253,7 +252,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         <motion.div
           className="flex h-full"
           animate={{ x: -currentIndex * (cardWidth + CARD_GAP) }}
-          transition={{ type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
+          transition={{ type: 'spring', stiffness: 360, damping: 38, mass: 0.28 }}
           style={{
             gap: CARD_GAP,
             willChange: 'transform',
@@ -300,26 +299,26 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         </FloatingActionButton>
 
         <div className="flex items-center gap-2.5">
-          {/* Dislike */}
           <button
-            onClick={() => advance('dislike')}
-            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 transition-all no-select"
+            onClick={passListing}
+            className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#4B5563] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
           >
-            <X size={22} className="text-[#4B5563]" strokeWidth={2.5} />
+            <X size={16} strokeWidth={2.4} />
+            Pass
           </button>
 
-          {/* Like */}
           <motion.button
-            onClick={handleLike}
-            className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 transition-all no-select"
+            onClick={() => setSavePickerListing(listing)}
+            className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
             animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
             transition={{ duration: 0.24, ease: 'easeOut' }}
           >
             <Heart
-              size={22}
-              strokeWidth={2.5}
+              size={16}
+              strokeWidth={2.4}
               className={cn(liked || likePulse ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#EF4444]')}
             />
+            Save
           </motion.button>
         </div>
 
@@ -334,6 +333,16 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       </div>
 
       {/* Listing detail drawer */}
+      <AnimatePresence>
+        {savePickerListing && (
+          <SaveToCollectionSheet
+            listingId={savePickerListing.id}
+            onClose={() => setSavePickerListing(null)}
+            onSaved={handleSaved}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showDetailDrawer && (drawerListing ?? listing) && (
           <MobileDrawer

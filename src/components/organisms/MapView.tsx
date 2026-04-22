@@ -513,10 +513,10 @@ function getNeighborhoodBounds(neighborhood: Neighborhood): [[number, number], [
 }
 
 function getRenderNeighborhoods(isAreaMode: boolean) {
-  if (!isAreaMode) return MOCK_NEIGHBORHOODS;
+  if (!isAreaMode) return MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
 
   return MOCK_NEIGHBORHOODS
-    .filter((neighborhood) => AREA_NEIGHBORHOOD_COORDINATES[neighborhood.id])
+    .filter((neighborhood) => neighborhood.id !== 'nbh-king-west' && AREA_NEIGHBORHOOD_COORDINATES[neighborhood.id])
     .map((neighborhood) => ({
       ...neighborhood,
       coordinates: AREA_NEIGHBORHOOD_COORDINATES[neighborhood.id],

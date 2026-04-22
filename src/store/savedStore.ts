@@ -12,7 +12,7 @@ interface SavedStore {
   isLiked: (listingId: string) => boolean;
   addToCollection: (collectionId: string, listingId: string) => void;
   removeFromCollection: (collectionId: string, listingId: string) => void;
-  createCollection: (name: string) => void;
+  createCollection: (name: string) => string;
   deleteCollection: (id: string) => void;
   reorderListings: (collectionId: string, fromIndex: number, toIndex: number) => void;
   updateListingNote: (collectionId: string, listingId: string, note: string) => void;
@@ -72,12 +72,13 @@ export const useSavedStore = create<SavedStore>()(
           }),
         })),
 
-      createCollection: (name) =>
+      createCollection: (name) => {
+        const id = `col-${Date.now()}`;
         set((s) => ({
           collections: [
             ...s.collections,
             {
-              id: `col-${Date.now()}`,
+              id,
               name,
               listings: [],
               collaborators: [],
@@ -86,7 +87,9 @@ export const useSavedStore = create<SavedStore>()(
               updatedAt: new Date().toISOString(),
             },
           ],
-        })),
+        }));
+        return id;
+      },
 
       deleteCollection: (id) =>
         set((s) => ({ collections: s.collections.filter((c) => c.id !== id) })),

@@ -81,7 +81,10 @@ export default function ListingDetailSheet() {
               <Share2 size={16} />
             </IconButton>
             <IconButton
-              onClick={() => toggleLike(listing.id)}
+              onClick={() => {
+                if (liked) toggleLike(listing.id);
+                else setShowAddToCollection(true);
+              }}
               variant="glass"
               size="md"
             >
@@ -180,6 +183,7 @@ export default function ListingDetailSheet() {
                     <button
                       key={col.id}
                       onClick={() => {
+                        if (!liked) toggleLike(listing.id);
                         addToCollection(col.id, listing.id);
                         setShowAddToCollection(false);
                       }}

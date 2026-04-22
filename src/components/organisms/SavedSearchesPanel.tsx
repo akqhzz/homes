@@ -59,7 +59,7 @@ export default function SavedSearchesPanel() {
 
       {/* Saved searches list */}
       <div className="px-4 py-4">
-        <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wide mb-3">My Searches</p>
+        <p className="text-sm font-semibold text-[#0F1729] mb-3">My Searches</p>
         <div className="flex flex-col gap-3">
           {MOCK_SAVED_SEARCHES.map((search) => (
             <button

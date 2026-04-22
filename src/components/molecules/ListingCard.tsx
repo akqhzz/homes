@@ -6,6 +6,7 @@ import { formatPrice, formatDaysOnMarket } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
+import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 248;
@@ -26,6 +27,7 @@ interface ListingCardProps {
 
 export default function ListingCard({ listing, variant = 'carousel', className }: ListingCardProps) {
   const [imgIndex, setImgIndex] = useState(0);
+  const [showSavePicker, setShowSavePicker] = useState(false);
   const isLiked = useSavedStore((s) => s.isLiked(listing.id));
   const toggleLike = useSavedStore((s) => s.toggleLike);
   const openListingDetail = useUIStore((s) => s.openListingDetail);
@@ -71,6 +73,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   };
 
   const handleImageWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
     e.stopPropagation();
     if (Math.abs(e.deltaY) < 8 && Math.abs(e.deltaX) < 8) return;
     if (wheelLockRef.current) return;
@@ -128,147 +131,173 @@ export default function ListingCard({ listing, variant = 'carousel', className }
     }
   };
 
+  const handleSaveClick = (event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    if (isLiked) {
+      toggleLike(listing.id);
+      return;
+    }
+    setShowSavePicker(true);
+  };
+
+  const saveSheet = showSavePicker ? (
+    <SaveToCollectionSheet
+      listingId={listing.id}
+      onClose={() => setShowSavePicker(false)}
+    />
+  ) : null;
+
   if (variant === 'grid') {
     return (
-      <div
-        className={cn('flex flex-col gap-2 text-left no-select w-full', className)}
-        onClick={() => openListingDetail(listing.id)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') openListingDetail(listing.id);
-        }}
-      >
-        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#F5F6F7]">
-          <ListingImage src={listing.images[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
-          <button
-            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
-            onClick={(e) => { e.stopPropagation(); toggleLike(listing.id); }}
-          >
-            <Heart
-              size={13}
-              className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#6B7280]')}
-            />
-          </button>
+      <>
+        <div
+          className={cn('flex flex-col gap-2 text-left no-select w-full', className)}
+          onClick={() => openListingDetail(listing.id)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') openListingDetail(listing.id);
+          }}
+        >
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#F5F6F7]">
+            <ListingImage src={listing.images[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
+            <button
+              className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
+              onClick={handleSaveClick}
+            >
+              <Heart
+                size={13}
+                className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#6B7280]')}
+              />
+            </button>
+          </div>
+          <div className="px-0.5">
+            <p className="font-bold text-[#0F1729] text-sm">{formatPrice(listing.price)}</p>
+            <p className="text-xs text-[#9CA3AF] mt-0.5">{listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft</p>
+          </div>
         </div>
-        <div className="px-0.5">
-          <p className="font-bold text-[#0F1729] text-sm">{formatPrice(listing.price)}</p>
-          <p className="text-xs text-[#9CA3AF] mt-0.5">{listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft</p>
-        </div>
-      </div>
+        {saveSheet}
+      </>
     );
   }
 
   if (variant === 'full') {
     return (
-      <div className={cn('flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
-        <div className="relative aspect-video overflow-hidden bg-[#F5F6F7]">
-          <ListingImage src={listing.images[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
-          <button
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
-            onClick={() => toggleLike(listing.id)}
-          >
-            <Heart size={14} className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')} />
-          </button>
-        </div>
-        <div className="p-4">
-          <p className="text-lg font-semibold text-[#0F1729]">{formatPrice(listing.price)}</p>
-          <p className="text-sm text-[#6B7280] mt-1">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
-          <div className="flex items-center gap-1 mt-1.5 text-xs text-[#9CA3AF]">
-            <MapPin size={11} />
-            <span>{listing.address}</span>
+      <>
+        <div className={cn('flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
+          <div className="relative aspect-video overflow-hidden bg-[#F5F6F7]">
+            <ListingImage src={listing.images[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
+            <button
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
+              onClick={handleSaveClick}
+            >
+              <Heart size={14} className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')} />
+            </button>
+          </div>
+          <div className="p-4">
+            <p className="text-lg font-semibold text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="text-sm text-[#6B7280] mt-1">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
+            <div className="flex items-center gap-1 mt-1.5 text-xs text-[#9CA3AF]">
+              <MapPin size={11} />
+              <span>{listing.address}</span>
+            </div>
           </div>
         </div>
-      </div>
+        {saveSheet}
+      </>
     );
   }
 
   // Carousel variant — fixed height, image scrolls vertically, info is static
   return (
-    <div
-      className={cn(
-        'relative flex-shrink-0 bg-white rounded-2xl overflow-hidden no-select',
-        'shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]',
-        'w-72',
-        className
-      )}
-      style={{ height: CAROUSEL_TOTAL_HEIGHT }}
-    >
-      {/* Image strip: swiping here changes photos instead of moving the carousel. */}
+    <>
       <div
-        ref={imageAreaRef}
-        className="relative overflow-hidden bg-[#F5F6F7]"
-        style={{
-          height: CAROUSEL_IMAGE_HEIGHT,
-          touchAction: 'none',
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (imagePointerMoved.current) {
-            imagePointerMoved.current = false;
-            return;
-          }
-          openListingDetail(listing.id);
-        }}
-        onTouchStart={handleImageTouchStart}
-        onTouchMove={handleImageTouchMove}
-        onPointerDown={handleImagePointerDown}
-        onPointerMove={handleImagePointerMove}
-        onPointerUp={handleImagePointerUp}
-        onPointerCancel={() => { imagePointerStart.current = null; }}
-        onWheel={handleImageWheel}
+        className={cn(
+          'relative flex-shrink-0 bg-white rounded-2xl overflow-hidden no-select',
+          'shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]',
+          'w-72',
+          className
+        )}
+        style={{ height: CAROUSEL_TOTAL_HEIGHT }}
       >
-        <ListingImage src={listing.images[imgIndex]} alt="" fallbackIndex={imgIndex} className="h-full w-full object-cover" />
-      </div>
-
-      {/* Image dots */}
-      {listing.images.length > 1 && (
-        <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 pointer-events-none z-10">
-          {listing.images.map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                'h-1 rounded-full transition-all duration-200',
-                i === imgIndex ? 'w-4 bg-white' : 'w-1 bg-white/55'
-              )}
-            />
-          ))}
+        {/* Image strip: swiping here changes photos instead of moving the carousel. */}
+        <div
+          ref={imageAreaRef}
+          data-card-image="true"
+          className="relative overflow-hidden bg-[#F5F6F7]"
+          style={{
+            height: CAROUSEL_IMAGE_HEIGHT,
+            touchAction: 'none',
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (imagePointerMoved.current) {
+              imagePointerMoved.current = false;
+              return;
+            }
+            openListingDetail(listing.id);
+          }}
+          onTouchStart={handleImageTouchStart}
+          onTouchMove={handleImageTouchMove}
+          onPointerDown={handleImagePointerDown}
+          onPointerMove={handleImagePointerMove}
+          onPointerUp={handleImagePointerUp}
+          onPointerCancel={() => { imagePointerStart.current = null; }}
+          onWheel={handleImageWheel}
+        >
+          <ListingImage src={listing.images[imgIndex]} alt="" fallbackIndex={imgIndex} className="h-full w-full object-cover" />
         </div>
-      )}
 
-      {/* Heart */}
-      <button
-        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)] z-10"
-        onClick={(e) => { e.stopPropagation(); toggleLike(listing.id); }}
-      >
-        <Heart
-          size={14}
-          className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
-        />
-      </button>
-
-      {/* Info — static, touching this area lets horizontal carousel scroll */}
-      <button
-        className="absolute bottom-0 left-0 right-0 bg-white px-3.5 py-1.5 text-left"
-        style={{ height: CAROUSEL_INFO_HEIGHT, touchAction: 'pan-x' }}
-        onClick={() => openListingDetail(listing.id)}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[15px] font-semibold leading-snug text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="text-xs text-[#6B7280] mt-0.5 truncate">
-              {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
-            </p>
-            <p className="mt-0.5 text-[11px] leading-tight text-[#9CA3AF] line-clamp-1">
-              {listing.address}
-            </p>
+        {/* Image dots */}
+        {listing.images.length > 1 && (
+          <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 pointer-events-none z-10">
+            {listing.images.map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'h-1 rounded-full transition-all duration-200',
+                  i === imgIndex ? 'w-4 bg-white' : 'w-1 bg-white/55'
+                )}
+              />
+            ))}
           </div>
-          <span className="text-xs text-[#9CA3AF] shrink-0 mt-0.5">
-            {formatDaysOnMarket(listing.daysOnMarket)}
-          </span>
-        </div>
-      </button>
-    </div>
+        )}
+
+        {/* Heart */}
+        <button
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)] z-10"
+          onClick={handleSaveClick}
+        >
+          <Heart
+            size={14}
+            className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
+          />
+        </button>
+
+        {/* Info — static, touching this area lets horizontal carousel scroll */}
+        <button
+          className="absolute bottom-0 left-0 right-0 bg-white px-3.5 py-1.5 text-left"
+          style={{ height: CAROUSEL_INFO_HEIGHT, touchAction: 'pan-x' }}
+          onClick={() => openListingDetail(listing.id)}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[15px] font-semibold leading-snug text-[#0F1729]">{formatPrice(listing.price)}</p>
+              <p className="text-xs text-[#6B7280] mt-0.5 truncate">
+                {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
+              </p>
+              <p className="mt-0.5 text-[11px] leading-tight text-[#9CA3AF] line-clamp-1">
+                {listing.address}
+              </p>
+            </div>
+            <span className="text-xs text-[#9CA3AF] shrink-0 mt-0.5">
+              {formatDaysOnMarket(listing.daysOnMarket)}
+            </span>
+          </div>
+        </button>
+      </div>
+      {saveSheet}
+    </>
   );
 }
 

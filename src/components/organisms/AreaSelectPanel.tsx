@@ -1,7 +1,7 @@
 'use client';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, Layers, Pencil, Redo2, RotateCcw, Satellite, Store, Trash2, Undo2 } from 'lucide-react';
+import { ArrowLeft, Check, Layers, Pencil, Redo2, RotateCcw, Satellite, Store, Undo2 } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils/cn';
 const CARD_WIDTH = 312;
 const CARD_GAP = 10;
 const SWIPE_THRESHOLD = 34;
+const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
 
 interface AreaSelectPanelProps {
   focusedNeighborhood: Neighborhood | null;
@@ -65,6 +66,7 @@ export default function AreaSelectPanel({
   const [showLayerOptions, setShowLayerOptions] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(390);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [instantMove, setInstantMove] = useState(true);
   const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
@@ -89,17 +91,22 @@ export default function AreaSelectPanel({
 
   useLayoutEffect(() => {
     if (!focusedNeighborhood) return;
-    const index = MOCK_NEIGHBORHOODS.findIndex((nbh) => nbh.id === focusedNeighborhood.id);
+    const index = AREA_NEIGHBORHOODS.findIndex((nbh) => nbh.id === focusedNeighborhood.id);
     if (index >= 0) {
-      const frame = requestAnimationFrame(() => setCurrentIndex(index));
+      const frame = requestAnimationFrame(() => {
+        setInstantMove(true);
+        setCurrentIndex(index);
+        requestAnimationFrame(() => setInstantMove(false));
+      });
       return () => cancelAnimationFrame(frame);
     }
   }, [focusedNeighborhood]);
 
   const goToNeighborhood = (index: number) => {
-    const nextIndex = Math.max(0, Math.min(MOCK_NEIGHBORHOODS.length - 1, index));
+    const nextIndex = Math.max(0, Math.min(AREA_NEIGHBORHOODS.length - 1, index));
+    setInstantMove(false);
     setCurrentIndex(nextIndex);
-    onFocusNeighborhood(MOCK_NEIGHBORHOODS[nextIndex]);
+    onFocusNeighborhood(AREA_NEIGHBORHOODS[nextIndex]);
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -134,8 +141,8 @@ export default function AreaSelectPanel({
   };
 
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
     event.preventDefault();
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
     if (wheelLockRef.current) return;
     wheelLockRef.current = true;
     goToNeighborhood(currentIndex + (event.deltaX > 0 ? 1 : -1));
@@ -149,11 +156,11 @@ export default function AreaSelectPanel({
       <div className="pointer-events-none absolute inset-0 z-30">
         {!isDrawing ? (
           <div className="absolute left-4 right-4 top-4 flex items-center gap-2">
-            <div className="pointer-events-auto min-w-0 flex-1 rounded-full bg-white px-3 py-2.5 text-sm text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]">
-              <div className="flex items-center gap-3">
+            <div className="pointer-events-auto min-w-0 flex-1 rounded-full bg-white px-2.5 py-1.5 text-sm text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={handleBack}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]"
                   aria-label="Back"
                 >
                   <ArrowLeft size={16} strokeWidth={2.4} />
@@ -163,7 +170,7 @@ export default function AreaSelectPanel({
             </div>
             <button
               onClick={onApply}
-              className="pointer-events-auto h-[52px] rounded-full bg-[#0F1729] px-5 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]"
+              className="pointer-events-auto h-11 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]"
             >
               Done
             </button>
@@ -266,8 +273,8 @@ export default function AreaSelectPanel({
             <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
               <Redo2 size={15} />
             </button>
-            <button onClick={onClearSelection} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)]">
-              <Trash2 size={15} />
+            <button onClick={onClearSelection} className="flex h-9 items-center justify-center rounded-full bg-white px-3 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)]">
+              Clear
             </button>
           </div>
         )}
@@ -286,8 +293,8 @@ export default function AreaSelectPanel({
             <motion.div
               className="pointer-events-auto flex overflow-visible"
               animate={{ x: Math.max(0, (viewportWidth - CARD_WIDTH) / 2) - currentIndex * (CARD_WIDTH + CARD_GAP) }}
-              transition={{ type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
-              style={{ gap: CARD_GAP, touchAction: 'pan-y', willChange: 'transform' }}
+              transition={instantMove ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
+              style={{ gap: CARD_GAP, touchAction: 'none', willChange: 'transform' }}
               onPointerDownCapture={handlePointerDown}
               onPointerUpCapture={handlePointerUp}
               onPointerCancelCapture={() => { dragStartRef.current = null; }}
@@ -295,7 +302,7 @@ export default function AreaSelectPanel({
               onTouchMove={handleTouchMove}
               onWheel={handleWheel}
             >
-              {MOCK_NEIGHBORHOODS.map((neighborhood) => {
+              {AREA_NEIGHBORHOODS.map((neighborhood) => {
                 const included = selectedNeighborhoods.has(neighborhood.id);
                 return (
                   <article
@@ -315,7 +322,7 @@ export default function AreaSelectPanel({
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-2 h-8 rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 h-9 w-[82px] self-end rounded-full px-3 text-xs font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >
@@ -334,7 +341,7 @@ export default function AreaSelectPanel({
 }
 
 function selectedNeighborhoodCount(selectedNeighborhoods: Set<string>) {
-  return MOCK_NEIGHBORHOODS.reduce((total, neighborhood) => {
+  return AREA_NEIGHBORHOODS.reduce((total, neighborhood) => {
     if (!selectedNeighborhoods.has(neighborhood.id)) return total;
     return total + neighborhood.listingCount;
   }, 0);

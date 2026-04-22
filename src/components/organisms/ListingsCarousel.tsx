@@ -17,7 +17,11 @@ interface ListingsCarouselProps {
 
 export default function ListingsCarousel({ listings, className }: ListingsCarouselProps) {
   const [viewportWidth, setViewportWidth] = useState(390);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const index = listings.findIndex((listing) => listing.id === useMapStore.getState().selectedListingId);
+    return index >= 0 ? index : 0;
+  });
+  const [instantMove, setInstantMove] = useState(true);
   const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
@@ -35,7 +39,11 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     if (!selectedListingId) return;
     const index = listings.findIndex((listing) => listing.id === selectedListingId);
     if (index >= 0) {
-      const frame = requestAnimationFrame(() => setCurrentIndex(index));
+      const frame = requestAnimationFrame(() => {
+        setInstantMove(true);
+        setCurrentIndex(index);
+        requestAnimationFrame(() => setInstantMove(false));
+      });
       return () => cancelAnimationFrame(frame);
     }
   }, [listings, selectedListingId]);
@@ -53,11 +61,13 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
 
   const goTo = (index: number) => {
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));
+    setInstantMove(false);
     setCurrentIndex(nextIndex);
     if (listings[nextIndex]) setSelectedListingId(listings[nextIndex].id);
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest('[data-card-image="true"]')) return;
     dragStartRef.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
   };
 
@@ -72,6 +82,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   };
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest('[data-card-image="true"]')) return;
     touchStartRef.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
   };
 
@@ -85,8 +96,9 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   };
 
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
+    if ((event.target as HTMLElement).closest('[data-card-image="true"]')) return;
     event.preventDefault();
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
     if (wheelLockRef.current) return;
     wheelLockRef.current = true;
     goTo(currentIndex + (event.deltaX > 0 ? 1 : -1));
@@ -102,8 +114,8 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
       <motion.div
         className="flex"
         animate={{ x: centeredOffset - currentIndex * (CARD_WIDTH + GAP) }}
-        transition={{ type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
-        style={{ gap: GAP, touchAction: 'pan-y', willChange: 'transform' }}
+        transition={instantMove ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
+        style={{ gap: GAP, touchAction: 'none', willChange: 'transform' }}
         onPointerDownCapture={handlePointerDown}
         onPointerUpCapture={handlePointerUp}
         onPointerCancelCapture={() => { dragStartRef.current = null; }}
