@@ -13,6 +13,7 @@ interface SavedStore {
   addToCollection: (collectionId: string, listingId: string) => void;
   removeFromCollection: (collectionId: string, listingId: string) => void;
   createCollection: (name: string) => string;
+  renameCollection: (id: string, name: string) => void;
   deleteCollection: (id: string) => void;
   reorderListings: (collectionId: string, fromIndex: number, toIndex: number) => void;
   updateListingNote: (collectionId: string, listingId: string, note: string) => void;
@@ -90,6 +91,13 @@ export const useSavedStore = create<SavedStore>()(
         }));
         return id;
       },
+
+      renameCollection: (id, name) =>
+        set((s) => ({
+          collections: s.collections.map((c) =>
+            c.id === id ? { ...c, name, updatedAt: new Date().toISOString() } : c
+          ),
+        })),
 
       deleteCollection: (id) =>
         set((s) => ({ collections: s.collections.filter((c) => c.id !== id) })),

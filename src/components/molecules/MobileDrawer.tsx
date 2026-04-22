@@ -42,6 +42,8 @@ export default function MobileDrawer({
       <motion.section
         role="dialog"
         aria-modal="true"
+        onPointerDownCapture={(event) => event.stopPropagation()}
+        onTouchStartCapture={(event) => event.stopPropagation()}
         drag="y"
         dragDirectionLock
         dragConstraints={{ top: 0, bottom: 0 }}

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, Layers, Pencil, Plus, Redo2, RotateCcw, Satellite, Store, Undo2 } from 'lucide-react';
+import { ArrowLeft, Check, Pencil, Plus, Redo2, RotateCcw, Undo2 } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
@@ -19,8 +19,6 @@ interface AreaSelectPanelProps {
   focusedNeighborhood: Neighborhood | null;
   selectedNeighborhoods: Set<string>;
   isDrawing: boolean;
-  isSatelliteMode: boolean;
-  showAmenities: boolean;
   pointCount: number;
   canUndoBoundary: boolean;
   canRedoBoundary: boolean;
@@ -28,8 +26,6 @@ interface AreaSelectPanelProps {
   onApply: () => void;
   onToggleDrawing: () => void;
   onCancelDrawing: () => void;
-  onToggleSatellite: () => void;
-  onToggleAmenities: () => void;
   onToggleNeighborhood: (id: string) => void;
   onFocusNeighborhood: (neighborhood: Neighborhood) => void;
   onCloseNeighborhood: () => void;
@@ -43,8 +39,6 @@ export default function AreaSelectPanel({
   focusedNeighborhood,
   selectedNeighborhoods,
   isDrawing,
-  isSatelliteMode,
-  showAmenities,
   pointCount,
   canUndoBoundary,
   canRedoBoundary,
@@ -52,8 +46,6 @@ export default function AreaSelectPanel({
   onApply,
   onToggleDrawing,
   onCancelDrawing,
-  onToggleSatellite,
-  onToggleAmenities,
   onToggleNeighborhood,
   onFocusNeighborhood,
   onCloseNeighborhood,
@@ -63,7 +55,6 @@ export default function AreaSelectPanel({
   onClearSelection,
 }: AreaSelectPanelProps) {
   const setAreaSelectMode = useUIStore((s) => s.setAreaSelectMode);
-  const [showLayerOptions, setShowLayerOptions] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(390);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [instantMove, setInstantMove] = useState(true);
@@ -215,43 +206,6 @@ export default function AreaSelectPanel({
             className="absolute bottom-0 right-5 flex flex-col items-end gap-3"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <div className="relative pointer-events-auto">
-              <AnimatePresence>
-                {showLayerOptions && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                    transition={{ duration: 0.16, ease: 'easeOut' }}
-                    className="absolute bottom-14 right-0 flex flex-col gap-2 rounded-2xl bg-white p-2 shadow-[0_6px_18px_rgba(15,23,41,0.16)]"
-                  >
-                    <button
-                      onClick={onToggleSatellite}
-                      className={cn(
-                        'flex h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors',
-                        isSatelliteMode ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
-                      )}
-                    >
-                      <Satellite size={15} />
-                      Satellite
-                    </button>
-                    <button
-                      onClick={onToggleAmenities}
-                      className={cn(
-                        'flex h-10 items-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors',
-                        showAmenities ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
-                      )}
-                    >
-                      <Store size={15} />
-                      Amenities
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <FloatingActionButton size="md" onClick={() => setShowLayerOptions((value) => !value)} aria-label="Map layers">
-                <Layers size={18} />
-              </FloatingActionButton>
-            </div>
             <FloatingActionButton size="md" onClick={onToggleDrawing} aria-label="Draw boundary">
               <Pencil size={18} />
             </FloatingActionButton>
@@ -337,7 +291,7 @@ export default function AreaSelectPanel({
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-2 flex h-11 w-[88px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 flex h-12 w-[92px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >

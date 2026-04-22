@@ -239,8 +239,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       className="fixed inset-0 z-50 bg-white flex flex-col overscroll-x-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ y: 28, opacity: 0, scale: 0.985 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ y: '100%', opacity: 1, scale: 1 }}
+      transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Card stack */}
       <div
@@ -565,7 +565,8 @@ function CardModeListingCard({
               >
                 <img src="/map.png" alt="" className="h-full w-full object-cover" draggable={false} />
                 <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-full text-[#0F1729] drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
-                  <MapPin size={28} fill="#0F1729" strokeWidth={1.8} />
+                  <MapPin size={22} fill="#0F1729" strokeWidth={1.8} />
+                  <span className="absolute left-1/2 top-[5px] h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white" />
                 </span>
               </button>
             </div>

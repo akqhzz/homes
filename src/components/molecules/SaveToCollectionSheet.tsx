@@ -15,6 +15,7 @@ interface SaveToCollectionSheetProps {
 
 export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: SaveToCollectionSheetProps) {
   const [newName, setNewName] = useState('');
+  const [creating, setCreating] = useState(false);
   const collections = useSavedStore((s) => s.collections);
   const addToCollection = useSavedStore((s) => s.addToCollection);
   const createCollection = useSavedStore((s) => s.createCollection);
@@ -42,7 +43,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
       heightClassName="h-[46dvh]"
       contentClassName="px-4 pb-4"
     >
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         {collections.map((collection) => {
           const alreadySaved = collection.listings.some((item) => item.listingId === listingId);
           const thumbnailListing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
@@ -50,9 +51,9 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
             <button
               key={collection.id}
               onClick={() => finishSave(collection.id)}
-              className="flex items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left"
+              className="flex min-h-[72px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[#0F1729]">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white text-[#0F1729]">
                 {thumbnailListing?.images[0] ? (
                   <img src={thumbnailListing.images[0]} alt="" className="h-full w-full object-cover" draggable={false} />
                 ) : alreadySaved ? (
@@ -72,20 +73,31 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
         })}
       </div>
 
-      <div className="mt-4 flex gap-2">
-        <input
-          value={newName}
-          onChange={(event) => setNewName(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') createAndSave();
-          }}
-          placeholder="New collection..."
-          className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-        />
-        <Button onClick={createAndSave} size="lg" className="h-12 px-4">
-          Create
-        </Button>
-      </div>
+      {creating ? (
+        <div className="mt-4 flex gap-2">
+          <input
+            value={newName}
+            onChange={(event) => setNewName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') createAndSave();
+            }}
+            placeholder="New collection..."
+            className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
+            autoFocus
+          />
+          <Button onClick={createAndSave} size="lg" className="h-12 px-4">
+            Create
+          </Button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setCreating(true)}
+          className="mt-4 flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
+        >
+          <Plus size={16} />
+          New collection
+        </button>
+      )}
     </MobileDrawer>
   );
 

@@ -36,7 +36,7 @@ function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
 }
 
 export default function MapPage() {
-  const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible, isSatelliteMode, setSatelliteMode } = useUIStore();
+  const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
   const { filters } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
@@ -45,7 +45,8 @@ export default function MapPage() {
   const [isDrawingArea, setIsDrawingArea] = useState(false);
   const [drawnBoundary, setDrawnBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const [redoBoundary, setRedoBoundary] = useState<{ lat: number; lng: number }[]>([]);
-  const [showAreaAmenities, setShowAreaAmenities] = useState(false);
+  const [areaUndoStack, setAreaUndoStack] = useState<Set<string>[]>([]);
+  const [areaRedoStack, setAreaRedoStack] = useState<Set<string>[]>([]);
   const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
   const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -92,6 +93,8 @@ export default function MapPage() {
 
   const toggleNeighborhood = (id: string) => {
     setSelectedNeighborhoods((prev) => {
+      setAreaUndoStack((stack) => [...stack, new Set(prev)]);
+      setAreaRedoStack([]);
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -103,6 +106,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set(appliedNeighborhoods));
     setDrawnBoundary(appliedBoundary);
     setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
     setFocusedNeighborhood(null);
     setIsDrawingArea(false);
     setActivePanel('area-select');
@@ -114,10 +119,22 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
     setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
     setFocusedNeighborhood(null);
   };
 
   const undoBoundary = () => {
+    if (drawnBoundary.length === 0) {
+      setAreaUndoStack((stack) => {
+        if (stack.length === 0) return stack;
+        const previous = stack[stack.length - 1];
+        setAreaRedoStack((redo) => [new Set(selectedNeighborhoods), ...redo]);
+        setSelectedNeighborhoods(new Set(previous));
+        return stack.slice(0, -1);
+      });
+      return;
+    }
     setDrawnBoundary((points) => {
       if (points.length === 0) return points;
       const next = points.slice(0, -1);
@@ -127,6 +144,16 @@ export default function MapPage() {
   };
 
   const redoBoundaryPoint = () => {
+    if (redoBoundary.length === 0) {
+      setAreaRedoStack((redo) => {
+        if (redo.length === 0) return redo;
+        const [next, ...rest] = redo;
+        setAreaUndoStack((stack) => [...stack, new Set(selectedNeighborhoods)]);
+        setSelectedNeighborhoods(new Set(next));
+        return rest;
+      });
+      return;
+    }
     setRedoBoundary((redo) => {
       if (redo.length === 0) return redo;
       const [point, ...rest] = redo;
@@ -139,6 +166,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
     setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
     setFocusedNeighborhood(null);
   };
 
@@ -150,6 +179,9 @@ export default function MapPage() {
     setIsDrawingArea(false);
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
+    setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
   };
 
   const applyAreaSelect = () => {
@@ -187,7 +219,6 @@ export default function MapPage() {
               }
             }}
             drawnBoundary={isAreaSelect ? drawnBoundary : appliedBoundary}
-            showAmenities={isAreaSelect && showAreaAmenities}
             isAreaMode={isAreaSelect}
           />
 
@@ -230,11 +261,9 @@ export default function MapPage() {
                 focusedNeighborhood={focusedNeighborhood}
                 selectedNeighborhoods={selectedNeighborhoods}
                 isDrawing={isDrawingArea}
-                isSatelliteMode={isSatelliteMode}
-                showAmenities={showAreaAmenities}
                 pointCount={drawnBoundary.length}
-                canUndoBoundary={drawnBoundary.length > 0}
-                canRedoBoundary={redoBoundary.length > 0}
+                canUndoBoundary={drawnBoundary.length > 0 || areaUndoStack.length > 0}
+                canRedoBoundary={redoBoundary.length > 0 || areaRedoStack.length > 0}
                 onBack={closeAreaSelect}
                 onApply={applyAreaSelect}
                 onToggleDrawing={() => setIsDrawingArea((value) => !value)}
@@ -243,8 +272,6 @@ export default function MapPage() {
                   setDrawnBoundary([]);
                   setRedoBoundary([]);
                 }}
-                onToggleSatellite={() => setSatelliteMode(!isSatelliteMode)}
-                onToggleAmenities={() => setShowAreaAmenities((value) => !value)}
                 onToggleNeighborhood={toggleNeighborhood}
                 onFocusNeighborhood={setFocusedNeighborhood}
                 onCloseNeighborhood={() => setFocusedNeighborhood(null)}

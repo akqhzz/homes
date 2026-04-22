@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronRight, Plus } from 'lucide-react';
 import { MOCK_SAVED_SEARCHES } from '@/lib/mock-data';
 import { useUIStore } from '@/store/uiStore';
@@ -18,6 +18,13 @@ export default function SavedSearchesPanel({ hasActiveCriteria }: SavedSearchesP
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
   const [saving, setSaving] = useState(canSaveCurrent);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!saving) return;
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [saving]);
 
   const handleLoadSearch = () => {
     // In real app: update search store state
@@ -43,6 +50,7 @@ export default function SavedSearchesPanel({ hasActiveCriteria }: SavedSearchesP
         {saving ? (
           <div className="flex gap-2">
             <input
+              ref={inputRef}
               value={newSearchName}
               onChange={(e) => setNewSearchName(e.target.value)}
               placeholder="Search name..."
