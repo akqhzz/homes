@@ -1,65 +1,188 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { AnimatePresence, motion } from 'framer-motion';
+import { MOCK_LISTINGS } from '@/lib/mock-data';
+import { useUIStore } from '@/store/uiStore';
+import { useSearchStore } from '@/store/searchStore';
+import { useSavedStore } from '@/store/savedStore';
+import BottomNav from '@/components/organisms/BottomNav';
+import TopBar from '@/components/organisms/TopBar';
+import ListingsCarousel from '@/components/organisms/ListingsCarousel';
+import DesktopHeader from '@/components/organisms/DesktopHeader';
+import { Neighborhood, SearchFilters } from '@/lib/types';
 
-export default function Home() {
+const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
+const SearchPanel = dynamic(() => import('@/components/organisms/SearchPanel'), { ssr: false });
+const FilterPanel = dynamic(() => import('@/components/organisms/FilterPanel'), { ssr: false });
+const CardsMode = dynamic(() => import('@/components/organisms/CardsMode'), { ssr: false });
+const AreaSelectPanel = dynamic(() => import('@/components/organisms/AreaSelectPanel'), { ssr: false });
+const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingDetailSheet'), { ssr: false });
+const SavedSearchesPanel = dynamic(() => import('@/components/organisms/SavedSearchesPanel'), { ssr: false });
+const ListingsSidebar = dynamic(() => import('@/components/organisms/ListingsSidebar'), { ssr: false });
+
+function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
+  return listings.filter((l) => {
+    if (filters.minPrice && l.price < filters.minPrice) return false;
+    if (filters.maxPrice && l.price > filters.maxPrice) return false;
+    if (filters.minBeds && l.beds < filters.minBeds) return false;
+    if (filters.minBaths && l.baths < filters.minBaths) return false;
+    if (filters.minSqft && l.sqft < filters.minSqft) return false;
+    if (filters.maxSqft && l.sqft > filters.maxSqft) return false;
+    if (filters.propertyTypes.length > 0 && !filters.propertyTypes.includes(l.propertyType)) return false;
+    if (filters.maxDaysOnMarket && l.daysOnMarket > filters.maxDaysOnMarket) return false;
+    return true;
+  });
+}
+
+export default function MapPage() {
+  const { activePanel, setActivePanel, isCarouselVisible, isSatelliteMode, setSatelliteMode } = useUIStore();
+  const { filters } = useSearchStore();
+  const dislikedListingIds = useSavedStore((s) => s.dislikedListingIds);
+  const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
+  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
+  const [isDrawingArea, setIsDrawingArea] = useState(false);
+  const [drawnBoundary, setDrawnBoundary] = useState<{ lat: number; lng: number }[]>([]);
+  const [showAreaAmenities, setShowAreaAmenities] = useState(false);
+  const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
+  const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
+
+  const filteredListings = applyFilters(MOCK_LISTINGS, filters);
+  const cardsModeListings = filteredListings.filter((l) => !dislikedListingIds.has(l.id));
+  const isAreaSelect = activePanel === 'area-select';
+
+  const toggleNeighborhood = (id: string) => {
+    setSelectedNeighborhoods((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const closeAreaSelect = () => {
+    setActivePanel('none');
+    setFocusedNeighborhood(null);
+    setIsDrawingArea(false);
+    setSelectedNeighborhoods(new Set());
+    setDrawnBoundary([]);
+    setAppliedNeighborhoods(new Set());
+    setAppliedBoundary([]);
+  };
+
+  const applyAreaSelect = () => {
+    setAppliedNeighborhoods(new Set(selectedNeighborhoods));
+    setAppliedBoundary(drawnBoundary);
+    setActivePanel('none');
+    setFocusedNeighborhood(null);
+    setIsDrawingArea(false);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="h-full flex flex-col overflow-hidden bg-[#F5F6F7]">
+      {/* Desktop header (hidden on mobile) */}
+      <DesktopHeader />
+
+      {/* Main content — split on desktop */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Map panel */}
+        <div className="flex-1 relative">
+          <MapView
+            listings={isAreaSelect ? [] : filteredListings}
+            showNeighborhoods={isAreaSelect}
+            showListings={!isAreaSelect}
+            selectedNeighborhoodId={isAreaSelect ? focusedNeighborhood?.id ?? null : null}
+            includedNeighborhoodIds={isAreaSelect ? selectedNeighborhoods : appliedNeighborhoods}
+            onNeighborhoodClick={(neighborhood) => {
+              setFocusedNeighborhood(neighborhood);
+              toggleNeighborhood(neighborhood.id);
+            }}
+            onAreaMapClick={(coordinates) => {
+              if (isDrawingArea) setDrawnBoundary((points) => [...points, coordinates]);
+            }}
+            drawnBoundary={isAreaSelect ? drawnBoundary : appliedBoundary}
+            showAmenities={isAreaSelect && showAreaAmenities}
+            isAreaMode={isAreaSelect}
+          />
+
+          {/* Mobile top bar (hidden on desktop — search lives in DesktopHeader) */}
+          <div className={isAreaSelect ? 'hidden' : 'lg:hidden'}>
+            <TopBar />
+          </div>
+
+          {/* Mobile carousel — only visible after pin tap */}
+          <AnimatePresence>
+            {isCarouselVisible && !isAreaSelect && (
+              <motion.div
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 40, opacity: 0 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                className="
+                  absolute left-0 right-0 bottom-[96px]
+                  lg:hidden
+                  pointer-events-auto
+                "
+              >
+                <ListingsCarousel listings={filteredListings} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {isAreaSelect && (
+              <AreaSelectPanel
+                key="area-select"
+                focusedNeighborhood={focusedNeighborhood}
+                selectedNeighborhoods={selectedNeighborhoods}
+                isDrawing={isDrawingArea}
+                isSatelliteMode={isSatelliteMode}
+                showAmenities={showAreaAmenities}
+                pointCount={drawnBoundary.length}
+                onBack={closeAreaSelect}
+                onApply={applyAreaSelect}
+                onToggleDrawing={() => setIsDrawingArea((value) => !value)}
+                onCancelDrawing={() => {
+                  setIsDrawingArea(false);
+                  setDrawnBoundary([]);
+                }}
+                onToggleSatellite={() => setSatelliteMode(!isSatelliteMode)}
+                onToggleAmenities={() => setShowAreaAmenities((value) => !value)}
+                onToggleNeighborhood={toggleNeighborhood}
+                onCloseNeighborhood={() => setFocusedNeighborhood(null)}
+                onClearDrawing={() => setDrawnBoundary([])}
+              />
+            )}
+          </AnimatePresence>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Desktop listings sidebar */}
+        <div className="hidden lg:block w-[420px] overflow-hidden">
+          <ListingsSidebar listings={filteredListings} />
         </div>
-      </main>
+      </div>
+
+      {/* Mobile bottom nav (pill + side buttons) */}
+      {!isAreaSelect && <BottomNav />}
+
+      {/* Mobile-only panels */}
+      <AnimatePresence>
+        {activePanel === 'search' && <SearchPanel key="search" />}
+        {activePanel === 'filter' && <FilterPanel key="filter" totalListings={filteredListings.length} />}
+        {activePanel === 'listing-detail' && <ListingDetailSheet key="listing-detail" />}
+        {activePanel === 'saved-searches' && <SavedSearchesPanel key="saved-searches" />}
+      </AnimatePresence>
+
+      {/* Cards mode */}
+      <AnimatePresence>
+        {activePanel === 'cards' && (
+          <CardsMode
+            key="cards"
+            listings={cardsModeListings}
+            onClose={() => setActivePanel('none')}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
