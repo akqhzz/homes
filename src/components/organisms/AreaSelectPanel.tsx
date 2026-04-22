@@ -160,7 +160,7 @@ export default function AreaSelectPanel({
       <div className="pointer-events-none absolute inset-0 z-30">
         {!isDrawing ? (
           <div className="absolute left-4 right-4 top-4 flex items-center gap-2">
-            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/96 px-2.5 text-sm text-[#0F1729] backdrop-blur-xl">
+            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-sm text-[#0F1729] backdrop-blur-xl">
               <div className="flex w-full items-center gap-2.5">
                 <button
                   onClick={handleBack}
@@ -276,7 +276,7 @@ export default function AreaSelectPanel({
                 return (
                   <article
                     key={neighborhood.id}
-                    className="flex h-[124px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
+                    className="flex h-[152px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
                   >
                     <img src={neighborhood.thumbnail} alt="" className="h-full w-[104px] shrink-0 rounded-xl object-cover" draggable={false} />
                     <div className="flex min-w-0 flex-1 flex-col py-0.5">
