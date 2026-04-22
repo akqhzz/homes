@@ -130,7 +130,6 @@ export default function MapPage() {
             includedNeighborhoodIds={isAreaSelect ? selectedNeighborhoods : appliedNeighborhoods}
             onNeighborhoodClick={(neighborhood) => {
               setFocusedNeighborhood(neighborhood);
-              toggleNeighborhood(neighborhood.id);
             }}
             onAreaMapClick={(coordinates) => {
               if (isDrawingArea) setDrawnBoundary((points) => [...points, coordinates]);

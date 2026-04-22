@@ -24,7 +24,6 @@ const LOCATION_SUGGESTIONS: Location[] = [
 
 export default function SearchPanel() {
   const [query, setQuery] = useState('');
-  const [isCaretReady, setCaretReady] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
@@ -35,11 +34,7 @@ export default function SearchPanel() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => inputRef.current?.focus(), 60);
-    const caretTimer = window.setTimeout(() => setCaretReady(true), 190);
-    return () => {
-      window.clearTimeout(timer);
-      window.clearTimeout(caretTimer);
-    };
+    return () => window.clearTimeout(timer);
   }, []);
 
   const filtered = query.trim()
@@ -92,7 +87,6 @@ export default function SearchPanel() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={selectedLocations.length === 0 ? 'Where?' : 'Add another...'}
-              style={{ caretColor: isCaretReady ? '#0F1729' : 'transparent' }}
               className="min-w-20 flex-1 bg-transparent text-sm text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
             />
           </div>

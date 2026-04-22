@@ -22,7 +22,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [scrollMetrics, setScrollMetrics] = useState({ left: 0, width: 0 });
   const scrollX = useMotionValue(0);
-  const smoothScrollX = useSpring(scrollX, { stiffness: 260, damping: 38, mass: 0.18 });
+  const smoothScrollX = useSpring(scrollX, { stiffness: 115, damping: 26, mass: 0.42 });
   const selectedListingId = useMapStore((s) => s.selectedListingId);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
 
@@ -102,7 +102,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
         ref={scrollRef}
         className="flex overflow-x-auto scrollbar-hide py-3"
         style={{
-          scrollSnapType: 'x mandatory',
+          scrollSnapType: 'x proximity',
           WebkitOverflowScrolling: 'touch',
           overscrollBehaviorX: 'contain',
           touchAction: 'pan-x pan-y',
@@ -152,7 +152,7 @@ function CarouselCardShell({
     const cardCenter = index * (CARD_WIDTH + GAP) + CARD_WIDTH / 2;
     const distance = Math.min(1, Math.abs(center - cardCenter) / (CARD_WIDTH + GAP));
     const focus = smoothstep(1 - distance);
-    return 0.9 + focus * 0.1;
+    return 0.92 + focus * 0.08;
   });
 
   return (
