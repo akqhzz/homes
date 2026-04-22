@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -10,28 +11,24 @@ import Avatar from '@/components/atoms/Avatar';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
 
+interface MenuState {
+  colId: string;
+  right: number;
+  bottom: number;
+}
+
 export default function SavedPage() {
   const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
   const [showNewCollection, setShowNewCollection] = useState(false);
   const [newName, setNewName] = useState('');
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuState, setMenuState] = useState<MenuState | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameName, setRenameName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!openMenuId && !confirmDeleteId) return;
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setOpenMenuId(null);
-        setConfirmDeleteId(null);
-      }
-    };
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [openMenuId, confirmDeleteId]);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const handleCreateIntent = () => {
@@ -42,6 +39,19 @@ export default function SavedPage() {
     return () => window.removeEventListener('homes:create-collection', handleCreateIntent);
   }, []);
 
+  const closeMenu = () => {
+    setMenuState(null);
+    setConfirmDeleteId(null);
+  };
+
+  const openMenu = (event: React.MouseEvent<HTMLButtonElement>, colId: string) => {
+    event.stopPropagation();
+    if (menuState?.colId === colId) { closeMenu(); return; }
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenuState({ colId, right: window.innerWidth - rect.right, bottom: window.innerHeight - rect.top + 4 });
+    setConfirmDeleteId(null);
+  };
+
   const handleCreate = () => {
     if (!newName.trim()) return;
     createCollection(newName.trim());
@@ -50,8 +60,7 @@ export default function SavedPage() {
   };
 
   const startRename = (id: string, name: string) => {
-    setOpenMenuId(null);
-    setConfirmDeleteId(null);
+    closeMenu();
     setRenamingId(id);
     setRenameName(name);
   };
@@ -59,26 +68,25 @@ export default function SavedPage() {
   const finishRename = () => {
     const name = renameName.trim();
     if (!renamingId) return;
-    if (!name) {
-      setRenamingId(null);
-      setRenameName('');
-      return;
-    }
+    if (!name) { setRenamingId(null); setRenameName(''); return; }
     renameCollection(renamingId, name);
     setRenamingId(null);
     setRenameName('');
   };
 
   const requestDelete = (id: string) => {
-    setOpenMenuId(null);
     setConfirmDeleteId(id);
+    // keep menuState so the delete confirm uses the same position
   };
 
   const confirmDelete = () => {
     if (!confirmDeleteId) return;
     deleteCollection(confirmDeleteId);
-    setConfirmDeleteId(null);
+    closeMenu();
   };
+
+  const isMenuOpen = !!menuState && !confirmDeleteId;
+  const isConfirmOpen = !!menuState && !!confirmDeleteId;
 
   return (
     <PageShell>
@@ -94,10 +102,9 @@ export default function SavedPage() {
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
           <div className="flex flex-col gap-4">
             {collections.map((col) => {
-              const previewListings = col.listings
-                .slice(0, 3)
-                .map((cl) => MOCK_LISTINGS.find((l) => l.id === cl.listingId))
-                .filter(Boolean);
+              const firstListing = col.listings.length > 0
+                ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
+                : null;
 
               return (
                 <motion.article
@@ -114,46 +121,16 @@ export default function SavedPage() {
                       if (event.key === 'Enter' || event.key === ' ') router.push(`/saved/${col.id}`);
                     }}
                   >
-                    {/* Preview collage */}
+                    {/* Cover — first listing image, full fill */}
                     <div className="relative h-52 overflow-hidden bg-[#E5E7EB]">
-                      {previewListings.length === 0 && (
+                      {firstListing ? (
+                        <img src={firstListing.images[0]} alt="" className="w-full h-full object-cover" />
+                      ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🏠</div>
-                      )}
-                      {previewListings.length === 1 && (
-                        <img src={previewListings[0]!.images[0]} alt="" className="w-full h-full object-cover" />
-                      )}
-                      {previewListings.length >= 2 && (
-                        <div className="flex w-full h-full gap-0.5">
-                          <img
-                            src={previewListings[0]!.images[0]}
-                            alt=""
-                            className="h-full object-cover"
-                            style={{ width: '48%', transform: 'rotate(-2deg) scale(1.06)', transformOrigin: 'right center' }}
-                          />
-                          <img
-                            src={previewListings[1]!.images[0]}
-                            alt=""
-                            className="h-full object-cover z-10 shadow-lg"
-                            style={{ width: '40%', transform: 'scale(1.04)' }}
-                          />
-                          {previewListings[2] && (
-                            <img
-                              src={previewListings[2]!.images[0]}
-                              alt=""
-                              className="h-full object-cover"
-                              style={{ flex: 1, transform: 'rotate(2deg) scale(1.06)', transformOrigin: 'left center' }}
-                            />
-                          )}
-                        </div>
-                      )}
-                      {col.listings.length > 5 && (
-                        <div className="absolute bottom-3 right-3 bg-[#E5E7EB]/90 text-[#6B7280] text-xs font-semibold px-2.5 py-1 rounded-xl">
-                          {col.listings.length} New
-                        </div>
                       )}
                     </div>
 
-                    {/* pr-10 reserves space for the absolutely-positioned ... button */}
+                    {/* pr-12 reserves space for the absolutely-positioned ... button */}
                     <div className="px-4 py-3 pr-12 flex items-start gap-2">
                       <div className="flex-1 min-w-0">
                         {renamingId === col.id ? (
@@ -187,78 +164,14 @@ export default function SavedPage() {
                     </div>
                   </div>
 
-                  {/* ... button + dropdown — outside overflow-hidden so menus are never clipped */}
-                  <div
-                    ref={openMenuId === col.id || confirmDeleteId === col.id ? menuRef : undefined}
-                    className="absolute top-[13.75rem] right-3 z-10"
-                    onClick={(e) => e.stopPropagation()}
+                  {/* ... button — outside overflow-hidden, positioned at article level */}
+                  <button
+                    onClick={(event) => openMenu(event, col.id)}
+                    className="absolute top-[13.75rem] right-3 flex h-8 w-8 items-center justify-center rounded-full text-[#6B7280]"
+                    aria-label="Collection options"
                   >
-                    <button
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setConfirmDeleteId(null);
-                        setOpenMenuId((value) => (value === col.id ? null : col.id));
-                      }}
-                      className="flex h-8 w-8 items-center justify-center rounded-full text-[#6B7280]"
-                      aria-label="Collection options"
-                    >
-                      <Ellipsis size={17} />
-                    </button>
-                    <AnimatePresence>
-                      {openMenuId === col.id && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                          transition={{ duration: 0.16, ease: 'easeOut' }}
-                          className="absolute right-0 top-9 z-20 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-                        >
-                          <button
-                            onClick={() => startRename(col.id, col.name)}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
-                          >
-                            <Pencil size={14} />
-                            Rename
-                          </button>
-                          <button
-                            onClick={() => requestDelete(col.id)}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
-                          >
-                            <Trash2 size={14} />
-                            Delete
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    <AnimatePresence>
-                      {confirmDeleteId === col.id && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                          transition={{ duration: 0.16, ease: 'easeOut' }}
-                          className="absolute right-0 top-9 z-20 w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-                        >
-                          <p className="font-semibold text-[#0F1729]">Delete collection?</p>
-                          <p className="mt-1 text-xs leading-relaxed text-[#6B7280]">This removes the collection, not the listings.</p>
-                          <div className="mt-3 flex gap-2">
-                            <button
-                              onClick={() => setConfirmDeleteId(null)}
-                              className="h-9 flex-1 rounded-full bg-[#F5F6F7] text-xs font-semibold text-[#0F1729]"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={confirmDelete}
-                              className="h-9 flex-1 rounded-full bg-[#EF4444] text-xs font-semibold text-white"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                    <Ellipsis size={17} />
+                  </button>
                 </motion.article>
               );
             })}
@@ -273,6 +186,75 @@ export default function SavedPage() {
           </div>
         </div>
       </div>
+
+      {/* Portal: dropdown menus rendered in <body> so they're never clipped by scroll
+          containers or hidden behind toolbars. Backdrop stops clicks from reaching cards. */}
+      {mounted && (isMenuOpen || isConfirmOpen) && createPortal(
+        <>
+          <div
+            className="fixed inset-0 z-[45]"
+            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+          />
+          <AnimatePresence>
+            {isMenuOpen && menuState && (
+              <motion.div
+                initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+                className="fixed z-[50] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+                style={{ bottom: menuState.bottom, right: menuState.right }}
+              >
+                <button
+                  onClick={() => startRename(menuState.colId, collections.find(c => c.id === menuState.colId)?.name ?? '')}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
+                >
+                  <Pencil size={14} />
+                  Rename
+                </button>
+                <button
+                  onClick={() => requestDelete(menuState.colId)}
+                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {isConfirmOpen && menuState && (
+              <motion.div
+                initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+                className="fixed z-[50] w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+                style={{ bottom: menuState.bottom, right: menuState.right }}
+              >
+                <p className="font-semibold text-[#0F1729]">Delete collection?</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#6B7280]">This removes the collection, not the listings.</p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="h-9 flex-1 rounded-full bg-[#F5F6F7] text-xs font-semibold text-[#0F1729]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="h-9 flex-1 rounded-full bg-[#EF4444] text-xs font-semibold text-white"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>,
+        document.body
+      )}
+
       <AnimatePresence>
         {showNewCollection && (
           <MobileDrawer
