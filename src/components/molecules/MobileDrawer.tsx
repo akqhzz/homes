@@ -43,7 +43,11 @@ export default function MobileDrawer({
         role="dialog"
         aria-modal="true"
         onPointerDownCapture={(event) => event.stopPropagation()}
+        onPointerMoveCapture={(event) => event.stopPropagation()}
+        onPointerUpCapture={(event) => event.stopPropagation()}
         onTouchStartCapture={(event) => event.stopPropagation()}
+        onTouchMoveCapture={(event) => event.stopPropagation()}
+        onTouchEndCapture={(event) => event.stopPropagation()}
         drag="y"
         dragDirectionLock
         dragConstraints={{ top: 0, bottom: 0 }}

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, RotateCcw, Map, MapPin } from 'lucide-react';
+import { X, Heart, RotateCcw, Map, MapPin, Home } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -240,7 +240,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ y: '100%', opacity: 1, scale: 1 }}
-      transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Card stack */}
       <div
@@ -565,8 +565,13 @@ function CardModeListingCard({
               >
                 <img src="/map.png" alt="" className="h-full w-full object-cover" draggable={false} />
                 <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-full text-[#0F1729] drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
-                  <MapPin size={22} fill="#0F1729" strokeWidth={1.8} />
-                  <span className="absolute left-1/2 top-[5px] h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white" />
+                  <MapPin size={20} fill="#0F1729" strokeWidth={1.8} />
+                  <Home
+                    size={8}
+                    fill="white"
+                    strokeWidth={2.5}
+                    className="absolute left-1/2 top-[4px] -translate-x-1/2 text-white"
+                  />
                 </span>
               </button>
             </div>

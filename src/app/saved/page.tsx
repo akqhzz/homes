@@ -1,12 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Check, Ellipsis, Pencil, Trash2, X } from 'lucide-react';
+import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import PageShell from '@/components/templates/PageShell';
 import Avatar from '@/components/atoms/Avatar';
+import MobileDrawer from '@/components/molecules/MobileDrawer';
+import Button from '@/components/atoms/Button';
 
 export default function SavedPage() {
   const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
@@ -15,10 +17,14 @@ export default function SavedPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameName, setRenameName] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const handleCreateIntent = () => setShowNewCollection(true);
+    const handleCreateIntent = () => {
+      setNewName('');
+      setShowNewCollection(true);
+    };
     window.addEventListener('homes:create-collection', handleCreateIntent);
     return () => window.removeEventListener('homes:create-collection', handleCreateIntent);
   }, []);
@@ -32,20 +38,37 @@ export default function SavedPage() {
 
   const startRename = (id: string, name: string) => {
     setOpenMenuId(null);
+    setConfirmDeleteId(null);
     setRenamingId(id);
     setRenameName(name);
   };
 
   const finishRename = () => {
     const name = renameName.trim();
-    if (!renamingId || !name) return;
+    if (!renamingId) return;
+    if (!name) {
+      setRenamingId(null);
+      setRenameName('');
+      return;
+    }
     renameCollection(renamingId, name);
     setRenamingId(null);
     setRenameName('');
   };
 
+  const requestDelete = (id: string) => {
+    setOpenMenuId(null);
+    setConfirmDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (!confirmDeleteId) return;
+    deleteCollection(confirmDeleteId);
+    setConfirmDeleteId(null);
+  };
+
   return (
-    <PageShell showBottomNav={!showNewCollection}>
+    <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
         <div className="px-4 pt-4 lg:pt-6 pb-0 flex-shrink-0">
@@ -129,6 +152,7 @@ export default function SavedPage() {
                               if (event.key === 'Enter') finishRename();
                               if (event.key === 'Escape') setRenamingId(null);
                             }}
+                            onBlur={finishRename}
                             className="h-9 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-semibold text-[#0F1729] outline-none focus:border-[#0F1729]"
                             autoFocus
                           />
@@ -151,9 +175,10 @@ export default function SavedPage() {
                   <button
                     onClick={(event) => {
                       event.stopPropagation();
+                      setConfirmDeleteId(null);
                       setOpenMenuId((value) => (value === col.id ? null : col.id));
                     }}
-                    className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] shadow-sm"
+                    className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-[#6B7280]"
                     aria-label="Collection options"
                   >
                     <Ellipsis size={17} />
@@ -175,15 +200,40 @@ export default function SavedPage() {
                           Rename
                         </button>
                         <button
-                          onClick={() => {
-                            deleteCollection(col.id);
-                            setOpenMenuId(null);
-                          }}
+                          onClick={() => requestDelete(col.id)}
                           className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
                         >
                           <Trash2 size={14} />
                           Delete
                         </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <AnimatePresence>
+                    {confirmDeleteId === col.id && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                        transition={{ duration: 0.16, ease: 'easeOut' }}
+                        className="absolute bottom-12 right-3 z-20 w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+                      >
+                        <p className="font-semibold text-[#0F1729]">Delete collection?</p>
+                        <p className="mt-1 text-xs leading-relaxed text-[#6B7280]">This removes the collection, not the listings.</p>
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="h-9 flex-1 rounded-full bg-[#F5F6F7] text-xs font-semibold text-[#0F1729]"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={confirmDelete}
+                            className="h-9 flex-1 rounded-full bg-[#EF4444] text-xs font-semibold text-white"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -203,34 +253,24 @@ export default function SavedPage() {
       </div>
       <AnimatePresence>
         {showNewCollection && (
-          <motion.div
-            className="fixed inset-x-0 bottom-0 z-50 px-4 pt-1 lg:hidden"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
-            initial={{ y: 18, opacity: 0, scale: 0.98 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 18, opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          <MobileDrawer
+            title="New collection"
+            onClose={() => setShowNewCollection(false)}
+            heightClassName="h-[34dvh]"
+            contentClassName="px-4 pb-4"
           >
-            <div className="mx-auto flex max-w-[420px] items-center gap-2 rounded-full bg-white p-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
+            <div className="flex gap-2">
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Collection name..."
-                className="h-11 min-w-0 flex-1 rounded-full bg-[#F5F6F7] px-4 text-sm outline-none focus:bg-white focus:shadow-[inset_0_0_0_1px_#0F1729]"
+                className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               />
-              <button onClick={handleCreate} className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0F1729] text-white">
-                <Check size={17} />
-              </button>
-              <button
-                onClick={() => setShowNewCollection(false)}
-                className="flex h-11 w-11 items-center justify-center rounded-full text-[#9CA3AF]"
-              >
-                <X size={17} />
-              </button>
+              <Button onClick={handleCreate} size="lg" className="h-12 px-5">Create</Button>
             </div>
-          </motion.div>
+          </MobileDrawer>
         )}
       </AnimatePresence>
     </PageShell>

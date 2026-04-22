@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import PageShell from '@/components/templates/PageShell';
 import { cn } from '@/lib/utils/cn';
 
@@ -44,11 +44,10 @@ export default function ForYouPage() {
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="px-4 pt-4 lg:pt-6 pb-3 flex-shrink-0">
           <h1 className="font-heading text-2xl text-[#0F1729]">For You</h1>
-          <p className="mt-1 text-sm text-[#9CA3AF]">Market signals matched to your search patterns.</p>
         </div>
 
-        <div className="flex-1 overflow-hidden px-4 pb-24 pt-4">
-          <div className="relative h-full min-h-[420px]">
+        <div className="flex flex-1 items-center overflow-hidden px-4 pb-24">
+          <div className="relative h-[72%] min-h-[420px] w-full">
             {INSIGHTS.map((insight, cardIndex) => {
               const offset = cardIndex - index;
               const isActive = cardIndex === index;
@@ -70,10 +69,7 @@ export default function ForYouPage() {
                     zIndex: INSIGHTS.length - Math.abs(offset),
                   }}
                   transition={{ type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                  className={cn(
-                    'absolute inset-x-0 top-0 flex h-[72%] min-h-[360px] flex-col justify-between rounded-[28px] p-6 shadow-[0_12px_32px_rgba(15,23,41,0.10)]',
-                    insight.tone
-                  )}
+                  className={cn('absolute inset-0 flex flex-col justify-between rounded-[28px] p-6 shadow-[0_12px_32px_rgba(15,23,41,0.10)]', insight.tone)}
                 >
                   <div>
                     <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-sm">
@@ -91,22 +87,6 @@ export default function ForYouPage() {
                 </motion.article>
               );
             })}
-            <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center gap-2.5">
-              <button onClick={() => go(-1)} className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)]">
-                <ArrowLeft size={17} />
-              </button>
-              <div className="flex items-center gap-1 rounded-full bg-white px-4 shadow-[var(--shadow-control)]">
-                {INSIGHTS.map((insight, dotIndex) => (
-                  <span
-                    key={insight.id}
-                    className={cn('h-1.5 rounded-full transition-all', dotIndex === index ? 'w-5 bg-[#0F1729]' : 'w-1.5 bg-[#D1D5DB]')}
-                  />
-                ))}
-              </div>
-              <button onClick={() => go(1)} className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)]">
-                <ArrowRight size={17} />
-              </button>
-            </div>
           </div>
         </div>
       </div>

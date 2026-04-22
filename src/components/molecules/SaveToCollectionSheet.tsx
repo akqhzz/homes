@@ -40,7 +40,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
     <MobileDrawer
       title="Save to collection"
       onClose={onClose}
-      heightClassName="h-[46dvh]"
+      heightClassName="h-[50dvh]"
       contentClassName="px-4 pb-4"
     >
       <div className="flex flex-col gap-2.5">
@@ -51,9 +51,9 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
             <button
               key={collection.id}
               onClick={() => finishSave(collection.id)}
-              className="flex min-h-[72px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left"
+              className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white text-[#0F1729]">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[#0F1729]">
                 {thumbnailListing?.images[0] ? (
                   <img src={thumbnailListing.images[0]} alt="" className="h-full w-full object-cover" draggable={false} />
                 ) : alreadySaved ? (
