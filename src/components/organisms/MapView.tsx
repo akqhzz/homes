@@ -148,7 +148,7 @@ export default function MapView({
             type="fill"
             paint={{
               'fill-color': includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B',
-              'fill-opacity': 0.08,
+              'fill-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 0.08 : 0.03,
             }}
           />
           <Layer
@@ -159,9 +159,10 @@ export default function MapView({
               'line-cap': 'round',
             }}
             paint={{
-              'line-color': '#0F1729',
-              'line-width': 3,
-              'line-dasharray': [1.5, 1],
+              'line-color': includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B',
+              'line-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 1 : 0.42,
+              'line-width': includedNeighborhoodIds?.has(neighborhood.id) ? 3 : 1.5,
+              'line-dasharray': includedNeighborhoodIds?.has(neighborhood.id) ? [1.5, 1] : [1.2, 1.8],
             }}
           />
         </Source>
@@ -324,12 +325,13 @@ function MockMap({
             <polygon
               key={neighborhood.id}
               points={mockBoundaryPoints(neighborhood)}
-              fill="rgba(15,23,41,0.08)"
-              stroke="#0F1729"
-              strokeDasharray="5 4"
+              fill={includedNeighborhoodIds?.has(neighborhood.id) ? 'rgba(15,23,41,0.08)' : 'rgba(100,116,139,0.03)'}
+              stroke={includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B'}
+              strokeDasharray={includedNeighborhoodIds?.has(neighborhood.id) ? '5 4' : '3 5'}
               strokeLinejoin="round"
               strokeLinecap="round"
-              strokeWidth="2.5"
+              strokeWidth={includedNeighborhoodIds?.has(neighborhood.id) ? '2.5' : '1.5'}
+              strokeOpacity={includedNeighborhoodIds?.has(neighborhood.id) ? 1 : 0.42}
               vectorEffect="non-scaling-stroke"
             />
           ))}

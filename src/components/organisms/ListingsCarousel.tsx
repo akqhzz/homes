@@ -22,6 +22,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     return index >= 0 ? index : 0;
   });
   const [instantMove, setInstantMove] = useState(true);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
@@ -33,6 +34,16 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     updateWidth();
     window.addEventListener('resize', updateWidth);
     return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  useEffect(() => {
+    const node = carouselRef.current;
+    if (!node) return;
+    const handleTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
+    };
+    node.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => node.removeEventListener('touchmove', handleTouchMove);
   }, []);
 
   useLayoutEffect(() => {
@@ -110,7 +121,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const centeredOffset = Math.max(0, (viewportWidth - CARD_WIDTH) / 2);
 
   return (
-    <div className={cn('w-full overflow-hidden py-3', className)}>
+    <div ref={carouselRef} className={cn('w-full overflow-hidden py-3', className)} style={{ touchAction: 'none' }}>
       <motion.div
         className="flex"
         animate={{ x: centeredOffset - currentIndex * (CARD_WIDTH + GAP) }}

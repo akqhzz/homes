@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search, Layers, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
@@ -14,6 +14,7 @@ interface TopBarProps {
 
 export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea }: TopBarProps) {
   const [showAreaMenu, setShowAreaMenu] = useState(false);
+  const areaMenuRef = useRef<HTMLDivElement>(null);
   const { selectedLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { activePanel, setActivePanel, setAreaSelectMode } = useUIStore();
@@ -43,6 +44,15 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
     onClearArea?.();
   };
 
+  useEffect(() => {
+    if (!showAreaMenu) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!areaMenuRef.current?.contains(event.target as Node)) setShowAreaMenu(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [showAreaMenu]);
+
   return (
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
       <div className="flex w-full max-w-[296px] items-center gap-2.5">
@@ -60,7 +70,7 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
             {locationLabel}
           </span>
         </button>
-        <div className="relative flex-shrink-0">
+        <div ref={areaMenuRef} className="relative flex-shrink-0">
           <button
             onClick={handleAreaClick}
             className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors p-0.5"

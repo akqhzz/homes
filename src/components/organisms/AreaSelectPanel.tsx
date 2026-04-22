@@ -1,7 +1,7 @@
 'use client';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, Layers, Pencil, Redo2, RotateCcw, Satellite, Store, Undo2 } from 'lucide-react';
+import { ArrowLeft, Check, Layers, Pencil, Plus, Redo2, RotateCcw, Satellite, Store, Undo2 } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
@@ -74,7 +74,9 @@ export default function AreaSelectPanel({
   const selectedCount = selectedNeighborhoods.size;
   const hasSelection = selectedCount > 0 || pointCount > 0;
   const title = hasSelection
-    ? `${selectedCount > 0 ? selectedNeighborhoodCount(selectedNeighborhoods) : MOCK_LISTINGS.length} listings`
+    ? selectedCount > 0
+      ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
+      : `${MOCK_LISTINGS.length} listings`
     : 'Choose your search area';
 
   const handleBack = () => {
@@ -156,8 +158,8 @@ export default function AreaSelectPanel({
       <div className="pointer-events-none absolute inset-0 z-30">
         {!isDrawing ? (
           <div className="absolute left-4 right-4 top-4 flex items-center gap-2">
-            <div className="pointer-events-auto min-w-0 flex-1 rounded-full bg-white px-2.5 py-1.5 text-sm text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]">
-              <div className="flex items-center gap-2.5">
+            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white px-2.5 text-sm text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]">
+              <div className="flex w-full items-center gap-2.5">
                 <button
                   onClick={handleBack}
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]"
@@ -287,13 +289,14 @@ export default function AreaSelectPanel({
             initial={{ y: 26, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 26, opacity: 0, scale: 0.98 }}
-            transition={{ type: 'spring', stiffness: 220, damping: 30, mass: 0.34 }}
-            className="pointer-events-none absolute inset-x-0 bottom-[72px] z-40 overflow-visible py-4 lg:hidden"
+            transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-40 overflow-visible pt-3 lg:hidden"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
             <motion.div
               className="pointer-events-auto flex overflow-visible"
               animate={{ x: Math.max(0, (viewportWidth - CARD_WIDTH) / 2) - currentIndex * (CARD_WIDTH + CARD_GAP) }}
-              transition={instantMove ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
+              transition={instantMove ? { duration: 0 } : { type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               style={{ gap: CARD_GAP, touchAction: 'none', willChange: 'transform' }}
               onPointerDownCapture={handlePointerDown}
               onPointerUpCapture={handlePointerUp}
@@ -322,10 +325,11 @@ export default function AreaSelectPanel({
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-2 h-9 w-[82px] self-end rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 flex h-10 w-[88px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >
+                        {included ? <Check size={13} /> : <Plus size={13} />}
                         {included ? 'Included' : 'Include'}
                       </button>
                     </div>

@@ -209,6 +209,7 @@ export default function MapPage() {
                 onPointerDownCapture={handleCarouselPointerDown}
                 onPointerUpCapture={handleCarouselPointerUp}
                 onPointerCancelCapture={() => { carouselDragStart.current = null; }}
+                style={{ touchAction: 'none' }}
                 className="
                   absolute left-0 right-0 bottom-[72px]
                   lg:hidden

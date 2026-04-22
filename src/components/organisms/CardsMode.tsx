@@ -285,7 +285,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
       {/* Action buttons */}
       <div
-        className="flex-shrink-0 px-6 flex items-center justify-between"
+        className="flex-shrink-0 px-6 flex items-center justify-center gap-2.5"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
       >
         {/* Undo */}
@@ -298,29 +298,27 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <RotateCcw size={17} strokeWidth={2} />
         </FloatingActionButton>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={passListing}
-            className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#4B5563] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
-          >
-            <X size={16} strokeWidth={2.4} />
-            Pass
-          </button>
+        <button
+          onClick={passListing}
+          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#4B5563] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
+        >
+          <X size={16} strokeWidth={2.4} />
+          Pass
+        </button>
 
-          <motion.button
-            onClick={() => setSavePickerListing(listing)}
-            className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
-            animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
-            transition={{ duration: 0.24, ease: 'easeOut' }}
-          >
-            <Heart
-              size={16}
-              strokeWidth={2.4}
-              className={cn(liked || likePulse ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#EF4444]')}
-            />
-            Save
-          </motion.button>
-        </div>
+        <motion.button
+          onClick={() => setSavePickerListing(listing)}
+          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
+          animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
+          transition={{ duration: 0.24, ease: 'easeOut' }}
+        >
+          <Heart
+            size={16}
+            strokeWidth={2.4}
+            className={cn(liked || likePulse ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#EF4444]')}
+          />
+          Save
+        </motion.button>
 
         {/* Map — back to map */}
         <FloatingActionButton
@@ -465,8 +463,6 @@ function CardModeListingCard({
   onOpenMap: () => void;
 }) {
   const images = getListingImages(listing);
-  const thumb = mapThumb(listing);
-
   return (
     <motion.article
       className="h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select"
@@ -506,9 +502,9 @@ function CardModeListingCard({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3">
             <div className="flex items-end gap-2">
               <div className="flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-5 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
-                <div className="flex items-center gap-2">
-                  <p className="text-2xl font-normal leading-tight tracking-normal text-[#0F1729]">{formatPrice(listing.price)}</p>
-                  <span className="rounded-full bg-[#F5F6F7] px-2.5 py-1 text-xs font-semibold text-[#6B7280]">
+                <div className="flex w-full min-w-0 items-center justify-between gap-2">
+                  <p className="font-heading min-w-0 truncate text-[26px] font-normal leading-tight tracking-normal text-[#0F1729]">{formatPrice(listing.price)}</p>
+                  <span className="shrink-0 rounded-full bg-[#F5F6F7] px-2.5 py-1 text-xs font-semibold text-[#6B7280]">
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>
                 </div>
@@ -526,15 +522,9 @@ function CardModeListingCard({
                 className="pointer-events-auto relative h-24 w-24 shrink-0 overflow-hidden rounded-[24px] bg-white/90 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl"
                 aria-label="Open map preview"
               >
-                {thumb ? (
-                  <img src={thumb} alt="" className="h-full w-full object-cover" draggable={false} />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[#E8ECEF] text-[#0F1729]">
-                    <MapPin size={24} />
-                  </div>
-                )}
+                <img src="/map.png" alt="" className="h-full w-full object-cover" draggable={false} />
                 <span className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#0F1729] text-white">
-                  <Map size={13} />
+                  <MapPin size={15} />
                 </span>
               </button>
             </div>

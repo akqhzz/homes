@@ -32,6 +32,7 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
   const [query, setQuery] = useState('');
   const [showAreaMenu, setShowAreaMenu] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const areaMenuRef = useRef<HTMLDivElement>(null);
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
 
@@ -43,6 +44,15 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
     const timer = window.setTimeout(() => inputRef.current?.focus(), 60);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!showAreaMenu) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!areaMenuRef.current?.contains(event.target as Node)) setShowAreaMenu(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [showAreaMenu]);
 
   const filtered = query.trim()
     ? LOCATION_SUGGESTIONS.filter(
@@ -114,7 +124,7 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
               <X size={16} />
             </button>
           )}
-          <div className="relative shrink-0">
+          <div ref={areaMenuRef} className="relative shrink-0">
             <button
               onClick={handleAreaClick}
               className="flex h-8 w-8 items-center justify-center rounded-full text-[#9CA3AF] hover:bg-[#F5F6F7] hover:text-[#0F1729]"

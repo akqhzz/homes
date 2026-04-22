@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { Check, Plus, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Check, Plus } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
+import { MOCK_LISTINGS } from '@/lib/mock-data';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
 
@@ -33,7 +35,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
     finishSave(collectionId);
   };
 
-  return (
+  const drawer = (
     <MobileDrawer
       title="Save to collection"
       onClose={onClose}
@@ -43,14 +45,21 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
       <div className="flex flex-col gap-2">
         {collections.map((collection) => {
           const alreadySaved = collection.listings.some((item) => item.listingId === listingId);
+          const thumbnailListing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
           return (
             <button
               key={collection.id}
               onClick={() => finishSave(collection.id)}
               className="flex items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#0F1729]">
-                {alreadySaved ? <Check size={16} /> : <Plus size={16} />}
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[#0F1729]">
+                {thumbnailListing?.images[0] ? (
+                  <img src={thumbnailListing.images[0]} alt="" className="h-full w-full object-cover" draggable={false} />
+                ) : alreadySaved ? (
+                  <Check size={16} />
+                ) : (
+                  <Plus size={16} />
+                )}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold text-[#0F1729]">{collection.name}</span>
@@ -76,10 +85,10 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
         <Button onClick={createAndSave} size="lg" className="h-12 px-4">
           Create
         </Button>
-        <button onClick={onClose} className="flex h-12 w-12 items-center justify-center rounded-2xl text-[#9CA3AF]">
-          <X size={18} />
-        </button>
       </div>
     </MobileDrawer>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(drawer, document.body);
 }
