@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Heart, MapPin } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket } from '@/lib/utils/format';
@@ -32,7 +32,33 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
   const imagePointerMoved = useRef(false);
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
+  const imageAreaRef = useRef<HTMLDivElement>(null);
   const wheelLockRef = useRef(false);
+
+  useEffect(() => {
+    const node = imageAreaRef.current;
+    if (!node) return;
+    let start: { x: number; y: number } | null = null;
+    const handleTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      start = { x: touch.clientX, y: touch.clientY };
+    };
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!start || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 4) {
+        event.preventDefault();
+      }
+    };
+    node.addEventListener('touchstart', handleTouchStart, { passive: true });
+    node.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => {
+      node.removeEventListener('touchstart', handleTouchStart);
+      node.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
 
   const showNextImage = () => {
     if (listing.images.length <= 1) return;
@@ -170,6 +196,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
     >
       {/* Image strip: swiping here changes photos instead of moving the carousel. */}
       <div
+        ref={imageAreaRef}
         className="relative overflow-hidden bg-[#F5F6F7]"
         style={{
           height: CAROUSEL_IMAGE_HEIGHT,

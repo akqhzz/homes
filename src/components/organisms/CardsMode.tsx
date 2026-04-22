@@ -46,6 +46,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const wheelLockRef = useRef(false);
   const dragLockRef = useRef(false);
   const activeDragRef = useRef(false);
+  const trackRef = useRef<HTMLDivElement>(null);
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -73,6 +74,31 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     return () => {
       document.documentElement.style.overscrollBehaviorX = previousHtmlOverscroll;
       document.body.style.overscrollBehaviorX = previousBodyOverscroll;
+    };
+  }, []);
+
+  useEffect(() => {
+    const node = trackRef.current;
+    if (!node) return;
+    let start: { x: number; y: number } | null = null;
+    const handleTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      start = { x: touch.clientX, y: touch.clientY };
+    };
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!start || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 4) {
+        event.preventDefault();
+      }
+    };
+    node.addEventListener('touchstart', handleTouchStart, { passive: true });
+    node.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => {
+      node.removeEventListener('touchstart', handleTouchStart);
+      node.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 
@@ -213,7 +239,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     >
       {/* Card stack */}
       <div
+        ref={trackRef}
         className="flex-1 relative px-3 pt-3 pb-2 min-h-0 overflow-hidden"
+        style={{ touchAction: 'pan-y' }}
         onWheel={handleTrackWheel}
         onPointerDownCapture={handleTrackPointerDown}
         onPointerMoveCapture={handleTrackPointerMove}

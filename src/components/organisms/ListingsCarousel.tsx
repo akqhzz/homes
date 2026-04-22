@@ -1,6 +1,5 @@
 'use client';
 import { useRef, useLayoutEffect, useCallback, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Listing } from '@/lib/types';
 import ListingCard from '@/components/molecules/ListingCard';
 import { useMapStore } from '@/store/mapStore';
@@ -8,6 +7,7 @@ import { cn } from '@/lib/utils/cn';
 
 const CARD_WIDTH = 288; // matches w-72
 const GAP = 12;
+const smoothstep = (value: number) => value * value * (3 - 2 * value);
 
 interface ListingsCarouselProps {
   listings: Listing[];
@@ -112,21 +112,27 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
           const center = scrollMetrics.left + (scrollMetrics.width || CARD_WIDTH) / 2;
           const cardCenter = index * (CARD_WIDTH + GAP) + CARD_WIDTH / 2;
           const distance = Math.min(1, Math.abs(center - cardCenter) / (CARD_WIDTH + GAP));
-          const scale = 1.02 - distance * 0.12;
-          const opacity = 1 - distance * 0.28;
+          const focus = smoothstep(1 - distance);
+          const scale = 0.91 + focus * 0.09;
+          const opacity = 0.74 + focus * 0.26;
           return (
-            <motion.div
+            <div
               key={listing.id}
-              style={{ scrollSnapAlign: 'center', flexShrink: 0 }}
-              animate={{ scale, opacity }}
-              transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                scrollSnapAlign: 'center',
+                flexShrink: 0,
+                opacity,
+                transform: `scale(${scale})`,
+                transition: 'transform 260ms cubic-bezier(0.2, 0, 0.1, 1), opacity 260ms cubic-bezier(0.2, 0, 0.1, 1)',
+                willChange: 'transform, opacity',
+              }}
             >
               <ListingCard
                 listing={listing}
                 variant="carousel"
                 className="will-change-transform"
               />
-            </motion.div>
+            </div>
           );
         })}
       </div>

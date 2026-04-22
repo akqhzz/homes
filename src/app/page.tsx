@@ -143,10 +143,10 @@ export default function MapPage() {
           <AnimatePresence>
             {isCarouselVisible && !isAreaSelect && (
               <motion.div
-                initial={{ y: 40, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 40, opacity: 0 }}
-                transition={{ type: 'tween', duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ y: 28, opacity: 0, scale: 0.965 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: 28, opacity: 0, scale: 0.965 }}
+                transition={{ type: 'tween', duration: 0.28, ease: [0.2, 0, 0.1, 1] }}
                 onPointerDownCapture={handleCarouselPointerDown}
                 onPointerUpCapture={handleCarouselPointerUp}
                 onPointerCancelCapture={() => { carouselDragStart.current = null; }}
