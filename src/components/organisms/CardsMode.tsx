@@ -14,8 +14,8 @@ import Button from '@/components/atoms/Button';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
 const SWIPE_THRESHOLD = 100;
-const CARD_MODE_IMAGE_HEIGHT = 340;
-const CARD_MODE_IMAGE_COUNT = 4;
+const CARD_MODE_IMAGE_HEIGHT = 305;
+const CARD_MODE_IMAGE_COUNT = 8;
 const CARD_GAP = 12;
 const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
@@ -41,7 +41,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [viewportWidth, setViewportWidth] = useState(390);
   const [showMapDrawer, setShowMapDrawer] = useState(false);
   const [showDetailDrawer, setShowDetailDrawer] = useState(false);
+  const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
+  const [likePulse, setLikePulse] = useState(false);
   const wheelLockRef = useRef(false);
+  const dragLockRef = useRef(false);
+  const activeDragRef = useRef(false);
 
   const { toggleLike, isLiked, swipeDislike, swipeUndo } = useSavedStore();
   const { openListingDetail, setActivePanel } = useUIStore();
@@ -93,14 +97,32 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     setCurrentIndex((i) => Math.max(0, i - 1));
   };
 
+  const handleLike = () => {
+    if (!listing) return;
+    toggleLike(listing.id);
+    setLikePulse(true);
+    window.setTimeout(() => {
+      setLikePulse(false);
+      setCurrentIndex((i) => i + 1);
+    }, 170);
+  };
+
   const navigateCard = (direction: 'next' | 'previous') => {
+    if (dragLockRef.current) return;
+    dragLockRef.current = true;
     setCurrentIndex((index) => {
       if (direction === 'next') return Math.min(listings.length, index + 1);
       return Math.max(0, index - 1);
     });
+    window.setTimeout(() => {
+      dragLockRef.current = false;
+    }, 520);
   };
 
   const handleTrackDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    window.setTimeout(() => {
+      activeDragRef.current = false;
+    }, 80);
     if (info.offset.x < -SWIPE_THRESHOLD || info.velocity.x < -650) {
       navigateCard('next');
       return;
@@ -116,13 +138,13 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     navigateCard(event.deltaX > 0 ? 'next' : 'previous');
     window.setTimeout(() => {
       wheelLockRef.current = false;
-    }, 430);
+    }, 900);
   };
 
-  const handleShowOnMap = () => {
-    if (!listing) return;
-    setViewState({ longitude: listing.coordinates.lng, latitude: listing.coordinates.lat, zoom: 15 });
-    setSelectedListingId(listing.id);
+  const handleShowOnMap = (targetListing = listing) => {
+    if (!targetListing) return;
+    setViewState({ longitude: targetListing.coordinates.lng, latitude: targetListing.coordinates.lat, zoom: 15 });
+    setSelectedListingId(targetListing.id);
     setActivePanel('none');
     onClose();
   };
@@ -143,10 +165,14 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   }
 
   const liked = isLiked(listing.id);
-  const thumb = mapThumb(listing);
-
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col overscroll-x-none">
+    <motion.div
+      className="fixed inset-0 z-50 bg-white flex flex-col overscroll-x-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.16, ease: 'easeOut' }}
+    >
       {/* Card stack */}
       <div
         className="flex-1 relative px-3 pt-3 pb-2 min-h-0 overflow-hidden"
@@ -161,6 +187,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           dragMomentum={false}
           animate={{ x: -currentIndex * (cardWidth + CARD_GAP) }}
           transition={{ type: 'spring', damping: 34, stiffness: 360, mass: 0.9 }}
+          onDragStart={() => { activeDragRef.current = true; }}
           onDragEnd={handleTrackDragEnd}
           style={{
             gap: CARD_GAP,
@@ -176,11 +203,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               width={cardWidth}
               active={index === currentIndex}
               onOpenDetail={() => {
+                if (activeDragRef.current) return;
                 setCurrentIndex(index);
+                setDrawerListing(item);
                 setShowDetailDrawer(true);
               }}
               onOpenMap={() => {
+                if (activeDragRef.current) return;
                 setCurrentIndex(index);
+                setDrawerListing(item);
                 setShowMapDrawer(true);
               }}
             />
@@ -209,26 +240,28 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             onClick={() => advance('dislike')}
             className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 transition-all no-select"
           >
-            <X size={22} className="text-[#EF4444]" strokeWidth={2.5} />
+            <X size={22} className="text-[#4B5563]" strokeWidth={2.5} />
           </button>
 
           {/* Like */}
-          <button
-            onClick={() => advance('like')}
+          <motion.button
+            onClick={handleLike}
             className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 transition-all no-select"
+            animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
           >
             <Heart
               size={22}
               strokeWidth={2.5}
-              className={cn(liked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#EF4444]')}
+              className={cn(liked || likePulse ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#EF4444]')}
             />
-          </button>
+          </motion.button>
         </div>
 
         {/* Map — back to map */}
         <FloatingActionButton
           layoutId="cards-map-control"
-          onClick={handleShowOnMap}
+          onClick={() => handleShowOnMap()}
           aria-label="Map"
         >
           <Map size={17} strokeWidth={2} />
@@ -237,15 +270,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
       {/* Listing detail drawer */}
       <AnimatePresence>
-        {showDetailDrawer && (
+        {showDetailDrawer && (drawerListing ?? listing) && (
           <MobileDrawer
-            title={listing.address.split(',')[0]}
+            title={(drawerListing ?? listing).address.split(',')[0]}
             onClose={() => setShowDetailDrawer(false)}
             heightClassName="h-[72dvh]"
             contentClassName="p-4"
             footer={(
               <Button
-                onClick={() => { setShowDetailDrawer(false); openListingDetail(listing.id); }}
+                onClick={() => { setShowDetailDrawer(false); openListingDetail((drawerListing ?? listing).id); }}
                 fullWidth
                 size="lg"
               >
@@ -253,19 +286,19 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="text-2xl font-black text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="text-2xl font-black text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
             <p className="text-sm text-[#6B7280] mt-1">
-              {listing.beds}bd · {listing.baths}ba · {formatSqft(listing.sqft)} sqft
+              {(drawerListing ?? listing).beds}bd · {(drawerListing ?? listing).baths}ba · {formatSqft((drawerListing ?? listing).sqft)} sqft
             </p>
             <p className="text-xs text-[#9CA3AF] mt-1 flex items-center gap-1">
               <MapPin size={11} />
-              {listing.address}, {listing.city}
+              {(drawerListing ?? listing).address}, {(drawerListing ?? listing).city}
             </p>
             <div className="h-px bg-[#F5F6F7] my-4" />
-            <p className="text-sm text-[#6B7280] leading-relaxed">{listing.description}</p>
+            <p className="text-sm text-[#6B7280] leading-relaxed">{(drawerListing ?? listing).description}</p>
             <div className="h-px bg-[#F5F6F7] my-4" />
             <div className="flex flex-wrap gap-2">
-              {listing.features.map((f) => (
+              {(drawerListing ?? listing).features.map((f) => (
                 <span key={f} className="text-xs bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">{f}</span>
               ))}
             </div>
@@ -275,34 +308,34 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
       {/* Mini-map drawer */}
       <AnimatePresence>
-        {showMapDrawer && (
+        {showMapDrawer && (drawerListing ?? listing) && (
           <MobileDrawer
-            title={listing.neighborhood}
+            title={(drawerListing ?? listing).neighborhood}
             onClose={() => setShowMapDrawer(false)}
             heightClassName="h-[55dvh]"
             contentClassName="flex flex-col"
             footer={(
-              <Button onClick={handleShowOnMap} variant="secondary" fullWidth size="md">
+              <Button onClick={() => handleShowOnMap(drawerListing ?? listing)} variant="secondary" fullWidth size="md">
                 View on Map
               </Button>
             )}
           >
-            {thumb ? (
-              <img src={thumb.replace('140x112', '800x400')} alt="map" className="w-full flex-1 object-cover" />
+            {mapThumb(drawerListing ?? listing) ? (
+              <img src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" className="w-full flex-1 object-cover" />
             ) : (
               <div className="mx-4 mb-4 flex flex-1 items-center justify-center rounded-2xl bg-[#E8ECEF]">
                 <div className="text-center p-6">
                   <MapPin size={36} className="mx-auto mb-3 text-[#9CA3AF]" />
-                  <p className="font-semibold text-[#0F1729]">{listing.neighborhood}</p>
-                  <p className="text-sm text-[#9CA3AF] mt-1">{listing.address}</p>
-                  <p className="text-xs text-[#9CA3AF] mt-1">{listing.coordinates.lat.toFixed(4)}, {listing.coordinates.lng.toFixed(4)}</p>
+                  <p className="font-semibold text-[#0F1729]">{(drawerListing ?? listing).neighborhood}</p>
+                  <p className="text-sm text-[#9CA3AF] mt-1">{(drawerListing ?? listing).address}</p>
+                  <p className="text-xs text-[#9CA3AF] mt-1">{(drawerListing ?? listing).coordinates.lat.toFixed(4)}, {(drawerListing ?? listing).coordinates.lng.toFixed(4)}</p>
                 </div>
               </div>
             )}
           </MobileDrawer>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 
@@ -380,16 +413,16 @@ function CardModeListingCard({
           <div
             className="h-full overflow-y-auto rounded-[22px] bg-white scrollbar-hide"
             style={{
-              scrollSnapType: 'y mandatory',
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain',
+              scrollBehavior: 'smooth',
             }}
           >
             {images.map((src, index) => (
               <div
                 key={`${listing.id}-${src}-${index}`}
                 className="overflow-hidden bg-[#F5F6F7] first:rounded-t-[22px] last:rounded-b-[22px]"
-                style={{ height: CARD_MODE_IMAGE_HEIGHT, scrollSnapAlign: 'start' }}
+                style={{ height: CARD_MODE_IMAGE_HEIGHT }}
               >
                 <ListingImage src={src} fallbackIndex={index} alt={index === 0 ? listing.address : ''} eager={active || index < 2} />
               </div>
@@ -399,13 +432,19 @@ function CardModeListingCard({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3">
             <div className="flex items-end gap-2">
               <div className="flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-5 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
-                <p className="text-2xl font-normal leading-tight tracking-normal text-[#0F1729]">{formatPrice(listing.price)}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-2xl font-normal leading-tight tracking-normal text-[#0F1729]">{formatPrice(listing.price)}</p>
+                  <span className="rounded-full bg-[#F5F6F7] px-2.5 py-1 text-xs font-semibold text-[#6B7280]">
+                    {formatDaysOnMarket(listing.daysOnMarket)}
+                  </span>
+                </div>
                 <p className="mt-2 text-base font-normal tracking-normal text-[#5C5F66]">
-                  {listing.beds} bd {listing.baths} ba {formatSqft(listing.sqft)}sqft {formatDaysOnMarket(listing.daysOnMarket)}
+                  {listing.beds} bd {listing.baths} ba {formatSqft(listing.sqft)}sqft
                 </p>
               </div>
               <button
                 type="button"
+                onPointerDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpenMap();

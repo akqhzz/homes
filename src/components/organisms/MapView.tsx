@@ -25,6 +25,18 @@ const AREA_NEIGHBORHOOD_COORDINATES: Record<string, { lat: number; lng: number }
   'nbh-church-st': { lat: 43.6580, lng: -79.3605 },
   'nbh-king-west': { lat: 43.6405, lng: -79.3955 },
 };
+const LISTING_MARKER_OFFSETS = [
+  { lat: 0.0000, lng: 0.0000 },
+  { lat: 0.0017, lng: -0.0019 },
+  { lat: -0.0018, lng: 0.0018 },
+  { lat: 0.0025, lng: 0.0014 },
+  { lat: -0.0023, lng: -0.0015 },
+  { lat: 0.0010, lng: 0.0030 },
+  { lat: -0.0010, lng: -0.0030 },
+  { lat: 0.0030, lng: -0.0004 },
+  { lat: -0.0030, lng: 0.0004 },
+  { lat: 0.0002, lng: 0.0024 },
+];
 
 interface MapViewProps {
   listings: Listing[];
@@ -230,11 +242,13 @@ export default function MapView({
         ))}
 
       {/* Listing price markers */}
-      {showListings && listings.map((listing) => (
+      {showListings && listings.map((listing, index) => {
+        const markerCoordinates = getSpreadListingCoordinates(listing, index);
+        return (
         <Marker
           key={listing.id}
-          longitude={listing.coordinates.lng}
-          latitude={listing.coordinates.lat}
+          longitude={markerCoordinates.lng}
+          latitude={markerCoordinates.lat}
           anchor="bottom"
         >
           <PriceMarker
@@ -244,7 +258,8 @@ export default function MapView({
             onClick={() => handleMarkerClick(listing.id, listing.coordinates)}
           />
         </Marker>
-      ))}
+        );
+      })}
     </Map>
   );
 }
@@ -370,8 +385,8 @@ function MockMap({
         </>
       )}
       {showListings && listings.map((listing, i) => {
-        const x = 8 + ((i * 37 + 13) % 75);
-        const y = 8 + ((i * 53 + 7) % 70);
+        const x = 8 + ((i * 43 + 11) % 82);
+        const y = 8 + ((i * 61 + 5) % 78);
         return (
           <div
             key={listing.id}
@@ -504,4 +519,12 @@ function getRenderNeighborhoods(isAreaMode: boolean) {
       ...neighborhood,
       coordinates: AREA_NEIGHBORHOOD_COORDINATES[neighborhood.id],
     }));
+}
+
+function getSpreadListingCoordinates(listing: Listing, index: number) {
+  const offset = LISTING_MARKER_OFFSETS[index % LISTING_MARKER_OFFSETS.length];
+  return {
+    lat: listing.coordinates.lat + offset.lat,
+    lng: listing.coordinates.lng + offset.lng,
+  };
 }

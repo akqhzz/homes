@@ -34,7 +34,8 @@ export default function MobileDrawer({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/35"
+          transition={{ duration: 0.16, ease: 'easeOut' }}
+          className="fixed inset-0 z-50 bg-black/25"
           onClick={onClose}
         />
       )}
@@ -48,10 +49,10 @@ export default function MobileDrawer({
         onDragEnd={(_, info) => {
           if (info.offset.y > 90 || info.velocity.y > 650) onClose();
         }}
-        initial={{ y: '100%' }}
+        initial={{ y: 28, opacity: 0.98 }}
         animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'tween', duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        exit={{ y: 28, opacity: 0 }}
+        transition={{ type: 'tween', duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
           'fixed inset-x-0 bottom-0 z-[60] flex flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_-12px_32px_rgba(15,23,41,0.16)]',
           heightClassName,

@@ -61,13 +61,13 @@ export default function MapPage() {
   };
 
   const closeAreaSelect = () => {
+    setAppliedNeighborhoods(new Set(selectedNeighborhoods));
+    setAppliedBoundary(drawnBoundary);
     setActivePanel('none');
     setFocusedNeighborhood(null);
     setIsDrawingArea(false);
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
-    setAppliedNeighborhoods(new Set());
-    setAppliedBoundary([]);
   };
 
   const applyAreaSelect = () => {

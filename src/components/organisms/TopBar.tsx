@@ -53,12 +53,12 @@ export default function TopBar() {
         className={cn(
           'w-11 h-11 rounded-full flex items-center justify-center shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select relative',
           activePanel === 'search' && 'pointer-events-none',
-          filterCount > 0 ? 'bg-white ring-2 ring-[#0F1729]' : 'bg-white'
+          filterCount > 0 ? 'bg-white ring-1 ring-[#374151]' : 'bg-white'
         )}
       >
         <SlidersHorizontal size={18} className="text-[#0F1729]" />
         {filterCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0F1729] px-1 text-[9px] font-bold leading-none text-white">
+          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 text-[8px] font-bold leading-none text-white">
             {filterCount}
           </span>
         )}

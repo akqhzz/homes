@@ -24,17 +24,21 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const toggleLike = useSavedStore((s) => s.toggleLike);
   const openListingDetail = useUIStore((s) => s.openListingDetail);
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
+  const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
+  const wheelLockRef = useRef(false);
 
   const stopCarouselDrag = (e: React.TouchEvent | React.PointerEvent) => {
     e.stopPropagation();
   };
 
   const showNextImage = () => {
-    setImgIndex((index) => Math.min(listing.images.length - 1, index + 1));
+    if (listing.images.length <= 1) return;
+    setImgIndex((index) => (index + 1) % listing.images.length);
   };
 
   const showPreviousImage = () => {
-    setImgIndex((index) => Math.max(0, index - 1));
+    if (listing.images.length <= 1) return;
+    setImgIndex((index) => (index - 1 + listing.images.length) % listing.images.length);
   };
 
   const handleImageTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -57,7 +61,35 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const handleImageWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     e.stopPropagation();
     if (Math.abs(e.deltaY) < 8 && Math.abs(e.deltaX) < 8) return;
+    if (wheelLockRef.current) return;
+    wheelLockRef.current = true;
     if (e.deltaY > 0 || e.deltaX > 0) showNextImage();
+    else showPreviousImage();
+    window.setTimeout(() => {
+      wheelLockRef.current = false;
+    }, 260);
+  };
+
+  const handleImagePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    imagePointerStart.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handleImagePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const start = imagePointerStart.current;
+    if (!start || start.id !== e.pointerId) return;
+    imagePointerStart.current = null;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < IMAGE_SWIPE_THRESHOLD) return;
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      if (dx < 0) showNextImage();
+      else showPreviousImage();
+      return;
+    }
+    if (dy < 0) showNextImage();
     else showPreviousImage();
   };
 
@@ -141,7 +173,10 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         onTouchStart={handleImageTouchStart}
         onTouchMove={stopCarouselDrag}
         onTouchEnd={handleImageTouchEnd}
-        onPointerDown={stopCarouselDrag}
+        onPointerDown={handleImagePointerDown}
+        onPointerMove={stopCarouselDrag}
+        onPointerUp={handleImagePointerUp}
+        onPointerCancel={() => { imagePointerStart.current = null; }}
         onWheel={handleImageWheel}
       >
         <img src={listing.images[imgIndex]} alt="" className="h-full w-full object-cover" draggable={false} />
