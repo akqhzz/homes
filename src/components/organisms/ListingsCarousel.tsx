@@ -22,7 +22,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [scrollMetrics, setScrollMetrics] = useState({ left: 0, width: 0 });
   const scrollX = useMotionValue(0);
-  const smoothScrollX = useSpring(scrollX, { stiffness: 180, damping: 32, mass: 0.22 });
+  const smoothScrollX = useSpring(scrollX, { stiffness: 260, damping: 38, mass: 0.18 });
   const selectedListingId = useMapStore((s) => s.selectedListingId);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
 
@@ -36,7 +36,8 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     scrollRef.current.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'auto' });
     setScrollMetrics({ left: Math.max(0, scrollLeft), width: containerW });
     scrollX.set(Math.max(0, scrollLeft));
-  }, [selectedListingId, listings, scrollX]);
+    smoothScrollX.jump(Math.max(0, scrollLeft));
+  }, [selectedListingId, listings, scrollX, smoothScrollX]);
 
   useEffect(() => {
     const previousHtmlOverscroll = document.documentElement.style.overscrollBehaviorX;
@@ -151,7 +152,7 @@ function CarouselCardShell({
     const cardCenter = index * (CARD_WIDTH + GAP) + CARD_WIDTH / 2;
     const distance = Math.min(1, Math.abs(center - cardCenter) / (CARD_WIDTH + GAP));
     const focus = smoothstep(1 - distance);
-    return 0.92 + focus * 0.08;
+    return 0.9 + focus * 0.1;
   });
 
   return (

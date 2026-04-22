@@ -72,13 +72,13 @@ export default function SearchPanel() {
         onClick={handleClose}
       />
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         transition={{ type: 'tween', duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         className="fixed left-4 right-4 top-4 z-[60]"
       >
-        <motion.div layoutId="map-search-bar" className="flex items-center gap-2 rounded-full bg-white px-3 py-2.5 shadow-[var(--shadow-control)]">
+        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2.5 shadow-[var(--shadow-control)]">
           <button
             onClick={handleClose}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[#F5F6F7]"
@@ -114,7 +114,7 @@ export default function SearchPanel() {
           >
             <Layers size={17} />
           </button>
-        </motion.div>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}

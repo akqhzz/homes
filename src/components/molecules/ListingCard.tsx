@@ -172,7 +172,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
           </button>
         </div>
         <div className="p-4">
-          <p className="font-black text-[#0F1729] text-lg">{formatPrice(listing.price)}</p>
+          <p className="text-lg font-semibold text-[#0F1729]">{formatPrice(listing.price)}</p>
           <p className="text-sm text-[#6B7280] mt-1">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
           <div className="flex items-center gap-1 mt-1.5 text-xs text-[#9CA3AF]">
             <MapPin size={11} />
@@ -255,7 +255,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="font-black text-[#0F1729] text-[15px] leading-snug">{formatPrice(listing.price)}</p>
+            <p className="text-[15px] font-semibold leading-snug text-[#0F1729]">{formatPrice(listing.price)}</p>
             <p className="text-xs text-[#6B7280] mt-0.5 truncate">
               {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
             </p>
