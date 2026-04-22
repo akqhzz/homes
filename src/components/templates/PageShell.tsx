@@ -13,9 +13,10 @@ const SavedSearchesPanel = dynamic(() => import('@/components/organisms/SavedSea
 interface PageShellProps {
   children: React.ReactNode;
   className?: string;
+  showBottomNav?: boolean;
 }
 
-export default function PageShell({ children, className }: PageShellProps) {
+export default function PageShell({ children, className, showBottomNav = true }: PageShellProps) {
   const activePanel = useUIStore((s) => s.activePanel);
 
   return (
@@ -24,7 +25,7 @@ export default function PageShell({ children, className }: PageShellProps) {
       <div className="flex-1 overflow-hidden lg:max-w-2xl lg:mx-auto lg:w-full lg:border-x lg:border-[#F0F0F0]">
         {children}
       </div>
-      <BottomNav />
+      {showBottomNav && <BottomNav />}
 
       {/* Global panels (search, filter, saved searches) */}
       <AnimatePresence>

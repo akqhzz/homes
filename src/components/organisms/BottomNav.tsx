@@ -1,5 +1,5 @@
 'use client';
-import { Map, Heart, Sparkles, Menu, Bookmark, LayoutGrid } from 'lucide-react';
+import { Map, Heart, Sparkles, Menu, Bookmark, LayoutGrid, Plus } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
@@ -17,6 +17,7 @@ export default function BottomNav() {
   const { setActivePanel } = useUIStore();
 
   const isMapPage = pathname === '/';
+  const isSavedPage = pathname === '/saved';
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' || pathname === '/map' : pathname.startsWith(href);
@@ -57,6 +58,16 @@ export default function BottomNav() {
           );
         })}
       </div>
+
+      {isSavedPage && (
+        <FloatingActionButton
+          layoutId="saved-add-control"
+          onClick={() => window.dispatchEvent(new CustomEvent('homes:create-collection'))}
+          aria-label="Add collection"
+        >
+          <Plus size={17} className="text-[#0F1729]" />
+        </FloatingActionButton>
+      )}
 
       {/* Cards mode — map page only */}
       {isMapPage && (

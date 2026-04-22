@@ -38,6 +38,7 @@ function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
 export default function MapPage() {
   const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible, isSatelliteMode, setSatelliteMode } = useUIStore();
   const { filters } = useSearchStore();
+  const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
@@ -53,6 +54,7 @@ export default function MapPage() {
   const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
   const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
+  const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -279,7 +281,9 @@ export default function MapPage() {
         )}
         {activePanel === 'filter' && <FilterPanel key="filter" totalListings={filteredListings.length} />}
         {activePanel === 'listing-detail' && <ListingDetailSheet key="listing-detail" />}
-        {activePanel === 'saved-searches' && <SavedSearchesPanel key="saved-searches" />}
+        {activePanel === 'saved-searches' && (
+          <SavedSearchesPanel key="saved-searches" hasActiveCriteria={hasActiveSearchCriteria} />
+        )}
       </AnimatePresence>
 
       {/* Cards mode */}

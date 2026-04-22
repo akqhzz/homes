@@ -1,15 +1,13 @@
 'use client';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, MoreHorizontal, LayoutGrid, ArrowLeftRight } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import PageShell from '@/components/templates/PageShell';
 import ListingCard from '@/components/molecules/ListingCard';
 import Avatar from '@/components/atoms/Avatar';
-import { cn } from '@/lib/utils/cn';
 import dynamic from 'next/dynamic';
 
 const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingDetailSheet'), { ssr: false });
@@ -17,14 +15,13 @@ const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingD
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { collections, removeFromCollection } = useSavedStore();
+  const { collections } = useSavedStore();
   const { activePanel } = useUIStore();
-  const [mode, setMode] = useState<'grid' | 'compare'>('grid');
 
   const collection = collections.find((c) => c.id === id);
   if (!collection) {
     return (
-      <PageShell>
+      <PageShell showBottomNav={false}>
         <div className="h-full flex items-center justify-center">
           <p className="text-[#9CA3AF]">Collection not found</p>
         </div>
@@ -41,11 +38,11 @@ export default function CollectionPage() {
     .filter(Boolean) as Array<(typeof MOCK_LISTINGS)[0] & { collectionData: (typeof collection.listings)[0] }>;
 
   return (
-    <PageShell>
+    <PageShell showBottomNav={false}>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="px-4 pt-12 lg:pt-6 pb-0 flex-shrink-0">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="px-4 pt-4 lg:pt-6 pb-0 flex-shrink-0">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F6F7] transition-colors"
@@ -65,30 +62,6 @@ export default function CollectionPage() {
                 <MoreHorizontal size={18} />
               </button>
             </div>
-          </div>
-
-          {/* Mode switcher */}
-          <div className="flex items-center justify-center gap-1 py-2 border-b border-[#F5F6F7]">
-            <button
-              onClick={() => setMode('grid')}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all',
-                mode === 'grid' ? 'bg-[#0F1729] text-white' : 'text-[#9CA3AF] hover:text-[#0F1729]'
-              )}
-            >
-              <LayoutGrid size={12} />
-              Organize
-            </button>
-            <button
-              onClick={() => setMode('compare')}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all',
-                mode === 'compare' ? 'bg-[#0F1729] text-white' : 'text-[#9CA3AF] hover:text-[#0F1729]'
-              )}
-            >
-              <ArrowLeftRight size={12} />
-              Compare
-            </button>
           </div>
         </div>
 

@@ -25,7 +25,7 @@ export default function ForYouPage() {
     <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="px-4 pt-12 lg:pt-6 pb-4 flex-shrink-0 border-b border-[#F5F6F7]">
+        <div className="px-4 pt-4 lg:pt-6 pb-4 flex-shrink-0 border-b border-[#F5F6F7]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#0F1729] flex items-center justify-center flex-shrink-0">
               <Sparkles size={15} className="text-white" />

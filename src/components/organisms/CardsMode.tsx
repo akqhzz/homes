@@ -71,11 +71,17 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   useEffect(() => {
     const previousHtmlOverscroll = document.documentElement.style.overscrollBehaviorX;
     const previousBodyOverscroll = document.body.style.overscrollBehaviorX;
+    const previousHtmlOverscrollY = document.documentElement.style.overscrollBehaviorY;
+    const previousBodyOverscrollY = document.body.style.overscrollBehaviorY;
     document.documentElement.style.overscrollBehaviorX = 'none';
     document.body.style.overscrollBehaviorX = 'none';
+    document.documentElement.style.overscrollBehaviorY = 'none';
+    document.body.style.overscrollBehaviorY = 'none';
     return () => {
       document.documentElement.style.overscrollBehaviorX = previousHtmlOverscroll;
       document.body.style.overscrollBehaviorX = previousBodyOverscroll;
+      document.documentElement.style.overscrollBehaviorY = previousHtmlOverscrollY;
+      document.body.style.overscrollBehaviorY = previousBodyOverscrollY;
     };
   }, []);
 
@@ -233,8 +239,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       className="fixed inset-0 z-50 bg-white flex flex-col overscroll-x-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.16, ease: 'easeOut' }}
+      exit={{ y: 28, opacity: 0, scale: 0.985 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Card stack */}
       <div
@@ -278,6 +284,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 setDrawerListing(item);
                 setShowMapDrawer(true);
               }}
+              onClose={onClose}
             />
           ))}
         </motion.div>
@@ -455,14 +462,44 @@ function CardModeListingCard({
   active,
   onOpenDetail,
   onOpenMap,
+  onClose,
 }: {
   listing: Listing;
   width: number;
   active: boolean;
   onOpenDetail: () => void;
   onOpenMap: () => void;
+  onClose: () => void;
 }) {
   const images = getListingImages(listing);
+  const imageScrollRef = useRef<HTMLDivElement>(null);
+  const imagePullStartRef = useRef<{ y: number; atTop: boolean } | null>(null);
+
+  const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    imagePullStartRef.current = {
+      y: event.touches[0].clientY,
+      atTop: (imageScrollRef.current?.scrollTop ?? 0) <= 2,
+    };
+  };
+
+  const handleImageTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = imagePullStartRef.current;
+    if (!start?.atTop) return;
+    const dy = event.touches[0].clientY - start.y;
+    if (dy > 8) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
+  const handleImageTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = imagePullStartRef.current;
+    imagePullStartRef.current = null;
+    if (!start?.atTop) return;
+    const touch = event.changedTouches[0];
+    if (touch.clientY - start.y > 58) onClose();
+  };
+
   return (
     <motion.article
       className="h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select"
@@ -481,12 +518,16 @@ function CardModeListingCard({
       >
         <div className="relative h-full rounded-[22px] bg-white">
           <div
+            ref={imageScrollRef}
             className="h-full overflow-y-auto rounded-[22px] bg-white scrollbar-hide"
             style={{
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain',
               scrollBehavior: 'smooth',
             }}
+            onTouchStart={handleImageTouchStart}
+            onTouchMove={handleImageTouchMove}
+            onTouchEnd={handleImageTouchEnd}
           >
             {images.map((src, index) => (
               <div
@@ -523,8 +564,8 @@ function CardModeListingCard({
                 aria-label="Open map preview"
               >
                 <img src="/map.png" alt="" className="h-full w-full object-cover" draggable={false} />
-                <span className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#0F1729] text-white">
-                  <MapPin size={15} />
+                <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-full text-[#0F1729] drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
+                  <MapPin size={28} fill="#0F1729" strokeWidth={1.8} />
                 </span>
               </button>
             </div>

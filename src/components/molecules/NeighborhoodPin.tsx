@@ -7,9 +7,10 @@ interface NeighborhoodPinProps {
   isSelected?: boolean;
   onClick?: () => void;
   size?: 'default' | 'sm';
+  showLabel?: boolean;
 }
 
-export default function NeighborhoodPin({ neighborhood, isSelected, onClick, size = 'default' }: NeighborhoodPinProps) {
+export default function NeighborhoodPin({ neighborhood, isSelected, onClick, size = 'default', showLabel = true }: NeighborhoodPinProps) {
   return (
     <button
       onClick={onClick}
@@ -31,12 +32,14 @@ export default function NeighborhoodPin({ neighborhood, isSelected, onClick, siz
           className="w-full h-full object-cover"
         />
       </div>
-      <span className={cn(
-        'font-medium text-[#0F1729] bg-white/90 rounded-full shadow-sm whitespace-nowrap',
-        size === 'sm' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
-      )}>
-        {neighborhood.name}
-      </span>
+      {showLabel && (
+        <span className={cn(
+          'font-medium text-[#0F1729] bg-white/90 rounded-full shadow-sm whitespace-nowrap',
+          size === 'sm' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
+        )}>
+          {neighborhood.name}
+        </span>
+      )}
     </button>
   );
 }

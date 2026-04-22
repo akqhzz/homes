@@ -1,5 +1,5 @@
 'use client';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Check, Layers, Pencil, Plus, Redo2, RotateCcw, Satellite, Store, Undo2 } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
@@ -67,6 +67,7 @@ export default function AreaSelectPanel({
   const [viewportWidth, setViewportWidth] = useState(390);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [instantMove, setInstantMove] = useState(true);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
@@ -77,7 +78,7 @@ export default function AreaSelectPanel({
     ? selectedCount > 0
       ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
       : `${MOCK_LISTINGS.length} listings`
-    : 'Choose your search area';
+    : 'Choose your area';
 
   const handleBack = () => {
     setAreaSelectMode(false);
@@ -103,6 +104,16 @@ export default function AreaSelectPanel({
       return () => cancelAnimationFrame(frame);
     }
   }, [focusedNeighborhood]);
+
+  useEffect(() => {
+    const node = carouselRef.current;
+    if (!node) return;
+    const handleTouchMove = (event: TouchEvent) => {
+      event.preventDefault();
+    };
+    node.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => node.removeEventListener('touchmove', handleTouchMove);
+  }, []);
 
   const goToNeighborhood = (index: number) => {
     const nextIndex = Math.max(0, Math.min(AREA_NEIGHBORHOODS.length - 1, index));
@@ -167,7 +178,7 @@ export default function AreaSelectPanel({
                 >
                   <ArrowLeft size={16} strokeWidth={2.4} />
                 </button>
-                <p className="min-w-0 flex-1 truncate font-semibold leading-tight">{title}</p>
+                <p className="min-w-0 flex-1 truncate font-normal leading-tight">{title}</p>
               </div>
             </div>
             <button
@@ -285,6 +296,7 @@ export default function AreaSelectPanel({
       <AnimatePresence>
         {focusedNeighborhood && (
           <motion.div
+            ref={carouselRef}
             key="neighborhood-carousel"
             initial={{ y: 26, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
@@ -325,7 +337,7 @@ export default function AreaSelectPanel({
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-2 flex h-10 w-[88px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 flex h-11 w-[88px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >

@@ -7,11 +7,17 @@ import { useSearchStore } from '@/store/searchStore';
 import Button from '@/components/atoms/Button';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 
-export default function SavedSearchesPanel() {
+interface SavedSearchesPanelProps {
+  hasActiveCriteria?: boolean;
+}
+
+export default function SavedSearchesPanel({ hasActiveCriteria }: SavedSearchesPanelProps) {
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const { selectedLocations } = useSearchStore();
+  const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
+  const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
-  const [saving, setSaving] = useState(true);
+  const [saving, setSaving] = useState(canSaveCurrent);
 
   const handleLoadSearch = () => {
     // In real app: update search store state
@@ -41,7 +47,7 @@ export default function SavedSearchesPanel() {
               onChange={(e) => setNewSearchName(e.target.value)}
               placeholder="Search name..."
               className="h-12 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-              autoFocus
+              autoFocus={canSaveCurrent}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveCurrent()}
             />
             <Button size="lg" onClick={handleSaveCurrent} className="h-12 px-5">Save</Button>

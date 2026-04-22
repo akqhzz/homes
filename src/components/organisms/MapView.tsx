@@ -64,7 +64,7 @@ export default function MapView({
   isAreaMode = false,
 }: MapViewProps) {
   const { viewState, setViewState, selectedListingId, setSelectedListingId } = useMapStore();
-  const { setCarouselVisible, isSatelliteMode } = useUIStore();
+  const { setCarouselVisible, isSatelliteMode, isCarouselVisible } = useUIStore();
   const isLiked = useSavedStore((s) => s.isLiked);
   const mapRef = useRef<MapRef | null>(null);
 
@@ -111,7 +111,7 @@ export default function MapView({
     return (
       <MockMap
         listings={listings}
-        selectedId={selectedListingId}
+        selectedId={isCarouselVisible ? selectedListingId : null}
         onMarkerClick={handleMarkerClick}
         onMapClick={() => { setSelectedListingId(null); setCarouselVisible(false); }}
         showListings={showListings}
@@ -239,6 +239,7 @@ export default function MapView({
                 onNeighborhoodClick?.(nbh);
               }}
               size={isAreaMode ? 'sm' : 'default'}
+              showLabel={!isAreaMode}
             />
           </Marker>
         ))}
@@ -255,7 +256,7 @@ export default function MapView({
         >
           <PriceMarker
             price={listing.price}
-            isSelected={listing.id === selectedListingId}
+            isSelected={isCarouselVisible && listing.id === selectedListingId}
             isSaved={isLiked(listing.id)}
             onClick={() => handleMarkerClick(listing.id, listing.coordinates)}
           />
@@ -358,6 +359,7 @@ function MockMap({
               neighborhood={nbh}
               isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
               size={isAreaMode ? 'sm' : 'default'}
+              showLabel={!isAreaMode}
             />
           </div>
         );

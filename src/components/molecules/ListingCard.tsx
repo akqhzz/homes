@@ -282,11 +282,11 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[15px] font-semibold leading-snug text-[#0F1729]">{formatPrice(listing.price)}</p>
-              <p className="text-xs text-[#6B7280] mt-0.5 truncate">
+              <p className="text-[15px] font-semibold leading-[1.25] text-[#0F1729]">{formatPrice(listing.price)}</p>
+              <p className="mt-1 truncate text-xs leading-[1.25] text-[#6B7280]">
                 {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
               </p>
-              <p className="mt-0.5 text-[11px] leading-tight text-[#9CA3AF] line-clamp-1">
+              <p className="mt-1 text-[11px] leading-[1.25] text-[#9CA3AF] line-clamp-1">
                 {listing.address}
               </p>
             </div>

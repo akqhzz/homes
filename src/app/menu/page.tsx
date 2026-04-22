@@ -26,7 +26,7 @@ export default function MenuPage() {
   return (
     <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
-        <div className="px-4 pt-12 lg:pt-6 pb-6 flex-shrink-0 border-b border-[#F5F6F7]">
+        <div className="px-4 pt-4 lg:pt-6 pb-6 flex-shrink-0 border-b border-[#F5F6F7]">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0F1729] to-[#4B5EC6] flex items-center justify-center flex-shrink-0">
               <span className="text-lg font-bold text-white">Y</span>
