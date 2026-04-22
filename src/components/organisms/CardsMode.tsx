@@ -353,7 +353,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <MobileDrawer
             title={(drawerListing ?? listing).address.split(',')[0]}
             onClose={() => setShowDetailDrawer(false)}
-            heightClassName="h-[72dvh]"
+            heightClassName="max-h-[72dvh]"
             contentClassName="p-4"
             footer={(
               <Button

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,19 @@ export default function SavedPage() {
   const [renameName, setRenameName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!openMenuId && !confirmDeleteId) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setOpenMenuId(null);
+        setConfirmDeleteId(null);
+      }
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [openMenuId, confirmDeleteId]);
 
   useEffect(() => {
     const handleCreateIntent = () => {
@@ -140,7 +153,7 @@ export default function SavedPage() {
                       )}
                     </div>
 
-                    <div className="px-4 py-3 pr-14 flex items-center justify-between">
+                    <div className="px-4 py-3 flex items-start gap-2">
                       <div className="flex-1 min-w-0">
                         {renamingId === col.id ? (
                           <input
@@ -164,79 +177,81 @@ export default function SavedPage() {
                         </p>
                       </div>
                       {col.collaborators && col.collaborators.length > 0 && (
-                        <div className="flex -space-x-1.5 ml-3">
+                        <div className="flex -space-x-1.5">
                           {col.collaborators.slice(0, 3).map((c) => (
                             <Avatar key={c.id} src={c.avatar} name={c.name} size="sm" className="border-2 border-[#F5F6F7]" />
                           ))}
                         </div>
                       )}
+                      <div ref={openMenuId === col.id || confirmDeleteId === col.id ? menuRef : undefined} className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setConfirmDeleteId(null);
+                            setOpenMenuId((value) => (value === col.id ? null : col.id));
+                          }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-[#6B7280]"
+                          aria-label="Collection options"
+                        >
+                          <Ellipsis size={17} />
+                        </button>
+                        <AnimatePresence>
+                          {openMenuId === col.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                              transition={{ duration: 0.16, ease: 'easeOut' }}
+                              className="absolute right-0 top-9 z-20 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+                            >
+                              <button
+                                onClick={() => startRename(col.id, col.name)}
+                                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
+                              >
+                                <Pencil size={14} />
+                                Rename
+                              </button>
+                              <button
+                                onClick={() => requestDelete(col.id)}
+                                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
+                              >
+                                <Trash2 size={14} />
+                                Delete
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        <AnimatePresence>
+                          {confirmDeleteId === col.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                              transition={{ duration: 0.16, ease: 'easeOut' }}
+                              className="absolute right-0 top-9 z-20 w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+                            >
+                              <p className="font-semibold text-[#0F1729]">Delete collection?</p>
+                              <p className="mt-1 text-xs leading-relaxed text-[#6B7280]">This removes the collection, not the listings.</p>
+                              <div className="mt-3 flex gap-2">
+                                <button
+                                  onClick={() => setConfirmDeleteId(null)}
+                                  className="h-9 flex-1 rounded-full bg-[#F5F6F7] text-xs font-semibold text-[#0F1729]"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={confirmDelete}
+                                  className="h-9 flex-1 rounded-full bg-[#EF4444] text-xs font-semibold text-white"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setConfirmDeleteId(null);
-                      setOpenMenuId((value) => (value === col.id ? null : col.id));
-                    }}
-                    className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-[#6B7280]"
-                    aria-label="Collection options"
-                  >
-                    <Ellipsis size={17} />
-                  </button>
-                  <AnimatePresence>
-                    {openMenuId === col.id && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                        transition={{ duration: 0.16, ease: 'easeOut' }}
-                        className="absolute bottom-12 right-3 z-20 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-                      >
-                        <button
-                          onClick={() => startRename(col.id, col.name)}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
-                        >
-                          <Pencil size={14} />
-                          Rename
-                        </button>
-                        <button
-                          onClick={() => requestDelete(col.id)}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
-                        >
-                          <Trash2 size={14} />
-                          Delete
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  <AnimatePresence>
-                    {confirmDeleteId === col.id && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                        transition={{ duration: 0.16, ease: 'easeOut' }}
-                        className="absolute bottom-12 right-3 z-20 w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-                      >
-                        <p className="font-semibold text-[#0F1729]">Delete collection?</p>
-                        <p className="mt-1 text-xs leading-relaxed text-[#6B7280]">This removes the collection, not the listings.</p>
-                        <div className="mt-3 flex gap-2">
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="h-9 flex-1 rounded-full bg-[#F5F6F7] text-xs font-semibold text-[#0F1729]"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={confirmDelete}
-                            className="h-9 flex-1 rounded-full bg-[#EF4444] text-xs font-semibold text-white"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </motion.article>
               );
             })}
@@ -256,7 +271,7 @@ export default function SavedPage() {
           <MobileDrawer
             title="New collection"
             onClose={() => setShowNewCollection(false)}
-            heightClassName="h-[34dvh]"
+            heightClassName="max-h-[50dvh]"
             contentClassName="px-4 pb-4"
           >
             <div className="flex gap-2">

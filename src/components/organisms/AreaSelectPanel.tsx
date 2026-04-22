@@ -160,7 +160,7 @@ export default function AreaSelectPanel({
       <div className="pointer-events-none absolute inset-0 z-30">
         {!isDrawing ? (
           <div className="absolute left-4 right-4 top-4 flex items-center gap-2">
-            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/82 px-2.5 text-sm text-[#0F1729] backdrop-blur-xl">
+            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/96 px-2.5 text-sm text-[#0F1729] backdrop-blur-xl">
               <div className="flex w-full items-center gap-2.5">
                 <button
                   onClick={handleBack}
@@ -257,7 +257,7 @@ export default function AreaSelectPanel({
             exit={{ y: 26, opacity: 0, scale: 0.98 }}
             transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
             className="pointer-events-none absolute inset-x-0 bottom-0 z-40 overflow-visible pt-3 lg:hidden"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)', touchAction: 'none', overscrollBehavior: 'none' }}
           >
             <motion.div
               className="pointer-events-auto flex overflow-visible"
@@ -291,7 +291,7 @@ export default function AreaSelectPanel({
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-2 flex h-14 w-[92px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 flex w-[92px] flex-1 items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >

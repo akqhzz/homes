@@ -22,7 +22,7 @@ export default function MobileDrawer({
   onClose,
   className,
   contentClassName,
-  heightClassName = 'h-[78dvh]',
+  heightClassName = 'max-h-[78dvh]',
   showBackdrop = true,
 }: MobileDrawerProps) {
   return (

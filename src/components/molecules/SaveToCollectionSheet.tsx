@@ -40,7 +40,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
     <MobileDrawer
       title="Save to collection"
       onClose={onClose}
-      heightClassName="h-[50dvh]"
+      heightClassName="max-h-[60dvh]"
       contentClassName="px-4 pb-4"
     >
       <div className="flex flex-col gap-2.5">

@@ -63,12 +63,15 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
           className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
         >
           <Search size={17} className="text-[#9CA3AF] flex-shrink-0" />
-          <span className={cn(
-            'text-sm font-medium flex-1 truncate',
-            selectedLocations.length === 0 ? 'text-[#9CA3AF]' : 'text-[#0F1729]'
-          )}>
-            {locationLabel}
-          </span>
+          {selectedLocations.length > 0 || hasAppliedArea ? (
+            <span className="inline-flex items-center rounded-full bg-[#F0F1F2] px-2.5 py-0.5 text-sm font-medium text-[#0F1729] truncate max-w-full">
+              {locationLabel}
+            </span>
+          ) : (
+            <span className="text-sm font-medium text-[#9CA3AF] flex-1 truncate">
+              {locationLabel}
+            </span>
+          )}
         </button>
         <div ref={areaMenuRef} className="relative flex-shrink-0">
           <button
