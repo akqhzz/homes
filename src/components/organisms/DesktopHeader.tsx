@@ -38,7 +38,7 @@ export default function DesktopHeader() {
           <div className="w-8 h-8 rounded-xl bg-[#0F1729] flex items-center justify-center">
             <span className="text-white text-sm">🏠</span>
           </div>
-          <span className="font-black text-[#0F1729] text-lg tracking-tight">homes</span>
+          <span className="font-heading text-[#0F1729] text-lg">homes</span>
         </button>
 
         {/* Centered search */}

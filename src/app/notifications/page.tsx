@@ -38,7 +38,7 @@ export default function NotificationsPage() {
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="px-4 pt-12 lg:pt-6 pb-5 flex-shrink-0 border-b border-[#F5F6F7]">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black text-[#0F1729]">Alerts</h1>
+            <h1 className="font-heading text-2xl text-[#0F1729]">Alerts</h1>
             <button className="text-sm text-[#9CA3AF] font-medium">Mark all read</button>
           </div>
         </div>

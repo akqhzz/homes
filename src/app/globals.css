@@ -38,7 +38,11 @@
   --shadow-control: 0 2px 10px rgba(0,0,0,0.09), 0 1px 3px rgba(0,0,0,0.05);
   --shadow-sheet: 0 -12px 32px rgba(15,23,41,0.16);
 
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-heading: var(--font-lora), Georgia, serif;
+  --font-button: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-caption: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-body);
 }
 
 * {
@@ -58,9 +62,47 @@ body {
 body {
   background: var(--color-background);
   color: var(--color-text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   overscroll-behavior: none;
   overscroll-behavior-x: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-button);
+}
+
+h1,
+h2,
+h3,
+.font-heading,
+.type-heading,
+.type-title {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.font-body,
+.type-body {
+  font-family: var(--font-body);
+}
+
+.font-button,
+.type-button {
+  font-family: var(--font-button);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.font-caption,
+.type-caption {
+  font-family: var(--font-caption);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0;
 }
 
 #__next,
@@ -81,7 +123,7 @@ main {
 }
 
 .mapboxgl-map {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
 }
 
 /* Snap scroll for carousels */

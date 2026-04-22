@@ -32,7 +32,7 @@ export default function MenuPage() {
               <span className="text-lg font-bold text-white">Y</span>
             </div>
             <div>
-              <p className="text-xl font-black text-[#0F1729]">Yunjie</p>
+              <p className="font-heading text-xl text-[#0F1729]">Yunjie</p>
               <p className="text-sm text-[#9CA3AF] mt-0.5">Free Plan · GTA</p>
             </div>
           </div>

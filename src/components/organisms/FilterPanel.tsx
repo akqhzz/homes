@@ -241,7 +241,7 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="px-4 py-5 border-b border-[#F5F6F7]">
-      <h3 className="text-base font-bold text-[#0F1729] mb-4">{title}</h3>
+      <h3 className="font-heading text-base text-[#0F1729] mb-4">{title}</h3>
       {children}
     </div>
   );

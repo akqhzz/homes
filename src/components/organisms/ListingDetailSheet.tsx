@@ -114,7 +114,7 @@ export default function ListingDetailSheet() {
           {/* Price & basics */}
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-black text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
+              <h1 className="font-heading text-2xl text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
               <p className="text-sm text-[#6B7280] mt-1">
                 {listing.beds} bed · {listing.baths} bath · {formatSqft(listing.sqft)} sqft
               </p>
@@ -148,7 +148,7 @@ export default function ListingDetailSheet() {
 
           {/* Description */}
           <div>
-            <h3 className="font-bold text-[#0F1729] mb-2">About this home</h3>
+            <h3 className="font-heading text-[#0F1729] mb-2">About this home</h3>
             <p className="text-sm text-[#6B7280] leading-relaxed">{listing.description}</p>
           </div>
 
@@ -157,7 +157,7 @@ export default function ListingDetailSheet() {
             <>
               <div className="h-px bg-[#F5F6F7] my-5" />
               <div>
-                <h3 className="font-bold text-[#0F1729] mb-3">Features & Amenities</h3>
+                <h3 className="font-heading text-[#0F1729] mb-3">Features & Amenities</h3>
                 <div className="flex flex-wrap gap-2">
                   {listing.features.map((f) => (
                     <span key={f} className="text-xs bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">
@@ -174,7 +174,7 @@ export default function ListingDetailSheet() {
             <>
               <div className="h-px bg-[#F5F6F7] my-5" />
               <div>
-                <h3 className="font-bold text-[#0F1729] mb-3">Add to collection</h3>
+                <h3 className="font-heading text-[#0F1729] mb-3">Add to collection</h3>
                 <div className="flex flex-col gap-2">
                   {collections.map((col) => (
                     <button

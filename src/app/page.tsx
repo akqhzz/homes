@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
+import { useMapStore } from '@/store/mapStore';
 import BottomNav from '@/components/organisms/BottomNav';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
@@ -37,6 +38,7 @@ function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
 export default function MapPage() {
   const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible, isSatelliteMode, setSatelliteMode } = useUIStore();
   const { filters } = useSearchStore();
+  const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [isDrawingArea, setIsDrawingArea] = useState(false);
@@ -62,6 +64,10 @@ export default function MapPage() {
     const dy = event.clientY - start.y;
     if (dy > 36 && Math.abs(dy) > Math.abs(dx) * 1.15) setCarouselVisible(false);
   };
+
+  useEffect(() => {
+    if (!isCarouselVisible) setSelectedListingId(null);
+  }, [isCarouselVisible, setSelectedListingId]);
 
   useEffect(() => {
     let edgeTouch = false;

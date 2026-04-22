@@ -1,5 +1,7 @@
 'use client';
 import { useRef, useLayoutEffect, useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { motion, type MotionValue, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Listing } from '@/lib/types';
 import ListingCard from '@/components/molecules/ListingCard';
 import { useMapStore } from '@/store/mapStore';
@@ -19,6 +21,8 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const frameRef = useRef<number | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [scrollMetrics, setScrollMetrics] = useState({ left: 0, width: 0 });
+  const scrollX = useMotionValue(0);
+  const smoothScrollX = useSpring(scrollX, { stiffness: 180, damping: 32, mass: 0.22 });
   const selectedListingId = useMapStore((s) => s.selectedListingId);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
 
@@ -31,7 +35,8 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     const scrollLeft = idx * (CARD_WIDTH + GAP) - (containerW - CARD_WIDTH) / 2;
     scrollRef.current.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'auto' });
     setScrollMetrics({ left: Math.max(0, scrollLeft), width: containerW });
-  }, [selectedListingId, listings]);
+    scrollX.set(Math.max(0, scrollLeft));
+  }, [selectedListingId, listings, scrollX]);
 
   useEffect(() => {
     const previousHtmlOverscroll = document.documentElement.style.overscrollBehaviorX;
@@ -49,6 +54,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     if (!scrollRef.current) return;
     const { scrollLeft, clientWidth } = scrollRef.current;
     setScrollMetrics({ left: scrollLeft, width: clientWidth });
+    scrollX.set(scrollLeft);
     const center = scrollLeft + clientWidth / 2;
     let closest = 0;
     let minDist = Infinity;
@@ -61,7 +67,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     if (listing && listing.id !== selectedListingId) {
       setSelectedListingId(listing.id);
     }
-  }, [listings, selectedListingId, setSelectedListingId]);
+  }, [listings, selectedListingId, setSelectedListingId, scrollX]);
 
   const handleScroll = useCallback(() => {
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
@@ -109,33 +115,55 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
         onWheel={handleWheel}
       >
         {listings.map((listing, index) => {
-          const center = scrollMetrics.left + (scrollMetrics.width || CARD_WIDTH) / 2;
-          const cardCenter = index * (CARD_WIDTH + GAP) + CARD_WIDTH / 2;
-          const distance = Math.min(1, Math.abs(center - cardCenter) / (CARD_WIDTH + GAP));
-          const focus = smoothstep(1 - distance);
-          const scale = 0.91 + focus * 0.09;
-          const opacity = 0.74 + focus * 0.26;
           return (
-            <div
+            <CarouselCardShell
               key={listing.id}
-              style={{
-                scrollSnapAlign: 'center',
-                flexShrink: 0,
-                opacity,
-                transform: `scale(${scale})`,
-                transition: 'transform 260ms cubic-bezier(0.2, 0, 0.1, 1), opacity 260ms cubic-bezier(0.2, 0, 0.1, 1)',
-                willChange: 'transform, opacity',
-              }}
+              index={index}
+              scrollX={smoothScrollX}
+              viewportWidth={scrollMetrics.width || CARD_WIDTH}
             >
               <ListingCard
                 listing={listing}
                 variant="carousel"
                 className="will-change-transform"
               />
-            </div>
+            </CarouselCardShell>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function CarouselCardShell({
+  index,
+  scrollX,
+  viewportWidth,
+  children,
+}: {
+  index: number;
+  scrollX: MotionValue<number>;
+  viewportWidth: number;
+  children: ReactNode;
+}) {
+  const scale = useTransform(scrollX, (left) => {
+    const center = left + viewportWidth / 2;
+    const cardCenter = index * (CARD_WIDTH + GAP) + CARD_WIDTH / 2;
+    const distance = Math.min(1, Math.abs(center - cardCenter) / (CARD_WIDTH + GAP));
+    const focus = smoothstep(1 - distance);
+    return 0.92 + focus * 0.08;
+  });
+
+  return (
+    <motion.div
+      style={{
+        scrollSnapAlign: 'center',
+        flexShrink: 0,
+        scale,
+        willChange: 'transform',
+      }}
+    >
+      {children}
+    </motion.div>
   );
 }

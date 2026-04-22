@@ -218,7 +218,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center gap-5">
         <span className="text-5xl">🏠</span>
         <div className="text-center">
-          <p className="font-black text-xl text-[#0F1729]">All caught up!</p>
+          <p className="font-heading text-xl text-[#0F1729]">All caught up!</p>
           <p className="text-[#9CA3AF] text-sm mt-1">You&apos;ve seen all {listings.length} listings</p>
         </div>
         <button onClick={onClose} className="text-sm font-semibold text-[#0F1729] underline underline-offset-2">
@@ -351,7 +351,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="text-2xl font-black text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
+            <p className="font-heading text-2xl text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
             <p className="text-sm text-[#6B7280] mt-1">
               {(drawerListing ?? listing).beds}bd · {(drawerListing ?? listing).baths}ba · {formatSqft((drawerListing ?? listing).sqft)} sqft
             </p>

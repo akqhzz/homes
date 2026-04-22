@@ -30,7 +30,9 @@ interface SearchStore {
 export const useSearchStore = create<SearchStore>((set, get) => ({
   selectedLocations: [],
   addLocation: (loc) =>
-    set((s) => ({ selectedLocations: [...s.selectedLocations, loc] })),
+    set((s) => ({
+      selectedLocations: [loc, ...s.selectedLocations.filter((selected) => selected.id !== loc.id)],
+    })),
   removeLocation: (id) =>
     set((s) => ({ selectedLocations: s.selectedLocations.filter((l) => l.id !== id) })),
   clearLocations: () => set({ selectedLocations: [] }),

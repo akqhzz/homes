@@ -24,6 +24,7 @@ const LOCATION_SUGGESTIONS: Location[] = [
 
 export default function SearchPanel() {
   const [query, setQuery] = useState('');
+  const [isCaretReady, setCaretReady] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
@@ -34,7 +35,11 @@ export default function SearchPanel() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => inputRef.current?.focus(), 60);
-    return () => window.clearTimeout(timer);
+    const caretTimer = window.setTimeout(() => setCaretReady(true), 190);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(caretTimer);
+    };
   }, []);
 
   const filtered = query.trim()
@@ -67,9 +72,9 @@ export default function SearchPanel() {
         onClick={handleClose}
       />
       <motion.div
-        initial={{ opacity: 0, y: -10, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10, scale: 0.98 }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
         transition={{ type: 'tween', duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         className="fixed left-4 right-4 top-4 z-[60]"
       >
@@ -87,6 +92,7 @@ export default function SearchPanel() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={selectedLocations.length === 0 ? 'Where?' : 'Add another...'}
+              style={{ caretColor: isCaretReady ? '#0F1729' : 'transparent' }}
               className="min-w-20 flex-1 bg-transparent text-sm text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
             />
           </div>

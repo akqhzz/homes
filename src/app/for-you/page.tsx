@@ -31,7 +31,7 @@ export default function ForYouPage() {
               <Sparkles size={15} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-[#0F1729]">For You</h1>
+              <h1 className="font-heading text-xl text-[#0F1729]">For You</h1>
               <p className="text-xs text-[#9CA3AF]">Personalized picks & insights</p>
             </div>
           </div>
