@@ -14,12 +14,11 @@ export default function TopBar() {
   const locationLabel =
     selectedLocations.length === 0
       ? 'Where?'
-      : selectedLocations.length === 1
-      ? selectedLocations[0].name
-      : `${selectedLocations[0].name}, +${selectedLocations.length - 1}`;
+      : `${selectedLocations.length} area${selectedLocations.length === 1 ? '' : 's'}`;
 
   return (
-    <div className="absolute top-4 left-4 right-4 z-20 flex items-center gap-2">
+    <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
+      <div className="flex w-full max-w-[360px] items-center gap-2">
       {/* Search pill */}
       <motion.div layoutId="map-search-bar" className="flex-1 flex items-center gap-2.5 bg-white rounded-full px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
         <button
@@ -63,19 +62,7 @@ export default function TopBar() {
           </span>
         )}
       </motion.button>
-
-      {/* Save search */}
-      <motion.button
-        onClick={() => setActivePanel('saved-searches')}
-        animate={{ opacity: activePanel === 'search' ? 0 : 1, scale: activePanel === 'search' ? 0.92 : 1 }}
-        transition={{ duration: 0.12, ease: 'easeOut' }}
-        className={cn(
-          'bg-white rounded-full px-4 h-11 flex items-center justify-center shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] no-select text-sm font-semibold text-[#0F1729] hover:bg-[#F5F6F7] transition-colors',
-          activePanel === 'search' && 'pointer-events-none'
-        )}
-      >
-        Save
-      </motion.button>
+      </div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ export default function SavedSearchesPanel() {
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const { selectedLocations } = useSearchStore();
   const [newSearchName, setNewSearchName] = useState('');
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(true);
 
   const handleLoadSearch = () => {
     // In real app: update search store state
@@ -40,11 +40,11 @@ export default function SavedSearchesPanel() {
               value={newSearchName}
               onChange={(e) => setNewSearchName(e.target.value)}
               placeholder="Search name..."
-              className="flex-1 px-3 py-2 rounded-xl border border-[#E5E7EB] text-sm outline-none focus:border-[#0F1729]"
+              className="h-12 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
               autoFocus
               onKeyDown={(e) => e.key === 'Enter' && handleSaveCurrent()}
             />
-            <Button size="sm" onClick={handleSaveCurrent}>Save</Button>
+            <Button size="lg" onClick={handleSaveCurrent} className="h-12 px-5">Save</Button>
           </div>
         ) : (
           <button

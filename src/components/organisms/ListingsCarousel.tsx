@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useLayoutEffect, useCallback, useEffect } from 'react';
+import { useRef, useLayoutEffect, useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Listing } from '@/lib/types';
 import ListingCard from '@/components/molecules/ListingCard';
@@ -17,6 +17,8 @@ interface ListingsCarouselProps {
 export default function ListingsCarousel({ listings, className }: ListingsCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const [scrollMetrics, setScrollMetrics] = useState({ left: 0, width: 0 });
   const selectedListingId = useMapStore((s) => s.selectedListingId);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
 
@@ -28,6 +30,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     const containerW = scrollRef.current.clientWidth;
     const scrollLeft = idx * (CARD_WIDTH + GAP) - (containerW - CARD_WIDTH) / 2;
     scrollRef.current.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'auto' });
+    setScrollMetrics({ left: Math.max(0, scrollLeft), width: containerW });
   }, [selectedListingId, listings]);
 
   useEffect(() => {
@@ -45,6 +48,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const syncSelectedToCenter = useCallback(() => {
     if (!scrollRef.current) return;
     const { scrollLeft, clientWidth } = scrollRef.current;
+    setScrollMetrics({ left: scrollLeft, width: clientWidth });
     const center = scrollLeft + clientWidth / 2;
     let closest = 0;
     let minDist = Infinity;
@@ -64,6 +68,21 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     frameRef.current = requestAnimationFrame(syncSelectedToCenter);
   }, [syncSelectedToCenter]);
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartRef.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    if (!start) return;
+    const touch = event.touches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <div className={cn('w-full', className)}>
       <div
@@ -78,15 +97,21 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
           paddingRight: 'calc(50% - 144px)',
         }}
         onScroll={handleScroll}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
       >
-        {listings.map((listing) => {
-          const isSelected = listing.id === selectedListingId;
+        {listings.map((listing, index) => {
+          const center = scrollMetrics.left + (scrollMetrics.width || CARD_WIDTH) / 2;
+          const cardCenter = index * (CARD_WIDTH + GAP) + CARD_WIDTH / 2;
+          const distance = Math.min(1, Math.abs(center - cardCenter) / (CARD_WIDTH + GAP));
+          const scale = 1.02 - distance * 0.12;
+          const opacity = 1 - distance * 0.28;
           return (
             <motion.div
               key={listing.id}
               style={{ scrollSnapAlign: 'center', flexShrink: 0 }}
-              animate={{ scale: isSelected ? 1.02 : 0.9, opacity: isSelected ? 1 : 0.72 }}
-              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+              animate={{ scale, opacity }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             >
               <ListingCard
                 listing={listing}

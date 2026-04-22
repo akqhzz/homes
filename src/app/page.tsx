@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
-import { useSavedStore } from '@/store/savedStore';
 import BottomNav from '@/components/organisms/BottomNav';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
@@ -36,9 +35,8 @@ function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
 }
 
 export default function MapPage() {
-  const { activePanel, setActivePanel, isCarouselVisible, isSatelliteMode, setSatelliteMode } = useUIStore();
+  const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible, isSatelliteMode, setSatelliteMode } = useUIStore();
   const { filters } = useSearchStore();
-  const dislikedListingIds = useSavedStore((s) => s.dislikedListingIds);
   const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [isDrawingArea, setIsDrawingArea] = useState(false);
@@ -48,7 +46,7 @@ export default function MapPage() {
   const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
 
   const filteredListings = applyFilters(MOCK_LISTINGS, filters);
-  const cardsModeListings = filteredListings.filter((l) => !dislikedListingIds.has(l.id));
+  const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
 
   useEffect(() => {
@@ -134,7 +132,14 @@ export default function MapPage() {
                 initial={{ y: 40, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 40, opacity: 0 }}
-                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                transition={{ type: 'tween', duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                drag="y"
+                dragDirectionLock
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.35 }}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 48 || info.velocity.y > 420) setCarouselVisible(false);
+                }}
                 className="
                   absolute left-0 right-0 bottom-[96px]
                   lg:hidden

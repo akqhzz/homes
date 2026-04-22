@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Search, ArrowLeft, X, MapPin } from 'lucide-react';
+import { ArrowLeft, Layers, X, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Location } from '@/lib/types';
 import { useSearchStore } from '@/store/searchStore';
@@ -26,7 +26,7 @@ export default function SearchPanel() {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
-  const setActivePanel = useUIStore((s) => s.setActivePanel);
+  const { setActivePanel, setAreaSelectMode } = useUIStore();
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -43,6 +43,7 @@ export default function SearchPanel() {
   const handleSelect = (loc: Location) => {
     addLocation(loc);
     setQuery('');
+    setActivePanel('none');
   };
 
   const handleClose = () => {
@@ -64,7 +65,7 @@ export default function SearchPanel() {
         initial={{ opacity: 0, y: -10, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -10, scale: 0.98 }}
-        transition={{ type: 'spring', damping: 28, stiffness: 360 }}
+        transition={{ type: 'tween', duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         className="fixed left-4 right-4 top-4 z-[60]"
       >
         <motion.div layoutId="map-search-bar" className="flex items-center gap-2 rounded-full bg-white px-3 py-2.5 shadow-[var(--shadow-control)]">
@@ -74,15 +75,7 @@ export default function SearchPanel() {
           >
             <ArrowLeft size={18} />
           </button>
-          <Search size={16} className="shrink-0 text-[#9CA3AF]" />
           <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
-            {selectedLocations.slice(0, 1).map((loc) => (
-              <SearchLocationChip
-                key={loc.id}
-                location={loc}
-                onRemove={() => removeLocation(loc.id)}
-              />
-            ))}
             <input
               ref={inputRef}
               value={query}
@@ -99,6 +92,16 @@ export default function SearchPanel() {
               <X size={16} />
             </button>
           )}
+          <button
+            onClick={() => {
+              setAreaSelectMode(true);
+              setActivePanel('area-select');
+            }}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#9CA3AF] hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+            aria-label="Area select"
+          >
+            <Layers size={17} />
+          </button>
         </motion.div>
 
         <motion.div
@@ -109,22 +112,20 @@ export default function SearchPanel() {
           className="mt-2 max-h-[62dvh] overflow-y-auto rounded-3xl bg-white py-2 shadow-[0_12px_30px_rgba(15,23,41,0.16)]"
         >
           {selectedLocations.length > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2">
-              <span className="text-sm text-[#6B7280]">{selectedLocations.length} area{selectedLocations.length > 1 ? 's' : ''} selected</span>
-              <button onClick={clearLocations} className="ml-auto text-sm text-[#9CA3AF] hover:text-[#0F1729]">
-                Clear all
-              </button>
-              <button onClick={handleClose} className="text-sm font-semibold text-[#0F1729]">
-                Search
+            <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-hide">
+              {selectedLocations.map((loc) => (
+                <SearchLocationChip
+                  key={loc.id}
+                  location={loc}
+                  onRemove={() => removeLocation(loc.id)}
+                />
+              ))}
+              <button onClick={clearLocations} className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-1 text-sm font-medium text-[#6B7280] hover:text-[#0F1729]">
+                Clear
               </button>
             </div>
           )}
-        {/* Section: Areas */}
         <div className="px-4 py-3">
-          <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wide mb-3 flex items-center gap-2">
-            <MapPin size={13} />
-            Areas
-          </p>
           <AnimatePresence>
             {filtered.map((loc) => (
               <motion.button

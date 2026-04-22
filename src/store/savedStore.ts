@@ -2,7 +2,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Collection } from '@/lib/types';
-import { MOCK_COLLECTIONS } from '@/lib/mock-data';
 
 interface SavedStore {
   collections: Collection[];
@@ -28,8 +27,8 @@ interface SavedStore {
 export const useSavedStore = create<SavedStore>()(
   persist(
     (set, get) => ({
-      collections: MOCK_COLLECTIONS,
-      likedListingIds: new Set<string>(['lst-001']),
+      collections: [],
+      likedListingIds: new Set<string>(),
       dislikedListingIds: new Set<string>(),
       swipeHistory: [],
 
@@ -169,7 +168,7 @@ export const useSavedStore = create<SavedStore>()(
         }),
     }),
     {
-      name: 'homes-saved',
+      name: 'homes-saved-v2',
       // Serialize Sets properly
       partialize: (s) => ({
         collections: s.collections,
