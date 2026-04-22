@@ -24,7 +24,7 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 lg:hidden flex items-center justify-center gap-2.5 px-4 pt-1 pointer-events-none"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2rem)' }}
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
     >
       {/* Saved searches — map page only */}
       {isMapPage && (

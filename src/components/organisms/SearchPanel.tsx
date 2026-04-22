@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { ArrowLeft, Layers, X, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Location } from '@/lib/types';
@@ -28,8 +28,13 @@ export default function SearchPanel() {
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
 
+  useLayoutEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 100);
+    const timer = window.setTimeout(() => inputRef.current?.focus(), 60);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const filtered = query.trim()
@@ -78,6 +83,7 @@ export default function SearchPanel() {
           <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
             <input
               ref={inputRef}
+              autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={selectedLocations.length === 0 ? 'Where?' : 'Add another...'}
@@ -112,14 +118,16 @@ export default function SearchPanel() {
           className="mt-2 max-h-[62dvh] overflow-y-auto rounded-3xl bg-white py-2 shadow-[0_12px_30px_rgba(15,23,41,0.16)]"
         >
           {selectedLocations.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto px-4 py-2 scrollbar-hide">
-              {selectedLocations.map((loc) => (
-                <SearchLocationChip
-                  key={loc.id}
-                  location={loc}
-                  onRemove={() => removeLocation(loc.id)}
-                />
-              ))}
+            <div className="flex items-center gap-2 px-4 py-2">
+              <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
+                {selectedLocations.map((loc) => (
+                  <SearchLocationChip
+                    key={loc.id}
+                    location={loc}
+                    onRemove={() => removeLocation(loc.id)}
+                  />
+                ))}
+              </div>
               <button onClick={clearLocations} className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-1 text-sm font-medium text-[#6B7280] hover:text-[#0F1729]">
                 Clear
               </button>

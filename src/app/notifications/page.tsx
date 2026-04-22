@@ -42,7 +42,7 @@ export default function NotificationsPage() {
             <button className="text-sm text-[#9CA3AF] font-medium">Mark all read</button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto pb-28">
+        <div className="flex-1 overflow-y-auto pb-24">
           {NOTIFICATIONS.map((n) => (
             <button
               key={n.id}

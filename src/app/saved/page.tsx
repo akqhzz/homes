@@ -85,7 +85,7 @@ export default function SavedPage() {
         </AnimatePresence>
 
         {/* Collections */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-28">
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
           {activeTab === 'saved' ? (
             <div className="flex flex-col gap-4">
               {collections.map((col) => {

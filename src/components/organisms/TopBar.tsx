@@ -18,7 +18,7 @@ export default function TopBar() {
 
   return (
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
-      <div className="flex w-full max-w-[360px] items-center gap-2">
+      <div className="flex w-full max-w-[296px] items-center gap-2.5">
       {/* Search pill */}
       <motion.div layoutId="map-search-bar" className="flex-1 flex items-center gap-2.5 bg-white rounded-full px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
         <button
@@ -52,7 +52,7 @@ export default function TopBar() {
         className={cn(
           'w-11 h-11 rounded-full flex items-center justify-center shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select relative',
           activePanel === 'search' && 'pointer-events-none',
-          filterCount > 0 ? 'bg-white ring-1 ring-[#374151]' : 'bg-white'
+          filterCount > 0 ? 'bg-white shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]' : 'bg-white'
         )}
       >
         <SlidersHorizontal size={18} className="text-[#0F1729]" />

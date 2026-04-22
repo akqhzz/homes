@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
@@ -44,10 +44,24 @@ export default function MapPage() {
   const [showAreaAmenities, setShowAreaAmenities] = useState(false);
   const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
   const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
+  const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const filteredListings = applyFilters(MOCK_LISTINGS, filters);
   const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
+
+  const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
+  };
+
+  const handleCarouselPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = carouselDragStart.current;
+    if (!start || start.id !== event.pointerId) return;
+    carouselDragStart.current = null;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (dy > 36 && Math.abs(dy) > Math.abs(dx) * 1.15) setCarouselVisible(false);
+  };
 
   useEffect(() => {
     let edgeTouch = false;
@@ -133,15 +147,11 @@ export default function MapPage() {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 40, opacity: 0 }}
                 transition={{ type: 'tween', duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                drag="y"
-                dragDirectionLock
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={{ top: 0, bottom: 0.35 }}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 48 || info.velocity.y > 420) setCarouselVisible(false);
-                }}
+                onPointerDownCapture={handleCarouselPointerDown}
+                onPointerUpCapture={handleCarouselPointerUp}
+                onPointerCancelCapture={() => { carouselDragStart.current = null; }}
                 className="
-                  absolute left-0 right-0 bottom-[96px]
+                  absolute left-0 right-0 bottom-[72px]
                   lg:hidden
                   pointer-events-auto
                 "

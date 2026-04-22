@@ -38,7 +38,7 @@ export default function MenuPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto pb-28">
+        <div className="flex-1 overflow-y-auto pb-24">
           {MENU_SECTIONS.map((section) => (
             <div key={section.title} className="px-4 py-4">
               <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wide mb-3 px-1">

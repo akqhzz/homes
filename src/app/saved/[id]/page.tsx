@@ -93,7 +93,7 @@ export default function CollectionPage() {
         </div>
 
         {/* Grid */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-28">
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
           <div className="grid grid-cols-2 gap-3">
             {listings.map((listing) => (
               <div key={listing.id} className="flex flex-col gap-1.5">

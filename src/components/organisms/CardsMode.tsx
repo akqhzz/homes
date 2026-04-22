@@ -13,7 +13,7 @@ import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
-const SWIPE_THRESHOLD = 100;
+const SWIPE_THRESHOLD = 38;
 const CARD_MODE_IMAGE_HEIGHT = 305;
 const CARD_MODE_IMAGE_COUNT = 8;
 const CARD_GAP = 12;
@@ -47,6 +47,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const dragLockRef = useRef(false);
   const activeDragRef = useRef(false);
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const { toggleLike, isLiked, swipeDislike, swipeUndo } = useSavedStore();
   const { openListingDetail, setActivePanel } = useUIStore();
@@ -154,6 +155,19 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     navigateCard('previous');
   };
 
+  const handleTrackTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartRef.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  };
+
+  const handleTrackTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    if (!start) return;
+    const touch = event.touches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) event.preventDefault();
+  };
+
   const handleTrackWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 24) return;
     event.preventDefault();
@@ -205,6 +219,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         onPointerMoveCapture={handleTrackPointerMove}
         onPointerUpCapture={handleTrackPointerEnd}
         onPointerCancelCapture={() => { pointerStartRef.current = null; activeDragRef.current = false; }}
+        onTouchStart={handleTrackTouchStart}
+        onTouchMove={handleTrackTouchMove}
       >
         <motion.div
           className="flex h-full"

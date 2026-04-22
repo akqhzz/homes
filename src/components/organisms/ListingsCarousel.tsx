@@ -83,6 +83,12 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     }
   };
 
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    if (Math.abs(event.deltaX) > Math.abs(event.deltaY) && Math.abs(event.deltaX) > 4) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <div className={cn('w-full', className)}>
       <div
@@ -92,6 +98,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
           scrollSnapType: 'x mandatory',
           WebkitOverflowScrolling: 'touch',
           overscrollBehaviorX: 'contain',
+          touchAction: 'pan-x pan-y',
           gap: GAP,
           paddingLeft: 'calc(50% - 144px)',
           paddingRight: 'calc(50% - 144px)',
@@ -99,6 +106,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
         onScroll={handleScroll}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
+        onWheel={handleWheel}
       >
         {listings.map((listing, index) => {
           const center = scrollMetrics.left + (scrollMetrics.width || CARD_WIDTH) / 2;
@@ -111,7 +119,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
               key={listing.id}
               style={{ scrollSnapAlign: 'center', flexShrink: 0 }}
               animate={{ scale, opacity }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
             >
               <ListingCard
                 listing={listing}

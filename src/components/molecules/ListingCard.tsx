@@ -31,11 +31,8 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const openListingDetail = useUIStore((s) => s.openListingDetail);
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
   const imagePointerMoved = useRef(false);
+  const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
-
-  const stopCarouselDrag = (e: React.TouchEvent | React.PointerEvent) => {
-    e.stopPropagation();
-  };
 
   const showNextImage = () => {
     if (listing.images.length <= 1) return;
@@ -66,6 +63,21 @@ export default function ListingCard({ listing, variant = 'carousel', className }
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
+  const handleImageTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    imageTouchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+
+  const handleImageTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const start = imageTouchStart.current;
+    if (!start) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) e.preventDefault();
+  };
+
   const handleImagePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     e.stopPropagation();
     const start = imagePointerStart.current;
@@ -88,17 +100,6 @@ export default function ListingCard({ listing, variant = 'carousel', className }
       else showPreviousImage();
       return;
     }
-  };
-
-  const handleImageTap = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    if (imagePointerMoved.current) {
-      imagePointerMoved.current = false;
-      return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    if (e.clientX - rect.left >= rect.width / 2) showNextImage();
-    else showPreviousImage();
   };
 
   if (variant === 'grid') {
@@ -174,8 +175,16 @@ export default function ListingCard({ listing, variant = 'carousel', className }
           height: CAROUSEL_IMAGE_HEIGHT,
           touchAction: 'none',
         }}
-        onClick={handleImageTap}
-        onTouchMove={stopCarouselDrag}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (imagePointerMoved.current) {
+            imagePointerMoved.current = false;
+            return;
+          }
+          openListingDetail(listing.id);
+        }}
+        onTouchStart={handleImageTouchStart}
+        onTouchMove={handleImageTouchMove}
         onPointerDown={handleImagePointerDown}
         onPointerMove={handleImagePointerMove}
         onPointerUp={handleImagePointerUp}

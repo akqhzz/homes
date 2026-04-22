@@ -38,7 +38,7 @@ export default function ForYouPage() {
         </div>
 
         {/* Feed */}
-        <div className="flex-1 overflow-y-auto pb-28">
+        <div className="flex-1 overflow-y-auto pb-24">
           {MOCK_FOR_YOU.map((item) => {
             const config = TYPE_CONFIG[item.type];
             const listing = item.listingId ? MOCK_LISTINGS.find((l) => l.id === item.listingId) : null;
