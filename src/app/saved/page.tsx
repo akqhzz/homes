@@ -29,7 +29,7 @@ export default function SavedPage() {
         {/* Header */}
         <div className="px-4 pt-12 lg:pt-6 pb-0 flex-shrink-0">
           <div className="flex items-center justify-between mb-1">
-            <h1 className="type-h1 text-[#0F1729]">Saved</h1>
+            <h1 className="font-heading text-2xl text-[#0F1729]">Saved</h1>
             <button
               onClick={() => setShowNewCollection(true)}
               className="w-9 h-9 rounded-full bg-[#F5F6F7] flex items-center justify-center hover:bg-[#E5E7EB] transition-colors"

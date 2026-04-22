@@ -218,7 +218,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center gap-5">
         <span className="text-5xl">🏠</span>
         <div className="text-center">
-          <p className="type-h2 text-[#0F1729]">All caught up!</p>
+          <p className="font-heading text-xl text-[#0F1729]">All caught up!</p>
           <p className="text-[#9CA3AF] text-sm mt-1">You&apos;ve seen all {listings.length} listings</p>
         </div>
         <button onClick={onClose} className="text-sm font-semibold text-[#0F1729] underline underline-offset-2">
@@ -253,7 +253,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         <motion.div
           className="flex h-full"
           animate={{ x: -currentIndex * (cardWidth + CARD_GAP) }}
-          transition={{ type: 'spring', stiffness: 145, damping: 31, mass: 0.52 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
           style={{
             gap: CARD_GAP,
             willChange: 'transform',
@@ -351,7 +351,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="type-h1 text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
+            <p className="font-heading text-2xl text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
             <p className="text-sm text-[#6B7280] mt-1">
               {(drawerListing ?? listing).beds}bd · {(drawerListing ?? listing).baths}ba · {formatSqft((drawerListing ?? listing).sqft)} sqft
             </p>
@@ -463,7 +463,7 @@ function CardModeListingCard({
       className="h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select"
       style={{ width }}
       animate={{ scale: active ? 1 : 0.965, opacity: active ? 1 : 0.82 }}
-      transition={{ type: 'spring', stiffness: 160, damping: 28, mass: 0.35 }}
+      transition={{ type: 'spring', stiffness: 240, damping: 32, mass: 0.3 }}
     >
       <div
         className="block h-full w-full cursor-pointer text-left"

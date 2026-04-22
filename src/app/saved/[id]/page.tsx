@@ -52,7 +52,7 @@ export default function CollectionPage() {
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="type-h3 flex-1 text-center text-[#0F1729]">{collection.name}</h1>
+            <h1 className="font-heading text-lg flex-1 text-center text-[#0F1729]">{collection.name}</h1>
             <div className="flex items-center gap-2">
               {collection.collaborators && collection.collaborators.length > 0 && (
                 <div className="flex -space-x-1.5">

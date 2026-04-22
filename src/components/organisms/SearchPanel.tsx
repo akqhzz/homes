@@ -22,8 +22,15 @@ const LOCATION_SUGGESTIONS: Location[] = [
   { id: 'loc-markham', name: 'Markham', type: 'city', coordinates: { lat: 43.8561, lng: -79.3370 }, city: 'Markham', province: 'ON' },
 ];
 
-export default function SearchPanel() {
+interface SearchPanelProps {
+  hasAppliedArea?: boolean;
+  onEditArea?: () => void;
+  onClearArea?: () => void;
+}
+
+export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClearArea }: SearchPanelProps) {
   const [query, setQuery] = useState('');
+  const [showAreaMenu, setShowAreaMenu] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
@@ -53,6 +60,15 @@ export default function SearchPanel() {
 
   const handleClose = () => {
     setActivePanel('none');
+  };
+
+  const handleAreaClick = () => {
+    if (hasAppliedArea) {
+      setShowAreaMenu((value) => !value);
+      return;
+    }
+    setAreaSelectMode(true);
+    setActivePanel('area-select');
   };
 
   return (
@@ -98,16 +114,37 @@ export default function SearchPanel() {
               <X size={16} />
             </button>
           )}
-          <button
-            onClick={() => {
-              setAreaSelectMode(true);
-              setActivePanel('area-select');
-            }}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#9CA3AF] hover:bg-[#F5F6F7] hover:text-[#0F1729]"
-            aria-label="Area select"
-          >
-            <Layers size={17} />
-          </button>
+          <div className="relative shrink-0">
+            <button
+              onClick={handleAreaClick}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[#9CA3AF] hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+              aria-label="Area select"
+            >
+              <Layers size={17} />
+            </button>
+            {showAreaMenu && (
+              <div className="absolute right-0 top-10 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+                <button
+                  onClick={() => {
+                    setShowAreaMenu(false);
+                    onEditArea?.();
+                  }}
+                  className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
+                >
+                  Edit area
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAreaMenu(false);
+                    onClearArea?.();
+                  }}
+                  className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#6B7280] hover:bg-[#F5F6F7]"
+                >
+                  Clear area
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <motion.div

@@ -43,6 +43,7 @@ export default function MapPage() {
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [isDrawingArea, setIsDrawingArea] = useState(false);
   const [drawnBoundary, setDrawnBoundary] = useState<{ lat: number; lng: number }[]>([]);
+  const [redoBoundary, setRedoBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const [showAreaAmenities, setShowAreaAmenities] = useState(false);
   const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
   const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
@@ -51,6 +52,7 @@ export default function MapPage() {
   const filteredListings = applyFilters(MOCK_LISTINGS, filters);
   const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
+  const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -95,6 +97,49 @@ export default function MapPage() {
     });
   };
 
+  const editAppliedArea = () => {
+    setSelectedNeighborhoods(new Set(appliedNeighborhoods));
+    setDrawnBoundary(appliedBoundary);
+    setRedoBoundary([]);
+    setFocusedNeighborhood(null);
+    setIsDrawingArea(false);
+    setActivePanel('area-select');
+  };
+
+  const clearAppliedArea = () => {
+    setAppliedNeighborhoods(new Set());
+    setAppliedBoundary([]);
+    setSelectedNeighborhoods(new Set());
+    setDrawnBoundary([]);
+    setRedoBoundary([]);
+    setFocusedNeighborhood(null);
+  };
+
+  const undoBoundary = () => {
+    setDrawnBoundary((points) => {
+      if (points.length === 0) return points;
+      const next = points.slice(0, -1);
+      setRedoBoundary((redo) => [points[points.length - 1], ...redo]);
+      return next;
+    });
+  };
+
+  const redoBoundaryPoint = () => {
+    setRedoBoundary((redo) => {
+      if (redo.length === 0) return redo;
+      const [point, ...rest] = redo;
+      setDrawnBoundary((points) => [...points, point]);
+      return rest;
+    });
+  };
+
+  const clearAreaSelection = () => {
+    setSelectedNeighborhoods(new Set());
+    setDrawnBoundary([]);
+    setRedoBoundary([]);
+    setFocusedNeighborhood(null);
+  };
+
   const closeAreaSelect = () => {
     setAppliedNeighborhoods(new Set(selectedNeighborhoods));
     setAppliedBoundary(drawnBoundary);
@@ -132,7 +177,12 @@ export default function MapPage() {
               setFocusedNeighborhood(neighborhood);
             }}
             onAreaMapClick={(coordinates) => {
-              if (isDrawingArea) setDrawnBoundary((points) => [...points, coordinates]);
+              if (isDrawingArea) {
+                setDrawnBoundary((points) => [...points, coordinates]);
+                setRedoBoundary([]);
+              } else {
+                setFocusedNeighborhood(null);
+              }
             }}
             drawnBoundary={isAreaSelect ? drawnBoundary : appliedBoundary}
             showAmenities={isAreaSelect && showAreaAmenities}
@@ -141,7 +191,11 @@ export default function MapPage() {
 
           {/* Mobile top bar (hidden on desktop — search lives in DesktopHeader) */}
           <div className={isAreaSelect ? 'hidden' : 'lg:hidden'}>
-            <TopBar />
+            <TopBar
+              hasAppliedArea={hasAppliedArea}
+              onEditArea={editAppliedArea}
+              onClearArea={clearAppliedArea}
+            />
           </div>
 
           {/* Mobile carousel — only visible after pin tap */}
@@ -176,18 +230,28 @@ export default function MapPage() {
                 isSatelliteMode={isSatelliteMode}
                 showAmenities={showAreaAmenities}
                 pointCount={drawnBoundary.length}
+                canUndoBoundary={drawnBoundary.length > 0}
+                canRedoBoundary={redoBoundary.length > 0}
                 onBack={closeAreaSelect}
                 onApply={applyAreaSelect}
                 onToggleDrawing={() => setIsDrawingArea((value) => !value)}
                 onCancelDrawing={() => {
                   setIsDrawingArea(false);
                   setDrawnBoundary([]);
+                  setRedoBoundary([]);
                 }}
                 onToggleSatellite={() => setSatelliteMode(!isSatelliteMode)}
                 onToggleAmenities={() => setShowAreaAmenities((value) => !value)}
                 onToggleNeighborhood={toggleNeighborhood}
+                onFocusNeighborhood={setFocusedNeighborhood}
                 onCloseNeighborhood={() => setFocusedNeighborhood(null)}
-                onClearDrawing={() => setDrawnBoundary([])}
+                onClearDrawing={() => {
+                  setDrawnBoundary([]);
+                  setRedoBoundary([]);
+                }}
+                onUndoBoundary={undoBoundary}
+                onRedoBoundary={redoBoundaryPoint}
+                onClearSelection={clearAreaSelection}
               />
             )}
           </AnimatePresence>
@@ -204,7 +268,14 @@ export default function MapPage() {
 
       {/* Mobile-only panels */}
       <AnimatePresence>
-        {activePanel === 'search' && <SearchPanel key="search" />}
+        {activePanel === 'search' && (
+          <SearchPanel
+            key="search"
+            hasAppliedArea={hasAppliedArea}
+            onEditArea={editAppliedArea}
+            onClearArea={clearAppliedArea}
+          />
+        )}
         {activePanel === 'filter' && <FilterPanel key="filter" totalListings={filteredListings.length} />}
         {activePanel === 'listing-detail' && <ListingDetailSheet key="listing-detail" />}
         {activePanel === 'saved-searches' && <SavedSearchesPanel key="saved-searches" />}

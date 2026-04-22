@@ -61,7 +61,7 @@ export default function MobileDrawer({
       >
         <div className="mx-auto mt-2.5 h-1 w-7 rounded-full bg-[#D1D5DB]" />
         <header className="flex items-center justify-between gap-3 px-4 pb-3 pt-2">
-          {title && <div className="type-h3 min-w-0 flex-1 truncate text-left text-[#0F1729]">{title}</div>}
+          {title && <div className="font-heading text-lg min-w-0 flex-1 truncate text-left text-[#0F1729]">{title}</div>}
           <button
             type="button"
             onClick={onClose}

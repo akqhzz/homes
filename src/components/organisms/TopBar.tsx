@@ -1,11 +1,19 @@
 'use client';
+import { useState } from 'react';
 import { Search, Layers, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 
-export default function TopBar() {
+interface TopBarProps {
+  hasAppliedArea?: boolean;
+  onEditArea?: () => void;
+  onClearArea?: () => void;
+}
+
+export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea }: TopBarProps) {
+  const [showAreaMenu, setShowAreaMenu] = useState(false);
   const { selectedLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { activePanel, setActivePanel, setAreaSelectMode } = useUIStore();
@@ -13,8 +21,27 @@ export default function TopBar() {
   const filterCount = activeFilterCount();
   const locationLabel =
     selectedLocations.length === 0
-      ? 'Where?'
+      ? hasAppliedArea ? '1 area' : 'Where?'
       : `${selectedLocations.length} area${selectedLocations.length === 1 ? '' : 's'}`;
+
+  const handleAreaClick = () => {
+    if (hasAppliedArea) {
+      setShowAreaMenu((value) => !value);
+      return;
+    }
+    setAreaSelectMode(true);
+    setActivePanel('area-select');
+  };
+
+  const handleEditArea = () => {
+    setShowAreaMenu(false);
+    onEditArea?.();
+  };
+
+  const handleClearArea = () => {
+    setShowAreaMenu(false);
+    onClearArea?.();
+  };
 
   return (
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
@@ -33,15 +60,24 @@ export default function TopBar() {
             {locationLabel}
           </span>
         </button>
-        <button
-          onClick={() => {
-            setAreaSelectMode(true);
-            setActivePanel('area-select');
-          }}
-          className="flex-shrink-0 text-[#9CA3AF] hover:text-[#0F1729] transition-colors p-0.5"
-        >
-          <Layers size={17} />
-        </button>
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={handleAreaClick}
+            className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors p-0.5"
+          >
+            <Layers size={17} />
+          </button>
+          {showAreaMenu && (
+            <div className="absolute right-0 top-9 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+              <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]">
+                Edit area
+              </button>
+              <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#6B7280] hover:bg-[#F5F6F7]">
+                Clear area
+              </button>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Filter button */}

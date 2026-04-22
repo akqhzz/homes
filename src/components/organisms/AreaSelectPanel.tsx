@@ -1,17 +1,18 @@
 'use client';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, Layers, Pencil, RotateCcw, Satellite, Store } from 'lucide-react';
+import { ArrowLeft, Check, Layers, Pencil, Redo2, RotateCcw, Satellite, Store, Trash2, Undo2 } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
-import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
+import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/atoms/Button';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import { cn } from '@/lib/utils/cn';
 
-const NEIGHBORHOOD_CARD_WIDTH = 264;
-const NEIGHBORHOOD_CARD_GAP = 10;
+const CARD_WIDTH = 312;
+const CARD_GAP = 10;
+const SWIPE_THRESHOLD = 34;
 
 interface AreaSelectPanelProps {
   focusedNeighborhood: Neighborhood | null;
@@ -20,6 +21,8 @@ interface AreaSelectPanelProps {
   isSatelliteMode: boolean;
   showAmenities: boolean;
   pointCount: number;
+  canUndoBoundary: boolean;
+  canRedoBoundary: boolean;
   onBack: () => void;
   onApply: () => void;
   onToggleDrawing: () => void;
@@ -27,8 +30,12 @@ interface AreaSelectPanelProps {
   onToggleSatellite: () => void;
   onToggleAmenities: () => void;
   onToggleNeighborhood: (id: string) => void;
+  onFocusNeighborhood: (neighborhood: Neighborhood) => void;
   onCloseNeighborhood: () => void;
   onClearDrawing: () => void;
+  onUndoBoundary: () => void;
+  onRedoBoundary: () => void;
+  onClearSelection: () => void;
 }
 
 export default function AreaSelectPanel({
@@ -38,6 +45,8 @@ export default function AreaSelectPanel({
   isSatelliteMode,
   showAmenities,
   pointCount,
+  canUndoBoundary,
+  canRedoBoundary,
   onBack,
   onApply,
   onToggleDrawing,
@@ -45,12 +54,26 @@ export default function AreaSelectPanel({
   onToggleSatellite,
   onToggleAmenities,
   onToggleNeighborhood,
+  onFocusNeighborhood,
   onCloseNeighborhood,
   onClearDrawing,
+  onUndoBoundary,
+  onRedoBoundary,
+  onClearSelection,
 }: AreaSelectPanelProps) {
   const setAreaSelectMode = useUIStore((s) => s.setAreaSelectMode);
   const [showLayerOptions, setShowLayerOptions] = useState(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const [viewportWidth, setViewportWidth] = useState(390);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const wheelLockRef = useRef(false);
+
+  const selectedCount = selectedNeighborhoods.size;
+  const hasSelection = selectedCount > 0 || pointCount > 0;
+  const title = hasSelection
+    ? `${selectedCount > 0 ? selectedNeighborhoodCount(selectedNeighborhoods) : MOCK_LISTINGS.length} listings`
+    : 'Choose your search area';
 
   const handleBack = () => {
     setAreaSelectMode(false);
@@ -58,15 +81,68 @@ export default function AreaSelectPanel({
   };
 
   useLayoutEffect(() => {
-    if (!focusedNeighborhood || !carouselRef.current) return;
+    const updateWidth = () => setViewportWidth(window.innerWidth);
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!focusedNeighborhood) return;
     const index = MOCK_NEIGHBORHOODS.findIndex((nbh) => nbh.id === focusedNeighborhood.id);
-    if (index === -1) return;
-    const containerWidth = carouselRef.current.clientWidth;
-    carouselRef.current.scrollTo({
-      left: Math.max(0, index * (NEIGHBORHOOD_CARD_WIDTH + NEIGHBORHOOD_CARD_GAP) - (containerWidth - NEIGHBORHOOD_CARD_WIDTH) / 2),
-      behavior: 'smooth',
-    });
+    if (index >= 0) {
+      const frame = requestAnimationFrame(() => setCurrentIndex(index));
+      return () => cancelAnimationFrame(frame);
+    }
   }, [focusedNeighborhood]);
+
+  const goToNeighborhood = (index: number) => {
+    const nextIndex = Math.max(0, Math.min(MOCK_NEIGHBORHOODS.length - 1, index));
+    setCurrentIndex(nextIndex);
+    onFocusNeighborhood(MOCK_NEIGHBORHOODS[nextIndex]);
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    dragStartRef.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = dragStartRef.current;
+    if (!start || start.id !== event.pointerId) return;
+    dragStartRef.current = null;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (dy > 36 && Math.abs(dy) > Math.abs(dx) * 1.15) {
+      onCloseNeighborhood();
+      return;
+    }
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return;
+    goToNeighborhood(currentIndex + (dx < 0 ? 1 : -1));
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartRef.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    if (!start) return;
+    const touch = event.touches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) event.preventDefault();
+  };
+
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
+    event.preventDefault();
+    if (wheelLockRef.current) return;
+    wheelLockRef.current = true;
+    goToNeighborhood(currentIndex + (event.deltaX > 0 ? 1 : -1));
+    window.setTimeout(() => {
+      wheelLockRef.current = false;
+    }, 320);
+  };
 
   return (
     <>
@@ -82,10 +158,7 @@ export default function AreaSelectPanel({
                 >
                   <ArrowLeft size={16} strokeWidth={2.4} />
                 </button>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold leading-tight">Choose your search area</p>
-                  <p className="truncate text-xs text-[#6B7280]">Tap neighborhoods or draw a custom boundary</p>
-                </div>
+                <p className="min-w-0 flex-1 truncate font-semibold leading-tight">{title}</p>
               </div>
             </div>
             <button
@@ -181,75 +254,88 @@ export default function AreaSelectPanel({
             </FloatingActionButton>
           </div>
         ) : null}
+
+        {hasSelection && !isDrawing && !focusedNeighborhood && (
+          <div
+            className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+          >
+            <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <Undo2 size={15} />
+            </button>
+            <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <Redo2 size={15} />
+            </button>
+            <button onClick={onClearSelection} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)]">
+              <Trash2 size={15} />
+            </button>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
         {focusedNeighborhood && (
           <motion.div
-            key={focusedNeighborhood.id}
+            key="neighborhood-carousel"
             initial={{ y: 26, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 26, opacity: 0, scale: 0.98 }}
-            transition={{ type: 'spring', stiffness: 150, damping: 26, mass: 0.42 }}
-            className="pointer-events-none absolute inset-x-0 bottom-[82px] z-40 lg:hidden"
+            transition={{ type: 'spring', stiffness: 220, damping: 30, mass: 0.34 }}
+            className="pointer-events-none absolute inset-x-0 bottom-[72px] z-40 overflow-visible py-4 lg:hidden"
           >
-            <div
-              ref={carouselRef}
-              className="pointer-events-auto flex gap-2.5 overflow-x-auto py-2 scrollbar-hide"
-              style={{
-                scrollSnapType: 'x proximity',
-                WebkitOverflowScrolling: 'touch',
-                overscrollBehaviorX: 'contain',
-                touchAction: 'pan-x',
-                paddingLeft: 'calc(50% - 132px)',
-                paddingRight: 'calc(50% - 132px)',
-              }}
+            <motion.div
+              className="pointer-events-auto flex overflow-visible"
+              animate={{ x: Math.max(0, (viewportWidth - CARD_WIDTH) / 2) - currentIndex * (CARD_WIDTH + CARD_GAP) }}
+              transition={{ type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
+              style={{ gap: CARD_GAP, touchAction: 'pan-y', willChange: 'transform' }}
+              onPointerDownCapture={handlePointerDown}
+              onPointerUpCapture={handlePointerUp}
+              onPointerCancelCapture={() => { dragStartRef.current = null; }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onWheel={handleWheel}
             >
               {MOCK_NEIGHBORHOODS.map((neighborhood) => {
                 const included = selectedNeighborhoods.has(neighborhood.id);
-                const active = neighborhood.id === focusedNeighborhood.id;
                 return (
-                  <motion.article
+                  <article
                     key={neighborhood.id}
-                    animate={{ scale: active ? 1 : 0.94 }}
-                    transition={{ type: 'spring', stiffness: 150, damping: 25, mass: 0.35 }}
-                    className="flex h-[104px] w-[264px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_8px_24px_rgba(15,23,41,0.14)]"
-                    style={{ scrollSnapAlign: 'center' }}
+                    className="flex h-[124px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
                   >
-                    <img src={neighborhood.thumbnail} alt="" className="h-full w-[92px] shrink-0 rounded-xl object-cover" draggable={false} />
+                    <img src={neighborhood.thumbnail} alt="" className="h-full w-[104px] shrink-0 rounded-xl object-cover" draggable={false} />
                     <div className="flex min-w-0 flex-1 flex-col py-0.5">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-[#0F1729]">{neighborhood.name}</p>
-                        <p className="mt-0.5 text-[11px] leading-snug text-[#6B7280] line-clamp-2">
-                          {neighborhood.listingCount} listings · Avg. {formatAvgPrice(neighborhood.avgPrice)}
-                        </p>
-                        <p className="mt-1 text-[11px] leading-snug text-[#9CA3AF] line-clamp-2">
-                          {neighborhood.description}
-                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">{neighborhood.listingCount} listings</span>
+                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">{formatAvgPrice(neighborhood.avgPrice)}</span>
+                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">Walk {neighborhood.walkScore}</span>
+                        </div>
                       </div>
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-1 h-7 rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 h-8 rounded-full px-3 text-xs font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >
                         {included ? 'Included' : 'Include'}
                       </button>
                     </div>
-                  </motion.article>
+                  </article>
                 );
               })}
-              <button
-                onClick={onCloseNeighborhood}
-                className="my-auto h-9 shrink-0 rounded-full bg-white px-4 text-sm font-semibold text-[#6B7280] shadow-[0_4px_16px_rgba(15,23,41,0.12)]"
-              >
-                Close
-              </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
   );
+}
+
+function selectedNeighborhoodCount(selectedNeighborhoods: Set<string>) {
+  return MOCK_NEIGHBORHOODS.reduce((total, neighborhood) => {
+    if (!selectedNeighborhoods.has(neighborhood.id)) return total;
+    return total + neighborhood.listingCount;
+  }, 0);
 }
