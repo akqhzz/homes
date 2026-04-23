@@ -12,9 +12,10 @@ interface SaveToCollectionSheetProps {
   listingId: string;
   onClose: () => void;
   onSaved?: () => void;
+  anchorRect?: DOMRect | null;
 }
 
-export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: SaveToCollectionSheetProps) {
+export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anchorRect }: SaveToCollectionSheetProps) {
   const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
   const collections = useSavedStore((s) => s.collections);
@@ -37,13 +38,8 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
     finishSave(collectionId);
   };
 
-  const drawer = (
-    <MobileDrawer
-      title="Save to collection"
-      onClose={onClose}
-      heightClassName="max-h-[60dvh]"
-      contentClassName="px-4 pb-4"
-    >
+  const content = (
+    <>
       <div className="flex flex-col gap-2.5">
         {collections.map((collection) => {
           const alreadySaved = collection.listings.some((item) => item.listingId === listingId);
@@ -52,7 +48,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
             <button
               key={collection.id}
               onClick={() => finishSave(collection.id)}
-              className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left"
+              className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left transition-colors hover:bg-[#EBEBEB]"
             >
               <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[#0F1729]">
                 {thumbnailListing?.images[0] ? (
@@ -99,7 +95,43 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
           New collection
         </button>
       )}
-    </MobileDrawer>
+    </>
+  );
+
+  const viewportWidth = typeof window === 'undefined' ? 390 : window.innerWidth;
+  const viewportHeight = typeof window === 'undefined' ? 844 : window.innerHeight;
+  const left = anchorRect ? Math.min(Math.max(anchorRect.right - 320, 16), viewportWidth - 336) : viewportWidth / 2 - 160;
+  const top = anchorRect ? Math.min(anchorRect.bottom + 10, viewportHeight - 420) : 96;
+
+  const drawer = (
+    <>
+      <div className="lg:hidden">
+        <MobileDrawer
+          title="Save to collection"
+          onClose={onClose}
+          heightClassName="max-h-[60dvh]"
+          contentClassName="px-4 pb-4"
+        >
+          {content}
+        </MobileDrawer>
+      </div>
+      <div className="hidden lg:block">
+        <button
+          type="button"
+          aria-label="Close save to collection"
+          className="fixed inset-0 z-50 bg-transparent"
+          onClick={onClose}
+        />
+        <div
+          className="fixed z-[60] w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+          style={{ left, top }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <p className="mb-3 font-heading text-lg text-[#0F1729]">Save to collection</p>
+          {content}
+        </div>
+      </div>
+    </>
   );
 
   if (typeof document === 'undefined') return null;

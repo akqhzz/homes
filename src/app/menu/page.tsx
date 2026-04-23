@@ -38,9 +38,12 @@ export default function MenuPage() {
           </div>
 
           <div className="px-4">
-            <button className="w-full flex items-center justify-center gap-2 py-4 text-[#EF4444] font-medium text-sm hover:bg-red-50 rounded-2xl transition-colors">
-              <LogOut size={15} />
-              Sign Out
+            <button className="w-full flex items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3.5 text-left transition-colors hover:bg-red-50">
+              <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
+                <LogOut size={15} className="text-[#EF4444]" />
+              </div>
+              <span className="flex-1 text-sm font-medium text-[#EF4444]">Sign Out</span>
+              <ChevronRight size={15} className="text-[#FCA5A5]" />
             </button>
           </div>
         </div>

@@ -153,7 +153,7 @@ export default function SavedSearchesPanel({
           className="fixed inset-0 z-50 bg-transparent"
           onClick={() => setActivePanel('none')}
         />
-        <div className="fixed left-1/2 top-20 z-[60] max-h-[calc(100vh-6rem)] w-[420px] -translate-x-1/2 overflow-y-auto rounded-3xl bg-white shadow-[0_16px_48px_rgba(15,23,41,0.18)]">
+        <div className="fixed top-20 z-[60] max-h-[calc(100vh-6rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_16px_48px_rgba(15,23,41,0.18)] lg:left-[calc(50%+168px)] xl:left-[calc(50%+190px)]">
           <div className="px-4 pt-4">
             <p className="font-heading text-lg text-[#0F1729]">Saved Searches</p>
           </div>

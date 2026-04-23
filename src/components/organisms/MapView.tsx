@@ -2,7 +2,7 @@
 import { useCallback, useRef } from 'react';
 import Image from 'next/image';
 import type { Feature, LineString, Polygon } from 'geojson';
-import Map, { Layer, Marker, NavigationControl, Popup, Source, type MapRef } from 'react-map-gl/mapbox';
+import Map, { Layer, Marker, NavigationControl, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
@@ -282,22 +282,18 @@ export default function MapView({
         const selectedListing = listings.find((item) => item.id === selectedListingId);
         if (!selectedListing) return null;
         const markerCoordinates = getSpreadListingCoordinates(selectedListing, listings.findIndex((item) => item.id === selectedListingId));
-        const popupAnchor = markerCoordinates.lng > viewState.longitude ? 'right' : 'left';
+        const showRight = markerCoordinates.lng < viewState.longitude;
         return (
-          <Popup
+          <Marker
             longitude={markerCoordinates.lng}
             latitude={markerCoordinates.lat}
-            anchor={popupAnchor}
-            closeButton={false}
-            closeOnClick={false}
-            offset={20}
-            maxWidth="336px"
-            className="hidden lg:block"
+            anchor={showRight ? 'left' : 'right'}
+            offset={showRight ? [20, -124] : [-20, -124]}
           >
-            <div onClick={(event) => event.stopPropagation()} className="w-72">
+            <div onClick={(event) => event.stopPropagation()} className="hidden w-72 lg:block">
               <ListingCard listing={selectedListing} variant="carousel" />
             </div>
-          </Popup>
+          </Marker>
         );
       })()}
     </Map>
@@ -463,8 +459,8 @@ function MockMap({
           <div
             className="absolute hidden w-72 lg:block"
             style={showRight
-              ? { left: `min(${x + 3}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
-              : { right: `min(${100 - x + 3}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
+              ? { left: `min(calc(${x}% + 20px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
+              : { right: `min(calc(${100 - x}% + 20px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
             onClick={(event) => event.stopPropagation()}
           >
             <ListingCard listing={selectedListing} variant="carousel" />

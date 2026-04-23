@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Heart, MapPin } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
-import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 
@@ -29,9 +29,10 @@ interface ListingCardProps {
 export default function ListingCard({ listing, variant = 'carousel', className }: ListingCardProps) {
   const [imgIndex, setImgIndex] = useState(0);
   const [showSavePicker, setShowSavePicker] = useState(false);
+  const [saveAnchorRect, setSaveAnchorRect] = useState<DOMRect | null>(null);
+  const router = useRouter();
   const isLiked = useSavedStore((s) => s.isLiked(listing.id));
   const toggleLike = useSavedStore((s) => s.toggleLike);
-  const openListingDetail = useUIStore((s) => s.openListingDetail);
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
   const imagePointerMoved = useRef(false);
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
@@ -134,6 +135,9 @@ export default function ListingCard({ listing, variant = 'carousel', className }
 
   const handleSaveClick = (event?: React.MouseEvent) => {
     event?.stopPropagation();
+    if (event?.currentTarget instanceof HTMLElement) {
+      setSaveAnchorRect(event.currentTarget.getBoundingClientRect());
+    }
     if (isLiked) {
       toggleLike(listing.id);
       return;
@@ -145,19 +149,24 @@ export default function ListingCard({ listing, variant = 'carousel', className }
     <SaveToCollectionSheet
       listingId={listing.id}
       onClose={() => setShowSavePicker(false)}
+      anchorRect={saveAnchorRect}
     />
   ) : null;
+
+  const openListingPage = () => {
+    router.push(`/listings/${listing.id}`);
+  };
 
   if (variant === 'grid') {
     return (
       <>
         <div
           className={cn('flex flex-col gap-2 text-left no-select w-full', className)}
-          onClick={() => openListingDetail(listing.id)}
+          onClick={openListingPage}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') openListingDetail(listing.id);
+            if (e.key === 'Enter' || e.key === ' ') openListingPage();
           }}
         >
           <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#F5F6F7]">
@@ -236,7 +245,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
               imagePointerMoved.current = false;
               return;
             }
-            openListingDetail(listing.id);
+            openListingPage();
           }}
           onTouchStart={handleImageTouchStart}
           onTouchMove={handleImageTouchMove}
@@ -279,7 +288,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         <button
           className="absolute bottom-0 left-0 right-0 bg-white px-3.5 py-1.5 text-left"
           style={{ height: CAROUSEL_INFO_HEIGHT, touchAction: 'pan-x' }}
-          onClick={() => openListingDetail(listing.id)}
+          onClick={openListingPage}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">

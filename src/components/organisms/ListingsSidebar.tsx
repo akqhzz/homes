@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowDownWideNarrow, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { useMapStore } from '@/store/mapStore';
-import { useUIStore } from '@/store/uiStore';
 import ListingCard from '@/components/molecules/ListingCard';
 import { cn } from '@/lib/utils/cn';
 
@@ -35,7 +35,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   const [showSort, setShowSort] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const { setHoveredListingId } = useMapStore();
-  const { openListingDetail } = useUIStore();
+  const router = useRouter();
 
   const sorted = sortListings(listings, sort);
 
@@ -99,7 +99,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
               className={cn('w-72 min-w-0 rounded-2xl transition-transform cursor-pointer hover:-translate-y-0.5')}
               onMouseEnter={() => setHoveredListingId(listing.id)}
               onMouseLeave={() => setHoveredListingId(null)}
-              onClick={() => openListingDetail(listing.id)}
+              onClick={() => router.push(`/listings/${listing.id}`)}
             >
               <ListingCard listing={listing} variant="carousel" />
             </div>

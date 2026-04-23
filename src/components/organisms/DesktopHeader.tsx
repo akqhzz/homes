@@ -38,8 +38,10 @@ export default function DesktopHeader() {
   const [showFilter, setShowFilter] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const filterRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -56,12 +58,22 @@ export default function DesktopHeader() {
       : `${selectedLocations[0].name}, +${selectedLocations.length - 1}`;
 
   const priceRange = [filters.minPrice ?? PRICE_MIN, filters.maxPrice ?? PRICE_MAX];
+  const filteredLocations = LOCATION_SUGGESTIONS.filter(
+    (location) =>
+      !selectedLocations.some((selected) => selected.id === location.id) &&
+      location.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
   const togglePropertyType = (type: PropertyType) => {
     setFilters({
       propertyTypes: filters.propertyTypes.includes(type)
         ? filters.propertyTypes.filter((item) => item !== type)
         : [...filters.propertyTypes, type],
     });
+  };
+
+  const setNumericFilter = (key: 'minSqft' | 'maxSqft', value: string) => {
+    setFilters({ [key]: value ? parseInt(value) : undefined });
   };
 
   useEffect(() => {
@@ -75,6 +87,12 @@ export default function DesktopHeader() {
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [showFilter, showSearch, showMenu]);
+
+  useEffect(() => {
+    if (!showSearch) return;
+    const frame = requestAnimationFrame(() => searchInputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [showSearch]);
 
   return (
     <>
@@ -90,26 +108,34 @@ export default function DesktopHeader() {
         {/* Centered search */}
         <div className="flex-1 flex items-center justify-center gap-2 max-w-2xl mx-auto">
           <div ref={searchRef} className="relative flex-1">
-            <button
+            <div
               onClick={() => {
                 setShowSearch(true);
                 setShowFilter(false);
                 setShowMenu(false);
               }}
               className={cn(
-                'flex min-h-[46px] w-full min-w-0 items-center gap-2.5 rounded-full bg-white px-4 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[#F9FAFB]',
+                'flex min-h-[46px] w-full min-w-0 cursor-text items-center gap-2.5 rounded-full bg-white px-4 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[#F9FAFB]',
                 showSearch && 'shadow-[inset_0_0_0_1.5px_#0F1729,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
             >
               <Search size={15} className="text-[#9CA3AF] flex-shrink-0" />
-              {selectedLocations.length > 0 ? (
+              {showSearch ? (
+                <input
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Where?'}
+                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
+                />
+              ) : selectedLocations.length > 0 ? (
                 <span className="inline-flex max-w-full items-center truncate rounded-full bg-[#F0F1F2] px-2.5 py-0.5 text-sm font-medium text-[#0F1729]">
                   {locationLabel}
                 </span>
               ) : (
                 <span className="flex-1 truncate text-sm font-medium text-[#9CA3AF]">{locationLabel}</span>
               )}
-            </button>
+            </div>
             {showSearch && (
               <div className="absolute left-0 right-0 top-[54px] z-40 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 {selectedLocations.length > 0 && (
@@ -128,11 +154,12 @@ export default function DesktopHeader() {
                   </div>
                 )}
                 <div className="py-1">
-                  {LOCATION_SUGGESTIONS.filter((location) => !selectedLocations.some((selected) => selected.id === location.id)).map((location) => (
+                  {filteredLocations.map((location) => (
                     <button
                       key={location.id}
                       onClick={() => {
                         addLocation(location);
+                        setSearchQuery('');
                         setShowSearch(false);
                       }}
                       className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]"
@@ -172,10 +199,14 @@ export default function DesktopHeader() {
               )}
             </button>
             {showFilter && (
-              <div className="absolute right-0 top-12 z-40 w-[360px] rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+              <div className="absolute right-0 top-12 z-40 max-h-[calc(100vh-7rem)] w-[390px] overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 <div className="space-y-5">
                   <div>
                     <p className="mb-3 text-sm font-semibold text-[#0F1729]">Price Range</p>
+                    <div className="mb-4 grid grid-cols-2 gap-3">
+                      <PriceInput value={filters.minPrice} placeholder="No min" onChange={(value) => setFilters({ minPrice: value })} />
+                      <PriceInput value={filters.maxPrice} placeholder="No max" onChange={(value) => setFilters({ maxPrice: value })} />
+                    </div>
                     <Slider.Root
                       value={priceRange}
                       min={PRICE_MIN}
@@ -186,14 +217,14 @@ export default function DesktopHeader() {
                         minPrice: min <= PRICE_MIN ? undefined : min,
                         maxPrice: max >= PRICE_MAX ? undefined : max,
                       })}
-                      className="relative flex h-9 w-full touch-none select-none items-center"
+                      className="relative flex h-9 w-full touch-none select-none items-center cursor-pointer"
                       aria-label="Desktop price range"
                     >
-                      <Slider.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-[#E5E7EB]">
+                      <Slider.Track className="relative h-1.5 grow cursor-pointer overflow-hidden rounded-full bg-[#E5E7EB]">
                         <Slider.Range className="absolute h-full rounded-full bg-[#0F1729]" />
                       </Slider.Track>
-                      <Slider.Thumb className="block h-6 w-6 rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none" />
-                      <Slider.Thumb className="block h-6 w-6 rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none" />
+                      <Slider.Thumb className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10" />
+                      <Slider.Thumb className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10" />
                     </Slider.Root>
                   </div>
                   <div>
@@ -204,7 +235,7 @@ export default function DesktopHeader() {
                           key={value}
                           onClick={() => togglePropertyType(value)}
                           className={cn(
-                            'rounded-full border px-3 py-2 text-xs font-medium transition-all',
+                            'rounded-full border px-3 py-2 text-xs font-medium transition-all hover:bg-[#F5F6F7]',
                             filters.propertyTypes.includes(value)
                               ? 'border-[#0F1729] bg-[#0F1729] text-white'
                               : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
@@ -215,11 +246,66 @@ export default function DesktopHeader() {
                       ))}
                     </div>
                   </div>
+                  <SegmentedFilter
+                    title="Bedrooms"
+                    options={['Any', '1', '2', '3', '4', '5']}
+                    activeValue={filters.minBeds?.toString() ?? 'Any'}
+                    onSelect={(value) => setFilters({ minBeds: value === 'Any' ? undefined : parseInt(value) })}
+                  />
+                  <SegmentedFilter
+                    title="Bathrooms"
+                    options={['Any', '1', '2', '3', '4']}
+                    activeValue={filters.minBaths?.toString() ?? 'Any'}
+                    onSelect={(value) => setFilters({ minBaths: value === 'Any' ? undefined : parseInt(value) })}
+                  />
+                  <div>
+                    <p className="mb-3 text-sm font-semibold text-[#0F1729]">Listed Within</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { value: 1, label: '1 day' },
+                        { value: 7, label: '1 week' },
+                        { value: 30, label: '1 month' },
+                        { value: 90, label: '3 months' },
+                      ].map(({ value, label }) => (
+                        <button
+                          key={value}
+                          onClick={() => setFilters({ maxDaysOnMarket: filters.maxDaysOnMarket === value ? undefined : value })}
+                          className={cn(
+                            'rounded-xl border py-2.5 text-sm font-medium transition-all hover:bg-[#F5F6F7]',
+                            filters.maxDaysOnMarket === value
+                              ? 'border-[#0F1729] bg-[#0F1729] text-white hover:bg-[#0F1729]'
+                              : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
+                          )}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-3 text-sm font-semibold text-[#0F1729]">Square Footage</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="number"
+                        value={filters.minSqft ?? ''}
+                        onChange={(event) => setNumericFilter('minSqft', event.target.value)}
+                        placeholder="No min"
+                        className="h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm outline-none transition-colors hover:border-[#D1D5DB] focus:border-[#0F1729]"
+                      />
+                      <input
+                        type="number"
+                        value={filters.maxSqft ?? ''}
+                        onChange={(event) => setNumericFilter('maxSqft', event.target.value)}
+                        placeholder="No max"
+                        className="h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm outline-none transition-colors hover:border-[#D1D5DB] focus:border-[#0F1729]"
+                      />
+                    </div>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <button onClick={resetFilters} className="h-11 rounded-full bg-[#F5F6F7] text-sm font-semibold text-[#0F1729]">
+                    <button onClick={resetFilters} className="h-11 rounded-full bg-[#F5F6F7] text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]">
                       Reset
                     </button>
-                    <button onClick={() => setShowFilter(false)} className="h-11 rounded-full bg-[#0F1729] text-sm font-semibold text-white">
+                    <button onClick={() => setShowFilter(false)} className="h-11 rounded-full bg-[#0F1729] text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">
                       Done
                     </button>
                   </div>
@@ -230,7 +316,7 @@ export default function DesktopHeader() {
 
           <button
             onClick={() => setActivePanel('saved-searches')}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0F1729] text-white shadow-[var(--shadow-control)] transition-colors hover:bg-[#1F2937]"
             aria-label="Saved searches"
           >
             <Bookmark size={17} />
@@ -270,9 +356,11 @@ export default function DesktopHeader() {
                     <span className="flex-1 text-sm font-medium text-[#0F1729]">{item.label}</span>
                   </button>
                 ))}
-                <button className="mt-1 flex w-full items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold text-[#EF4444] transition-colors hover:bg-red-50">
-                  <LogOut size={15} />
-                  Sign Out
+                <button className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-red-50">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
+                    <LogOut size={15} className="text-[#EF4444]" />
+                  </div>
+                  <span className="flex-1 text-sm font-medium text-[#EF4444]">Sign Out</span>
                 </button>
               </div>
             )}
@@ -281,5 +369,65 @@ export default function DesktopHeader() {
       </header>
 
     </>
+  );
+}
+
+function SegmentedFilter({
+  title,
+  options,
+  activeValue,
+  onSelect,
+}: {
+  title: string;
+  options: string[];
+  activeValue: string;
+  onSelect: (value: string) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-3 text-sm font-semibold text-[#0F1729]">{title}</p>
+      <div className="flex gap-2">
+        {options.map((option) => {
+          const active = activeValue === option;
+          return (
+            <button
+              key={option}
+              onClick={() => onSelect(option)}
+              className={cn(
+                'h-11 w-11 shrink-0 rounded-full border text-sm font-medium transition-all hover:bg-[#F5F6F7]',
+                active
+                  ? 'border-[#0F1729] bg-[#0F1729] text-white hover:bg-[#0F1729]'
+                  : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
+              )}
+            >
+              {option === options[options.length - 1] && option !== 'Any' ? `${option}+` : option}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PriceInput({
+  value,
+  placeholder,
+  onChange,
+}: {
+  value?: number;
+  placeholder: string;
+  onChange: (value: number | undefined) => void;
+}) {
+  return (
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF]">$</span>
+      <input
+        type="number"
+        value={value ?? ''}
+        onChange={(event) => onChange(event.target.value ? parseInt(event.target.value) : undefined)}
+        placeholder={placeholder}
+        className="h-11 w-full rounded-xl border border-[#E5E7EB] py-2.5 pl-7 pr-3 text-sm outline-none transition-colors hover:border-[#D1D5DB] focus:border-[#0F1729]"
+      />
+    </div>
   );
 }
