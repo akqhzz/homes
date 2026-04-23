@@ -83,99 +83,51 @@ button,
    Each token bundles family + size + weight + line-height.
    Color and spacing stay as Tailwind utilities on the element.
 
-   Lora (serif) tokens — headings and numbers
-   ─────────────────────────────────────────── */
+   ┌─────────────────┬──────────┬────────┬─────┬───────────────────┐
+   │ Token           │ Size     │ Family │  W  │ Used for          │
+   ├─────────────────┼──────────┼────────┼─────┼───────────────────┤
+   │ type-display    │ 3.75 rem │ Lora   │ 500 │ hero stat numbers │
+   │ type-display-sm │ 3 rem    │ Lora   │ 500 │ large stats       │
+   │ type-hero       │ 2.25 rem │ Lora   │ 500 │ full-page price   │
+   │ type-title-lg   │ 1.875rem │ Lora   │ 500 │ insight titles    │
+   │ type-title      │ 1.5 rem  │ Lora   │ 500 │ page h1s          │
+   │ type-price      │ 1.625rem │ Lora   │ 500 │ listing prices    │
+   │ type-subtitle   │ 1.25 rem │ Lora   │ 500 │ brand, sub-heads  │
+   │ type-heading    │ 1.125rem │ Lora   │ 500 │ drawer / section  │
+   ├─────────────────┼──────────┼────────┼─────┼───────────────────┤
+   │ type-body-lg    │ 1 rem    │ Inter  │ 400 │ large body text   │
+   │ type-label      │ 0.875rem │ Inter  │ 600 │ primary UI text   │
+   │ type-body       │ 0.875rem │ Inter  │ 400 │ descriptions      │
+   │ type-caption    │ 0.75 rem │ Inter  │ 400 │ counts, metadata  │
+   │ type-fine       │ 0.6875rm │ Inter  │ 600 │ small chips       │
+   │ type-micro      │ 0.625rem │ Inter  │ 600 │ tags, badges      │
+   │ type-nano       │ 0.5 rem  │ Inter  │ 700 │ tiny badge nums   │
+   └─────────────────┴──────────┴────────┴─────┴───────────────────┘ */
 
-/* Hero stats, e.g. for-you big numbers                          */
-.type-display {
-  font-family: var(--font-heading);
-  font-size: 3.5rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
+.type-display    { font-family: var(--font-heading); font-size: 3.75rem;   font-weight: 500; line-height: 1;    letter-spacing: -0.02em; }
+.type-display-sm { font-family: var(--font-heading); font-size: 3rem;      font-weight: 500; line-height: 1;    letter-spacing: -0.02em; }
+.type-hero       { font-family: var(--font-heading); font-size: 2.25rem;   font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
+.type-title-lg   { font-family: var(--font-heading); font-size: 1.875rem;  font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
+.type-title      { font-family: var(--font-heading); font-size: 1.5rem;    font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
+.type-price      { font-family: var(--font-heading); font-size: 1.625rem;  font-weight: 500; line-height: 1.2;  }
+.type-subtitle   { font-family: var(--font-heading); font-size: 1.25rem;   font-weight: 500; line-height: 1.3;  }
+.type-heading    { font-family: var(--font-heading); font-size: 1.125rem;  font-weight: 500; line-height: 1.35; }
 
-/* Page-level h1s — Saved, Alerts, For You                       */
-.type-title {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
+.type-body-lg    { font-family: var(--font-body);    font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
+.type-label      { font-family: var(--font-body);    font-size: 0.875rem;  font-weight: 600; line-height: 1.25; }
+.type-body       { font-family: var(--font-body);    font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
+.type-caption    { font-family: var(--font-body);    font-size: 0.75rem;   font-weight: 400; line-height: 1.33; }
+.type-fine       { font-family: var(--font-body);    font-size: 0.6875rem; font-weight: 600; line-height: 1;    }
+.type-micro      { font-family: var(--font-body);    font-size: 0.625rem;  font-weight: 600; line-height: 1;    letter-spacing: 0.01em; }
+.type-nano       { font-family: var(--font-body);    font-size: 0.5rem;    font-weight: 700; line-height: 1;    letter-spacing: 0.02em; }
 
-/* Brand name or smaller serif headlines                         */
-.type-subheading {
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-/* Listing prices on cards (≈26 px)                              */
-.type-price {
-  font-family: var(--font-heading);
-  font-size: 1.625rem;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-/* Drawer titles, section headings                               */
-.type-heading {
-  font-family: var(--font-heading);
-  font-size: 1.125rem;
-  font-weight: 500;
-  line-height: 1.35;
-}
-
-/*   Inter (sans) tokens — UI text
-   ─────────────────────────────── */
-
-/* Primary UI text — collection names, button-adjacent text      */
-.type-label {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-/* Narrative / descriptive text                                  */
-.type-body {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.6;
-}
-
-/* Secondary info — counts, timestamps, metadata                 */
-.type-caption {
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.33;
-}
-
-/* Chips, tags, small badges                                     */
-.type-micro {
-  font-family: var(--font-body);
-  font-size: 0.625rem;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 0.01em;
-}
-
-/* ── Legacy aliases (backwards-compat, prefer type-* above) ──── */
+/* ── Legacy aliases (prefer type-* above) ────────────────────── */
 .font-heading { font-family: var(--font-heading); font-weight: 500; }
 .font-body    { font-family: var(--font-body); }
 .font-button  { font-family: var(--font-button); font-weight: 600; }
 .font-caption { font-family: var(--font-caption); }
 
-/* Semantic HTML headings default to the heading font            */
-h1, h2, h3 {
-  font-family: var(--font-heading);
-  font-weight: 500;
-  letter-spacing: 0;
-}
+h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; letter-spacing: 0; }
 
 #__next,
 main {

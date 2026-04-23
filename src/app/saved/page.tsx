@@ -90,15 +90,15 @@ export default function SavedPage() {
     <PageShell desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8 lg:pt-6">
-          <div className="mb-1 flex items-center justify-between">
-            <h1 className="font-heading text-2xl text-[#0F1729] lg:text-3xl">Collections</h1>
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8 lg:pt-8">
+          <div className="mb-1 flex items-center justify-center">
+            <h1 className="type-title lg:text-3xl text-[#0F1729]">Collections</h1>
           </div>
         </div>
 
         {/* Collections */}
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="mx-auto grid max-w-[1344px] grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {collections.map((col) => {
               const firstListing = col.listings.length > 0
                 ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
@@ -146,9 +146,9 @@ export default function SavedPage() {
                             autoFocus
                           />
                         ) : (
-                          <p className="font-heading text-[#0F1729] truncate">{col.name}</p>
+                          <p className="type-label text-[#0F1729] truncate">{col.name}</p>
                         )}
-                        <p className="text-xs text-[#9CA3AF] mt-0.5">
+                        <p className="type-caption text-[#9CA3AF] mt-0.5">
                           {col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}
                         </p>
                       </div>
@@ -177,8 +177,8 @@ export default function SavedPage() {
             {collections.length === 0 && (
               <div className="text-center py-20">
                 <div className="text-5xl mb-4">🏠</div>
-                <p className="font-semibold text-[#0F1729]">No collections yet</p>
-                <p className="text-sm text-[#9CA3AF] mt-1">Save listings to create your first collection</p>
+                <p className="type-label text-[#0F1729]">No collections yet</p>
+                <p className="type-body text-[#9CA3AF] mt-1">Save listings to create your first collection</p>
               </div>
             )}
           </div>
@@ -230,18 +230,18 @@ export default function SavedPage() {
                 className="fixed z-[50] w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
                 style={{ bottom: menuState.bottom, right: menuState.right }}
               >
-                <p className="font-semibold text-[#0F1729]">Delete collection?</p>
-                <p className="mt-1 text-xs leading-relaxed text-[#6B7280]">This removes the collection, not the listings.</p>
+                <p className="type-label text-[#0F1729]">Delete collection?</p>
+                <p className="mt-1 type-caption text-[#6B7280]">This removes the collection, not the listings.</p>
                 <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => setConfirmDeleteId(null)}
-                    className="h-9 flex-1 rounded-full bg-[#F5F6F7] text-xs font-semibold text-[#0F1729]"
+                    className="h-9 flex-1 rounded-full bg-[#F5F6F7] type-caption font-semibold text-[#0F1729]"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={confirmDelete}
-                    className="h-9 flex-1 rounded-full bg-[#EF4444] text-xs font-semibold text-white"
+                    className="h-9 flex-1 rounded-full bg-[#EF4444] type-caption font-semibold text-white"
                   >
                     Delete
                   </button>

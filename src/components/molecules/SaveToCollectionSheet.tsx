@@ -60,8 +60,8 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="font-heading block truncate text-sm text-[#0F1729]">{collection.name}</span>
-                <span className="block text-xs text-[#9CA3AF]">
+                <span className="type-label block truncate text-[#0F1729]">{collection.name}</span>
+                <span className="block type-caption text-[#9CA3AF]">
                   {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
                 </span>
               </span>
@@ -127,7 +127,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
           style={{ left, top }}
           onClick={(event) => event.stopPropagation()}
         >
-          <p className="mb-3 font-heading text-lg text-[#0F1729]">Save To Collection</p>
+          <p className="mb-3 type-heading text-[#0F1729]">Save To Collection</p>
           {content}
         </div>
       </div>

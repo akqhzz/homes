@@ -30,7 +30,7 @@ export default function SavedSearchesPanel({
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
   const [saving, setSaving] = useState(canSaveCurrent && !activeSearchId);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 1024));
   const inputRef = useRef<HTMLInputElement>(null);
   const desktopPanelRef = useRef<HTMLDivElement>(null);
 

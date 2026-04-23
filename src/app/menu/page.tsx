@@ -14,7 +14,7 @@ export default function MenuPage() {
     <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="px-5 pt-5 pb-4 flex-shrink-0 border-b border-[#F5F6F7]">
-          <p className="font-heading text-xl text-[#0F1729]">homes</p>
+          <p className="type-subtitle text-[#0F1729]">homes</p>
         </div>
 
         <div className="flex-1 overflow-y-auto pb-24">
@@ -30,7 +30,7 @@ export default function MenuPage() {
                   <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                     <item.icon size={15} className="text-[#0F1729]" />
                   </div>
-                  <span className="flex-1 text-sm font-medium text-[#0F1729]">{item.label}</span>
+                  <span className="flex-1 type-body font-medium text-[#0F1729]">{item.label}</span>
                   <ChevronRight size={15} className="text-[#D1D5DB]" />
                 </button>
               ))}
@@ -42,7 +42,7 @@ export default function MenuPage() {
               <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                 <LogOut size={15} className="text-[#EF4444]" />
               </div>
-              <span className="flex-1 text-sm font-medium text-[#EF4444]">Sign Out</span>
+              <span className="flex-1 type-body font-medium text-[#EF4444]">Sign Out</span>
               <ChevronRight size={15} className="text-[#FCA5A5]" />
             </button>
           </div>

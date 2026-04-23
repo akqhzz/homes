@@ -46,13 +46,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
           <div>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="font-heading text-4xl text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
-                <p className="mt-2 flex items-center gap-1.5 text-sm text-[#6B7280]">
+                <h1 className="type-hero text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
+                <p className="mt-2 flex items-center gap-1.5 type-body text-[#6B7280]">
                   <MapPin size={15} className="text-[#9CA3AF]" />
                   {listing.address}, {listing.city}, {listing.province}
                 </p>
               </div>
-              <span className="rounded-full bg-[#F5F6F7] px-3 py-1.5 text-sm font-semibold text-[#6B7280]">
+              <span className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-label text-[#6B7280]">
                 {formatDaysOnMarket(listing.daysOnMarket)}
               </span>
             </div>
@@ -66,15 +66,15 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
             <div className="my-8 h-px bg-[#F5F6F7]" />
 
-            <h2 className="font-heading text-2xl text-[#0F1729]">About This Home</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-[#6B7280]">{listing.description}</p>
+            <h2 className="type-title text-[#0F1729]">About This Home</h2>
+            <p className="mt-3 max-w-3xl type-body leading-7 text-[#6B7280]">{listing.description}</p>
 
             <div className="my-8 h-px bg-[#F5F6F7]" />
 
-            <h2 className="font-heading text-2xl text-[#0F1729]">Features & Amenities</h2>
+            <h2 className="type-title text-[#0F1729]">Features & Amenities</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {listing.features.map((feature) => (
-                <span key={feature} className="rounded-full bg-[#F5F6F7] px-3 py-1.5 text-sm font-medium text-[#6B7280]">
+                <span key={feature} className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-body font-medium text-[#6B7280]">
                   {feature}
                 </span>
               ))}
@@ -91,7 +91,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               )}
               <SideFact icon={<Home size={16} />} label="MLS" value={listing.mlsNumber} />
             </div>
-            <button className="mt-5 h-12 w-full rounded-full bg-[#0F1729] text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">
+            <button className="mt-5 h-12 w-full rounded-full bg-[#0F1729] type-label text-white transition-colors hover:bg-[#1F2937]">
               Contact Agent
             </button>
           </aside>
@@ -105,8 +105,8 @@ function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; va
   return (
     <div className="rounded-2xl bg-[#F5F6F7] p-4">
       <div className="mb-2 text-[#9CA3AF]">{icon}</div>
-      <p className="text-xs text-[#9CA3AF]">{label}</p>
-      <p className="mt-0.5 text-sm font-semibold text-[#0F1729]">{value}</p>
+      <p className="type-caption text-[#9CA3AF]">{label}</p>
+      <p className="mt-0.5 type-label text-[#0F1729]">{value}</p>
     </div>
   );
 }
@@ -116,8 +116,8 @@ function SideFact({ icon, label, value }: { icon: React.ReactNode; label: string
     <div className="flex items-center gap-3 rounded-2xl bg-[#F5F6F7] p-3">
       <span className="text-[#9CA3AF]">{icon}</span>
       <div>
-        <p className="text-xs text-[#9CA3AF]">{label}</p>
-        <p className="text-sm font-semibold text-[#0F1729]">{value}</p>
+        <p className="type-caption text-[#9CA3AF]">{label}</p>
+        <p className="type-label text-[#0F1729]">{value}</p>
       </div>
     </div>
   );

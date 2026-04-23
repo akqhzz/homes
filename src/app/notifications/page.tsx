@@ -38,8 +38,8 @@ export default function NotificationsPage() {
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="px-4 pt-4 lg:pt-6 pb-5 flex-shrink-0 border-b border-[#F5F6F7]">
           <div className="flex items-center justify-between">
-            <h1 className="font-heading text-2xl text-[#0F1729]">Alerts</h1>
-            <button className="text-sm text-[#9CA3AF] font-medium">Mark all read</button>
+            <h1 className="type-title text-[#0F1729]">Alerts</h1>
+            <button className="type-body font-medium text-[#9CA3AF]">Mark all read</button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto pb-24">
@@ -53,11 +53,11 @@ export default function NotificationsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-semibold text-[#0F1729] leading-snug">{n.title}</p>
+                  <p className="type-label text-[#0F1729] leading-snug">{n.title}</p>
                   {n.unread && <div className="w-2 h-2 rounded-full bg-[#0F1729] flex-shrink-0 mt-1.5" />}
                 </div>
-                <p className="text-sm text-[#6B7280] mt-0.5 leading-relaxed">{n.body}</p>
-                <p className="text-xs text-[#9CA3AF] mt-1.5">{n.time}</p>
+                <p className="type-body text-[#6B7280] mt-0.5 leading-relaxed">{n.body}</p>
+                <p className="type-caption text-[#9CA3AF] mt-1.5">{n.time}</p>
               </div>
             </button>
           ))}

@@ -1,5 +1,6 @@
 'use client';
 import * as Slider from '@radix-ui/react-slider';
+import { Building2, Home, Hotel, Rows3, Warehouse } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/atoms/Button';
@@ -8,25 +9,28 @@ import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 
-const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
-  { value: 'condo', label: 'Condo' },
-  { value: 'house', label: 'House' },
-  { value: 'townhouse', label: 'Townhouse' },
-  { value: 'semi-detached', label: 'Semi-Det.' },
-  { value: 'detached', label: 'Detached' },
+const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [
+  { value: 'condo', label: 'Condo', icon: Building2 },
+  { value: 'house', label: 'House', icon: Home },
+  { value: 'townhouse', label: 'Townhouse', icon: Hotel },
+  { value: 'semi-detached', label: 'Semi-Det.', icon: Rows3 },
+  { value: 'detached', label: 'Detached', icon: Warehouse },
 ];
 
 const BED_OPTIONS = [1, 2, 3, 4, 5];
 const BATH_OPTIONS = [1, 2, 3, 4];
 const DAYS_OPTIONS = [
   { value: 1, label: '1 day' },
+  { value: 3, label: '3 days' },
   { value: 7, label: '1 week' },
+  { value: 14, label: '2 weeks' },
   { value: 30, label: '1 month' },
   { value: 90, label: '3 months' },
 ];
 const PRICE_MIN = 0;
 const PRICE_MAX = 2000000;
 const PRICE_STEP = 50000;
+const PRICE_BUCKETS = [2, 5, 8, 12, 10, 7, 4, 6, 3, 2, 1, 1];
 
 export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { totalListings?: number }) {
   const { filters, setFilters, resetFilters } = useSearchStore();
@@ -45,6 +49,8 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
     filters.minPrice ?? PRICE_MIN,
     filters.maxPrice ?? PRICE_MAX,
   ];
+  const selectedListedWithin = DAYS_OPTIONS.find((option) => option.value === filters.maxDaysOnMarket)?.value ?? '';
+  const pricePercent = (value: number) => ((value - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
 
   const handlePriceRangeChange = ([min, max]: number[]) => {
     setFilters({
@@ -102,9 +108,22 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
               step={PRICE_STEP}
               minStepsBetweenThumbs={1}
               onValueChange={handlePriceRangeChange}
-              className="relative flex h-9 w-full touch-none select-none items-center"
+              className="relative flex h-12 w-full touch-none select-none items-center"
               aria-label="Price range"
             >
+              <div className="pointer-events-none absolute left-0 right-0 top-1/2 flex h-9 -translate-y-1/2 items-end gap-1 px-1">
+                {PRICE_BUCKETS.map((count, index) => {
+                  const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
+                  const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
+                  return (
+                    <div
+                      key={index}
+                      className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]/35' : 'bg-[#D1D5DB]/75')}
+                      style={{ height: `${Math.max(6, count * 2.3)}px` }}
+                    />
+                  );
+                })}
+              </div>
               <Slider.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-[#E5E7EB]">
                 <Slider.Range className="absolute h-full rounded-full bg-[#0F1729]" />
               </Slider.Track>
@@ -123,17 +142,18 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
         {/* Property Type */}
       <Section title="Property Type">
           <div className="flex flex-wrap gap-2">
-            {PROPERTY_TYPES.map(({ value, label }) => (
+            {PROPERTY_TYPES.map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
                 onClick={() => togglePropertyType(value)}
                 className={cn(
-                  'px-4 py-2 rounded-full text-sm font-medium border transition-all',
+                  'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border transition-all',
                   filters.propertyTypes.includes(value)
                     ? 'bg-[#0F1729] text-white border-[#0F1729]'
                     : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
                 )}
               >
+                <Icon size={14} />
                 {label}
               </button>
             ))}
@@ -143,7 +163,7 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
         {/* Beds */}
       <Section title="Bedrooms">
           <div className="flex gap-2">
-            {['Any', ...BED_OPTIONS.map(String)].map((opt) => {
+            {['Any', ...BED_OPTIONS.map((value) => `${value}+`)].map((opt) => {
               const val = opt === 'Any' ? undefined : parseInt(opt);
               const active = opt === 'Any' ? !filters.minBeds : filters.minBeds === val;
               return (
@@ -151,13 +171,13 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
                   key={opt}
                   onClick={() => setFilters({ minBeds: val })}
                   className={cn(
-                    'w-11 h-11 rounded-full text-sm font-medium border transition-all flex-shrink-0',
+                    'h-10 min-w-12 rounded-full px-3 text-sm font-medium border transition-all flex-shrink-0',
                     active
                       ? 'bg-[#0F1729] text-white border-[#0F1729]'
                       : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
                   )}
                 >
-                  {opt === String(BED_OPTIONS[BED_OPTIONS.length - 1]) ? `${opt}+` : opt}
+                  {opt}
                 </button>
               );
             })}
@@ -167,7 +187,7 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
         {/* Baths */}
       <Section title="Bathrooms">
           <div className="flex gap-2">
-            {['Any', ...BATH_OPTIONS.map(String)].map((opt) => {
+            {['Any', ...BATH_OPTIONS.map((value) => `${value}+`)].map((opt) => {
               const val = opt === 'Any' ? undefined : parseInt(opt);
               const active = opt === 'Any' ? !filters.minBaths : filters.minBaths === val;
               return (
@@ -175,13 +195,13 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
                   key={opt}
                   onClick={() => setFilters({ minBaths: val })}
                   className={cn(
-                    'w-11 h-11 rounded-full text-sm font-medium border transition-all flex-shrink-0',
+                    'h-10 min-w-12 rounded-full px-3 text-sm font-medium border transition-all flex-shrink-0',
                     active
                       ? 'bg-[#0F1729] text-white border-[#0F1729]'
                       : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
                   )}
                 >
-                  {opt === String(BATH_OPTIONS[BATH_OPTIONS.length - 1]) ? `${opt}+` : opt}
+                  {opt}
                 </button>
               );
             })}
@@ -190,24 +210,16 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
 
         {/* Listed Within */}
       <Section title="Listed Within">
-          <div className="grid grid-cols-2 gap-2">
+          <select
+            value={selectedListedWithin}
+            onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
+            className="h-11 w-full cursor-pointer rounded-full border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
+          >
+            <option value="">Any Time</option>
             {DAYS_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() =>
-                  setFilters({ maxDaysOnMarket: filters.maxDaysOnMarket === value ? undefined : value })
-                }
-                className={cn(
-                  'py-2.5 rounded-xl text-sm font-medium border transition-all',
-                  filters.maxDaysOnMarket === value
-                    ? 'bg-[#0F1729] text-white border-[#0F1729]'
-                    : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
-                )}
-              >
-                {label}
-              </button>
+              <option key={value} value={value}>{label}</option>
             ))}
-          </div>
+          </select>
       </Section>
 
         {/* Square Footage */}

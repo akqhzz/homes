@@ -43,7 +43,7 @@ export default function ForYouPage() {
     <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="px-4 pt-4 lg:pt-6 pb-3 flex-shrink-0">
-          <h1 className="font-heading text-2xl text-[#0F1729]">For You</h1>
+          <h1 className="type-title text-[#0F1729]">For You</h1>
         </div>
 
         <div className="flex flex-1 items-center overflow-hidden px-4 pb-24">
@@ -75,14 +75,14 @@ export default function ForYouPage() {
                     <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-sm">
                       <TrendingUp size={18} />
                     </div>
-                    <p className="font-heading text-3xl leading-tight text-[#0F1729]">{insight.title}</p>
+                    <p className="type-title-lg text-[#0F1729]">{insight.title}</p>
                   </div>
                   <div>
                     <div className="mb-5 flex items-end gap-3">
-                      <span className="font-heading text-6xl leading-none text-[#0F1729]">{insight.stat}</span>
-                      <span className="pb-2 text-sm font-semibold text-[#6B7280]">{insight.label}</span>
+                      <span className="type-display text-[#0F1729]">{insight.stat}</span>
+                      <span className="pb-2 type-label text-[#6B7280]">{insight.label}</span>
                     </div>
-                    <p className="text-base leading-relaxed text-[#4B5563]">{insight.detail}</p>
+                    <p className="type-body-lg text-[#4B5563]">{insight.detail}</p>
                   </div>
                 </motion.article>
               );

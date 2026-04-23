@@ -4,7 +4,6 @@ import Image from 'next/image';
 import * as Slider from '@radix-ui/react-slider';
 import {
   Bell,
-  Bookmark,
   Building2,
   ChevronRight,
   Home,
@@ -92,6 +91,8 @@ export default function DesktopHeader() {
       : `${selectedLocations[0].name}, +${selectedLocations.length - 1}`;
 
   const priceRange = [filters.minPrice ?? PRICE_MIN, filters.maxPrice ?? PRICE_MAX];
+  const selectedListedWithin = LISTED_WITHIN_OPTIONS.find((option) => option.value === filters.maxDaysOnMarket)?.value ?? '';
+  const pricePercent = (value: number) => ((value - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
   const filteredLocations = LOCATION_SUGGESTIONS.filter(
     (location) =>
       !selectedLocations.some((selected) => selected.id === location.id) &&
@@ -155,10 +156,10 @@ export default function DesktopHeader() {
 
         {/* Centered search */}
         <div className={cn(
-          'flex-1 items-center justify-center gap-2 max-w-xl mx-auto',
+          'flex-1 items-center justify-center gap-2 max-w-[500px] mx-auto',
           isCollectionsPage ? 'hidden' : 'flex'
         )}>
-          <div ref={searchRef} className="relative flex-1">
+          <div ref={searchRef} className="relative w-[282px] flex-none">
             <div
               onClick={() => {
                 setShowSearch(true);
@@ -239,12 +240,13 @@ export default function DesktopHeader() {
                 setShowMenu(false);
               }}
               className={cn(
-                'relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select',
+                'relative flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select',
                 filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
               aria-label="Filters"
             >
-              <SlidersHorizontal size={18} className="text-[#0F1729]" />
+              <SlidersHorizontal size={16} className="text-[#0F1729]" />
+              Filter
               {filterCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 text-[8px] font-bold leading-none text-white">
                   {filterCount}
@@ -252,19 +254,10 @@ export default function DesktopHeader() {
               )}
             </button>
             {showFilter && (
-              <div className="absolute right-0 top-12 z-40 max-h-[calc(100vh-7rem)] w-[390px] overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                <div className="space-y-5">
+              <div className="absolute right-0 top-12 z-40 flex max-h-[calc(100vh-9rem)] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                <div className="flex-1 space-y-5 overflow-y-auto p-4 pb-3">
                   <div>
                     <p className="font-heading mb-3 text-lg text-[#0F1729]">Price Range</p>
-                    <div className="mb-1 flex h-10 items-end gap-1 px-1">
-                      {PRICE_BUCKETS.map((count, index) => (
-                        <div
-                          key={index}
-                          className="flex-1 rounded-t bg-[#D1D5DB]"
-                          style={{ height: `${Math.max(6, count * 2.5)}px` }}
-                        />
-                      ))}
-                    </div>
                     <div className="mb-4 grid grid-cols-2 gap-3">
                       <PriceInput value={filters.minPrice} placeholder="No min" onChange={(value) => setFilters({ minPrice: value })} />
                       <PriceInput value={filters.maxPrice} placeholder="No max" onChange={(value) => setFilters({ maxPrice: value })} />
@@ -279,9 +272,22 @@ export default function DesktopHeader() {
                         minPrice: min <= PRICE_MIN ? undefined : min,
                         maxPrice: max >= PRICE_MAX ? undefined : max,
                       })}
-                      className="relative flex h-9 w-full touch-none select-none items-center cursor-pointer"
+                      className="relative flex h-12 w-full touch-none select-none items-center cursor-pointer"
                       aria-label="Desktop price range"
                     >
+                      <div className="pointer-events-none absolute left-0 right-0 top-1/2 flex h-9 -translate-y-1/2 items-end gap-1 px-1">
+                        {PRICE_BUCKETS.map((count, index) => {
+                          const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
+                          const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
+                          return (
+                            <div
+                              key={index}
+                              className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]/35' : 'bg-[#D1D5DB]/75')}
+                              style={{ height: `${Math.max(6, count * 2.3)}px` }}
+                            />
+                          );
+                        })}
+                      </div>
                       <Slider.Track className="relative h-1.5 grow cursor-pointer overflow-hidden rounded-full bg-[#E5E7EB]">
                         <Slider.Range className="absolute h-full rounded-full bg-[#0F1729]" />
                       </Slider.Track>
@@ -323,22 +329,16 @@ export default function DesktopHeader() {
                   />
                   <div>
                     <p className="font-heading mb-3 text-lg text-[#0F1729]">Listed Within</p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={selectedListedWithin}
+                      onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
+                      className="h-11 w-full cursor-pointer rounded-full border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
+                    >
+                      <option value="">Any Time</option>
                       {LISTED_WITHIN_OPTIONS.map(({ value, label }) => (
-                        <button
-                          key={value}
-                          onClick={() => setFilters({ maxDaysOnMarket: filters.maxDaysOnMarket === value ? undefined : value })}
-                          className={cn(
-                            'rounded-xl border py-2.5 text-sm font-medium transition-all hover:bg-[#F5F6F7]',
-                            filters.maxDaysOnMarket === value
-                              ? 'border-[#0F1729] bg-[#0F1729] text-white hover:bg-[#0F1729]'
-                              : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
-                          )}
-                        >
-                          {label}
-                        </button>
+                        <option key={value} value={value}>{label}</option>
                       ))}
-                    </div>
+                    </select>
                   </div>
                   <div>
                     <p className="font-heading mb-3 text-lg text-[#0F1729]">Square Footage</p>
@@ -359,25 +359,32 @@ export default function DesktopHeader() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button onClick={resetFilters} className="h-11 rounded-full bg-[#F5F6F7] text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]">
-                      Reset
-                    </button>
-                    <button onClick={() => setShowFilter(false)} className="h-11 rounded-full bg-[#0F1729] text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">
-                      Done
-                    </button>
-                  </div>
+                </div>
+                <div className="sticky bottom-0 grid grid-cols-2 gap-3 border-t border-[#F5F6F7] bg-white p-4">
+                  <button onClick={resetFilters} className="h-11 rounded-full bg-[#F5F6F7] text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]">
+                    Reset
+                  </button>
+                  <button onClick={() => setShowFilter(false)} className="h-11 rounded-full bg-[#0F1729] text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">
+                    Done
+                  </button>
                 </div>
               </div>
             )}
           </div>
 
           <button
-            onClick={() => setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches')}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => {
+              setShowFilter(false);
+              setShowSearch(false);
+              setShowMenu(false);
+              setShowCollections(false);
+              setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches');
+            }}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
             aria-label="Saved searches"
           >
-            <Bookmark size={17} />
+            <SavedSearchIllustration />
           </button>
         </div>
 
@@ -404,8 +411,9 @@ export default function DesktopHeader() {
                 Collections
               </button>
               {showCollections && (
-                <div className="absolute right-0 top-12 z-40 w-80 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                  <div className="flex gap-2 p-2">
+                <div className="absolute right-0 top-12 z-40 w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                  <p className="mb-3 type-heading text-[#0F1729]">Collections</p>
+                  <div className="mb-3 flex gap-2">
                     <input
                       value={newCollectionName}
                       onChange={(event) => setNewCollectionName(event.target.value)}
@@ -413,40 +421,40 @@ export default function DesktopHeader() {
                         if (event.key === 'Enter') handleCreateCollection();
                       }}
                       placeholder="Create A Collection"
-                      className="h-10 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-3 text-sm outline-none transition-colors focus:border-[#0F1729]"
+                      className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none transition-colors focus:border-[#0F1729]"
                     />
                     <button
                       onClick={handleCreateCollection}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0F1729] text-white transition-colors hover:bg-[#1F2937]"
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F1729] text-white transition-colors hover:bg-[#1F2937]"
                       aria-label="Create collection"
                     >
                       <Plus size={16} />
                     </button>
                   </div>
-                  <div className="mt-1 flex flex-col gap-1">
+                  <div className="flex flex-col gap-2.5">
                     {collections.slice(0, 4).map((collection) => {
                       const listing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
                       return (
                         <button
                           key={collection.id}
                           onClick={() => router.push(`/saved/${collection.id}`)}
-                          className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors hover:bg-[#F5F6F7]"
+                          className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left transition-colors hover:bg-[#EBEBEB]"
                         >
-                          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-[#F5F6F7]">
+                          <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
                             {listing?.images[0] && (
-                              <Image src={listing.images[0]} alt="" fill sizes="40px" className="object-cover" />
+                              <Image src={listing.images[0]} alt="" fill sizes="56px" className="object-cover" />
                             )}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="font-heading block truncate text-sm text-[#0F1729]">{collection.name}</span>
-                            <span className="block text-xs text-[#9CA3AF]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
+                            <span className="type-label block truncate text-[#0F1729]">{collection.name}</span>
+                            <span className="block type-caption text-[#9CA3AF]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                           </span>
                         </button>
                       );
                     })}
                     <button
                       onClick={() => router.push('/saved')}
-                      className="mt-1 flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                      className="flex items-center justify-between rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
                     >
                       All Collections
                       <ChevronRight size={15} />
@@ -516,7 +524,7 @@ function SegmentedFilter({
               key={option}
               onClick={() => onSelect(option)}
               className={cn(
-                'h-11 w-11 shrink-0 rounded-full border text-sm font-medium transition-all hover:bg-[#F5F6F7]',
+                'h-10 min-w-12 shrink-0 rounded-full border px-3 text-sm font-medium transition-all hover:bg-[#F5F6F7]',
                 active
                   ? 'border-[#0F1729] bg-[#0F1729] text-white hover:bg-[#0F1729]'
                   : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
@@ -528,6 +536,18 @@ function SegmentedFilter({
         })}
       </div>
     </div>
+  );
+}
+
+function SavedSearchIllustration() {
+  return (
+    <span className="relative block h-[19px] w-[19px]" aria-hidden="true">
+      <span className="absolute left-[3px] top-[5px] h-[11px] w-[12px] rotate-[-18deg] rounded-[4px] bg-[#D1D5DB] shadow-[0_1px_1px_rgba(15,23,41,0.14)]" />
+      <span className="absolute left-[5px] top-[3px] h-[11px] w-[12px] rotate-[-8deg] rounded-[4px] bg-[#F5F6F7] shadow-[0_1px_2px_rgba(15,23,41,0.16)]" />
+      <span className="absolute left-[7px] top-[1px] h-[11px] w-[12px] rotate-[7deg] rounded-[4px] border border-[#0F1729] bg-white shadow-[0_3px_5px_rgba(15,23,41,0.16)]">
+        <span className="absolute left-1 top-1 h-1.5 w-1.5 rounded-full bg-[#0F1729]" />
+      </span>
+    </span>
   );
 }
 

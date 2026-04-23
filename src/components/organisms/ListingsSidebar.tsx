@@ -51,9 +51,9 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   useEffect(() => () => setHoveredListingId(null), [setHoveredListingId]);
 
   return (
-    <div className="h-full flex flex-col bg-white border-l border-[#F0F0F0]">
+    <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="flex flex-shrink-0 items-center justify-between px-5 py-2">
+      <div className="flex flex-shrink-0 items-center justify-between px-5 py-1.5">
         <p className="font-heading text-lg text-[#0F1729]">
           {listings.length} <span className="text-[#9CA3AF] font-normal">listings</span>
         </p>
@@ -93,17 +93,17 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
       </div>
 
       {/* Listings grid */}
-      <div className="flex-1 overflow-y-auto px-5 py-2">
-        <div className="grid grid-cols-1 justify-items-center gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+      <div className="flex-1 overflow-y-auto px-5 py-1.5">
+        <div className="grid grid-cols-1 justify-items-center gap-5 xl:grid-cols-2 2xl:grid-cols-3">
           {sorted.map((listing) => (
             <div
               key={listing.id}
-              className={cn('w-72 min-w-0 rounded-2xl transition-transform cursor-pointer hover:-translate-y-0.5')}
+              className={cn('w-80 min-w-0 rounded-2xl transition-transform cursor-pointer hover:-translate-y-0.5')}
               onMouseEnter={() => setHoveredListingId(listing.id)}
               onMouseLeave={() => setHoveredListingId(null)}
               onClick={() => router.push(`/listings/${listing.id}`)}
             >
-              <ListingCard listing={listing} variant="carousel" />
+              <ListingCard listing={listing} variant="carousel" className="w-80" />
             </div>
           ))}
         </div>

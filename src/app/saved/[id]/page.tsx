@@ -21,7 +21,7 @@ export default function CollectionPage() {
   const collection = collections.find((c) => c.id === id);
   if (!collection) {
     return (
-      <PageShell showBottomNav={false}>
+      <PageShell showBottomNav={false} desktopWide>
         <div className="h-full flex items-center justify-center">
           <p className="text-[#9CA3AF]">Collection not found</p>
         </div>
@@ -38,19 +38,19 @@ export default function CollectionPage() {
     .filter(Boolean) as Array<(typeof MOCK_LISTINGS)[0] & { collectionData: (typeof collection.listings)[0] }>;
 
   return (
-    <PageShell showBottomNav={false}>
+    <PageShell showBottomNav={false} desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="px-4 pt-4 lg:pt-6 pb-0 flex-shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8 lg:pt-8">
+          <div className="relative flex items-center justify-center">
             <button
               onClick={() => router.back()}
-              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F6F7] transition-colors"
+              className="absolute left-0 flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[#F5F6F7]"
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="font-heading text-lg flex-1 text-center text-[#0F1729]">{collection.name}</h1>
-            <div className="flex items-center gap-2">
+            <h1 className="type-title lg:text-3xl text-center text-[#0F1729]">{collection.name}</h1>
+            <div className="absolute right-0 flex items-center gap-2">
               {collection.collaborators && collection.collaborators.length > 0 && (
                 <div className="flex -space-x-1.5">
                   {collection.collaborators.slice(0, 2).map((c) => (
@@ -66,22 +66,22 @@ export default function CollectionPage() {
         </div>
 
         {/* Grid */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8">
+          <div className="mx-auto grid max-w-[1344px] grid-cols-2 gap-3 sm:grid-cols-2 lg:gap-5 xl:grid-cols-3 2xl:grid-cols-4">
             {listings.map((listing) => (
               <div key={listing.id} className="flex flex-col gap-1.5">
                 <ListingCard listing={listing} variant="grid" />
                 {listing.collectionData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 px-0.5">
                     {listing.collectionData.tags.map((t) => (
-                      <span key={t} className="text-[10px] bg-[#F5F6F7] text-[#6B7280] px-2 py-0.5 rounded-full">
+                      <span key={t} className="type-micro bg-[#F5F6F7] text-[#6B7280] px-2 py-0.5 rounded-full">
                         {t}
                       </span>
                     ))}
                   </div>
                 )}
                 {listing.collectionData.notes && (
-                  <p className="text-xs text-[#9CA3AF] px-0.5 line-clamp-2">{listing.collectionData.notes}</p>
+                  <p className="type-caption text-[#9CA3AF] px-0.5 line-clamp-2">{listing.collectionData.notes}</p>
                 )}
               </div>
             ))}
@@ -89,8 +89,8 @@ export default function CollectionPage() {
           {listings.length === 0 && (
             <div className="text-center py-20">
               <div className="text-5xl mb-4">📂</div>
-              <p className="font-semibold text-[#0F1729]">Empty collection</p>
-              <p className="text-sm text-[#9CA3AF] mt-1">Save listings from the map to add them here</p>
+              <p className="type-label text-[#0F1729]">Empty collection</p>
+              <p className="type-body text-[#9CA3AF] mt-1">Save listings from the map to add them here</p>
             </div>
           )}
         </div>

@@ -182,8 +182,8 @@ export default function ListingCard({ listing, variant = 'carousel', className }
             </button>
           </div>
           <div className="px-0.5">
-            <p className="font-heading text-base leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">{listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft</p>
+            <p className="type-heading leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="type-caption text-[#9CA3AF] mt-0.5">{listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft</p>
           </div>
         </div>
         {saveSheet}
@@ -205,8 +205,8 @@ export default function ListingCard({ listing, variant = 'carousel', className }
             </button>
           </div>
           <div className="p-4">
-            <p className="font-heading text-xl text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="text-sm text-[#6B7280] mt-1">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
+            <p className="type-subtitle text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="type-body text-[#6B7280] mt-1">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
             <div className="flex items-center gap-1 mt-1.5 text-xs text-[#9CA3AF]">
               <MapPin size={11} />
               <span>{listing.address}</span>
@@ -274,7 +274,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         )}
 
         {listing.images.length > 1 && (
-          <div className="pointer-events-none absolute inset-x-3 top-[87px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
+          <div className="pointer-events-none absolute inset-x-2 top-[96px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
             <button
               type="button"
               aria-label="Previous image"
@@ -282,7 +282,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
                 event.stopPropagation();
                 showPreviousImage();
               }}
-              className="pointer-events-auto flex h-10 w-10 items-center justify-center text-white drop-shadow-[0_1px_3px_rgba(15,23,41,0.45)] transition-transform hover:scale-110"
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
             >
               <ChevronLeft size={16} />
             </button>
@@ -293,7 +293,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
                 event.stopPropagation();
                 showNextImage();
               }}
-              className="pointer-events-auto flex h-10 w-10 items-center justify-center text-white drop-shadow-[0_1px_3px_rgba(15,23,41,0.45)] transition-transform hover:scale-110"
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
             >
               <ChevronRight size={16} />
             </button>
@@ -320,10 +320,10 @@ export default function ListingCard({ listing, variant = 'carousel', className }
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="font-heading text-[17px] leading-[1.2] text-[#0F1729]">{formatPrice(listing.price)}</p>
-              <p className="mt-1 truncate text-xs leading-[1.25] text-[#6B7280]">
+              <p className="mt-1 truncate type-caption text-[#6B7280]">
                 {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
               </p>
-              <p className="mt-1 text-[11px] leading-[1.25] text-[#9CA3AF] line-clamp-1">
+              <p className="mt-1 type-fine text-[#9CA3AF] line-clamp-1">
                 {listing.address}
               </p>
             </div>
