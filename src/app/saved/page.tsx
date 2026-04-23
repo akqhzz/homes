@@ -107,12 +107,12 @@ export default function SavedPage() {
               return (
                 <motion.article
                   key={col.id}
-                  className="relative w-full overflow-visible rounded-3xl bg-[#F5F6F7] text-left transition-colors hover:bg-[#EBEBEB]"
+                  className="relative w-full overflow-visible rounded-2xl bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5"
                   whileTap={{ scale: 0.98 }}
                 >
                   <div
                     onClick={() => router.push(`/saved/${col.id}`)}
-                    className="block w-full overflow-hidden rounded-3xl text-left"
+                    className="block w-full overflow-hidden rounded-2xl text-left"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(event) => {
@@ -129,7 +129,7 @@ export default function SavedPage() {
                     </div>
 
                     {/* pr-12 reserves space for the absolutely-positioned ... button */}
-                    <div className="px-4 py-3 pr-12 flex items-start gap-2">
+                    <div className="px-4 pb-3.5 pt-2 pr-12 flex items-start gap-2">
                       <div className="flex-1 min-w-0">
                         {renamingId === col.id ? (
                           <input

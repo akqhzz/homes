@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
-const CAROUSEL_TOTAL_HEIGHT = 248;
+const CAROUSEL_TOTAL_HEIGHT = 252;
 const IMAGE_SWIPE_THRESHOLD = 24;
 const CARD_IMAGE_COUNT = 7;
 const LISTING_IMAGE_FALLBACKS = [
@@ -41,8 +41,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
   const imageAreaRef = useRef<HTMLDivElement>(null);
   const wheelLockRef = useRef(false);
   const carouselImageHeight = desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT;
-  const carouselTotalHeight = desktopTall ? 260 : CAROUSEL_TOTAL_HEIGHT;
-  const carouselInfoHeight = carouselTotalHeight - carouselImageHeight;
+  const carouselTotalHeight = desktopTall ? 264 : CAROUSEL_TOTAL_HEIGHT;
 
   useEffect(() => {
     const node = imageAreaRef.current;
@@ -228,12 +227,11 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
     <>
       <div
         className={cn(
-          'group relative flex-shrink-0 bg-white rounded-2xl overflow-hidden no-select',
+          'group relative flex w-72 shrink-0 flex-col rounded-2xl bg-white no-select overflow-hidden',
           'shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]',
-          'w-72',
           className
         )}
-        style={{ height: carouselTotalHeight }}
+        style={{ minHeight: carouselTotalHeight }}
       >
         {/* Image strip: swiping here changes photos instead of moving the carousel. */}
         <div
@@ -321,8 +319,8 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
 
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button
-          className="absolute bottom-0 left-0 right-0 bg-white px-3.5 pb-2.5 pt-1.5 text-left"
-          style={{ height: carouselInfoHeight, touchAction: 'pan-x' }}
+          className="block bg-white px-3.5 pb-3.5 pt-2 text-left"
+          style={{ touchAction: 'pan-x' }}
           onClick={openListingPage}
         >
           <div className="flex items-start justify-between gap-2">
@@ -331,7 +329,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
               <p className="mt-1 truncate type-caption text-[#6B7280]">
                 {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
               </p>
-              <p className="mt-1.5 type-caption text-[#9CA3AF] line-clamp-1">
+              <p className="mt-1.5 pr-2 type-caption text-[#9CA3AF] line-clamp-2">
                 {listing.address}
               </p>
             </div>

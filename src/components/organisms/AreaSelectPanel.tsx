@@ -106,11 +106,25 @@ export default function AreaSelectPanel({
   useEffect(() => {
     const node = carouselRef.current;
     if (!node) return;
+    const handleTouchStart = () => {
+      wheelLockRef.current = false;
+    };
     const handleTouchMove = (event: TouchEvent) => {
       event.preventDefault();
+      event.stopPropagation();
     };
-    node.addEventListener('touchmove', handleTouchMove, { passive: false });
-    return () => node.removeEventListener('touchmove', handleTouchMove);
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    node.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+    node.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+    node.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+    return () => {
+      node.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      node.removeEventListener('touchmove', handleTouchMove, { capture: true });
+      node.removeEventListener('wheel', handleWheel, { capture: true });
+    };
   }, []);
 
   const goToNeighborhood = (index: number) => {
@@ -280,6 +294,7 @@ export default function AreaSelectPanel({
               onPointerCancelCapture={() => { dragStartRef.current = null; }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
+              onTouchEnd={() => { touchStartRef.current = null; }}
               onWheel={handleWheel}
             >
               {AREA_NEIGHBORHOODS.map((neighborhood) => {

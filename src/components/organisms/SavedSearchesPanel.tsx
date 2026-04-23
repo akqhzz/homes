@@ -152,11 +152,6 @@ export default function SavedSearchesPanel({
                 <p className="type-caption text-[#9CA3AF] mt-0.5">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
-                {isSelected && activeSearchDirty && (
-                  <span className="mt-2 inline-flex h-7 items-center rounded-full bg-[#0F1729] px-2.5 type-caption text-white">
-                    Update?
-                  </span>
-                )}
                 {search.newListingsCount && search.newListingsCount > 0 && (
                   <span className="inline-flex items-center mt-1.5 px-2 py-0.5 bg-[#0F1729] text-white type-caption font-medium rounded-full">
                     {search.newListingsCount} new
@@ -170,7 +165,7 @@ export default function SavedSearchesPanel({
                     event.stopPropagation();
                     onUpdateSearch?.(search.id);
                   }}
-                  className="shrink-0 rounded-full bg-[#0F1729] px-2.5 py-1 type-caption text-white"
+                  className="shrink-0 rounded-full bg-[#0F1729] px-2.5 py-1.5 type-caption text-white"
                 >
                   Update?
                 </button>
