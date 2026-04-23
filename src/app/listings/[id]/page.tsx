@@ -20,7 +20,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
   return (
     <main className="h-full overflow-y-auto bg-white">
-      <div className="mx-auto max-w-6xl px-5 py-5 lg:px-8 lg:py-7">
+      <div className="mx-auto w-full max-w-[1600px] px-5 py-5 lg:px-8 lg:py-7">
         <div className="mb-5 flex items-center justify-between gap-3">
           <BackButton />
           <button className="inline-flex h-10 items-center gap-2 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">

@@ -30,6 +30,7 @@ export default function SavedSearchesPanel({
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
   const [saving, setSaving] = useState(canSaveCurrent && !activeSearchId);
+  const [isDesktop, setIsDesktop] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const desktopPanelRef = useRef<HTMLDivElement>(null);
 
@@ -40,13 +41,20 @@ export default function SavedSearchesPanel({
   }, [saving]);
 
   useEffect(() => {
+    const updateViewport = () => setIsDesktop(window.innerWidth >= 1024);
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
+
+  useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
-      if (window.innerWidth < 1024) return;
+      if (!isDesktop) return;
       if (!desktopPanelRef.current?.contains(event.target as Node)) setActivePanel('none');
     };
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [setActivePanel]);
+  }, [isDesktop, setActivePanel]);
 
   const handleLoadSearch = (search: SavedSearch) => {
     setActiveSearchId(search.id);
@@ -147,7 +155,7 @@ export default function SavedSearchesPanel({
 
   return (
     <>
-      <div className="lg:hidden">
+      {!isDesktop && (
         <MobileDrawer
           title="Saved Searches"
           onClose={() => setActivePanel('none')}
@@ -155,8 +163,8 @@ export default function SavedSearchesPanel({
         >
           {content}
         </MobileDrawer>
-      </div>
-      <div className="hidden lg:block">
+      )}
+      {isDesktop && (
         <div
           ref={desktopPanelRef}
           className="fixed top-20 z-[60] max-h-[calc(100vh-6rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_16px_48px_rgba(15,23,41,0.18)] lg:left-[calc(50%+168px)] xl:left-[calc(50%+190px)]"
@@ -166,7 +174,7 @@ export default function SavedSearchesPanel({
           </div>
           {content}
         </div>
-      </div>
+      )}
     </>
   );
 }

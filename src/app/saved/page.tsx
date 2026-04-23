@@ -87,18 +87,18 @@ export default function SavedPage() {
   const isConfirmOpen = !!menuState && !!confirmDeleteId;
 
   return (
-    <PageShell>
+    <PageShell desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="px-4 pt-4 lg:pt-6 pb-0 flex-shrink-0">
-          <div className="flex items-center justify-between mb-1">
-            <h1 className="font-heading text-2xl text-[#0F1729]">Saved</h1>
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8 lg:pt-6">
+          <div className="mb-1 flex items-center justify-between">
+            <h1 className="font-heading text-2xl text-[#0F1729] lg:text-3xl">Collections</h1>
           </div>
         </div>
 
         {/* Collections */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
-          <div className="flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {collections.map((col) => {
               const firstListing = col.listings.length > 0
                 ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
@@ -120,7 +120,7 @@ export default function SavedPage() {
                     }}
                   >
                     {/* Cover — first listing image, full fill */}
-                    <div className="relative h-52 overflow-hidden bg-[#E5E7EB]">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-[#E5E7EB]">
                       {firstListing ? (
                         <Image src={firstListing.images[0]} alt="" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
                       ) : (
@@ -165,7 +165,7 @@ export default function SavedPage() {
                   {/* ... button — outside overflow-hidden, positioned at article level */}
                   <button
                     onClick={(event) => openMenu(event, col.id)}
-                    className="absolute top-[13.25rem] right-1 flex h-12 w-12 items-center justify-center rounded-full text-[#6B7280]"
+                    className="absolute bottom-3 right-1 flex h-12 w-12 items-center justify-center rounded-full text-[#6B7280]"
                     aria-label="Collection options"
                   >
                     <Ellipsis size={17} />

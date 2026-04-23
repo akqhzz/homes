@@ -1,15 +1,18 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import * as Slider from '@radix-ui/react-slider';
 import {
   Bell,
   Bookmark,
   Building2,
+  ChevronRight,
   Home,
   Hotel,
   LogOut,
   Menu,
   MessageSquare,
+  Plus,
   Rows3,
   Search,
   Shield,
@@ -20,6 +23,8 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
+import { useSavedStore } from '@/store/savedStore';
+import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { cn } from '@/lib/utils/cn';
 import { Location, PropertyType } from '@/lib/types';
 
@@ -62,17 +67,22 @@ export default function DesktopHeader() {
   const [showFilter, setShowFilter] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showCollections, setShowCollections] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const filterRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const collectionsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const { selectedLocations, filters, setFilters, resetFilters, addLocation, removeLocation, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
-  const { setActivePanel } = useUIStore();
+  const { activePanel, setActivePanel } = useUIStore();
+  const { collections, createCollection } = useSavedStore();
 
+  const isCollectionsPage = pathname.startsWith('/saved');
   const filterCount = activeFilterCount();
   const locationLabel =
     selectedLocations.length === 0
@@ -106,17 +116,25 @@ export default function DesktopHeader() {
     setShowSearch(false);
   };
 
+  const handleCreateCollection = () => {
+    const name = newCollectionName.trim();
+    if (!name) return;
+    createCollection(name);
+    setNewCollectionName('');
+  };
+
   useEffect(() => {
-    if (!showFilter && !showSearch && !showMenu) return;
+    if (!showFilter && !showSearch && !showMenu && !showCollections) return;
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
       if (!filterRef.current?.contains(target)) setShowFilter(false);
       if (!searchRef.current?.contains(target)) setShowSearch(false);
       if (!menuRef.current?.contains(target)) setShowMenu(false);
+      if (!collectionsRef.current?.contains(target)) setShowCollections(false);
     };
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [showFilter, showSearch, showMenu]);
+  }, [showFilter, showSearch, showMenu, showCollections]);
 
   useEffect(() => {
     if (!showSearch) return;
@@ -126,7 +144,7 @@ export default function DesktopHeader() {
 
   return (
     <>
-      <header className="hidden lg:flex min-h-[76px] border-b border-[#F0F0F0] bg-white items-center px-6 py-3 gap-6 flex-shrink-0 z-30">
+      <header className="hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 gap-6 flex-shrink-0 z-30">
         {/* Logo */}
         <button
           onClick={() => router.push('/')}
@@ -136,7 +154,10 @@ export default function DesktopHeader() {
         </button>
 
         {/* Centered search */}
-        <div className="flex-1 flex items-center justify-center gap-2 max-w-2xl mx-auto">
+        <div className={cn(
+          'flex-1 items-center justify-center gap-2 max-w-xl mx-auto',
+          isCollectionsPage ? 'hidden' : 'flex'
+        )}>
           <div ref={searchRef} className="relative flex-1">
             <div
               onClick={() => {
@@ -145,7 +166,7 @@ export default function DesktopHeader() {
                 setShowMenu(false);
               }}
               className={cn(
-                'flex min-h-[40px] w-full min-w-0 cursor-text items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[#F9FAFB]',
+                'flex min-h-[44px] w-full min-w-0 cursor-text items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[#F9FAFB]',
                 showSearch && 'shadow-[inset_0_0_0_1.5px_#0F1729,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
             >
@@ -352,7 +373,7 @@ export default function DesktopHeader() {
           </div>
 
           <button
-            onClick={() => setActivePanel('saved-searches')}
+            onClick={() => setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches')}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
             aria-label="Saved searches"
           >
@@ -362,17 +383,79 @@ export default function DesktopHeader() {
 
         {/* Right nav */}
         <nav className="flex items-center gap-1 flex-shrink-0">
-          <button
-            onClick={() => router.push('/saved')}
-            className={cn(
-              'h-10 rounded-full px-4 text-sm font-semibold transition-all',
-              pathname.startsWith('/saved')
-                ? 'bg-[#0F1729] text-white hover:bg-[#1F2937]'
-                : 'bg-[#0F1729] text-white hover:bg-[#1F2937]'
-            )}
-          >
-            Collections
-          </button>
+          {isCollectionsPage ? (
+            <button
+              onClick={() => router.push('/')}
+              className="h-10 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-all hover:bg-[#1F2937]"
+            >
+              Map
+            </button>
+          ) : (
+            <div ref={collectionsRef} className="relative">
+              <button
+                onClick={() => {
+                  setShowCollections((value) => !value);
+                  setShowFilter(false);
+                  setShowSearch(false);
+                  setShowMenu(false);
+                }}
+                className="h-10 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-all hover:bg-[#1F2937]"
+              >
+                Collections
+              </button>
+              {showCollections && (
+                <div className="absolute right-0 top-12 z-40 w-80 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                  <div className="flex gap-2 p-2">
+                    <input
+                      value={newCollectionName}
+                      onChange={(event) => setNewCollectionName(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') handleCreateCollection();
+                      }}
+                      placeholder="Create A Collection"
+                      className="h-10 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-3 text-sm outline-none transition-colors focus:border-[#0F1729]"
+                    />
+                    <button
+                      onClick={handleCreateCollection}
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0F1729] text-white transition-colors hover:bg-[#1F2937]"
+                      aria-label="Create collection"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <div className="mt-1 flex flex-col gap-1">
+                    {collections.slice(0, 4).map((collection) => {
+                      const listing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
+                      return (
+                        <button
+                          key={collection.id}
+                          onClick={() => router.push(`/saved/${collection.id}`)}
+                          className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors hover:bg-[#F5F6F7]"
+                        >
+                          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-[#F5F6F7]">
+                            {listing?.images[0] && (
+                              <Image src={listing.images[0]} alt="" fill sizes="40px" className="object-cover" />
+                            )}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="font-heading block truncate text-sm text-[#0F1729]">{collection.name}</span>
+                            <span className="block text-xs text-[#9CA3AF]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => router.push('/saved')}
+                      className="mt-1 flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                    >
+                      All Collections
+                      <ChevronRight size={15} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div ref={menuRef} className="relative">
             <button
               onClick={() => {

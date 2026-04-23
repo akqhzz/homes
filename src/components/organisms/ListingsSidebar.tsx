@@ -53,7 +53,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#F0F0F0]">
       {/* Header */}
-      <div className="flex flex-shrink-0 items-center justify-between px-5 py-3">
+      <div className="flex flex-shrink-0 items-center justify-between px-5 py-2">
         <p className="font-heading text-lg text-[#0F1729]">
           {listings.length} <span className="text-[#9CA3AF] font-normal">listings</span>
         </p>
@@ -93,7 +93,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
       </div>
 
       {/* Listings grid */}
-      <div className="flex-1 overflow-y-auto px-5 py-3">
+      <div className="flex-1 overflow-y-auto px-5 py-2">
         <div className="grid grid-cols-1 justify-items-center gap-4 xl:grid-cols-2 2xl:grid-cols-3">
           {sorted.map((listing) => (
             <div

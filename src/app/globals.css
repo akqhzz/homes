@@ -79,34 +79,101 @@ button,
   cursor: pointer;
 }
 
-h1,
-h2,
-h3,
-.font-heading,
-.type-heading,
+/* ── Type scale ──────────────────────────────────────────────────
+   Each token bundles family + size + weight + line-height.
+   Color and spacing stay as Tailwind utilities on the element.
+
+   Lora (serif) tokens — headings and numbers
+   ─────────────────────────────────────────── */
+
+/* Hero stats, e.g. for-you big numbers                          */
+.type-display {
+  font-family: var(--font-heading);
+  font-size: 3.5rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Page-level h1s — Saved, Alerts, For You                       */
 .type-title {
   font-family: var(--font-heading);
+  font-size: 1.5rem;
   font-weight: 500;
-  letter-spacing: 0;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
-.font-body,
+/* Brand name or smaller serif headlines                         */
+.type-subheading {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Listing prices on cards (≈26 px)                              */
+.type-price {
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Drawer titles, section headings                               */
+.type-heading {
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/*   Inter (sans) tokens — UI text
+   ─────────────────────────────── */
+
+/* Primary UI text — collection names, button-adjacent text      */
+.type-label {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Narrative / descriptive text                                  */
 .type-body {
   font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.6;
 }
 
-.font-button,
-.type-button {
-  font-family: var(--font-button);
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-.font-caption,
+/* Secondary info — counts, timestamps, metadata                 */
 .type-caption {
-  font-family: var(--font-caption);
+  font-family: var(--font-body);
   font-size: 0.75rem;
-  line-height: 1rem;
+  font-weight: 400;
+  line-height: 1.33;
+}
+
+/* Chips, tags, small badges                                     */
+.type-micro {
+  font-family: var(--font-body);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+/* ── Legacy aliases (backwards-compat, prefer type-* above) ──── */
+.font-heading { font-family: var(--font-heading); font-weight: 500; }
+.font-body    { font-family: var(--font-body); }
+.font-button  { font-family: var(--font-button); font-weight: 600; }
+.font-caption { font-family: var(--font-caption); }
+
+/* Semantic HTML headings default to the heading font            */
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  font-weight: 500;
   letter-spacing: 0;
 }
 

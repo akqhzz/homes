@@ -274,7 +274,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         )}
 
         {listing.images.length > 1 && (
-          <div className="pointer-events-none absolute inset-x-2 top-[72px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
+          <div className="pointer-events-none absolute inset-x-3 top-[87px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
             <button
               type="button"
               aria-label="Previous image"
@@ -282,7 +282,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
                 event.stopPropagation();
                 showPreviousImage();
               }}
-              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#0F1729] shadow-[0_1px_5px_rgba(15,23,41,0.14)] transition-colors hover:bg-white"
+              className="pointer-events-auto flex h-10 w-10 items-center justify-center text-white drop-shadow-[0_1px_3px_rgba(15,23,41,0.45)] transition-transform hover:scale-110"
             >
               <ChevronLeft size={16} />
             </button>
@@ -293,7 +293,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
                 event.stopPropagation();
                 showNextImage();
               }}
-              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#0F1729] shadow-[0_1px_5px_rgba(15,23,41,0.14)] transition-colors hover:bg-white"
+              className="pointer-events-auto flex h-10 w-10 items-center justify-center text-white drop-shadow-[0_1px_3px_rgba(15,23,41,0.45)] transition-transform hover:scale-110"
             >
               <ChevronRight size={16} />
             </button>

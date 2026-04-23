@@ -249,14 +249,14 @@ export default function MapPage() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-[#F5F6F7]">
+    <div className="h-full flex flex-col overflow-hidden bg-white">
       {/* Desktop header (hidden on mobile) */}
       <DesktopHeader />
 
       {/* Main content — split on desktop */}
       <div className="flex-1 flex overflow-hidden">
         {/* Map panel */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 lg:m-4 lg:mr-0 lg:overflow-hidden lg:rounded-[28px]">
           <MapView
             listings={isAreaSelect ? [] : filteredListings}
             showNeighborhoods={isAreaSelect}
