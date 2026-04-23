@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { Neighborhood } from '@/lib/types';
 import { cn } from '@/lib/utils/cn';
 
@@ -26,9 +27,11 @@ export default function NeighborhoodPin({ neighborhood, isSelected, onClick, siz
           isSelected ? 'border-[#0F1729] scale-110' : 'border-white'
         )}
       >
-        <img
+        <Image
           src={neighborhood.thumbnail}
           alt={neighborhood.name}
+          width={56}
+          height={56}
           className="w-full h-full object-cover"
         />
       </div>

@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import { Check, Plus } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
@@ -55,7 +56,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved }: S
             >
               <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[#0F1729]">
                 {thumbnailListing?.images[0] ? (
-                  <img src={thumbnailListing.images[0]} alt="" className="h-full w-full object-cover" draggable={false} />
+                  <Image src={thumbnailListing.images[0]} alt="" width={56} height={56} className="h-full w-full object-cover" draggable={false} />
                 ) : alreadySaved ? (
                   <Check size={16} />
                 ) : (

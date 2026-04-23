@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, Pencil, Plus, Redo2, RotateCcw, Undo2 } from 'lucide-react';
+import { ArrowLeft, Check, Pencil, Plus, Redo2, RotateCcw, Undo2, X } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
@@ -164,8 +165,8 @@ export default function AreaSelectPanel({
     <>
       <div className="pointer-events-none absolute inset-0 z-30">
         {!isDrawing ? (
-          <div className="absolute left-4 right-4 top-4 flex items-center gap-2">
-            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-sm text-[#0F1729] backdrop-blur-xl">
+          <div className="absolute left-4 right-4 top-4 flex items-center gap-2 lg:right-auto">
+            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-sm text-[#0F1729] backdrop-blur-xl lg:flex-none">
               <div className="flex w-full items-center gap-2.5">
                 <button
                   onClick={handleBack}
@@ -284,7 +285,7 @@ export default function AreaSelectPanel({
                     key={neighborhood.id}
                     className="flex h-[152px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
                   >
-                    <img src={neighborhood.thumbnail} alt="" className="h-full w-[104px] shrink-0 rounded-xl object-cover" draggable={false} />
+                    <Image src={neighborhood.thumbnail} alt="" width={104} height={136} className="h-full w-[104px] shrink-0 rounded-xl object-cover" draggable={false} />
                     <div className="flex min-w-0 flex-1 flex-col py-0.5">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-[#0F1729]">{neighborhood.name}</p>
@@ -297,7 +298,7 @@ export default function AreaSelectPanel({
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-2 flex w-[92px] flex-1 items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 flex h-10 w-[92px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >
@@ -318,8 +319,15 @@ export default function AreaSelectPanel({
             transition={{ type: 'tween', duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="absolute bottom-6 left-1/2 z-40 hidden w-[420px] -translate-x-1/2 gap-3 overflow-hidden rounded-2xl bg-white p-3 text-left shadow-[0_12px_34px_rgba(15,23,41,0.18)] lg:flex"
           >
-            <img src={focusedNeighborhood.thumbnail} alt="" className="h-28 w-32 shrink-0 rounded-xl object-cover" draggable={false} />
+            <Image src={focusedNeighborhood.thumbnail} alt="" width={128} height={112} className="h-28 w-32 shrink-0 rounded-xl object-cover" draggable={false} />
             <div className="flex min-w-0 flex-1 flex-col">
+              <button
+                onClick={onCloseNeighborhood}
+                className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                aria-label="Close neighborhood card"
+              >
+                <X size={14} />
+              </button>
               <p className="truncate text-base font-semibold text-[#0F1729]">{focusedNeighborhood.name}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <span className="rounded-full bg-[#F5F6F7] px-2 py-1 text-[11px] font-semibold text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>

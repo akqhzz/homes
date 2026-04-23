@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { Heart, MapPin } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket } from '@/lib/utils/format';
@@ -315,9 +316,11 @@ function ListingImage({
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const fallbackSrc = LISTING_IMAGE_FALLBACKS[fallbackIndex % LISTING_IMAGE_FALLBACKS.length];
   return (
-    <img
+    <Image
       src={failedSrc === src ? fallbackSrc : src}
       alt={alt}
+      width={900}
+      height={675}
       className={className}
       draggable={false}
       loading="lazy"

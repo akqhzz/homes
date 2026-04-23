@@ -94,7 +94,7 @@ export default function DesktopHeader() {
             <button
               onClick={() => setShowFilter((value) => !value)}
               className={cn(
-                'relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[var(--shadow-control)] transition-colors no-select',
+                'relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select',
                 filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
               aria-label="Filters"

@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useRef } from 'react';
+import Image from 'next/image';
 import type { Feature, LineString, Polygon } from 'geojson';
 import Map, { Layer, Marker, NavigationControl, Popup, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -68,7 +69,7 @@ export default function MapView({
   showAmenities = false,
   isAreaMode = false,
 }: MapViewProps) {
-  const { viewState, setViewState, selectedListingId, setSelectedListingId } = useMapStore();
+  const { viewState, setViewState, selectedListingId, setSelectedListingId, hoveredListingId } = useMapStore();
   const { setCarouselVisible, isSatelliteMode, isCarouselVisible } = useUIStore();
   const isLiked = useSavedStore((s) => s.isLiked);
   const mapRef = useRef<MapRef | null>(null);
@@ -248,7 +249,7 @@ export default function MapView({
                   onNeighborhoodClick?.(nbh);
                 }}
                 size={isAreaMode ? 'sm' : 'default'}
-                showLabel={!isAreaMode}
+                showLabel
               />
             </div>
           </Marker>
@@ -266,7 +267,7 @@ export default function MapView({
         >
           <PriceMarker
             price={listing.price}
-            isSelected={listing.id === selectedListingId}
+            isSelected={listing.id === selectedListingId || listing.id === hoveredListingId}
             isSaved={isLiked(listing.id)}
             onClick={() => handleMarkerClick(listing.id, listing.coordinates)}
           />
@@ -286,7 +287,7 @@ export default function MapView({
             anchor={popupAnchor}
             closeButton={false}
             closeOnClick={false}
-            offset={16}
+            offset={24}
             maxWidth="320px"
             className="hidden lg:block"
           >
@@ -356,7 +357,7 @@ function MockMap({
         });
       }}
     >
-      <img src="/map.png" className="absolute inset-0 w-full h-full object-cover" alt="map" draggable={false} />
+      <Image src="/map.png" className="absolute inset-0 object-cover" alt="map" fill sizes="100vw" draggable={false} />
       {boundaryNeighborhoods.length > 0 && (
         <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
           {boundaryNeighborhoods.map((neighborhood) => (
@@ -398,7 +399,7 @@ function MockMap({
               neighborhood={nbh}
               isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
               size={isAreaMode ? 'sm' : 'default'}
-              showLabel={!isAreaMode}
+              showLabel
             />
           </div>
         );
@@ -452,10 +453,13 @@ function MockMap({
         const index = listings.findIndex((listing) => listing.id === selectedId);
         const x = 8 + ((index * 43 + 11) % 82);
         const y = 8 + ((index * 61 + 5) % 78);
+        const showRight = x < 56;
         return (
           <div
             className="absolute hidden w-72 lg:block"
-            style={{ left: `min(${x + 2}%, calc(100% - 304px))`, top: `max(${y - 8}%, 12px)` }}
+            style={showRight
+              ? { left: `min(${x + 4}%, calc(100% - 304px))`, top: `max(${y - 8}%, 12px)` }
+              : { right: `min(${100 - x + 4}%, calc(100% - 304px))`, top: `max(${y - 8}%, 12px)` }}
             onClick={(event) => event.stopPropagation()}
           >
             <ListingCard listing={selectedListing} variant="carousel" />

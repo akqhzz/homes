@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { cn } from '@/lib/utils/cn';
 
 interface AvatarProps {
@@ -28,7 +29,7 @@ export default function Avatar({ src, name, size = 'md', className }: AvatarProp
       )}
     >
       {src ? (
-        <img src={src} alt={name} className="w-full h-full object-cover" />
+        <Image src={src} alt={name} width={40} height={40} className="w-full h-full object-cover" />
       ) : (
         <span className="font-medium text-[#6B7280]">{initials}</span>
       )}

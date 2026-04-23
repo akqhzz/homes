@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { ChevronRight, Plus } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -110,9 +111,11 @@ export default function SavedSearchesPanel({
               )}
             >
               {search.thumbnail && (
-                <img
+                <Image
                   src={search.thumbnail}
                   alt=""
+                  width={56}
+                  height={56}
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                 />
               )}

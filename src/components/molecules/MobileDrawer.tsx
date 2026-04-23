@@ -1,5 +1,5 @@
 'use client';
-import { PointerEvent, ReactNode, TouchEvent, useRef } from 'react';
+import { PointerEvent, ReactNode, TouchEvent, useCallback, useEffect, useRef } from 'react';
 import { motion, useDragControls } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -27,10 +27,11 @@ export default function MobileDrawer({
 }: MobileDrawerProps) {
   const dragControls = useDragControls();
   const swipeStartRef = useRef<{ x: number; y: number; pointerId?: number } | null>(null);
+  const trackingRef = useRef(false);
 
-  const closeIfSwipeDown = (dx: number, dy: number) => {
+  const closeIfSwipeDown = useCallback((dx: number, dy: number) => {
     if (dy > 72 && Math.abs(dy) > Math.abs(dx) * 1.15) onClose();
-  };
+  }, [onClose]);
 
   const canStartDrawerSwipe = (target: HTMLElement) =>
     !target.closest('button, input, textarea, select, a, [data-no-drawer-drag="true"]');
@@ -39,6 +40,7 @@ export default function MobileDrawer({
     const target = event.target as HTMLElement;
     if (!canStartDrawerSwipe(target)) return false;
     swipeStartRef.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    trackingRef.current = true;
     return true;
   };
 
@@ -50,6 +52,7 @@ export default function MobileDrawer({
   const handlePointerUp = (event: PointerEvent<HTMLElement>) => {
     const start = swipeStartRef.current;
     swipeStartRef.current = null;
+    trackingRef.current = false;
     if (!start || start.pointerId !== event.pointerId) return;
     closeIfSwipeDown(event.clientX - start.x, event.clientY - start.y);
   };
@@ -59,15 +62,45 @@ export default function MobileDrawer({
     if (!canStartDrawerSwipe(target)) return;
     const touch = event.touches[0];
     swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
+    trackingRef.current = true;
   };
 
   const handleTouchEnd = (event: TouchEvent<HTMLElement>) => {
     const start = swipeStartRef.current;
     swipeStartRef.current = null;
+    trackingRef.current = false;
     if (!start) return;
     const touch = event.changedTouches[0];
     closeIfSwipeDown(touch.clientX - start.x, touch.clientY - start.y);
   };
+
+  useEffect(() => {
+    const handlePointerUp = (event: globalThis.PointerEvent) => {
+      const start = swipeStartRef.current;
+      if (!trackingRef.current || !start?.pointerId || start.pointerId !== event.pointerId) return;
+      swipeStartRef.current = null;
+      trackingRef.current = false;
+      closeIfSwipeDown(event.clientX - start.x, event.clientY - start.y);
+    };
+    const handleTouchEnd = (event: globalThis.TouchEvent) => {
+      const start = swipeStartRef.current;
+      if (!trackingRef.current || !start || event.changedTouches.length === 0) return;
+      swipeStartRef.current = null;
+      trackingRef.current = false;
+      const touch = event.changedTouches[0];
+      closeIfSwipeDown(touch.clientX - start.x, touch.clientY - start.y);
+    };
+    window.addEventListener('pointerup', handlePointerUp, { capture: true });
+    window.addEventListener('pointercancel', handlePointerUp, { capture: true });
+    window.addEventListener('touchend', handleTouchEnd, { capture: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { capture: true });
+    return () => {
+      window.removeEventListener('pointerup', handlePointerUp, { capture: true });
+      window.removeEventListener('pointercancel', handlePointerUp, { capture: true });
+      window.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      window.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+    };
+  }, [closeIfSwipeDown]);
 
   return (
     <>
@@ -121,6 +154,7 @@ export default function MobileDrawer({
           onPointerDown={(e) => {
             e.stopPropagation();
             swipeStartRef.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
+            trackingRef.current = true;
             dragControls.start(e);
           }}
           onTouchStart={handleTouchStart}

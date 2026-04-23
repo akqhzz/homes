@@ -33,7 +33,7 @@ interface ListingsSidebarProps {
 export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   const [sort, setSort] = useState<SortOption>('newest');
   const [showSort, setShowSort] = useState(false);
-  const { selectedListingId, setSelectedListingId } = useMapStore();
+  const { selectedListingId, setHoveredListingId } = useMapStore();
   const { openListingDetail } = useUIStore();
 
   const sorted = sortListings(listings, sort);
@@ -49,7 +49,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
         <div className="relative">
           <button
             onClick={() => setShowSort((value) => !value)}
-            className="flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)]"
+            className="flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
           >
             <ArrowDownWideNarrow size={16} />
             Sort
@@ -82,7 +82,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
 
       {/* Listings grid */}
       <div className="flex-1 overflow-y-auto px-5 py-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
           {sorted.map((listing) => (
             <div
               key={listing.id}
@@ -90,8 +90,8 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
                 'min-w-0 rounded-2xl transition-all cursor-pointer',
                 selectedListingId === listing.id && 'ring-2 ring-[#0F1729] ring-offset-2'
               )}
-              onMouseEnter={() => setSelectedListingId(listing.id)}
-              onMouseLeave={() => setSelectedListingId(null)}
+              onMouseEnter={() => setHoveredListingId(listing.id)}
+              onMouseLeave={() => setHoveredListingId(null)}
               onClick={() => openListingDetail(listing.id)}
             >
               <ListingCard listing={listing} variant="carousel" className="w-full" />

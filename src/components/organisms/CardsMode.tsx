@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Map, MapPin, Home, ArrowDownWideNarrow, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
@@ -363,8 +364,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <MobileDrawer
             title="Sort cards"
             onClose={() => setShowSortDrawer(false)}
-            heightClassName="h-[38dvh]"
-            contentClassName="px-4 pb-4"
+            heightClassName="h-auto max-h-[78dvh]"
+            contentClassName="px-4 pb-4 overflow-visible"
           >
             <div className="flex flex-col gap-2">
               {SORT_OPTIONS.map((option) => {
@@ -446,7 +447,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             )}
           >
             {mapThumb(drawerListing ?? listing) ? (
-              <img src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" className="w-full flex-1 object-cover" />
+              <Image src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" width={800} height={400} className="w-full flex-1 object-cover" />
             ) : (
               <div className="mx-4 mb-4 flex flex-1 items-center justify-center rounded-2xl bg-[#E8ECEF]">
                 <div className="text-center p-6">
@@ -490,9 +491,11 @@ function ListingImage({
   const imageSrc = failedSrc === src ? fallbackSrc : src;
 
   return (
-    <img
+    <Image
       src={imageSrc}
       alt={alt}
+      width={900}
+      height={675}
       className={cn('h-full w-full object-cover bg-[#E8ECEF]', className)}
       draggable={false}
       loading={eager ? 'eager' : 'lazy'}
@@ -609,7 +612,7 @@ function CardModeListingCard({
                 className="pointer-events-auto relative h-24 w-24 shrink-0 overflow-hidden rounded-[24px] bg-white/90 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl"
                 aria-label="Open map preview"
               >
-                <img src="/map.png" alt="" className="h-full w-full object-cover" draggable={false} />
+                <Image src="/map.png" alt="" fill sizes="96px" className="object-cover" draggable={false} />
                 <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-full text-[#0F1729] drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
                   <MapPin size={20} fill="#0F1729" strokeWidth={1.8} />
                   <Home

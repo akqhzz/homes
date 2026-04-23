@@ -283,7 +283,7 @@ export default function MapPage() {
                 editAppliedArea();
                 setActivePanel('area-select');
               }}
-              className="pointer-events-auto absolute left-5 top-5 z-20 hidden h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] lg:flex"
+              className="pointer-events-auto absolute left-5 top-5 z-20 hidden h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] lg:flex"
             >
               <Layers size={16} />
               Area

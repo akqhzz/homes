@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Heart, Share2, MapPin, Calendar, Home, Car, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatPriceFull, formatDaysOnMarket, formatPropertyType, formatSqft } from '@/lib/utils/format';
@@ -49,9 +50,11 @@ export default function ListingDetailSheet() {
       {/* Image gallery */}
       <div className="relative flex-shrink-0" style={{ height: 300 }}>
         <div className="w-full h-full overflow-hidden">
-          <img
+          <Image
             src={listing.images[imgIndex]}
             alt=""
+            width={900}
+            height={600}
             className="w-full h-full object-cover"
           />
         </div>
@@ -179,31 +182,36 @@ export default function ListingDetailSheet() {
               <div>
                 <h3 className="font-heading text-lg text-[#0F1729] mb-3">Add to collection</h3>
                 <div className="flex flex-col gap-2">
-                  {collections.map((col) => (
-                    <button
-                      key={col.id}
-                      onClick={() => {
-                        if (!liked) toggleLike(listing.id);
-                        addToCollection(col.id, listing.id);
-                        setShowAddToCollection(false);
-                      }}
-                      className="flex items-center gap-3 py-3 px-4 rounded-xl bg-[#F5F6F7] hover:bg-[#EBEBEB] text-left transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-[#E5E7EB] overflow-hidden flex-shrink-0">
-                        {MOCK_LISTINGS.find(l => l.id === col.listings[0]?.listingId)?.images[0] && (
-                          <img
-                            src={MOCK_LISTINGS.find(l => l.id === col.listings[0]?.listingId)?.images[0]}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-[#0F1729]">{col.name}</p>
-                        <p className="text-xs text-[#9CA3AF]">{col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}</p>
-                      </div>
-                    </button>
-                  ))}
+                  {collections.map((col) => {
+                    const thumbnail = MOCK_LISTINGS.find(l => l.id === col.listings[0]?.listingId)?.images[0];
+                    return (
+                      <button
+                        key={col.id}
+                        onClick={() => {
+                          if (!liked) toggleLike(listing.id);
+                          addToCollection(col.id, listing.id);
+                          setShowAddToCollection(false);
+                        }}
+                        className="flex items-center gap-3 py-3 px-4 rounded-xl bg-[#F5F6F7] hover:bg-[#EBEBEB] text-left transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-[#E5E7EB] overflow-hidden flex-shrink-0">
+                          {thumbnail && (
+                            <Image
+                              src={thumbnail}
+                              alt=""
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm text-[#0F1729]">{col.name}</p>
+                          <p className="text-xs text-[#9CA3AF]">{col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </>

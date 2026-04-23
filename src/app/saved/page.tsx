@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -121,7 +122,7 @@ export default function SavedPage() {
                     {/* Cover — first listing image, full fill */}
                     <div className="relative h-52 overflow-hidden bg-[#E5E7EB]">
                       {firstListing ? (
-                        <img src={firstListing.images[0]} alt="" className="w-full h-full object-cover" />
+                        <Image src={firstListing.images[0]} alt="" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🏠</div>
                       )}
