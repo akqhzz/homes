@@ -95,6 +95,7 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
           </div>
           <div className="mt-5">
             <Slider.Root
+              data-no-drawer-drag="true"
               value={priceRange}
               min={PRICE_MIN}
               max={PRICE_MAX}

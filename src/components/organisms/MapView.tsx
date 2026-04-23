@@ -1,12 +1,13 @@
 'use client';
 import { useCallback, useRef } from 'react';
 import type { Feature, LineString, Polygon } from 'geojson';
-import Map, { Layer, Marker, NavigationControl, Source, type MapRef } from 'react-map-gl/mapbox';
+import Map, { Layer, Marker, NavigationControl, Popup, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import PriceMarker from '@/components/molecules/PriceMarker';
 import NeighborhoodPin from '@/components/molecules/NeighborhoodPin';
+import ListingCard from '@/components/molecules/ListingCard';
 import { useMapStore } from '@/store/mapStore';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
@@ -75,13 +76,14 @@ export default function MapView({
   const handleMarkerClick = useCallback(
     (listingId: string, coords: { lat: number; lng: number }) => {
       setSelectedListingId(listingId);
-      setCarouselVisible(true);
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+      setCarouselVisible(!isDesktop);
       // Pan map to show the listing with offset for bottom carousel
       mapRef.current?.flyTo({
         center: [coords.lng, coords.lat],
         zoom: Math.max(viewState.zoom, 14),
         duration: 600,
-        offset: [0, -100],
+        offset: isDesktop ? [-140, 0] : [0, -100],
       });
     },
     [setSelectedListingId, setCarouselVisible, viewState.zoom]
@@ -111,7 +113,7 @@ export default function MapView({
     return (
       <MockMap
         listings={listings}
-        selectedId={isCarouselVisible ? selectedListingId : null}
+        selectedId={selectedListingId}
         onMarkerClick={handleMarkerClick}
         onMapClick={() => { setSelectedListingId(null); setCarouselVisible(false); }}
         showListings={showListings}
@@ -256,13 +258,34 @@ export default function MapView({
         >
           <PriceMarker
             price={listing.price}
-            isSelected={isCarouselVisible && listing.id === selectedListingId}
+            isSelected={listing.id === selectedListingId}
             isSaved={isLiked(listing.id)}
             onClick={() => handleMarkerClick(listing.id, listing.coordinates)}
           />
         </Marker>
         );
       })}
+
+      {showListings && selectedListingId && !isCarouselVisible && (() => {
+        const selectedListing = listings.find((item) => item.id === selectedListingId);
+        if (!selectedListing) return null;
+        const markerCoordinates = getSpreadListingCoordinates(selectedListing, listings.findIndex((item) => item.id === selectedListingId));
+        return (
+          <Popup
+            longitude={markerCoordinates.lng}
+            latitude={markerCoordinates.lat}
+            anchor="left"
+            closeButton={false}
+            closeOnClick={false}
+            offset={16}
+            className="hidden lg:block"
+          >
+            <div onClick={(event) => event.stopPropagation()} className="w-72">
+              <ListingCard listing={selectedListing} variant="carousel" />
+            </div>
+          </Popup>
+        );
+      })()}
     </Map>
   );
 }
@@ -407,6 +430,22 @@ function MockMap({
           </div>
         );
       })}
+      {showListings && selectedId && (() => {
+        const selectedListing = listings.find((listing) => listing.id === selectedId);
+        if (!selectedListing) return null;
+        const index = listings.findIndex((listing) => listing.id === selectedId);
+        const x = 8 + ((index * 43 + 11) % 82);
+        const y = 8 + ((index * 61 + 5) % 78);
+        return (
+          <div
+            className="absolute hidden w-72 lg:block"
+            style={{ left: `min(${x + 2}%, calc(100% - 304px))`, top: `max(${y - 8}%, 12px)` }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <ListingCard listing={selectedListing} variant="carousel" />
+          </div>
+        );
+      })()}
     </div>
   );
 }

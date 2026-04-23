@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowDownWideNarrow, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { useMapStore } from '@/store/mapStore';
 import { useUIStore } from '@/store/uiStore';
@@ -10,9 +10,9 @@ import { cn } from '@/lib/utils/cn';
 type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'sqft-desc';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'price-asc', label: 'Price ↑' },
-  { value: 'price-desc', label: 'Price ↓' },
+  { value: 'newest', label: 'Newest first' },
+  { value: 'price-asc', label: 'Price low to high' },
+  { value: 'price-desc', label: 'Price high to low' },
   { value: 'sqft-desc', label: 'Largest' },
 ];
 
@@ -32,6 +32,7 @@ interface ListingsSidebarProps {
 
 export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   const [sort, setSort] = useState<SortOption>('newest');
+  const [showSort, setShowSort] = useState(false);
   const { selectedListingId, setSelectedListingId } = useMapStore();
   const { openListingDetail } = useUIStore();
 
@@ -40,45 +41,60 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#F0F0F0]">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[#F0F0F0] flex items-center justify-between flex-shrink-0">
+      <div className="px-5 py-4 flex items-center justify-between flex-shrink-0">
         <p className="font-bold text-[#0F1729]">
           {listings.length} <span className="text-[#9CA3AF] font-normal">listings</span>
         </p>
 
-        {/* Sort */}
-        <div className="flex items-center gap-1">
-          {SORT_OPTIONS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setSort(value)}
-              className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-medium transition-all',
-                sort === value
-                  ? 'bg-[#0F1729] text-white'
-                  : 'text-[#9CA3AF] hover:text-[#0F1729]'
-              )}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="relative">
+          <button
+            onClick={() => setShowSort((value) => !value)}
+            className="flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)]"
+          >
+            <ArrowDownWideNarrow size={16} />
+            Sort
+          </button>
+          {showSort && (
+            <div className="absolute right-0 top-12 z-20 w-52 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+              {SORT_OPTIONS.map(({ value, label }) => {
+                const selected = sort === value;
+                return (
+                  <button
+                    key={value}
+                    onClick={() => {
+                      setSort(value);
+                      setShowSort(false);
+                    }}
+                    className={cn(
+                      'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-medium transition-colors',
+                      selected ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:bg-[#F5F6F7] hover:text-[#0F1729]'
+                    )}
+                  >
+                    {label}
+                    {selected && <Check size={14} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Listings grid */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col items-center gap-3">
           {sorted.map((listing) => (
             <div
               key={listing.id}
               className={cn(
-                'rounded-2xl transition-all cursor-pointer',
+                'w-72 rounded-2xl transition-all cursor-pointer',
                 selectedListingId === listing.id && 'ring-2 ring-[#0F1729] ring-offset-2'
               )}
               onMouseEnter={() => setSelectedListingId(listing.id)}
               onMouseLeave={() => setSelectedListingId(null)}
               onClick={() => openListingDetail(listing.id)}
             >
-              <ListingCard listing={listing} variant="grid" />
+              <ListingCard listing={listing} variant="carousel" />
             </div>
           ))}
         </div>

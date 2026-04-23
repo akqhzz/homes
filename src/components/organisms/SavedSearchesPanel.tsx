@@ -28,7 +28,7 @@ export default function SavedSearchesPanel({
   const { searches, saveSearch, activeSearchId, setActiveSearchId } = useSavedSearchStore();
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
-  const [saving, setSaving] = useState(canSaveCurrent);
+  const [saving, setSaving] = useState(canSaveCurrent && !activeSearchId);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

@@ -90,7 +90,7 @@ export default function AreaSelectPanel({
       const frame = requestAnimationFrame(() => {
         setInstantMove(true);
         setCurrentIndex(index);
-        requestAnimationFrame(() => setInstantMove(false));
+        window.setTimeout(() => setInstantMove(false), 180);
       });
       return () => cancelAnimationFrame(frame);
     }
@@ -124,6 +124,7 @@ export default function AreaSelectPanel({
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     if (dy > 36 && Math.abs(dy) > Math.abs(dx) * 1.15) {
+      setInstantMove(true);
       onCloseNeighborhood();
       return;
     }

@@ -72,7 +72,8 @@ export default function MapPage() {
   };
 
   useEffect(() => {
-    if (!isCarouselVisible) setSelectedListingId(null);
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+    if (!isCarouselVisible && !isDesktop) setSelectedListingId(null);
   }, [isCarouselVisible, setSelectedListingId]);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, Map, MapPin, Home, SlidersHorizontal, Check } from 'lucide-react';
+import { X, Heart, Map, MapPin, Home, ArrowDownWideNarrow, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -312,7 +312,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           onClick={() => setShowSortDrawer(true)}
           aria-label="Sort cards"
         >
-          <SlidersHorizontal size={17} strokeWidth={2} />
+          <ArrowDownWideNarrow size={17} strokeWidth={2} />
         </FloatingActionButton>
 
         <button
@@ -378,8 +378,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                       setShowSortDrawer(false);
                     }}
                     className={cn(
-                      'flex h-12 items-center justify-between rounded-2xl px-4 text-sm font-semibold transition-colors',
-                      selected ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
+                      'flex h-12 items-center justify-between rounded-2xl border px-4 text-sm font-semibold transition-colors',
+                      selected
+                        ? 'border-[#9CA3AF] bg-white text-[#0F1729] shadow-[inset_0_0_0_1px_#9CA3AF]'
+                        : 'border-transparent bg-[#F5F6F7] text-[#0F1729]'
                     )}
                   >
                     {option.label}

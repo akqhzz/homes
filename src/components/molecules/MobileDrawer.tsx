@@ -1,5 +1,5 @@
 'use client';
-import { ReactNode } from 'react';
+import { PointerEvent, ReactNode } from 'react';
 import { motion, useDragControls } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -26,6 +26,11 @@ export default function MobileDrawer({
   showBackdrop = true,
 }: MobileDrawerProps) {
   const dragControls = useDragControls();
+  const startDrawerDrag = (event: PointerEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('button, input, textarea, select, a, [data-no-drawer-drag="true"]')) return;
+    dragControls.start(event);
+  };
 
   return (
     <>
@@ -44,12 +49,12 @@ export default function MobileDrawer({
       <motion.section
         role="dialog"
         aria-modal="true"
-        onPointerDownCapture={(event) => event.stopPropagation()}
-        onPointerMoveCapture={(event) => event.stopPropagation()}
-        onPointerUpCapture={(event) => event.stopPropagation()}
-        onTouchStartCapture={(event) => event.stopPropagation()}
-        onTouchMoveCapture={(event) => event.stopPropagation()}
-        onTouchEndCapture={(event) => event.stopPropagation()}
+        onPointerDown={(event) => event.stopPropagation()}
+        onPointerMove={(event) => event.stopPropagation()}
+        onPointerUp={(event) => event.stopPropagation()}
+        onTouchStart={(event) => event.stopPropagation()}
+        onTouchMove={(event) => event.stopPropagation()}
+        onTouchEnd={(event) => event.stopPropagation()}
         drag="y"
         dragControls={dragControls}
         dragListener={false}
@@ -69,9 +74,11 @@ export default function MobileDrawer({
           className
         )}
       >
-        {/* Drag handle — only this area initiates the swipe-to-close gesture */}
         <div
-          onPointerDown={(e) => dragControls.start(e)}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            dragControls.start(e);
+          }}
           style={{ touchAction: 'none' }}
           className="cursor-grab active:cursor-grabbing"
         >
@@ -89,7 +96,12 @@ export default function MobileDrawer({
             </button>
           </header>
         </div>
-        <div className={cn('flex-1 overflow-y-auto', contentClassName)}>{children}</div>
+        <div
+          onPointerDown={startDrawerDrag}
+          className={cn('flex-1 overflow-y-auto', contentClassName)}
+        >
+          {children}
+        </div>
         {footer && (
           <footer className="px-4 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}>
             {footer}
