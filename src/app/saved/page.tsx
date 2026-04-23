@@ -90,15 +90,15 @@ export default function SavedPage() {
     <PageShell desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8 lg:pt-8">
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-8">
           <div className="mb-1 flex items-center justify-center">
             <h1 className="type-title lg:text-3xl text-[#0F1729]">Collections</h1>
           </div>
         </div>
 
         {/* Collections */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:mx-auto lg:w-full lg:max-w-[1600px] lg:px-8">
-          <div className="mx-auto grid max-w-[1344px] grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6">
+          <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5">
             {collections.map((col) => {
               const firstListing = col.listings.length > 0
                 ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)

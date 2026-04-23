@@ -6,6 +6,7 @@ import { formatDaysOnMarket, formatPriceFull, formatPropertyType, formatSqft } f
 import BackButton from '@/components/atoms/BackButton';
 import PageShell from '@/components/templates/PageShell';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
+import ListingImageGallery from '@/components/organisms/ListingImageGallery';
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;
@@ -32,18 +33,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             <ListingSaveButton listingId={listing.id} />
           </div>
 
-          <section className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] lg:aspect-[16/10]">
-              <Image src={listing.images[0]} alt={listing.address} fill priority className="object-cover" sizes="(min-width: 1024px) 64vw, 100vw" />
-            </div>
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-              {listing.images.slice(1, 3).map((image, index) => (
-                <div key={image} className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] lg:aspect-auto">
-                  <Image src={image} alt={`${listing.address} photo ${index + 2}`} fill className="object-cover" sizes="(min-width: 1024px) 28vw, 50vw" />
-                </div>
-              ))}
-            </div>
-          </section>
+          <ListingImageGallery images={listing.images} address={listing.address} />
 
           <section className="grid gap-8 py-8 lg:grid-cols-[1fr_360px]">
             <div>
@@ -106,7 +96,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               </p>
             </div>
 
-            <aside className="hidden h-fit rounded-3xl border border-[#F0F0F0] p-4 lg:sticky lg:top-6 lg:block">
+            <aside className="hidden h-fit rounded-3xl border border-[#F0F0F0] p-6 lg:sticky lg:top-6 lg:block">
               <h2 className="type-title text-[#0F1729]">Contact Agent</h2>
               <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#F5F6F7] p-3">
                 <Image src={agentImage} alt="Maya Chen" width={56} height={56} className="h-14 w-14 rounded-xl object-cover" />

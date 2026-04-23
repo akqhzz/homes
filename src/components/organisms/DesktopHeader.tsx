@@ -15,6 +15,7 @@ import {
   Plus,
   Rows3,
   Search,
+  Share2,
   Shield,
   SlidersHorizontal,
   User,
@@ -155,7 +156,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
 
   return (
     <>
-      <header className="hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 gap-6 flex-shrink-0 z-30">
+      <header className="relative hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 gap-6 flex-shrink-0 z-30">
         {isListingVariant ? (
           <button
             type="button"
@@ -176,8 +177,12 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
 
         {/* Centered search */}
         <div className={cn(
-          'flex-1 items-center justify-center gap-2 max-w-[540px] mx-auto',
-          isCollectionsPage ? 'hidden' : 'flex'
+          'items-center justify-center gap-2 max-w-[540px]',
+          isCollectionsPage
+            ? 'hidden'
+            : isListingVariant
+            ? 'absolute left-1/2 top-1/2 flex w-[540px] -translate-x-1/2 -translate-y-1/2'
+            : 'mx-auto flex flex-1'
         )}>
           <div ref={searchRef} className="relative w-[316px] flex-none">
             <div
@@ -413,21 +418,14 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
         <nav className={cn('flex items-center gap-1 flex-shrink-0', (isCollectionsPage || isListingVariant) && 'ml-auto')}>
           {isListingVariant ? (
             <>
-              {listingId && <ListingSaveButton listingId={listingId} />}
-              <div ref={menuRef} className="relative">
-                <button
-                  onClick={() => {
-                    setShowMenu((value) => !value);
-                    setShowFilter(false);
-                    setShowSearch(false);
-                  }}
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
-                  aria-label="Menu"
-                >
-                  <Menu size={19} />
-                </button>
-                {showMenu && <DesktopMenu />}
-              </div>
+              {listingId && <ListingSaveButton listingId={listingId} className="bg-[#0F1729] text-white hover:bg-[#1F2937]" />}
+              <button
+                type="button"
+                className="flex h-10 items-center gap-2 rounded-full bg-[#F5F6F7] px-4 text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
+              >
+                <Share2 size={15} />
+                Share
+              </button>
             </>
           ) : isCollectionsPage ? (
             <button
