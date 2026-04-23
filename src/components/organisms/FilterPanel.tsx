@@ -100,7 +100,7 @@ export function FilterPanelBody() {
               return (
                 <div
                   key={index}
-                  className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]' : 'bg-[#D1D5DB]')}
+                  className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]' : 'bg-[#E5E7EB]')}
                   style={{ height: `${Math.max(6, count * 3)}px` }}
                 />
               );
@@ -262,7 +262,7 @@ export function FilterPanelFooter({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-b border-[#F5F6F7] px-4 py-5">
+    <div className="px-4 py-4">
       <h3 className="mb-4 type-heading text-[#0F1729]">{title}</h3>
       {children}
     </div>

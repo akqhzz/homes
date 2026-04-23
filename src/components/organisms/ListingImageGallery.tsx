@@ -75,9 +75,6 @@ export default function ListingImageGallery({ images, address }: ListingImageGal
           aria-label="Open listing image gallery"
         >
           <Image src={galleryImages[0]} alt={address} fill priority className="object-cover transition-transform duration-300 hover:scale-[1.015]" sizes="(min-width: 1024px) 64vw, 100vw" />
-          <span className="absolute bottom-3 right-3 inline-flex h-9 items-center rounded-full bg-white/88 px-3 type-btn text-[#0F1729] shadow-[0_6px_18px_rgba(15,23,41,0.14)] backdrop-blur">
-            View {galleryImages.length} Images
-          </span>
         </button>
         <div className="grid grid-cols-2 gap-2 lg:grid-rows-3 lg:gap-3">
           {galleryImages.slice(1, 7).map((image, index) => (

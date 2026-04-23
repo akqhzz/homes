@@ -1,7 +1,9 @@
 'use client';
+import Image from 'next/image';
 import { Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
+import { useSavedSearchStore } from '@/store/savedSearchStore';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 
@@ -16,9 +18,11 @@ export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { setActivePanel } = useUIStore();
+  const { searches, activeSearchId } = useSavedSearchStore();
 
   const isMapPage = pathname === '/';
   const isSavedPage = pathname === '/saved';
+  const activeSearch = searches.find((search) => search.id === activeSearchId);
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' || pathname === '/map' : pathname.startsWith(href);
@@ -35,7 +39,13 @@ export default function BottomNav() {
           onClick={() => setActivePanel('saved-searches')}
           aria-label="Saved searches"
         >
-          <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={19} />
+          {activeSearch?.thumbnail ? (
+            <span className="relative block h-[19px] w-[19px] overflow-hidden rounded-[6px]">
+              <Image src={activeSearch.thumbnail} alt="" fill sizes="19px" className="object-cover" />
+            </span>
+          ) : (
+            <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={19} />
+          )}
         </FloatingActionButton>
       )}
 

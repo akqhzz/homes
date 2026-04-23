@@ -83,7 +83,7 @@ export default function SavedSearchesPanel({
   const content = (
     <>
       {/* Save current search */}
-      <div className="px-4 py-4 border-b border-[#F5F6F7]">
+      <div className="px-4 py-4">
         <p className="type-heading text-[#0F1729] mb-3">Save Current Search</p>
         {saving ? (
           <div className="flex gap-2">
@@ -136,7 +136,7 @@ export default function SavedSearchesPanel({
                 />
               )}
               <div className="flex-1 min-w-0">
-                <p className="type-label text-[#0F1729]">{search.name}</p>
+                <p className="type-heading text-[#0F1729]">{search.name}</p>
                 <p className="type-caption text-[#9CA3AF] mt-0.5">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
@@ -172,7 +172,7 @@ export default function SavedSearchesPanel({
           className="fixed left-1/2 top-[64px] z-[60] -ml-[232px] max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
           <div className="px-4 pt-4">
-            <p className="type-heading text-[#0F1729]">Saved Searches</p>
+            <p className="type-subtitle text-[#0F1729]">Saved Searches</p>
           </div>
           {content}
         </div>

@@ -19,6 +19,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
+import { useSavedSearchStore } from '@/store/savedSearchStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { cn } from '@/lib/utils/cn';
 import { Location } from '@/lib/types';
@@ -63,12 +64,14 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
   const pathname = usePathname();
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
+  const { searches, activeSearchId } = useSavedSearchStore();
   const { activePanel, setActivePanel } = useUIStore();
   const { collections, createCollection } = useSavedStore();
 
   const isCollectionsPage = pathname.startsWith('/saved');
   const isListingVariant = variant === 'listing';
   const filterCount = activeFilterCount();
+  const activeSearch = searches.find((search) => search.id === activeSearchId);
   const locationLabel =
     selectedLocations.length === 0
       ? 'Where?'
@@ -241,6 +244,9 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             </button>
             {showFilter && (
               <div className="absolute right-0 top-12 z-40 flex max-h-[calc(100vh-9rem)] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                <div className="px-4 pt-4">
+                  <p className="type-subtitle text-[#0F1729]">Filters</p>
+                </div>
                 <div className="flex-1 overflow-y-auto">
                   <FilterPanelBody />
                 </div>
@@ -264,7 +270,13 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
             aria-label="Saved searches"
           >
-            <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={20} />
+            {activeSearch?.thumbnail ? (
+              <span className="relative block h-5 w-5 overflow-hidden rounded-[6px]">
+                <Image src={activeSearch.thumbnail} alt="" fill sizes="20px" className="object-cover" />
+              </span>
+            ) : (
+              <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={20} />
+            )}
           </button>
         </div>
 

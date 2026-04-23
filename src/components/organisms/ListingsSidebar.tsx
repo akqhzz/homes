@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowDownWideNarrow, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { useMapStore } from '@/store/mapStore';
+import { useSearchStore } from '@/store/searchStore';
 import ListingCard from '@/components/molecules/ListingCard';
 import { cn } from '@/lib/utils/cn';
 
@@ -35,9 +36,16 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   const [showSort, setShowSort] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const { setHoveredListingId } = useMapStore();
+  const selectedLocations = useSearchStore((s) => s.selectedLocations);
   const router = useRouter();
 
   const sorted = sortListings(listings, sort);
+  const locationLabel =
+    selectedLocations.length === 0
+      ? 'the selected area'
+      : selectedLocations.length === 1
+      ? selectedLocations[0].name
+      : `${selectedLocations[0].name} + ${selectedLocations.length - 1} more`;
 
   useEffect(() => {
     if (!showSort) return;
@@ -55,13 +63,13 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between px-5 py-1.5">
         <p className="type-heading text-[#0F1729]">
-          {listings.length} <span className="text-[#9CA3AF] font-normal">listings</span>
+          {listings.length} Listings in {locationLabel}
         </p>
 
         <div ref={sortRef} className="relative">
           <button
             onClick={() => setShowSort((value) => !value)}
-            className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+            className="flex h-8 items-center gap-1.5 rounded-full px-2.5 type-btn text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
           >
             <ArrowDownWideNarrow size={15} />
             Sort
@@ -78,7 +86,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
                       setShowSort(false);
                     }}
                     className={cn(
-                      'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-medium transition-colors',
+                      'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-button transition-colors',
                       selected ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:bg-[#F5F6F7] hover:text-[#0F1729]'
                     )}
                   >

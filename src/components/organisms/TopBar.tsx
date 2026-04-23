@@ -56,9 +56,9 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
 
   return (
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
-      <div className="flex w-full max-w-[296px] items-center gap-2.5">
+      <div className="flex w-full max-w-[352px] items-center gap-2.5">
       {/* Search pill */}
-      <motion.div layoutId="map-search-bar" className="flex-1 flex items-center gap-2.5 bg-white rounded-full px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
+      <motion.div layoutId="map-search-bar" className="flex flex-1 items-center gap-2.5 rounded-full bg-white px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
         <button
           onClick={() => setActivePanel('search')}
           className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
@@ -74,25 +74,27 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
             </span>
           )}
         </button>
-        <div ref={areaMenuRef} className="relative flex-shrink-0">
-          <button
-            onClick={handleAreaClick}
-            className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors p-0.5"
-          >
-            <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
-          </button>
-          {showAreaMenu && (
-            <div className="absolute right-0 top-9 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
-              <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]">
-                Edit area
-              </button>
-              <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#6B7280] hover:bg-[#F5F6F7]">
-                Clear area
-              </button>
-            </div>
-          )}
-        </div>
       </motion.div>
+
+      <div ref={areaMenuRef} className="relative">
+        <button
+          onClick={handleAreaClick}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"
+          aria-label="Area selection"
+        >
+          <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
+        </button>
+        {showAreaMenu && (
+          <div className="absolute right-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+            <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#0F1729] hover:bg-[#F5F6F7]">
+              Edit area
+            </button>
+            <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#6B7280] hover:bg-[#F5F6F7]">
+              Clear area
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Filter button */}
       <motion.button
