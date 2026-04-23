@@ -48,20 +48,22 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [showSort]);
 
+  useEffect(() => () => setHoveredListingId(null), [setHoveredListingId]);
+
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#F0F0F0]">
       {/* Header */}
-      <div className="px-5 py-4 flex items-center justify-between flex-shrink-0">
-        <p className="font-bold text-[#0F1729]">
+      <div className="flex flex-shrink-0 items-center justify-between px-5 py-3">
+        <p className="font-heading text-lg text-[#0F1729]">
           {listings.length} <span className="text-[#9CA3AF] font-normal">listings</span>
         </p>
 
         <div ref={sortRef} className="relative">
           <button
             onClick={() => setShowSort((value) => !value)}
-            className="flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+            className="flex h-8 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
           >
-            <ArrowDownWideNarrow size={16} />
+            <ArrowDownWideNarrow size={15} />
             Sort
           </button>
           {showSort && (
@@ -91,7 +93,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
       </div>
 
       {/* Listings grid */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div className="flex-1 overflow-y-auto px-5 py-3">
         <div className="grid grid-cols-1 justify-items-center gap-4 xl:grid-cols-2 2xl:grid-cols-3">
           {sorted.map((listing) => (
             <div

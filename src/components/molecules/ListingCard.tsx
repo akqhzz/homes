@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Heart, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, MapPin } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -182,7 +182,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
             </button>
           </div>
           <div className="px-0.5">
-            <p className="font-heading text-sm text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="font-heading text-base leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
             <p className="text-xs text-[#9CA3AF] mt-0.5">{listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft</p>
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
             </button>
           </div>
           <div className="p-4">
-            <p className="font-heading text-lg text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="font-heading text-xl text-[#0F1729]">{formatPrice(listing.price)}</p>
             <p className="text-sm text-[#6B7280] mt-1">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
             <div className="flex items-center gap-1 mt-1.5 text-xs text-[#9CA3AF]">
               <MapPin size={11} />
@@ -223,7 +223,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
     <>
       <div
         className={cn(
-          'relative flex-shrink-0 bg-white rounded-2xl overflow-hidden no-select',
+          'group relative flex-shrink-0 bg-white rounded-2xl overflow-hidden no-select',
           'shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]',
           'w-72',
           className
@@ -273,6 +273,33 @@ export default function ListingCard({ listing, variant = 'carousel', className }
           </div>
         )}
 
+        {listing.images.length > 1 && (
+          <div className="pointer-events-none absolute inset-x-2 top-[72px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
+            <button
+              type="button"
+              aria-label="Previous image"
+              onClick={(event) => {
+                event.stopPropagation();
+                showPreviousImage();
+              }}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#0F1729] shadow-[0_1px_5px_rgba(15,23,41,0.14)] transition-colors hover:bg-white"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              aria-label="Next image"
+              onClick={(event) => {
+                event.stopPropagation();
+                showNextImage();
+              }}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#0F1729] shadow-[0_1px_5px_rgba(15,23,41,0.14)] transition-colors hover:bg-white"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
+
         {/* Heart */}
         <button
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)] z-10"
@@ -292,7 +319,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="font-heading text-[15px] leading-[1.25] text-[#0F1729]">{formatPrice(listing.price)}</p>
+              <p className="font-heading text-[17px] leading-[1.2] text-[#0F1729]">{formatPrice(listing.price)}</p>
               <p className="mt-1 truncate text-xs leading-[1.25] text-[#6B7280]">
                 {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
               </p>

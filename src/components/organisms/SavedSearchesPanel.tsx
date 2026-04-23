@@ -31,12 +31,22 @@ export default function SavedSearchesPanel({
   const [newSearchName, setNewSearchName] = useState('');
   const [saving, setSaving] = useState(canSaveCurrent && !activeSearchId);
   const inputRef = useRef<HTMLInputElement>(null);
+  const desktopPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!saving) return;
     const frame = requestAnimationFrame(() => inputRef.current?.focus());
     return () => cancelAnimationFrame(frame);
   }, [saving]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (window.innerWidth < 1024) return;
+      if (!desktopPanelRef.current?.contains(event.target as Node)) setActivePanel('none');
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [setActivePanel]);
 
   const handleLoadSearch = (search: SavedSearch) => {
     setActiveSearchId(search.id);
@@ -147,13 +157,10 @@ export default function SavedSearchesPanel({
         </MobileDrawer>
       </div>
       <div className="hidden lg:block">
-        <button
-          type="button"
-          aria-label="Close saved searches"
-          className="fixed inset-0 z-50 bg-transparent"
-          onClick={() => setActivePanel('none')}
-        />
-        <div className="fixed top-20 z-[60] max-h-[calc(100vh-6rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_16px_48px_rgba(15,23,41,0.18)] lg:left-[calc(50%+168px)] xl:left-[calc(50%+190px)]">
+        <div
+          ref={desktopPanelRef}
+          className="fixed top-20 z-[60] max-h-[calc(100vh-6rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_16px_48px_rgba(15,23,41,0.18)] lg:left-[calc(50%+168px)] xl:left-[calc(50%+190px)]"
+        >
           <div className="px-4 pt-4">
             <p className="font-heading text-lg text-[#0F1729]">Saved Searches</p>
           </div>

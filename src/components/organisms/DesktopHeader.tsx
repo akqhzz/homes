@@ -1,23 +1,47 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
-import { Bell, Bookmark, LogOut, Menu, MessageSquare, Search, Shield, SlidersHorizontal, User } from 'lucide-react';
+import {
+  Bell,
+  Bookmark,
+  Building2,
+  Home,
+  Hotel,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Rows3,
+  Search,
+  Shield,
+  SlidersHorizontal,
+  User,
+  Warehouse,
+} from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 import { Location, PropertyType } from '@/lib/types';
 
-const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
-  { value: 'condo', label: 'Condo' },
-  { value: 'house', label: 'House' },
-  { value: 'townhouse', label: 'Townhouse' },
-  { value: 'semi-detached', label: 'Semi-Det.' },
-  { value: 'detached', label: 'Detached' },
+const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [
+  { value: 'condo', label: 'Condo', icon: Building2 },
+  { value: 'house', label: 'House', icon: Home },
+  { value: 'townhouse', label: 'Townhouse', icon: Hotel },
+  { value: 'semi-detached', label: 'Semi-Det.', icon: Rows3 },
+  { value: 'detached', label: 'Detached', icon: Warehouse },
 ];
 const PRICE_MIN = 0;
 const PRICE_MAX = 2000000;
 const PRICE_STEP = 50000;
+const PRICE_BUCKETS = [2, 5, 8, 12, 10, 7, 4, 6, 3, 2, 1, 1];
+const LISTED_WITHIN_OPTIONS = [
+  { value: 1, label: '1 Day' },
+  { value: 3, label: '3 Days' },
+  { value: 7, label: '1 Week' },
+  { value: 14, label: '2 Weeks' },
+  { value: 30, label: '1 Month' },
+  { value: 90, label: '3 Months' },
+];
 
 const LOCATION_SUGGESTIONS: Location[] = [
   { id: 'loc-downtown', name: 'Toronto Downtown', type: 'area', coordinates: { lat: 43.6532, lng: -79.3832 }, city: 'Toronto', province: 'ON' },
@@ -76,6 +100,12 @@ export default function DesktopHeader() {
     setFilters({ [key]: value ? parseInt(value) : undefined });
   };
 
+  const selectLocation = (location: Location) => {
+    addLocation(location);
+    setSearchQuery('');
+    setShowSearch(false);
+  };
+
   useEffect(() => {
     if (!showFilter && !showSearch && !showMenu) return;
     const handlePointerDown = (event: PointerEvent) => {
@@ -115,7 +145,7 @@ export default function DesktopHeader() {
                 setShowMenu(false);
               }}
               className={cn(
-                'flex min-h-[46px] w-full min-w-0 cursor-text items-center gap-2.5 rounded-full bg-white px-4 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[#F9FAFB]',
+                'flex min-h-[40px] w-full min-w-0 cursor-text items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[#F9FAFB]',
                 showSearch && 'shadow-[inset_0_0_0_1.5px_#0F1729,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
             >
@@ -125,6 +155,9 @@ export default function DesktopHeader() {
                   ref={searchInputRef}
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && filteredLocations[0]) selectLocation(filteredLocations[0]);
+                  }}
                   placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Where?'}
                   className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
                 />
@@ -154,15 +187,14 @@ export default function DesktopHeader() {
                   </div>
                 )}
                 <div className="py-1">
-                  {filteredLocations.map((location) => (
+                  {filteredLocations.map((location, index) => (
                     <button
                       key={location.id}
-                      onClick={() => {
-                        addLocation(location);
-                        setSearchQuery('');
-                        setShowSearch(false);
-                      }}
-                      className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]"
+                      onClick={() => selectLocation(location)}
+                      className={cn(
+                        'flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]',
+                        index === 0 && searchQuery.trim() && 'bg-[#F5F6F7]'
+                      )}
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7]">
                         <Search size={14} className="text-[#9CA3AF]" />
@@ -203,6 +235,15 @@ export default function DesktopHeader() {
                 <div className="space-y-5">
                   <div>
                     <p className="font-heading mb-3 text-lg text-[#0F1729]">Price Range</p>
+                    <div className="mb-1 flex h-10 items-end gap-1 px-1">
+                      {PRICE_BUCKETS.map((count, index) => (
+                        <div
+                          key={index}
+                          className="flex-1 rounded-t bg-[#D1D5DB]"
+                          style={{ height: `${Math.max(6, count * 2.5)}px` }}
+                        />
+                      ))}
+                    </div>
                     <div className="mb-4 grid grid-cols-2 gap-3">
                       <PriceInput value={filters.minPrice} placeholder="No min" onChange={(value) => setFilters({ minPrice: value })} />
                       <PriceInput value={filters.maxPrice} placeholder="No max" onChange={(value) => setFilters({ maxPrice: value })} />
@@ -230,17 +271,18 @@ export default function DesktopHeader() {
                   <div>
                     <p className="font-heading mb-3 text-lg text-[#0F1729]">Property Type</p>
                     <div className="flex flex-wrap gap-2">
-                      {PROPERTY_TYPES.map(({ value, label }) => (
+                      {PROPERTY_TYPES.map(({ value, label, icon: Icon }) => (
                         <button
                           key={value}
                           onClick={() => togglePropertyType(value)}
                           className={cn(
-                            'rounded-full border px-3 py-2 text-xs font-medium transition-all hover:bg-[#F5F6F7]',
+                            'inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium transition-all hover:bg-[#F5F6F7]',
                             filters.propertyTypes.includes(value)
                               ? 'border-[#0F1729] bg-[#0F1729] text-white'
                               : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
                           )}
                         >
+                          <Icon size={13} />
                           {label}
                         </button>
                       ))}
@@ -248,25 +290,20 @@ export default function DesktopHeader() {
                   </div>
                   <SegmentedFilter
                     title="Bedrooms"
-                    options={['Any', '1', '2', '3', '4', '5']}
-                    activeValue={filters.minBeds?.toString() ?? 'Any'}
+                    options={['Any', '1+', '2+', '3+', '4+', '5+']}
+                    activeValue={filters.minBeds ? `${filters.minBeds}+` : 'Any'}
                     onSelect={(value) => setFilters({ minBeds: value === 'Any' ? undefined : parseInt(value) })}
                   />
                   <SegmentedFilter
                     title="Bathrooms"
-                    options={['Any', '1', '2', '3', '4']}
-                    activeValue={filters.minBaths?.toString() ?? 'Any'}
+                    options={['Any', '1+', '2+', '3+', '4+']}
+                    activeValue={filters.minBaths ? `${filters.minBaths}+` : 'Any'}
                     onSelect={(value) => setFilters({ minBaths: value === 'Any' ? undefined : parseInt(value) })}
                   />
                   <div>
                     <p className="font-heading mb-3 text-lg text-[#0F1729]">Listed Within</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { value: 1, label: '1 day' },
-                        { value: 7, label: '1 week' },
-                        { value: 30, label: '1 month' },
-                        { value: 90, label: '3 months' },
-                      ].map(({ value, label }) => (
+                      {LISTED_WITHIN_OPTIONS.map(({ value, label }) => (
                         <button
                           key={value}
                           onClick={() => setFilters({ maxDaysOnMarket: filters.maxDaysOnMarket === value ? undefined : value })}
@@ -334,7 +371,7 @@ export default function DesktopHeader() {
                 : 'bg-[#0F1729] text-white hover:bg-[#1F2937]'
             )}
           >
-            Saved
+            Collections
           </button>
           <div ref={menuRef} className="relative">
             <button
@@ -402,7 +439,7 @@ function SegmentedFilter({
                   : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
               )}
             >
-              {option === options[options.length - 1] && option !== 'Any' ? `${option}+` : option}
+              {option}
             </button>
           );
         })}
