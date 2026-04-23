@@ -38,11 +38,11 @@
   --shadow-control: 0 2px 10px rgba(0,0,0,0.09), 0 1px 3px rgba(0,0,0,0.05);
   --shadow-sheet: 0 -12px 32px rgba(15,23,41,0.16);
 
-  --font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-body-sans: var(--font-body), system-ui, -apple-system, sans-serif;
   --font-heading: var(--font-lora), Georgia, serif;
-  --font-button: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-caption: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-sans: var(--font-body);
+  --font-button: var(--font-body-sans);
+  --font-caption: var(--font-body-sans);
+  --font-sans: var(--font-body-sans);
 
   --breakpoint-3xl: 117rem;
 }
@@ -64,7 +64,7 @@ body {
 body {
   background: var(--color-background);
   color: var(--color-text-primary);
-  font-family: var(--font-body);
+  font-family: var(--font-body-sans);
   overscroll-behavior: none;
   overscroll-behavior-x: none;
 }
@@ -114,11 +114,11 @@ button,
    ──────────────────────────────────────────────────────────────────── */
 
 /* Scale tokens + semantic aliases (comma selectors = zero duplication) */
-.type-1,  .type-nano       { font-family: var(--font-body);    font-size: 0.5rem;    font-weight: 700; line-height: 1;    letter-spacing: 0.02em; }
-.type-2,  .type-micro      { font-family: var(--font-body);    font-size: 0.625rem;  font-weight: 600; line-height: 1;    letter-spacing: 0.01em; }
-.type-3,  .type-caption    { font-family: var(--font-body);    font-size: 0.75rem;   font-weight: 400; line-height: 1.33; }
-.type-4,  .type-body       { font-family: var(--font-body);    font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
-.type-5,  .type-body-lg    { font-family: var(--font-body);    font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
+.type-1,  .type-nano       { font-family: var(--font-body-sans); font-size: 0.5rem;    font-weight: 700; line-height: 1;    letter-spacing: 0.02em; }
+.type-2,  .type-micro      { font-family: var(--font-body-sans); font-size: 0.625rem;  font-weight: 600; line-height: 1;    letter-spacing: 0.01em; }
+.type-3,  .type-caption    { font-family: var(--font-body-sans); font-size: 0.75rem;   font-weight: 400; line-height: 1.33; }
+.type-4,  .type-body       { font-family: var(--font-body-sans); font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
+.type-5,  .type-body-lg    { font-family: var(--font-body-sans); font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
 .type-6,  .type-subtitle   { font-family: var(--font-heading); font-size: 1.25rem;   font-weight: 500; line-height: 1.3;  }
 .type-7,  .type-title      { font-family: var(--font-heading); font-size: 1.5rem;    font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
 .type-8,  .type-title-lg   { font-family: var(--font-heading); font-size: 1.875rem;  font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
@@ -129,16 +129,16 @@ button,
 /* Bespoke tokens — sit between scale steps for precision use cases  */
 .type-heading { font-family: var(--font-heading); font-size: 1.125rem;  font-weight: 500; line-height: 1.35; }
 .type-price   { font-family: var(--font-heading); font-size: 1.625rem;  font-weight: 500; line-height: 1.2;  }
-.type-meta    { font-family: var(--font-body);    font-size: 0.8125rem; font-weight: 400; line-height: 1.35; }
-.type-fine    { font-family: var(--font-body);    font-size: 0.6875rem; font-weight: 600; line-height: 1;    }
+.type-meta    { font-family: var(--font-body-sans); font-size: 0.8125rem; font-weight: 400; line-height: 1.35; }
+.type-fine    { font-family: var(--font-body-sans); font-size: 0.6875rem; font-weight: 600; line-height: 1;    }
 
 /* UI tokens — weight variants for labels and buttons                */
-.type-label   { font-family: var(--font-body); font-size: 0.875rem; font-weight: 600; line-height: 1.25; }
-.type-btn     { font-family: var(--font-body); font-size: 0.875rem; font-weight: 500; line-height: 1;    letter-spacing: 0.005em; }
+.type-label   { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 600; line-height: 1.25; }
+.type-btn     { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1;    letter-spacing: 0.005em; }
 
 /* ── Legacy aliases (kept for backward compat, prefer type-* above) */
 .font-heading { font-family: var(--font-heading); font-weight: 500; }
-.font-body    { font-family: var(--font-body); }
+.font-body    { font-family: var(--font-body-sans); }
 .font-button  { font-family: var(--font-button); font-weight: 500; }
 .font-caption { font-family: var(--font-caption); }
 
@@ -162,7 +162,7 @@ main {
 }
 
 .mapboxgl-map {
-  font-family: var(--font-body);
+  font-family: var(--font-body-sans);
 }
 
 /* Snap scroll for carousels */

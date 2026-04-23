@@ -1,98 +1,154 @@
 'use client';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, MoreHorizontal } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useParams } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
+import { useMapStore } from '@/store/mapStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import PageShell from '@/components/templates/PageShell';
-import ListingCard from '@/components/molecules/ListingCard';
-import Avatar from '@/components/atoms/Avatar';
-import dynamic from 'next/dynamic';
+import CollectionViewToggle, {
+  type CollectionView,
+} from '@/components/molecules/CollectionViewToggle';
+import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspaceHeader';
+import CollectionListingsGrid from '@/components/organisms/CollectionListingsGrid';
+import { Collection } from '@/lib/types';
 
+const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
+const ListingsCarousel = dynamic(() => import('@/components/organisms/ListingsCarousel'), { ssr: false });
 const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingDetailSheet'), { ssr: false });
+
+type CollectionListingItem = (typeof MOCK_LISTINGS)[0] & {
+  collectionData: Collection['listings'][number];
+};
+
+function getCollectionListings(collection: Collection): CollectionListingItem[] {
+  return [...collection.listings]
+    .sort((a, b) => a.order - b.order)
+    .map((collectionListing) => {
+      const listing = MOCK_LISTINGS.find((item) => item.id === collectionListing.listingId);
+      return listing ? { ...listing, collectionData: collectionListing } : null;
+    })
+    .filter(Boolean) as CollectionListingItem[];
+}
+
+function getCollectionViewport(
+  listings: Array<(typeof MOCK_LISTINGS)[0]>
+): { longitude: number; latitude: number; zoom: number } {
+  if (listings.length === 0) {
+    return { longitude: -79.3832, latitude: 43.6532, zoom: 11.8 };
+  }
+
+  const latitude =
+    listings.reduce((sum, listing) => sum + listing.coordinates.lat, 0) / listings.length;
+  const longitude =
+    listings.reduce((sum, listing) => sum + listing.coordinates.lng, 0) / listings.length;
+
+  return {
+    longitude,
+    latitude,
+    zoom: listings.length === 1 ? 13.8 : 12.7,
+  };
+}
 
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { collections } = useSavedStore();
-  const { activePanel } = useUIStore();
+  const { activePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
+  const setSelectedListingId = useMapStore((state) => state.setSelectedListingId);
+  const setViewState = useMapStore((state) => state.setViewState);
+  const [mobileView, setMobileView] = useState<CollectionView>('list');
 
-  const collection = collections.find((c) => c.id === id);
+  const collection = collections.find((item) => item.id === id);
+
+  const listings = collection ? getCollectionListings(collection) : [];
+
+  useEffect(() => {
+    setCarouselVisible(false);
+    setSelectedListingId(null);
+  }, [id, setCarouselVisible, setSelectedListingId]);
+
+  useEffect(() => {
+    setViewState(getCollectionViewport(collection ? getCollectionListings(collection) : []));
+  }, [collection, setViewState]);
+
+  useEffect(() => {
+    if (mobileView !== 'map') {
+      setCarouselVisible(false);
+      setSelectedListingId(null);
+    }
+  }, [mobileView, setCarouselVisible, setSelectedListingId]);
+
   if (!collection) {
     return (
-      <PageShell showBottomNav={false} desktopWide>
-        <div className="h-full flex items-center justify-center">
+      <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
+        <div className="flex h-full items-center justify-center">
           <p className="text-[#9CA3AF]">Collection not found</p>
         </div>
       </PageShell>
     );
   }
 
-  const sortedListings = [...collection.listings].sort((a, b) => a.order - b.order);
-  const listings = sortedListings
-    .map((cl) => {
-      const listing = MOCK_LISTINGS.find((l) => l.id === cl.listingId);
-      return listing ? { ...listing, collectionData: cl } : null;
-    })
-    .filter(Boolean) as Array<(typeof MOCK_LISTINGS)[0] & { collectionData: (typeof collection.listings)[0] }>;
-
   return (
-    <PageShell showBottomNav={false} desktopWide>
-      <div className="h-full flex flex-col overflow-hidden bg-white">
-        {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-4">
-          <div className="relative flex items-center justify-center">
-            <button
-              onClick={() => router.back()}
-              className="absolute left-0 flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[#F5F6F7]"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <h1 className="type-title lg:text-4xl text-center text-[#0F1729]">{collection.name}</h1>
-            <div className="absolute right-0 flex items-center gap-2">
-              {collection.collaborators && collection.collaborators.length > 0 && (
-                <div className="flex -space-x-1.5">
-                  {collection.collaborators.slice(0, 2).map((c) => (
-                    <Avatar key={c.id} src={c.avatar} name={c.name} size="sm" className="border-2 border-white" />
-                  ))}
-                </div>
-              )}
-              <button className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#F5F6F7]">
-                <MoreHorizontal size={18} />
-              </button>
-            </div>
-          </div>
+    <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
+      <div className="flex h-full flex-col overflow-hidden bg-[#FCFCFB]">
+        <div className="border-b border-[#F0F1F2] bg-white/92 px-4 pb-4 pt-4 backdrop-blur-xl lg:px-8 lg:pb-5 lg:pt-6">
+          <CollectionWorkspaceHeader
+            title={collection.name}
+            listingCount={listings.length}
+            collaborators={collection.collaborators}
+          />
         </div>
 
-        {/* Grid */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6">
-          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 lg:gap-5">
-            {listings.map((listing) => (
-              <div key={listing.id} className="flex min-w-0 flex-col gap-1.5">
-                <ListingCard listing={listing} variant="carousel" className="w-full" />
-                {listing.collectionData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 px-0.5">
-                    {listing.collectionData.tags.map((t) => (
-                      <span key={t} className="type-micro bg-[#F5F6F7] text-[#6B7280] px-2 py-0.5 rounded-full">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {listing.collectionData.notes && (
-                  <p className="type-caption text-[#9CA3AF] px-0.5 line-clamp-2">{listing.collectionData.notes}</p>
-                )}
-              </div>
-            ))}
-          </div>
-          {listings.length === 0 && (
-            <div className="text-center py-20">
-              <div className="text-5xl mb-4">📂</div>
-              <p className="type-label text-[#0F1729]">Empty collection</p>
-              <p className="type-body text-[#9CA3AF] mt-1">Save listings from the map to add them here</p>
+        <div className="flex-1 overflow-hidden">
+          <div className="flex h-full flex-col lg:hidden">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4">
+              {mobileView === 'list' ? (
+                <CollectionListingsGrid listings={listings} />
+              ) : (
+                <div className="relative h-full min-h-[28rem] overflow-hidden rounded-[28px] bg-[#EEF2F6] shadow-[0_16px_40px_rgba(15,23,41,0.08)]">
+                  <MapView listings={listings} showListings />
+                  {isCarouselVisible && listings.length > 0 && (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
+                      <ListingsCarousel listings={listings} className="pointer-events-auto pb-2" />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+
+            <div
+              className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4 lg:hidden"
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+            >
+              <CollectionViewToggle
+                value={mobileView}
+                onChange={setMobileView}
+                className="pointer-events-auto"
+              />
+            </div>
+          </div>
+
+          <div className="hidden h-full gap-4 px-6 py-5 lg:flex">
+            <div className="flex min-w-0 flex-[0_0_46%] flex-col">
+              <div className="mb-3 px-2">
+                <p className="type-label text-[#6B7280]">Map view</p>
+              </div>
+              <div className="min-h-0 flex-1 overflow-hidden rounded-[30px] bg-[#EEF2F6] shadow-[0_20px_50px_rgba(15,23,41,0.08)]">
+                <MapView listings={listings} showListings />
+              </div>
+            </div>
+
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-[#F0F1F2] bg-white">
+              <div className="border-b border-[#F5F6F7] px-6 py-4">
+                <p className="type-label text-[#6B7280]">Saved listings</p>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+                <CollectionListingsGrid listings={listings} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

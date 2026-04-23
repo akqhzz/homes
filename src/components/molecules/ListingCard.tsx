@@ -25,9 +25,16 @@ interface ListingCardProps {
   variant?: 'carousel' | 'grid' | 'full';
   className?: string;
   desktopTall?: boolean;
+  imageTouchMode?: 'locked' | 'vertical-scroll';
 }
 
-export default function ListingCard({ listing, variant = 'carousel', className, desktopTall = false }: ListingCardProps) {
+export default function ListingCard({
+  listing,
+  variant = 'carousel',
+  className,
+  desktopTall = false,
+  imageTouchMode = 'locked',
+}: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
   const [imgIndex, setImgIndex] = useState(0);
   const [showSavePicker, setShowSavePicker] = useState(false);
@@ -240,7 +247,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
           className="relative overflow-hidden bg-[#F5F6F7]"
           style={{
             height: carouselImageHeight,
-            touchAction: 'none',
+            touchAction: imageTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'none',
           }}
           onClick={(e) => {
             e.stopPropagation();

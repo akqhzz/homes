@@ -4,7 +4,7 @@ import './globals.css';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-body',
   display: 'swap',
 });
 
