@@ -33,7 +33,7 @@ interface ListingsSidebarProps {
 export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   const [sort, setSort] = useState<SortOption>('newest');
   const [showSort, setShowSort] = useState(false);
-  const { selectedListingId, setHoveredListingId } = useMapStore();
+  const { setHoveredListingId } = useMapStore();
   const { openListingDetail } = useUIStore();
 
   const sorted = sortListings(listings, sort);
@@ -82,19 +82,16 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
 
       {/* Listings grid */}
       <div className="flex-1 overflow-y-auto px-5 py-4">
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid grid-cols-1 justify-items-center gap-4 xl:grid-cols-2 2xl:grid-cols-3">
           {sorted.map((listing) => (
             <div
               key={listing.id}
-              className={cn(
-                'min-w-0 rounded-2xl transition-all cursor-pointer',
-                selectedListingId === listing.id && 'ring-2 ring-[#0F1729] ring-offset-2'
-              )}
+              className={cn('w-72 min-w-0 rounded-2xl transition-transform cursor-pointer hover:-translate-y-0.5')}
               onMouseEnter={() => setHoveredListingId(listing.id)}
               onMouseLeave={() => setHoveredListingId(null)}
               onClick={() => openListingDetail(listing.id)}
             >
-              <ListingCard listing={listing} variant="carousel" className="w-full" />
+              <ListingCard listing={listing} variant="carousel" />
             </div>
           ))}
         </div>

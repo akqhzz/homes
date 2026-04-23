@@ -25,9 +25,19 @@ export default function MobileDrawer({
   heightClassName = 'max-h-[78dvh]',
   showBackdrop = true,
 }: MobileDrawerProps) {
+  const drawerRef = useRef<HTMLElement | null>(null);
   const dragControls = useDragControls();
   const swipeStartRef = useRef<{ x: number; y: number; pointerId?: number } | null>(null);
   const trackingRef = useRef(false);
+  const nativeSwipeRef = useRef<{
+    x: number;
+    y: number;
+    lastY: number;
+    lastTime: number;
+    pointerId?: number;
+    active: boolean;
+    dragging: boolean;
+  } | null>(null);
 
   const closeIfSwipeDown = useCallback((dx: number, dy: number) => {
     if (dy > 72 && Math.abs(dy) > Math.abs(dx) * 1.15) onClose();
@@ -35,6 +45,24 @@ export default function MobileDrawer({
 
   const canStartDrawerSwipe = (target: HTMLElement) =>
     !target.closest('button, input, textarea, select, a, [data-no-drawer-drag="true"]');
+
+  const resetNativeDrawerPosition = useCallback(() => {
+    const node = drawerRef.current;
+    if (!node) return;
+    node.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
+    node.style.transform = 'translate3d(0, 0, 0)';
+    window.setTimeout(() => {
+      if (!drawerRef.current) return;
+      drawerRef.current.style.transition = '';
+    }, 230);
+  }, []);
+
+  const moveNativeDrawer = useCallback((dy: number) => {
+    const node = drawerRef.current;
+    if (!node) return;
+    node.style.transition = '';
+    node.style.transform = `translate3d(0, ${Math.max(0, dy)}px, 0)`;
+  }, []);
 
   const rememberPointerStart = (event: PointerEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
@@ -73,6 +101,101 @@ export default function MobileDrawer({
     const touch = event.changedTouches[0];
     closeIfSwipeDown(touch.clientX - start.x, touch.clientY - start.y);
   };
+
+  useEffect(() => {
+    const node = drawerRef.current;
+    if (!node) return;
+
+    const startNativeSwipe = (x: number, y: number, target: EventTarget | null, pointerId?: number) => {
+      if (!(target instanceof HTMLElement) || !canStartDrawerSwipe(target)) return;
+      nativeSwipeRef.current = {
+        x,
+        y,
+        lastY: y,
+        lastTime: performance.now(),
+        pointerId,
+        active: true,
+        dragging: false,
+      };
+    };
+
+    const moveNativeSwipe = (x: number, y: number, event: Event) => {
+      const start = nativeSwipeRef.current;
+      if (!start?.active) return;
+      const dx = x - start.x;
+      const dy = y - start.y;
+      const now = performance.now();
+      start.lastY = y;
+      start.lastTime = now;
+
+      if (dy > 4 && Math.abs(dy) > Math.abs(dx) * 1.05) {
+        start.dragging = true;
+        event.preventDefault();
+        event.stopPropagation();
+        moveNativeDrawer(dy);
+      }
+    };
+
+    const endNativeSwipe = (x: number, y: number, pointerId?: number) => {
+      const start = nativeSwipeRef.current;
+      nativeSwipeRef.current = null;
+      if (!start?.active || (start.pointerId && pointerId && start.pointerId !== pointerId)) return;
+      const dx = x - start.x;
+      const dy = y - start.y;
+      if (start.dragging && dy > 44 && Math.abs(dy) > Math.abs(dx) * 0.75) {
+        onClose();
+        return;
+      }
+      resetNativeDrawerPosition();
+    };
+
+    const onPointerDown = (event: globalThis.PointerEvent) => {
+      startNativeSwipe(event.clientX, event.clientY, event.target, event.pointerId);
+    };
+    const onPointerMove = (event: globalThis.PointerEvent) => {
+      const start = nativeSwipeRef.current;
+      if (!start?.active || start.pointerId !== event.pointerId) return;
+      moveNativeSwipe(event.clientX, event.clientY, event);
+    };
+    const onPointerUp = (event: globalThis.PointerEvent) => {
+      endNativeSwipe(event.clientX, event.clientY, event.pointerId);
+    };
+    const onTouchStart = (event: globalThis.TouchEvent) => {
+      if (event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      startNativeSwipe(touch.clientX, touch.clientY, event.target);
+    };
+    const onTouchMove = (event: globalThis.TouchEvent) => {
+      if (event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      moveNativeSwipe(touch.clientX, touch.clientY, event);
+    };
+    const onTouchEnd = (event: globalThis.TouchEvent) => {
+      const touch = event.changedTouches[0];
+      if (!touch) return;
+      endNativeSwipe(touch.clientX, touch.clientY);
+    };
+
+    node.addEventListener('pointerdown', onPointerDown, { capture: true });
+    node.addEventListener('pointermove', onPointerMove, { capture: true });
+    node.addEventListener('pointerup', onPointerUp, { capture: true });
+    node.addEventListener('pointercancel', onPointerUp, { capture: true });
+    node.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+    node.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
+    node.addEventListener('touchend', onTouchEnd, { capture: true });
+    node.addEventListener('touchcancel', onTouchEnd, { capture: true });
+
+    return () => {
+      node.removeEventListener('pointerdown', onPointerDown, { capture: true });
+      node.removeEventListener('pointermove', onPointerMove, { capture: true });
+      node.removeEventListener('pointerup', onPointerUp, { capture: true });
+      node.removeEventListener('pointercancel', onPointerUp, { capture: true });
+      node.removeEventListener('touchstart', onTouchStart, { capture: true });
+      node.removeEventListener('touchmove', onTouchMove, { capture: true });
+      node.removeEventListener('touchend', onTouchEnd, { capture: true });
+      node.removeEventListener('touchcancel', onTouchEnd, { capture: true });
+    };
+  }, [moveNativeDrawer, onClose, resetNativeDrawerPosition]);
 
   useEffect(() => {
     const handlePointerUp = (event: globalThis.PointerEvent) => {
@@ -117,6 +240,7 @@ export default function MobileDrawer({
         />
       )}
       <motion.section
+        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         onPointerDown={(event) => event.stopPropagation()}

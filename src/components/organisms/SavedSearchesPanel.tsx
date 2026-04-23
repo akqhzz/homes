@@ -60,12 +60,8 @@ export default function SavedSearchesPanel({
     setNewSearchName('');
   };
 
-  return (
-    <MobileDrawer
-      title="Saved Searches"
-      onClose={() => setActivePanel('none')}
-      heightClassName="h-[74dvh]"
-    >
+  const content = (
+    <>
       {/* Save current search */}
       <div className="px-4 py-4 border-b border-[#F5F6F7]">
         <p className="text-sm font-semibold text-[#0F1729] mb-3">Save current search</p>
@@ -136,6 +132,34 @@ export default function SavedSearchesPanel({
           })}
         </div>
       </div>
-    </MobileDrawer>
+    </>
+  );
+
+  return (
+    <>
+      <div className="lg:hidden">
+        <MobileDrawer
+          title="Saved Searches"
+          onClose={() => setActivePanel('none')}
+          heightClassName="h-[74dvh]"
+        >
+          {content}
+        </MobileDrawer>
+      </div>
+      <div className="hidden lg:block">
+        <button
+          type="button"
+          aria-label="Close saved searches"
+          className="fixed inset-0 z-50 bg-transparent"
+          onClick={() => setActivePanel('none')}
+        />
+        <div className="fixed left-1/2 top-20 z-[60] max-h-[calc(100vh-6rem)] w-[420px] -translate-x-1/2 overflow-y-auto rounded-3xl bg-white shadow-[0_16px_48px_rgba(15,23,41,0.18)]">
+          <div className="px-4 pt-4">
+            <p className="font-heading text-lg text-[#0F1729]">Saved Searches</p>
+          </div>
+          {content}
+        </div>
+      </div>
+    </>
   );
 }

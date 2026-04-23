@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Heart, Share2, MapPin, Calendar, Home, Car, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Share2, MapPin, Calendar, Home, Car, DollarSign, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatPriceFull, formatDaysOnMarket, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -25,13 +25,7 @@ export default function ListingDetailSheet() {
 
   const liked = isLiked(listing.id);
 
-  return (
-    <MobileDrawer
-      title={listing.address.split(',')[0]}
-      onClose={closeListingDetail}
-      heightClassName="h-[88dvh]"
-      contentClassName="p-0"
-      footer={(
+  const footer = (
         <div className="flex gap-3">
           <Button
             variant="secondary"
@@ -45,8 +39,10 @@ export default function ListingDetailSheet() {
             Contact Agent
           </Button>
         </div>
-      )}
-    >
+  );
+
+  const content = (
+    <>
       {/* Image gallery */}
       <div className="relative flex-shrink-0" style={{ height: 300 }}>
         <div className="w-full h-full overflow-hidden">
@@ -220,7 +216,53 @@ export default function ListingDetailSheet() {
           <div className="h-24" />
         </div>
       </div>
-    </MobileDrawer>
+    </>
+  );
+
+  return (
+    <>
+      <div className="lg:hidden">
+        <MobileDrawer
+          title={listing.address.split(',')[0]}
+          onClose={closeListingDetail}
+          heightClassName="h-[88dvh]"
+          contentClassName="p-0"
+          footer={footer}
+        >
+          {content}
+        </MobileDrawer>
+      </div>
+      <div className="hidden lg:block">
+        <button
+          type="button"
+          aria-label="Close listing detail"
+          className="fixed inset-0 z-50 bg-black/10"
+          onClick={closeListingDetail}
+        />
+        <section
+          role="dialog"
+          aria-modal="true"
+          className="fixed right-8 top-24 z-[60] flex max-h-[calc(100vh-8rem)] w-[480px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_18px_56px_rgba(15,23,41,0.20)]"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            <p className="min-w-0 truncate font-heading text-lg text-[#0F1729]">{listing.address.split(',')[0]}</p>
+            <button
+              type="button"
+              onClick={closeListingDetail}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+              aria-label="Close listing detail"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {content}
+          </div>
+          <footer className="border-t border-[#F5F6F7] p-4">{footer}</footer>
+        </section>
+      </div>
+    </>
   );
 }
 

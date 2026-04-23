@@ -254,7 +254,7 @@ export default function MapPage() {
       {/* Main content — split on desktop */}
       <div className="flex-1 flex overflow-hidden">
         {/* Map panel */}
-        <div className="relative flex-1 lg:flex-none lg:basis-[44%]">
+        <div className="relative flex-1">
           <MapView
             listings={isAreaSelect ? [] : filteredListings}
             showNeighborhoods={isAreaSelect}
@@ -356,7 +356,7 @@ export default function MapPage() {
         </div>
 
         {/* Desktop listings sidebar */}
-        <div className="hidden min-w-[680px] flex-1 overflow-hidden lg:block">
+        <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[336px] xl:w-[632px] 2xl:w-[936px]">
           <ListingsSidebar listings={filteredListings} />
         </div>
       </div>

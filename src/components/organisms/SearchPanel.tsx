@@ -97,7 +97,7 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ type: 'tween', duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed left-4 right-4 top-4 z-[60]"
+        className="fixed left-4 right-4 top-4 z-[60] lg:left-1/2 lg:right-auto lg:top-20 lg:w-[520px] lg:-translate-x-1/2"
       >
         <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2.5 shadow-[var(--shadow-control)]">
           <button

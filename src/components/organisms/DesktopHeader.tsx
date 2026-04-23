@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Bookmark, Search, SlidersHorizontal } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
@@ -165,9 +165,10 @@ export default function DesktopHeader() {
 
           <button
             onClick={() => setActivePanel('saved-searches')}
-            className="px-4 py-2 rounded-full text-sm font-medium border border-[#E5E7EB] text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729] transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+            aria-label="Saved searches"
           >
-            Save Search
+            <Bookmark size={17} />
           </button>
         </div>
 

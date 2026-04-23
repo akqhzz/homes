@@ -241,11 +241,13 @@ export default function MapView({
                 neighborhood={nbh}
                 isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
                 onClick={() => {
-                  mapRef.current?.fitBounds(getNeighborhoodBounds(nbh), {
-                    padding: { top: 160, bottom: 180, left: 72, right: 72 },
-                    duration: 420,
-                    maxZoom: 14.4,
-                  });
+                  if (!isAreaMode) {
+                    mapRef.current?.fitBounds(getNeighborhoodBounds(nbh), {
+                      padding: { top: 160, bottom: 180, left: 72, right: 72 },
+                      duration: 420,
+                      maxZoom: 14.4,
+                    });
+                  }
                   onNeighborhoodClick?.(nbh);
                 }}
                 size={isAreaMode ? 'sm' : 'default'}
@@ -287,8 +289,8 @@ export default function MapView({
             anchor={popupAnchor}
             closeButton={false}
             closeOnClick={false}
-            offset={24}
-            maxWidth="320px"
+            offset={36}
+            maxWidth="336px"
             className="hidden lg:block"
           >
             <div onClick={(event) => event.stopPropagation()} className="w-72">
@@ -453,13 +455,13 @@ function MockMap({
         const index = listings.findIndex((listing) => listing.id === selectedId);
         const x = 8 + ((index * 43 + 11) % 82);
         const y = 8 + ((index * 61 + 5) % 78);
-        const showRight = x < 56;
+        const showRight = x < 50;
         return (
           <div
             className="absolute hidden w-72 lg:block"
             style={showRight
-              ? { left: `min(${x + 4}%, calc(100% - 304px))`, top: `max(${y - 8}%, 12px)` }
-              : { right: `min(${100 - x + 4}%, calc(100% - 304px))`, top: `max(${y - 8}%, 12px)` }}
+              ? { left: `min(${x + 6}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
+              : { right: `min(${100 - x + 6}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
             onClick={(event) => event.stopPropagation()}
           >
             <ListingCard listing={selectedListing} variant="carousel" />
