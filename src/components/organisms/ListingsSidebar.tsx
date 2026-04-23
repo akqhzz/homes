@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowDownWideNarrow, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { useMapStore } from '@/store/mapStore';
@@ -33,10 +33,20 @@ interface ListingsSidebarProps {
 export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   const [sort, setSort] = useState<SortOption>('newest');
   const [showSort, setShowSort] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
   const { setHoveredListingId } = useMapStore();
   const { openListingDetail } = useUIStore();
 
   const sorted = sortListings(listings, sort);
+
+  useEffect(() => {
+    if (!showSort) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!sortRef.current?.contains(event.target as Node)) setShowSort(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [showSort]);
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-[#F0F0F0]">
@@ -46,7 +56,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
           {listings.length} <span className="text-[#9CA3AF] font-normal">listings</span>
         </p>
 
-        <div className="relative">
+        <div ref={sortRef} className="relative">
           <button
             onClick={() => setShowSort((value) => !value)}
             className="flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"

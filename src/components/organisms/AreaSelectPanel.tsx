@@ -18,6 +18,7 @@ const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborh
 
 interface AreaSelectPanelProps {
   focusedNeighborhood: Neighborhood | null;
+  focusToken?: number;
   selectedNeighborhoods: Set<string>;
   isDrawing: boolean;
   pointCount: number;
@@ -38,6 +39,7 @@ interface AreaSelectPanelProps {
 
 export default function AreaSelectPanel({
   focusedNeighborhood,
+  focusToken = 0,
   selectedNeighborhoods,
   isDrawing,
   pointCount,
@@ -99,7 +101,7 @@ export default function AreaSelectPanel({
       });
       return () => cancelAnimationFrame(frame);
     }
-  }, [focusedNeighborhood]);
+  }, [focusedNeighborhood, focusToken]);
 
   useEffect(() => {
     const node = carouselRef.current;
@@ -267,7 +269,9 @@ export default function AreaSelectPanel({
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)', touchAction: 'none', overscrollBehavior: 'none' }}
           >
             <motion.div
+              key={`area-track-${focusToken}`}
               className="pointer-events-auto flex overflow-visible"
+              initial={false}
               animate={{ x: Math.max(0, (viewportWidth - CARD_WIDTH) / 2) - carouselIndex * (CARD_WIDTH + CARD_GAP) }}
               transition={instantMove || carouselIndex !== currentIndex ? { duration: 0 } : { type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               style={{ gap: CARD_GAP, touchAction: 'none', willChange: 'transform' }}

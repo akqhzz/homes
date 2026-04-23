@@ -119,6 +119,7 @@ export default function MapView({
       <MockMap
         listings={listings}
         selectedId={selectedListingId}
+        hoveredId={hoveredListingId}
         onMarkerClick={handleMarkerClick}
         onMapClick={() => { setSelectedListingId(null); setCarouselVisible(false); }}
         showListings={showListings}
@@ -289,7 +290,7 @@ export default function MapView({
             anchor={popupAnchor}
             closeButton={false}
             closeOnClick={false}
-            offset={36}
+            offset={20}
             maxWidth="336px"
             className="hidden lg:block"
           >
@@ -306,6 +307,7 @@ export default function MapView({
 function MockMap({
   listings,
   selectedId,
+  hoveredId,
   onMarkerClick,
   onMapClick,
   showListings = true,
@@ -322,6 +324,7 @@ function MockMap({
 }: {
   listings: Listing[];
   selectedId: string | null;
+  hoveredId: string | null;
   onMarkerClick: (id: string, coords: { lat: number; lng: number }) => void;
   onMapClick: () => void;
   showListings?: boolean;
@@ -444,7 +447,7 @@ function MockMap({
           >
             <PriceMarker
               price={listing.price}
-              isSelected={listing.id === selectedId}
+              isSelected={listing.id === selectedId || listing.id === hoveredId}
             />
           </div>
         );
@@ -460,8 +463,8 @@ function MockMap({
           <div
             className="absolute hidden w-72 lg:block"
             style={showRight
-              ? { left: `min(${x + 6}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
-              : { right: `min(${100 - x + 6}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
+              ? { left: `min(${x + 3}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
+              : { right: `min(${100 - x + 3}%, calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
             onClick={(event) => event.stopPropagation()}
           >
             <ListingCard listing={selectedListing} variant="carousel" />

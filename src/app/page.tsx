@@ -43,6 +43,7 @@ export default function MapPage() {
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setViewState = useMapStore((s) => s.setViewState);
   const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
+  const [areaFocusToken, setAreaFocusToken] = useState(0);
   const [hoveredNeighborhood, setHoveredNeighborhood] = useState<Neighborhood | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [isDrawingArea, setIsDrawingArea] = useState(false);
@@ -226,6 +227,7 @@ export default function MapPage() {
   };
 
   const handleNeighborhoodClick = (neighborhood: Neighborhood) => {
+    setAreaFocusToken((token) => token + 1);
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
     if (!isDesktop) {
       setFocusedNeighborhood(neighborhood);
@@ -278,16 +280,26 @@ export default function MapPage() {
           />
 
           {!isAreaSelect && (
-            <button
-              onClick={() => {
-                editAppliedArea();
-                setActivePanel('area-select');
-              }}
-              className="pointer-events-auto absolute left-5 top-5 z-20 hidden h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] lg:flex"
-            >
-              <Layers size={16} />
-              Area
-            </button>
+            <div className="pointer-events-auto absolute left-5 top-5 z-20 hidden items-center gap-2 lg:flex">
+              <button
+                onClick={() => {
+                  editAppliedArea();
+                  setActivePanel('area-select');
+                }}
+                className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+              >
+                <Layers size={16} />
+                Area
+              </button>
+              {hasAppliedArea && (
+                <button
+                  onClick={clearAppliedArea}
+                  className="h-11 rounded-full bg-white px-4 text-sm font-semibold text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           )}
 
           {/* Mobile top bar (hidden on desktop — search lives in DesktopHeader) */}
@@ -327,6 +339,7 @@ export default function MapPage() {
               <AreaSelectPanel
                 key="area-select"
                 focusedNeighborhood={focusedNeighborhood}
+                focusToken={areaFocusToken}
                 selectedNeighborhoods={selectedNeighborhoods}
                 isDrawing={isDrawingArea}
                 pointCount={drawnBoundary.length}

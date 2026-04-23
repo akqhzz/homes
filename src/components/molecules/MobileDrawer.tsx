@@ -32,8 +32,6 @@ export default function MobileDrawer({
   const nativeSwipeRef = useRef<{
     x: number;
     y: number;
-    lastY: number;
-    lastTime: number;
     pointerId?: number;
     active: boolean;
     dragging: boolean;
@@ -44,25 +42,7 @@ export default function MobileDrawer({
   }, [onClose]);
 
   const canStartDrawerSwipe = (target: HTMLElement) =>
-    !target.closest('button, input, textarea, select, a, [data-no-drawer-drag="true"]');
-
-  const resetNativeDrawerPosition = useCallback(() => {
-    const node = drawerRef.current;
-    if (!node) return;
-    node.style.transition = 'transform 220ms cubic-bezier(0.22, 1, 0.36, 1)';
-    node.style.transform = 'translate3d(0, 0, 0)';
-    window.setTimeout(() => {
-      if (!drawerRef.current) return;
-      drawerRef.current.style.transition = '';
-    }, 230);
-  }, []);
-
-  const moveNativeDrawer = useCallback((dy: number) => {
-    const node = drawerRef.current;
-    if (!node) return;
-    node.style.transition = '';
-    node.style.transform = `translate3d(0, ${Math.max(0, dy)}px, 0)`;
-  }, []);
+    !target.closest('input, textarea, select, a, [data-no-drawer-drag="true"]');
 
   const rememberPointerStart = (event: PointerEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
@@ -111,8 +91,6 @@ export default function MobileDrawer({
       nativeSwipeRef.current = {
         x,
         y,
-        lastY: y,
-        lastTime: performance.now(),
         pointerId,
         active: true,
         dragging: false,
@@ -124,15 +102,11 @@ export default function MobileDrawer({
       if (!start?.active) return;
       const dx = x - start.x;
       const dy = y - start.y;
-      const now = performance.now();
-      start.lastY = y;
-      start.lastTime = now;
 
       if (dy > 4 && Math.abs(dy) > Math.abs(dx) * 1.05) {
         start.dragging = true;
         event.preventDefault();
         event.stopPropagation();
-        moveNativeDrawer(dy);
       }
     };
 
@@ -144,9 +118,7 @@ export default function MobileDrawer({
       const dy = y - start.y;
       if (start.dragging && dy > 44 && Math.abs(dy) > Math.abs(dx) * 0.75) {
         onClose();
-        return;
       }
-      resetNativeDrawerPosition();
     };
 
     const onPointerDown = (event: globalThis.PointerEvent) => {
@@ -195,7 +167,7 @@ export default function MobileDrawer({
       node.removeEventListener('touchend', onTouchEnd, { capture: true });
       node.removeEventListener('touchcancel', onTouchEnd, { capture: true });
     };
-  }, [moveNativeDrawer, onClose, resetNativeDrawerPosition]);
+  }, [onClose]);
 
   useEffect(() => {
     const handlePointerUp = (event: globalThis.PointerEvent) => {
