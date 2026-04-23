@@ -406,7 +406,10 @@ export default function MapPage() {
           <CardsMode
             key="cards"
             listings={cardsModeListings}
-            onClose={() => setActivePanel('none')}
+            onClose={() => {
+              setSelectedListingId(null);
+              setActivePanel('none');
+            }}
           />
         )}
       </AnimatePresence>

@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Lora } from 'next/font/google';
+import { DM_Sans, Lora } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
@@ -35,7 +35,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${lora.variable} h-full`}>
+    <html lang="en" className={`${dmSans.variable} ${lora.variable} h-full`}>
       <body className="h-full overflow-hidden">{children}</body>
     </html>
   );

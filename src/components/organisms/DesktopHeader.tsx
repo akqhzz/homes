@@ -297,7 +297,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                   setShowSearch(false);
                   setShowMenu(false);
                 }}
-                className="h-10 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-all hover:bg-[#1F2937]"
+                className="h-10 rounded-full bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-all hover:bg-[#EBEBEB]"
               >
                 <span className="inline-flex items-center gap-2">
                   <AppImageIcon src="/icons/collection.png" alt="Collections" size={18} className="rounded-[5px]" />
@@ -355,7 +355,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                             )}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate type-label text-[#0F1729]">{collection.name}</span>
+                            <span className="block truncate font-heading text-sm text-[#0F1729]">{collection.name}</span>
                             <span className="block type-caption text-[#9CA3AF]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                           </span>
                         </button>
@@ -371,7 +371,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate type-label text-[#0F1729]">All Collections</span>
+                        <span className="block truncate font-heading text-sm text-[#0F1729]">All Collections</span>
                         <span className="block type-caption text-[#9CA3AF]">View Your Saved Homes</span>
                       </span>
                       <ChevronRight size={15} className="shrink-0 text-[#9CA3AF]" />

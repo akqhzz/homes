@@ -123,11 +123,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         event.preventDefault();
       }
     };
-    node.addEventListener('touchstart', handleTouchStart, { passive: true });
-    node.addEventListener('touchmove', handleTouchMove, { passive: false });
+    node.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+    node.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
     return () => {
-      node.removeEventListener('touchstart', handleTouchStart);
-      node.removeEventListener('touchmove', handleTouchMove);
+      node.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      node.removeEventListener('touchmove', handleTouchMove, { capture: true });
     };
   }, []);
 
@@ -240,7 +240,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const handleShowOnMap = (targetListing = listing) => {
     if (!targetListing) return;
     setViewState({ longitude: targetListing.coordinates.lng, latitude: targetListing.coordinates.lat, zoom: 15 });
-    setSelectedListingId(targetListing.id);
+    setSelectedListingId(null);
     setActivePanel('none');
     onClose();
   };

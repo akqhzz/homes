@@ -114,7 +114,7 @@ export function FilterPanelBody() {
             step={PRICE_STEP}
             minStepsBetweenThumbs={1}
             onValueChange={handlePriceRangeChange}
-            className="relative -mt-1 flex h-8 w-full touch-none select-none items-center"
+            className="relative -mt-[13px] flex h-8 w-full touch-none select-none items-center"
             aria-label="Price range"
           >
             <Slider.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-[#E5E7EB]">
