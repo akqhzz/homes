@@ -41,7 +41,7 @@ export default function CollectionPage() {
     <PageShell showBottomNav={false} desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-6">
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-4">
           <div className="relative flex items-center justify-center">
             <button
               onClick={() => router.back()}

@@ -27,7 +27,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
   return (
     <PageShell showBottomNav={false} desktopWide desktopHeaderVariant="listing" desktopHeaderListingId={listing.id}>
       <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
-        <div className="mx-auto w-full max-w-[1600px] px-5 py-5 lg:px-8 lg:py-7">
+        <div className="mx-auto w-full max-w-[1600px] px-5 py-5 lg:px-8 lg:pb-7 lg:pt-3">
           <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
             <BackButton />
             <ListingSaveButton listingId={listing.id} />

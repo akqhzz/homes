@@ -90,7 +90,7 @@ export default function SavedPage() {
     <PageShell desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-8">
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-4">
           <div className="mb-1 flex items-center justify-center">
             <h1 className="type-title lg:text-3xl text-[#0F1729]">Collections</h1>
           </div>

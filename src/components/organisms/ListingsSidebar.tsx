@@ -93,7 +93,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
       </div>
 
       {/* Listings grid */}
-      <div className="flex-1 overflow-y-auto px-4 py-1.5">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-1.5">
         <div className="mx-auto grid w-max grid-cols-2 justify-items-center gap-4 3xl:grid-cols-3">
           {sorted.map((listing) => (
             <div
