@@ -17,11 +17,13 @@ const DEFAULT_FILTERS: SearchFilters = {
 interface SearchStore {
   selectedLocations: Location[];
   addLocation: (loc: Location) => void;
+  setLocations: (locations: Location[]) => void;
   removeLocation: (id: string) => void;
   clearLocations: () => void;
 
   filters: SearchFilters;
   setFilters: (f: Partial<SearchFilters>) => void;
+  replaceFilters: (f: SearchFilters) => void;
   resetFilters: () => void;
 
   activeFilterCount: () => number;
@@ -33,12 +35,14 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
     set((s) => ({
       selectedLocations: [loc, ...s.selectedLocations.filter((selected) => selected.id !== loc.id)],
     })),
+  setLocations: (selectedLocations) => set({ selectedLocations }),
   removeLocation: (id) =>
     set((s) => ({ selectedLocations: s.selectedLocations.filter((l) => l.id !== id) })),
   clearLocations: () => set({ selectedLocations: [] }),
 
   filters: DEFAULT_FILTERS,
   setFilters: (f) => set((s) => ({ filters: { ...s.filters, ...f } })),
+  replaceFilters: (filters) => set({ filters: { ...filters, propertyTypes: [...filters.propertyTypes] } }),
   resetFilters: () => set({ filters: DEFAULT_FILTERS }),
 
   activeFilterCount: () => {

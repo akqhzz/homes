@@ -1,20 +1,31 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRight, Plus } from 'lucide-react';
-import { MOCK_SAVED_SEARCHES } from '@/lib/mock-data';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
+import { useSavedSearchStore } from '@/store/savedSearchStore';
+import { Coordinates, SavedSearch } from '@/lib/types';
 import Button from '@/components/atoms/Button';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
+import { cn } from '@/lib/utils/cn';
 
 interface SavedSearchesPanelProps {
   hasActiveCriteria?: boolean;
+  currentBoundary?: Coordinates[];
+  currentNeighborhoodIds?: string[];
+  onApplySearch?: (search: SavedSearch) => void;
 }
 
-export default function SavedSearchesPanel({ hasActiveCriteria }: SavedSearchesPanelProps) {
+export default function SavedSearchesPanel({
+  hasActiveCriteria,
+  currentBoundary = [],
+  currentNeighborhoodIds = [],
+  onApplySearch,
+}: SavedSearchesPanelProps) {
   const setActivePanel = useUIStore((s) => s.setActivePanel);
-  const { selectedLocations } = useSearchStore();
+  const { selectedLocations, filters, setLocations, replaceFilters } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
+  const { searches, saveSearch, activeSearchId, setActiveSearchId } = useSavedSearchStore();
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
   const [saving, setSaving] = useState(canSaveCurrent);
@@ -26,16 +37,26 @@ export default function SavedSearchesPanel({ hasActiveCriteria }: SavedSearchesP
     return () => cancelAnimationFrame(frame);
   }, [saving]);
 
-  const handleLoadSearch = () => {
-    // In real app: update search store state
+  const handleLoadSearch = (search: SavedSearch) => {
+    setActiveSearchId(search.id);
+    setLocations(search.locations);
+    replaceFilters(search.filters);
+    onApplySearch?.(search);
     setActivePanel('none');
   };
 
   const handleSaveCurrent = () => {
-    if (!newSearchName.trim()) return;
+    const trimmedName = newSearchName.trim();
+    if (!trimmedName) return;
+    saveSearch({
+      name: trimmedName,
+      locations: selectedLocations,
+      filters,
+      areaBoundary: currentBoundary,
+      neighborhoodIds: currentNeighborhoodIds,
+    });
     setSaving(false);
     setNewSearchName('');
-    setActivePanel('none');
   };
 
   return (
@@ -75,11 +96,18 @@ export default function SavedSearchesPanel({ hasActiveCriteria }: SavedSearchesP
       <div className="px-4 py-4">
         <p className="text-sm font-semibold text-[#0F1729] mb-3">My Searches</p>
         <div className="flex flex-col gap-3">
-          {MOCK_SAVED_SEARCHES.map((search) => (
+          {searches.map((search) => {
+            const isSelected = activeSearchId === search.id;
+            return (
             <button
               key={search.id}
-              onClick={handleLoadSearch}
-              className="flex items-center gap-3 p-3 bg-[#F5F6F7] rounded-2xl text-left hover:bg-[#EBEBEB] transition-colors"
+              onClick={() => handleLoadSearch(search)}
+              className={cn(
+                'flex items-center gap-3 rounded-2xl border p-3 text-left transition-colors',
+                isSelected
+                  ? 'border-[#6B7280] bg-white shadow-[inset_0_0_0_1px_#6B7280]'
+                  : 'border-transparent bg-[#F5F6F7] hover:bg-[#EBEBEB]'
+              )}
             >
               {search.thumbnail && (
                 <img
@@ -101,7 +129,8 @@ export default function SavedSearchesPanel({ hasActiveCriteria }: SavedSearchesP
               </div>
               <ChevronRight size={18} className="text-[#9CA3AF] flex-shrink-0" />
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
     </MobileDrawer>

@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, RotateCcw, Map, MapPin, Home } from 'lucide-react';
+import { X, Heart, Map, MapPin, Home, SlidersHorizontal, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -24,6 +24,14 @@ const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=80',
   'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80',
 ];
+type SortMode = 'recommended' | 'price-asc' | 'price-desc' | 'newest';
+
+const SORT_OPTIONS: { value: SortMode; label: string }[] = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'price-asc', label: 'Price low to high' },
+  { value: 'price-desc', label: 'Price high to low' },
+  { value: 'newest', label: 'Newest first' },
+];
 
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
@@ -42,6 +50,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [viewportWidth, setViewportWidth] = useState(390);
   const [showMapDrawer, setShowMapDrawer] = useState(false);
   const [showDetailDrawer, setShowDetailDrawer] = useState(false);
+  const [showSortDrawer, setShowSortDrawer] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>('recommended');
   const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
   const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
   const [likePulse, setLikePulse] = useState(false);
@@ -52,11 +62,19 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  const { isLiked, swipeDislike, swipeUndo } = useSavedStore();
+  const { isLiked, swipeDislike } = useSavedStore();
   const { openListingDetail, setActivePanel } = useUIStore();
   const { setViewState, setSelectedListingId } = useMapStore();
 
-  const listing = listings[currentIndex];
+  const sortedListings = useMemo(() => {
+    const next = [...listings];
+    if (sortMode === 'price-asc') return next.sort((a, b) => a.price - b.price);
+    if (sortMode === 'price-desc') return next.sort((a, b) => b.price - a.price);
+    if (sortMode === 'newest') return next.sort((a, b) => a.daysOnMarket - b.daysOnMarket);
+    return next;
+  }, [listings, sortMode]);
+  const activeIndex = Math.min(currentIndex, Math.max(0, sortedListings.length - 1));
+  const listing = sortedListings[activeIndex];
 
   useEffect(() => {
     const updateWidth = () => {
@@ -112,24 +130,18 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    listings.slice(currentIndex, currentIndex + 3).forEach((item) => {
+    sortedListings.slice(activeIndex, activeIndex + 3).forEach((item) => {
       getListingImages(item).forEach((src) => {
         const image = new window.Image();
         image.src = src;
       });
     });
-  }, [currentIndex, listings]);
+  }, [activeIndex, sortedListings]);
 
   const passListing = () => {
     if (!listing) return;
     swipeDislike(listing.id);
     setCurrentIndex((i) => i + 1);
-  };
-
-  const handleUndo = () => {
-    if (currentIndex === 0) return;
-    swipeUndo();
-    setCurrentIndex((i) => Math.max(0, i - 1));
   };
 
   const handleSaved = () => {
@@ -144,7 +156,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (dragLockRef.current) return;
     dragLockRef.current = true;
     setCurrentIndex((index) => {
-      if (direction === 'next') return Math.min(listings.length, index + 1);
+      if (direction === 'next') return Math.min(sortedListings.length, index + 1);
       return Math.max(0, index - 1);
     });
     window.setTimeout(() => {
@@ -257,7 +269,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       >
         <motion.div
           className="flex h-full"
-          animate={{ x: -currentIndex * (cardWidth + CARD_GAP) }}
+          animate={{ x: -activeIndex * (cardWidth + CARD_GAP) }}
           transition={{ type: 'spring', stiffness: 360, damping: 38, mass: 0.28 }}
           style={{
             gap: CARD_GAP,
@@ -266,12 +278,12 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             paddingRight: Math.max(0, (viewportWidth - cardWidth) / 2 - 12),
           }}
         >
-          {listings.map((item, index) => (
+          {sortedListings.map((item, index) => (
             <CardModeListingCard
               key={item.id}
               listing={item}
               width={cardWidth}
-              active={index === currentIndex}
+              active={index === activeIndex}
               onOpenDetail={() => {
                 if (activeDragRef.current) return;
                 setCurrentIndex(index);
@@ -295,14 +307,12 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         className="flex-shrink-0 px-6 flex items-center justify-center gap-2.5"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
       >
-        {/* Undo */}
         <FloatingActionButton
           layoutId="saved-undo-control"
-          onClick={handleUndo}
-          disabled={currentIndex === 0}
-          aria-label="Undo"
+          onClick={() => setShowSortDrawer(true)}
+          aria-label="Sort cards"
         >
-          <RotateCcw size={17} strokeWidth={2} />
+          <SlidersHorizontal size={17} strokeWidth={2} />
         </FloatingActionButton>
 
         <button
@@ -345,6 +355,40 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             onClose={() => setSavePickerListing(null)}
             onSaved={handleSaved}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSortDrawer && (
+          <MobileDrawer
+            title="Sort cards"
+            onClose={() => setShowSortDrawer(false)}
+            heightClassName="h-[38dvh]"
+            contentClassName="px-4 pb-4"
+          >
+            <div className="flex flex-col gap-2">
+              {SORT_OPTIONS.map((option) => {
+                const selected = sortMode === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setSortMode(option.value);
+                      setCurrentIndex(0);
+                      setShowSortDrawer(false);
+                    }}
+                    className={cn(
+                      'flex h-12 items-center justify-between rounded-2xl px-4 text-sm font-semibold transition-colors',
+                      selected ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
+                    )}
+                  >
+                    {option.label}
+                    {selected && <Check size={16} />}
+                  </button>
+                );
+              })}
+            </div>
+          </MobileDrawer>
         )}
       </AnimatePresence>
 

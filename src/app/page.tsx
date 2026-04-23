@@ -10,7 +10,7 @@ import BottomNav from '@/components/organisms/BottomNav';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
-import { Neighborhood, SearchFilters } from '@/lib/types';
+import { Neighborhood, SavedSearch, SearchFilters } from '@/lib/types';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
 const SearchPanel = dynamic(() => import('@/components/organisms/SearchPanel'), { ssr: false });
@@ -37,9 +37,10 @@ function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
 
 export default function MapPage() {
   const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
-  const { filters } = useSearchStore();
+  const { filters, selectedLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
+  const setViewState = useMapStore((s) => s.setViewState);
   const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [isDrawingArea, setIsDrawingArea] = useState(false);
@@ -55,7 +56,7 @@ export default function MapPage() {
   const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
   const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
-  const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0;
+  const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0 || selectedLocations.length > 0;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -192,6 +193,31 @@ export default function MapPage() {
     setIsDrawingArea(false);
   };
 
+  const applySavedSearch = (search: SavedSearch) => {
+    const nextNeighborhoods = new Set(search.neighborhoodIds ?? []);
+    const nextBoundary = search.areaBoundary?.map((point) => ({ ...point })) ?? [];
+    setAppliedNeighborhoods(nextNeighborhoods);
+    setAppliedBoundary(nextBoundary);
+    setSelectedNeighborhoods(new Set(nextNeighborhoods));
+    setDrawnBoundary(nextBoundary);
+    setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
+    setFocusedNeighborhood(null);
+    setIsDrawingArea(false);
+    setCarouselVisible(false);
+    setSelectedListingId(null);
+
+    const target = nextBoundary[0] ?? search.locations[0]?.coordinates;
+    if (target) {
+      setViewState({
+        longitude: target.lng,
+        latitude: target.lat,
+        zoom: nextBoundary.length > 0 || nextNeighborhoods.size > 0 ? 13.8 : 13,
+      });
+    }
+  };
+
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#F5F6F7]">
       {/* Desktop header (hidden on mobile) */}
@@ -309,7 +335,13 @@ export default function MapPage() {
         {activePanel === 'filter' && <FilterPanel key="filter" totalListings={filteredListings.length} />}
         {activePanel === 'listing-detail' && <ListingDetailSheet key="listing-detail" />}
         {activePanel === 'saved-searches' && (
-          <SavedSearchesPanel key="saved-searches" hasActiveCriteria={hasActiveSearchCriteria} />
+          <SavedSearchesPanel
+            key="saved-searches"
+            hasActiveCriteria={hasActiveSearchCriteria}
+            currentBoundary={appliedBoundary}
+            currentNeighborhoodIds={[...appliedNeighborhoods]}
+            onApplySearch={applySavedSearch}
+          />
         )}
       </AnimatePresence>
 

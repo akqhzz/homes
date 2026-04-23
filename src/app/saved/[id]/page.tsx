@@ -58,7 +58,7 @@ export default function CollectionPage() {
                   ))}
                 </div>
               )}
-              <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#F5F6F7]">
+              <button className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-[#F5F6F7]">
                 <MoreHorizontal size={18} />
               </button>
             </div>

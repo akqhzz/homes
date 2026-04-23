@@ -25,10 +25,7 @@ export default function SavedPage() {
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameName, setRenameName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const handleCreateIntent = () => {
@@ -167,7 +164,7 @@ export default function SavedPage() {
                   {/* ... button — outside overflow-hidden, positioned at article level */}
                   <button
                     onClick={(event) => openMenu(event, col.id)}
-                    className="absolute top-[13.75rem] right-3 flex h-8 w-8 items-center justify-center rounded-full text-[#6B7280]"
+                    className="absolute top-[13.25rem] right-1 flex h-12 w-12 items-center justify-center rounded-full text-[#6B7280]"
                     aria-label="Collection options"
                   >
                     <Ellipsis size={17} />
@@ -189,7 +186,7 @@ export default function SavedPage() {
 
       {/* Portal: dropdown menus rendered in <body> so they're never clipped by scroll
           containers or hidden behind toolbars. Backdrop stops clicks from reaching cards. */}
-      {mounted && (isMenuOpen || isConfirmOpen) && createPortal(
+      {typeof document !== 'undefined' && (isMenuOpen || isConfirmOpen) && createPortal(
         <>
           <div
             className="fixed inset-0 z-[45]"
