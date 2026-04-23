@@ -132,7 +132,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             onClick={() => router.push('/')}
             className="flex items-center gap-2 flex-shrink-0"
           >
-            <span className="font-heading text-lg text-[#0F1729]">homes</span>
+            <span className="type-heading text-[#0F1729]">homes</span>
           </button>
         )}
 
@@ -208,8 +208,8 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                         <Search size={14} className="text-[#9CA3AF]" />
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#0F1729]">{location.name}</p>
-                        <p className="text-xs text-[#9CA3AF]">{location.city}, ON</p>
+                        <p className="truncate type-label text-[#0F1729]">{location.name}</p>
+                        <p className="type-caption text-[#9CA3AF]">{location.city}, ON</p>
                       </div>
                     </button>
                   ))}
@@ -234,7 +234,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               <SlidersHorizontal size={16} className="text-[#0F1729]" />
               Filter
               {filterCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 text-[8px] font-bold leading-none text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
                   {filterCount}
                 </span>
               )}
@@ -264,7 +264,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
             aria-label="Saved searches"
           >
-            <AppImageIcon src="/icons/saved-search.jpg" alt="Saved searches" size={20} />
+            <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={20} />
           </button>
         </div>
 
@@ -300,7 +300,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                 className="h-10 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-all hover:bg-[#1F2937]"
               >
                 <span className="inline-flex items-center gap-2">
-                  <AppImageIcon src="/icons/collection.jpg" alt="Collections" size={18} className="rounded-[5px]" />
+                  <AppImageIcon src="/icons/collection.png" alt="Collections" size={18} className="rounded-[5px]" />
                   Collections
                 </span>
               </button>
@@ -355,7 +355,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                             )}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate font-heading text-sm text-[#0F1729]">{collection.name}</span>
+                            <span className="block truncate type-label text-[#0F1729]">{collection.name}</span>
                             <span className="block type-caption text-[#9CA3AF]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                           </span>
                         </button>
@@ -371,7 +371,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-heading text-sm text-[#0F1729]">All Collections</span>
+                        <span className="block truncate type-label text-[#0F1729]">All Collections</span>
                         <span className="block type-caption text-[#9CA3AF]">View Your Saved Homes</span>
                       </span>
                       <ChevronRight size={15} className="shrink-0 text-[#9CA3AF]" />
@@ -414,14 +414,14 @@ function DesktopMenu() {
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
             <item.icon size={15} className="text-[#0F1729]" />
           </div>
-          <span className="flex-1 text-sm font-medium text-[#0F1729]">{item.label}</span>
+          <span className="flex-1 type-body font-medium text-[#0F1729]">{item.label}</span>
         </button>
       ))}
       <button className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-red-50">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
           <LogOut size={15} className="text-[#EF4444]" />
         </div>
-        <span className="flex-1 text-sm font-medium text-[#EF4444]">Sign Out</span>
+        <span className="flex-1 type-body font-medium text-[#EF4444]">Sign Out</span>
       </button>
     </div>
   );

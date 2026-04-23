@@ -54,7 +54,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between px-5 py-1.5">
-        <p className="font-heading text-lg text-[#0F1729]">
+        <p className="type-heading text-[#0F1729]">
           {listings.length} <span className="text-[#9CA3AF] font-normal">listings</span>
         </p>
 
@@ -110,7 +110,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
 
         {listings.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-[#9CA3AF] text-sm">No listings match your filters</p>
+            <p className="type-body text-[#9CA3AF]">No listings match your filters</p>
           </div>
         )}
       </div>

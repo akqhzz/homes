@@ -38,10 +38,13 @@ export default function ListingImageGallery({ images, address }: ListingImageGal
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] text-left lg:aspect-[16/10]"
+          className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] text-left lg:aspect-[16/8.8]"
           aria-label="Open listing image gallery"
         >
           <Image src={galleryImages[0]} alt={address} fill priority className="object-cover transition-transform duration-300 hover:scale-[1.015]" sizes="(min-width: 1024px) 64vw, 100vw" />
+          <span className="absolute bottom-3 right-3 inline-flex h-9 items-center rounded-full bg-white/88 px-3 type-btn text-[#0F1729] shadow-[0_6px_18px_rgba(15,23,41,0.14)] backdrop-blur">
+            View {galleryImages.length} Images
+          </span>
         </button>
         <div className="grid grid-cols-2 gap-2 lg:grid-rows-3 lg:gap-3">
           {galleryImages.slice(1, 7).map((image, index) => (
@@ -49,7 +52,7 @@ export default function ListingImageGallery({ images, address }: ListingImageGal
               type="button"
               key={`${image}-${index}`}
               onClick={() => setIsOpen(true)}
-              className={`relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] text-left lg:aspect-auto ${index > 1 ? 'hidden lg:block' : ''}`}
+              className={`relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] text-left lg:aspect-[4/3] ${index > 1 ? 'hidden lg:block' : ''}`}
               aria-label={`Open listing photo ${index + 2}`}
             >
               <Image src={image} alt={`${address} photo ${index + 2}`} fill className="object-cover transition-transform duration-300 hover:scale-[1.02]" sizes="(min-width: 1024px) 16vw, 50vw" />

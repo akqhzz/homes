@@ -177,12 +177,12 @@ export default function AreaSelectPanel({
                 >
                   <ArrowLeft size={16} strokeWidth={2.4} />
                 </button>
-                <p className="min-w-0 flex-1 truncate font-normal leading-tight">{title}</p>
+                <p className="min-w-0 flex-1 truncate type-body leading-tight">{title}</p>
               </div>
             </div>
             <button
               onClick={onApply}
-              className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-4 text-sm font-semibold text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:absolute lg:right-0 lg:top-0"
+              className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-4 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:absolute lg:right-0 lg:top-0"
             >
               Done
             </button>
@@ -197,8 +197,8 @@ export default function AreaSelectPanel({
             <div className="flex items-center gap-3">
               <Pencil size={15} />
               <div className="min-w-0 flex-1">
-                <p className="font-semibold leading-tight">Tap map to draw</p>
-                <p className="text-xs text-[#6B7280]">{pointCount} point{pointCount === 1 ? '' : 's'} placed</p>
+                <p className="type-label leading-tight">Tap map to draw</p>
+                <p className="type-caption text-[#6B7280]">{pointCount} point{pointCount === 1 ? '' : 's'} placed</p>
               </div>
               {pointCount > 0 && (
                 <button onClick={onClearDrawing} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
@@ -248,7 +248,7 @@ export default function AreaSelectPanel({
             <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
               <Redo2 size={15} />
             </button>
-            <button onClick={onClearSelection} className="flex h-9 items-center justify-center rounded-full bg-white px-3 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)]">
+            <button onClick={onClearSelection} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[#0F1729] shadow-[var(--shadow-control)]">
               Clear
             </button>
           </div>
@@ -292,17 +292,17 @@ export default function AreaSelectPanel({
                     <Image src={neighborhood.thumbnail} alt="" width={104} height={136} className="h-full w-[104px] shrink-0 rounded-xl object-cover" draggable={false} />
                     <div className="flex min-w-0 flex-1 flex-col py-0.5">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-[#0F1729]">{neighborhood.name}</p>
+                        <p className="truncate type-label text-[#0F1729]">{neighborhood.name}</p>
                         <div className="mt-2 flex flex-wrap gap-1.5">
-                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">{neighborhood.listingCount} listings</span>
-                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">{formatAvgPrice(neighborhood.avgPrice)}</span>
-                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">Walk {neighborhood.walkScore}</span>
+                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{neighborhood.listingCount} listings</span>
+                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{formatAvgPrice(neighborhood.avgPrice)}</span>
+                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">Walk {neighborhood.walkScore}</span>
                         </div>
                       </div>
                       <button
                         onClick={() => onToggleNeighborhood(neighborhood.id)}
                         className={cn(
-                          'mt-2 flex h-9 w-[92px] items-center justify-center gap-1.5 self-end rounded-full px-3 text-xs font-semibold transition-colors',
+                          'mt-2 flex h-9 w-[92px] items-center justify-center gap-1.5 self-end rounded-full px-3 type-caption font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                         )}
                       >
@@ -332,16 +332,16 @@ export default function AreaSelectPanel({
               >
                 <X size={14} />
               </button>
-              <p className="truncate text-base font-semibold text-[#0F1729]">{focusedNeighborhood.name}</p>
+              <p className="truncate type-body-lg font-semibold text-[#0F1729]">{focusedNeighborhood.name}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 text-[11px] font-semibold text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>
-                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 text-[11px] font-semibold text-[#6B7280]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
-                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 text-[11px] font-semibold text-[#6B7280]">Walk {focusedNeighborhood.walkScore}</span>
+                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>
+                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
+                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">Walk {focusedNeighborhood.walkScore}</span>
               </div>
               <button
                 onClick={() => onToggleNeighborhood(focusedNeighborhood.id)}
                 className={cn(
-                  'mt-auto flex h-10 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-colors',
+                  'mt-auto flex h-10 items-center justify-center gap-1.5 rounded-full px-4 type-label transition-colors',
                   selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                 )}
               >

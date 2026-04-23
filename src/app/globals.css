@@ -81,49 +81,60 @@ button,
   cursor: pointer;
 }
 
-/* ── Type scale ──────────────────────────────────────────────────
-   Each token bundles family + size + weight + line-height.
-   Color and spacing stay as Tailwind utilities on the element.
+/* ── Type scale — two-tier system ──────────────────────────────────
+   SCALE TOKENS   type-1 … type-11 are the geometric foundation,
+                  following an approximate Minor Third (1.2×) progression.
+                  Use these directly when you need a raw size.
+   SEMANTIC ALIASES  Named tokens share the same CSS block as their
+                  scale step via comma selectors — both names work
+                  identically in markup, zero duplication.
+   BESPOKE TOKENS  type-heading, type-price, and type-fine sit between
+                  scale steps where design precision matters most.
+   UI TOKENS  type-label and type-btn add weight variants for
+              static labels and interactive buttons respectively.
 
-   ┌─────────────────┬──────────┬────────┬─────┬───────────────────┐
-   │ Token           │ Size     │ Family │  W  │ Used for          │
-   ├─────────────────┼──────────┼────────┼─────┼───────────────────┤
-   │ type-display    │ 3.75 rem │ Lora   │ 500 │ hero stat numbers │
-   │ type-display-sm │ 3 rem    │ Lora   │ 500 │ large stats       │
-   │ type-hero       │ 2.25 rem │ Lora   │ 500 │ full-page price   │
-   │ type-title-lg   │ 1.875rem │ Lora   │ 500 │ insight titles    │
-   │ type-title      │ 1.5 rem  │ Lora   │ 500 │ page h1s          │
-   │ type-price      │ 1.625rem │ Lora   │ 500 │ listing prices    │
-   │ type-subtitle   │ 1.25 rem │ Lora   │ 500 │ brand, sub-heads  │
-   │ type-heading    │ 1.125rem │ Lora   │ 500 │ drawer / section  │
-   ├─────────────────┼──────────┼────────┼─────┼───────────────────┤
-   │ type-body-lg    │ 1 rem    │ Inter  │ 400 │ large body text   │
-   │ type-label      │ 0.875rem │ Inter  │ 600 │ primary UI text   │
-   │ type-body       │ 0.875rem │ Inter  │ 400 │ descriptions      │
-   │ type-caption    │ 0.75 rem │ Inter  │ 400 │ counts, metadata  │
-   │ type-fine       │ 0.6875rm │ Inter  │ 600 │ small chips       │
-   │ type-micro      │ 0.625rem │ Inter  │ 600 │ tags, badges      │
-   │ type-nano       │ 0.5 rem  │ Inter  │ 700 │ tiny badge nums   │
-   └─────────────────┴──────────┴────────┴─────┴───────────────────┘ */
+   step  size       px    ratio    family  wt   lh      ls          alias
+   ──────────────────────────────────────────────────────────────────────
+   1     0.5 rem     8    —        Inter   700  1.0    +0.02em     type-nano
+   2     0.625rem   10    ×1.25    Inter   600  1.0    +0.01em     type-micro
+   3     0.75 rem   12    ×1.2 ✓  Inter   400  1.33   —           type-caption
+   4     0.875rem   14    ×1.17   Inter   400  1.6    —           type-body
+   5     1 rem      16    ×1.14   Inter   400  1.6    —           type-body-lg
+   6     1.25 rem   20    ×1.25   Lora    500  1.3    —           type-subtitle
+   7     1.5 rem    24    ×1.2 ✓  Lora    500  1.2   −0.01em     type-title
+   8     1.875rem   30    ×1.25   Lora    500  1.2   −0.01em     type-title-lg
+   9     2.25 rem   36    ×1.2 ✓  Lora    500  1.15  −0.01em     type-hero
+   10    3 rem      48    ×1.33   Lora    500  1.0   −0.02em     type-display-sm
+   11    3.75 rem   60    ×1.25   Lora    500  1.0   −0.02em     type-display
 
-.type-display    { font-family: var(--font-heading); font-size: 3.75rem;   font-weight: 500; line-height: 1;    letter-spacing: -0.02em; }
-.type-display-sm { font-family: var(--font-heading); font-size: 3rem;      font-weight: 500; line-height: 1;    letter-spacing: -0.02em; }
-.type-hero       { font-family: var(--font-heading); font-size: 2.25rem;   font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
-.type-title-lg   { font-family: var(--font-heading); font-size: 1.875rem;  font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
-.type-title      { font-family: var(--font-heading); font-size: 1.5rem;    font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
-.type-price      { font-family: var(--font-heading); font-size: 1.625rem;  font-weight: 500; line-height: 1.2;  }
-.type-subtitle   { font-family: var(--font-heading); font-size: 1.25rem;   font-weight: 500; line-height: 1.3;  }
-.type-heading    { font-family: var(--font-heading); font-size: 1.125rem;  font-weight: 500; line-height: 1.35; }
+   bespoke  1.125rem  18   Lora    500  1.35  —       type-heading
+   bespoke  1.625rem  26   Lora    500  1.2   —       type-price
+   bespoke  0.6875rem 11   Inter   600  1.0   —       type-fine
+   ──────────────────────────────────────────────────────────────────── */
 
-.type-body-lg    { font-family: var(--font-body);    font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
-.type-label      { font-family: var(--font-body);    font-size: 0.875rem;  font-weight: 600; line-height: 1.25; }
-.type-body       { font-family: var(--font-body);    font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
-.type-caption    { font-family: var(--font-body);    font-size: 0.75rem;   font-weight: 400; line-height: 1.33; }
-.type-fine       { font-family: var(--font-body);    font-size: 0.6875rem; font-weight: 600; line-height: 1;    }
-.type-micro      { font-family: var(--font-body);    font-size: 0.625rem;  font-weight: 600; line-height: 1;    letter-spacing: 0.01em; }
-.type-nano       { font-family: var(--font-body);    font-size: 0.5rem;    font-weight: 700; line-height: 1;    letter-spacing: 0.02em; }
+/* Scale tokens + semantic aliases (comma selectors = zero duplication) */
+.type-1,  .type-nano       { font-family: var(--font-body);    font-size: 0.5rem;    font-weight: 700; line-height: 1;    letter-spacing: 0.02em; }
+.type-2,  .type-micro      { font-family: var(--font-body);    font-size: 0.625rem;  font-weight: 600; line-height: 1;    letter-spacing: 0.01em; }
+.type-3,  .type-caption    { font-family: var(--font-body);    font-size: 0.75rem;   font-weight: 400; line-height: 1.33; }
+.type-4,  .type-body       { font-family: var(--font-body);    font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
+.type-5,  .type-body-lg    { font-family: var(--font-body);    font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
+.type-6,  .type-subtitle   { font-family: var(--font-heading); font-size: 1.25rem;   font-weight: 500; line-height: 1.3;  }
+.type-7,  .type-title      { font-family: var(--font-heading); font-size: 1.5rem;    font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
+.type-8,  .type-title-lg   { font-family: var(--font-heading); font-size: 1.875rem;  font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
+.type-9,  .type-hero       { font-family: var(--font-heading); font-size: 2.25rem;   font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
+.type-10, .type-display-sm { font-family: var(--font-heading); font-size: 3rem;      font-weight: 500; line-height: 1;    letter-spacing: -0.02em; }
+.type-11, .type-display    { font-family: var(--font-heading); font-size: 3.75rem;   font-weight: 500; line-height: 1;    letter-spacing: -0.02em; }
 
-/* ── Legacy aliases (prefer type-* above) ────────────────────── */
+/* Bespoke tokens — sit between scale steps for precision use cases  */
+.type-heading { font-family: var(--font-heading); font-size: 1.125rem;  font-weight: 500; line-height: 1.35; }
+.type-price   { font-family: var(--font-heading); font-size: 1.625rem;  font-weight: 500; line-height: 1.2;  }
+.type-fine    { font-family: var(--font-body);    font-size: 0.6875rem; font-weight: 600; line-height: 1;    }
+
+/* UI tokens — weight variants for labels and buttons                */
+.type-label   { font-family: var(--font-body); font-size: 0.875rem; font-weight: 600; line-height: 1.25; }
+.type-btn     { font-family: var(--font-body); font-size: 0.875rem; font-weight: 600; line-height: 1;    letter-spacing: 0.005em; }
+
+/* ── Legacy aliases (kept for backward compat, prefer type-* above) */
 .font-heading { font-family: var(--font-heading); font-weight: 500; }
 .font-body    { font-family: var(--font-body); }
 .font-button  { font-family: var(--font-button); font-weight: 600; }

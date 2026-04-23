@@ -84,7 +84,7 @@ export default function SavedSearchesPanel({
     <>
       {/* Save current search */}
       <div className="px-4 py-4 border-b border-[#F5F6F7]">
-        <p className="font-heading text-base text-[#0F1729] mb-3">Save Current Search</p>
+        <p className="type-heading text-[#0F1729] mb-3">Save Current Search</p>
         {saving ? (
           <div className="flex gap-2">
             <input
@@ -111,7 +111,7 @@ export default function SavedSearchesPanel({
 
       {/* Saved searches list */}
       <div className="px-4 py-4">
-        <p className="font-heading text-base text-[#0F1729] mb-3">My Searches</p>
+        <p className="type-heading text-[#0F1729] mb-3">My Searches</p>
         <div className="flex flex-col gap-3">
           {searches.map((search) => {
             const isSelected = activeSearchId === search.id;
@@ -136,12 +136,12 @@ export default function SavedSearchesPanel({
                 />
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-heading text-sm text-[#0F1729]">{search.name}</p>
-                <p className="text-xs text-[#9CA3AF] mt-0.5">
+                <p className="type-label text-[#0F1729]">{search.name}</p>
+                <p className="type-caption text-[#9CA3AF] mt-0.5">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
                 {search.newListingsCount && search.newListingsCount > 0 && (
-                  <span className="inline-flex items-center mt-1.5 px-2 py-0.5 bg-[#0F1729] text-white text-xs font-medium rounded-full">
+                  <span className="inline-flex items-center mt-1.5 px-2 py-0.5 bg-[#0F1729] text-white type-caption font-medium rounded-full">
                     {search.newListingsCount} new
                   </span>
                 )}
@@ -172,7 +172,7 @@ export default function SavedSearchesPanel({
           className="fixed left-1/2 top-[64px] z-[60] -ml-[232px] max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
           <div className="px-4 pt-4">
-            <p className="font-heading text-lg text-[#0F1729]">Saved Searches</p>
+            <p className="type-heading text-[#0F1729]">Saved Searches</p>
           </div>
           {content}
         </div>

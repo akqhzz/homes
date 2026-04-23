@@ -113,19 +113,24 @@ export default async function ListingPage({ params }: ListingPageProps) {
           </section>
         </div>
 
-        <div className="fixed inset-x-4 bottom-4 z-40 flex items-center gap-2 rounded-[28px] bg-white/95 p-2 shadow-[0_12px_34px_rgba(15,23,41,0.18)] backdrop-blur lg:hidden">
-          <BackButton iconOnly className="h-12 w-12 shrink-0" />
-          <ListingSaveButton listingId={listing.id} variant="toolbar" />
-          <button
-            type="button"
-            aria-label="Share listing"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
-          >
-            <Share2 size={16} />
-          </button>
-          <button className="h-12 flex-1 rounded-full bg-[#0F1729] type-label text-white">
-            Contact Agent
-          </button>
+        <div className="fixed inset-x-4 bottom-4 z-40 flex items-center gap-2 lg:hidden">
+          <BackButton
+            iconOnly
+            className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
+          />
+          <div className="flex flex-1 items-center gap-2 rounded-[28px] bg-white/95 p-2 shadow-[0_12px_34px_rgba(15,23,41,0.18)] backdrop-blur">
+            <button
+              type="button"
+              aria-label="Share listing"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
+            >
+              <Share2 size={16} />
+            </button>
+            <ListingSaveButton listingId={listing.id} variant="icon" />
+            <button className="h-12 flex-1 rounded-full bg-[#0F1729] type-btn text-white">
+              Contact Agent
+            </button>
+          </div>
         </div>
       </main>
     </PageShell>

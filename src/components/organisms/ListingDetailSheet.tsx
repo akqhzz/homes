@@ -116,12 +116,12 @@ export default function ListingDetailSheet() {
           {/* Price & basics */}
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="font-heading text-2xl text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
-              <p className="text-sm text-[#6B7280] mt-1">
+              <h1 className="type-title text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
+              <p className="type-body text-[#6B7280] mt-1">
                 {listing.beds} bed · {listing.baths} bath · {formatSqft(listing.sqft)} sqft
               </p>
             </div>
-            <span className="text-xs text-[#9CA3AF] bg-[#F5F6F7] px-2.5 py-1 rounded-full mt-1">
+            <span className="type-caption text-[#9CA3AF] bg-[#F5F6F7] px-2.5 py-1 rounded-full mt-1">
               {formatDaysOnMarket(listing.daysOnMarket)}
             </span>
           </div>
@@ -150,7 +150,7 @@ export default function ListingDetailSheet() {
 
           {/* Description */}
           <div>
-            <h3 className="font-heading text-lg text-[#0F1729] mb-2">About This Home</h3>
+            <h3 className="type-heading text-[#0F1729] mb-2">About This Home</h3>
             <p className="text-sm text-[#6B7280] leading-relaxed">{listing.description}</p>
           </div>
 
@@ -159,7 +159,7 @@ export default function ListingDetailSheet() {
             <>
               <div className="h-px bg-[#F5F6F7] my-5" />
               <div>
-                <h3 className="font-heading text-lg text-[#0F1729] mb-3">Features & Amenities</h3>
+                <h3 className="type-heading text-[#0F1729] mb-3">Features & Amenities</h3>
                 <div className="flex flex-wrap gap-2">
                   {listing.features.map((f) => (
                     <span key={f} className="text-xs bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">
@@ -176,7 +176,7 @@ export default function ListingDetailSheet() {
             <>
               <div className="h-px bg-[#F5F6F7] my-5" />
               <div>
-                <h3 className="font-heading text-lg text-[#0F1729] mb-3">Add to collection</h3>
+                <h3 className="type-heading text-[#0F1729] mb-3">Add to collection</h3>
                 <div className="flex flex-col gap-2">
                   {collections.map((col) => {
                     const thumbnail = MOCK_LISTINGS.find(l => l.id === col.listings[0]?.listingId)?.images[0];
@@ -202,8 +202,8 @@ export default function ListingDetailSheet() {
                           )}
                         </div>
                         <div>
-                          <p className="font-heading text-sm text-[#0F1729]">{col.name}</p>
-                          <p className="text-xs text-[#9CA3AF]">{col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}</p>
+                          <p className="type-label text-[#0F1729]">{col.name}</p>
+                          <p className="type-caption text-[#9CA3AF]">{col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}</p>
                         </div>
                       </button>
                     );
@@ -246,7 +246,7 @@ export default function ListingDetailSheet() {
           onClick={(event) => event.stopPropagation()}
         >
           <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <p className="min-w-0 truncate font-heading text-lg text-[#0F1729]">{listing.address.split(',')[0]}</p>
+            <p className="min-w-0 truncate type-heading text-[#0F1729]">{listing.address.split(',')[0]}</p>
             <button
               type="button"
               onClick={closeListingDetail}
@@ -271,8 +271,8 @@ function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: stri
     <div className="flex items-center gap-3 p-3 bg-[#F5F6F7] rounded-xl">
       <span className="text-[#9CA3AF]">{icon}</span>
       <div>
-        <p className="text-xs text-[#9CA3AF]">{label}</p>
-        <p className="text-sm font-semibold text-[#0F1729]">{value}</p>
+        <p className="type-caption text-[#9CA3AF]">{label}</p>
+        <p className="type-label text-[#0F1729]">{value}</p>
       </div>
     </div>
   );

@@ -214,6 +214,18 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) event.preventDefault();
   };
 
+  const handleTrackTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return;
+    if (dragLockRef.current) return;
+    navigateCard(dx < 0 ? 'next' : 'previous');
+  };
+
   const handleTrackWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 24) return;
@@ -238,10 +250,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center gap-5">
         <span className="text-5xl">🏠</span>
         <div className="text-center">
-          <p className="font-heading text-xl text-[#0F1729]">All caught up!</p>
-          <p className="text-[#9CA3AF] text-sm mt-1">You&apos;ve seen all {listings.length} listings</p>
+          <p className="type-subtitle text-[#0F1729]">All caught up!</p>
+          <p className="type-body text-[#9CA3AF] mt-1">You&apos;ve seen all {listings.length} listings</p>
         </div>
-        <button onClick={onClose} className="text-sm font-semibold text-[#0F1729] underline underline-offset-2">
+        <button onClick={onClose} className="type-label text-[#0F1729] underline underline-offset-2">
           Back to map
         </button>
       </div>
@@ -251,17 +263,18 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const liked = isLiked(listing.id);
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-white flex flex-col overscroll-x-none"
+      className="fixed inset-0 z-50 flex flex-col bg-white overscroll-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ y: '100%', opacity: 1, scale: 1 }}
       transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+      style={{ overscrollBehaviorX: 'none', overscrollBehaviorY: 'none', touchAction: 'pan-y' }}
     >
       {/* Card stack */}
       <div
         ref={trackRef}
         className="flex-1 relative px-3 pt-3 pb-2 min-h-0 overflow-hidden"
-        style={{ touchAction: 'pan-y' }}
+        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', overscrollBehaviorY: 'contain' }}
         onWheel={handleTrackWheel}
         onPointerDownCapture={handleTrackPointerDown}
         onPointerMoveCapture={handleTrackPointerMove}
@@ -269,6 +282,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         onPointerCancelCapture={() => { pointerStartRef.current = null; activeDragRef.current = false; }}
         onTouchStart={handleTrackTouchStart}
         onTouchMove={handleTrackTouchMove}
+        onTouchEnd={handleTrackTouchEnd}
       >
         <motion.div
           className="flex h-full"
@@ -320,7 +334,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
         <button
           onClick={passListing}
-          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#4B5563] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
+          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label text-[#4B5563] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
         >
           <X size={16} strokeWidth={2.4} />
           Pass
@@ -328,7 +342,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
         <motion.button
           onClick={() => setSavePickerListing(listing)}
-          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
+          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
           animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
           transition={{ duration: 0.24, ease: 'easeOut' }}
         >
@@ -381,7 +395,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                       setShowSortDrawer(false);
                     }}
                     className={cn(
-                      'flex min-h-12 items-center justify-between gap-3 whitespace-normal rounded-2xl border px-4 py-3 text-left text-sm font-semibold leading-snug transition-colors',
+                      'flex min-h-12 items-center justify-between gap-3 whitespace-normal rounded-2xl border px-4 py-3 text-left type-label leading-snug transition-colors',
                       selected
                         ? 'border-[#9CA3AF] bg-white text-[#0F1729] shadow-[inset_0_0_0_1px_#9CA3AF]'
                         : 'border-transparent bg-[#F5F6F7] text-[#0F1729]'
@@ -418,20 +432,20 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="font-heading text-2xl text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
-            <p className="text-sm text-[#6B7280] mt-1">
+            <p className="type-title text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
+            <p className="type-body text-[#6B7280] mt-1">
               {(drawerListing ?? listing).beds}bd · {(drawerListing ?? listing).baths}ba · {formatSqft((drawerListing ?? listing).sqft)} sqft
             </p>
-            <p className="text-xs text-[#9CA3AF] mt-1 flex items-center gap-1">
+            <p className="type-caption text-[#9CA3AF] mt-1 flex items-center gap-1">
               <MapPin size={11} />
               {(drawerListing ?? listing).address}, {(drawerListing ?? listing).city}
             </p>
             <div className="h-px bg-[#F5F6F7] my-4" />
-            <p className="text-sm text-[#6B7280] leading-relaxed">{(drawerListing ?? listing).description}</p>
+            <p className="type-body text-[#6B7280] leading-relaxed">{(drawerListing ?? listing).description}</p>
             <div className="h-px bg-[#F5F6F7] my-4" />
             <div className="flex flex-wrap gap-2">
               {(drawerListing ?? listing).features.map((f) => (
-                <span key={f} className="text-xs bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">{f}</span>
+                <span key={f} className="type-caption bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">{f}</span>
               ))}
             </div>
           </MobileDrawer>
@@ -458,9 +472,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               <div className="mx-4 mb-4 flex flex-1 items-center justify-center rounded-2xl bg-[#E8ECEF]">
                 <div className="text-center p-6">
                   <MapPin size={36} className="mx-auto mb-3 text-[#9CA3AF]" />
-                  <p className="font-semibold text-[#0F1729]">{(drawerListing ?? listing).neighborhood}</p>
-                  <p className="text-sm text-[#9CA3AF] mt-1">{(drawerListing ?? listing).address}</p>
-                  <p className="text-xs text-[#9CA3AF] mt-1">{(drawerListing ?? listing).coordinates.lat.toFixed(4)}, {(drawerListing ?? listing).coordinates.lng.toFixed(4)}</p>
+                  <p className="type-label text-[#0F1729]">{(drawerListing ?? listing).neighborhood}</p>
+                  <p className="type-body text-[#9CA3AF] mt-1">{(drawerListing ?? listing).address}</p>
+                  <p className="type-caption text-[#9CA3AF] mt-1">{(drawerListing ?? listing).coordinates.lat.toFixed(4)}, {(drawerListing ?? listing).coordinates.lng.toFixed(4)}</p>
                 </div>
               </div>
             )}
@@ -528,10 +542,11 @@ function CardModeListingCard({
 }) {
   const images = getListingImages(listing);
   const imageScrollRef = useRef<HTMLDivElement>(null);
-  const imagePullStartRef = useRef<{ y: number; atTop: boolean } | null>(null);
+  const imagePullStartRef = useRef<{ x: number; y: number; atTop: boolean } | null>(null);
 
   const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     imagePullStartRef.current = {
+      x: event.touches[0].clientX,
       y: event.touches[0].clientY,
       atTop: (imageScrollRef.current?.scrollTop ?? 0) <= 2,
     };
@@ -539,8 +554,15 @@ function CardModeListingCard({
 
   const handleImageTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
     const start = imagePullStartRef.current;
-    if (!start?.atTop) return;
+    if (!start) return;
+    const dx = event.touches[0].clientX - start.x;
     const dy = event.touches[0].clientY - start.y;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (!start.atTop) return;
     if (dy > 8) {
       event.preventDefault();
       event.stopPropagation();
@@ -578,7 +600,9 @@ function CardModeListingCard({
             style={{
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain',
+              overscrollBehaviorX: 'none',
               scrollBehavior: 'smooth',
+              touchAction: 'pan-y',
             }}
             onTouchStart={handleImageTouchStart}
             onTouchMove={handleImageTouchMove}
@@ -599,12 +623,12 @@ function CardModeListingCard({
             <div className="flex items-end gap-2">
               <div className="flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-5 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
                 <div className="flex w-full min-w-0 items-center justify-between gap-2">
-                  <p className="font-heading min-w-0 truncate text-[26px] font-normal leading-tight tracking-normal text-[#0F1729]">{formatPrice(listing.price)}</p>
-                  <span className="shrink-0 rounded-full bg-[#F5F6F7] px-2.5 py-1 text-xs font-semibold text-[#6B7280]">
+                  <p className="type-price min-w-0 truncate leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
+                  <span className="shrink-0 rounded-full bg-[#F5F6F7] px-2.5 py-1 type-caption font-semibold text-[#6B7280]">
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>
                 </div>
-                <p className="mt-2 text-base font-normal tracking-normal text-[#5C5F66]">
+                <p className="mt-2 type-body-lg text-[#5C5F66]">
                   {listing.beds} bd {listing.baths} ba {formatSqft(listing.sqft)}sqft
                 </p>
               </div>

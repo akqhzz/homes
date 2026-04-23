@@ -131,7 +131,7 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
               className="flex h-8 w-8 items-center justify-center rounded-full text-[#9CA3AF] hover:bg-[#F5F6F7] hover:text-[#0F1729]"
               aria-label="Area select"
             >
-              <AppImageIcon src="/icons/area-selection.jpg" alt="Area selection" size={18} />
+              <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
             </button>
             {showAreaMenu && (
               <div className="absolute right-0 top-10 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">

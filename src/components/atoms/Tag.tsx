@@ -11,7 +11,7 @@ export default function Tag({ children, onRemove, className }: TagProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 text-sm font-medium bg-[#F5F6F7] text-[#0F1729] rounded-full px-3 py-1.5',
+        'inline-flex items-center gap-1 type-body font-medium bg-[#F5F6F7] text-[#0F1729] rounded-full px-3 py-1.5',
         className
       )}
     >

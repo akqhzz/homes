@@ -76,7 +76,7 @@ export function FilterPanelBody() {
       <Section title="Price Range">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1.5 block text-xs text-[#9CA3AF]">Min Price</label>
+            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Min Price</label>
             <PriceInput
               value={filters.minPrice}
               placeholder="No min"
@@ -84,7 +84,7 @@ export function FilterPanelBody() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs text-[#9CA3AF]">Max Price</label>
+            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Max Price</label>
             <PriceInput
               value={filters.maxPrice}
               placeholder="No max"
@@ -93,6 +93,19 @@ export function FilterPanelBody() {
           </div>
         </div>
         <div className="mt-5">
+          <div className="pointer-events-none flex h-12 items-end gap-1 px-1">
+            {PRICE_BUCKETS.map((count, index) => {
+              const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
+              const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
+              return (
+                <div
+                  key={index}
+                  className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]' : 'bg-[#D1D5DB]')}
+                  style={{ height: `${Math.max(6, count * 3)}px` }}
+                />
+              );
+            })}
+          </div>
           <Slider.Root
             data-no-drawer-drag="true"
             value={priceRange}
@@ -101,31 +114,18 @@ export function FilterPanelBody() {
             step={PRICE_STEP}
             minStepsBetweenThumbs={1}
             onValueChange={handlePriceRangeChange}
-            className="relative h-20 w-full touch-none select-none"
+            className="relative -mt-1 flex h-8 w-full touch-none select-none items-center"
             aria-label="Price range"
           >
-            <div className="pointer-events-none absolute left-0 right-0 top-0 flex h-12 items-end gap-1 px-1">
-              {PRICE_BUCKETS.map((count, index) => {
-                const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
-                const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
-                return (
-                  <div
-                    key={index}
-                    className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]' : 'bg-[#D1D5DB]')}
-                    style={{ height: `${Math.max(6, count * 3)}px` }}
-                  />
-                );
-              })}
-            </div>
-            <Slider.Track className="absolute left-0 right-0 top-[52px] h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
+            <Slider.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-[#E5E7EB]">
               <Slider.Range className="absolute h-full rounded-full bg-[#0F1729]" />
             </Slider.Track>
             <Slider.Thumb
-              className="absolute top-[43px] block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10"
+              className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10"
               aria-label="Minimum price"
             />
             <Slider.Thumb
-              className="absolute top-[43px] block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10"
+              className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10"
               aria-label="Maximum price"
             />
           </Slider.Root>
@@ -139,7 +139,7 @@ export function FilterPanelBody() {
               key={value}
               onClick={() => togglePropertyType(value)}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-all',
+                'inline-flex items-center gap-1.5 rounded-full border px-4 py-2 type-btn transition-all',
                 filters.propertyTypes.includes(value)
                   ? 'border-[#0F1729] bg-[#0F1729] text-white'
                   : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
@@ -162,7 +162,7 @@ export function FilterPanelBody() {
                 key={opt}
                 onClick={() => setFilters({ minBeds: val })}
                 className={cn(
-                  'h-10 min-w-12 rounded-full border px-3 text-sm font-medium transition-all',
+                  'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
                   active
                     ? 'border-[#0F1729] bg-[#0F1729] text-white'
                     : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
@@ -185,7 +185,7 @@ export function FilterPanelBody() {
                 key={opt}
                 onClick={() => setFilters({ minBaths: val })}
                 className={cn(
-                  'h-10 min-w-12 rounded-full border px-3 text-sm font-medium transition-all',
+                  'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
                   active
                     ? 'border-[#0F1729] bg-[#0F1729] text-white'
                     : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
@@ -202,7 +202,7 @@ export function FilterPanelBody() {
         <select
           value={selectedListedWithin}
           onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
-          className="h-11 w-full cursor-pointer rounded-full border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
+          className="h-11 w-full cursor-pointer rounded-full border border-[#E5E7EB] bg-white px-4 type-btn text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
         >
           <option value="">Any Time</option>
           {DAYS_OPTIONS.map(({ value, label }) => (
@@ -214,7 +214,7 @@ export function FilterPanelBody() {
       <Section title="Square Footage">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1.5 block text-xs text-[#9CA3AF]">Min sqft</label>
+            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Min sqft</label>
             <input
               type="number"
               value={filters.minSqft ?? ''}
@@ -224,7 +224,7 @@ export function FilterPanelBody() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs text-[#9CA3AF]">Max sqft</label>
+            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Max sqft</label>
             <input
               type="number"
               value={filters.maxSqft ?? ''}
@@ -263,7 +263,7 @@ export function FilterPanelFooter({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="border-b border-[#F5F6F7] px-4 py-5">
-      <h3 className="mb-4 font-heading text-lg text-[#0F1729]">{title}</h3>
+      <h3 className="mb-4 type-heading text-[#0F1729]">{title}</h3>
       {children}
     </div>
   );

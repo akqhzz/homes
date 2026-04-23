@@ -37,8 +37,8 @@ export default function NeighborhoodPin({ neighborhood, isSelected, onClick, siz
       </div>
       {showLabel && (
         <span className={cn(
-          'font-medium text-[#0F1729] bg-white/90 rounded-full shadow-sm whitespace-nowrap',
-          size === 'sm' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-xs'
+          'text-[#0F1729] bg-white/90 rounded-full shadow-sm whitespace-nowrap',
+          size === 'sm' ? 'px-1.5 py-0.5 type-micro' : 'px-2 py-0.5 type-caption'
         )}>
           {neighborhood.name}
         </span>

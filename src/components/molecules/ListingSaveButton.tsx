@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils/cn';
 
 interface ListingSaveButtonProps {
   listingId: string;
-  variant?: 'pill' | 'toolbar';
+  variant?: 'pill' | 'toolbar' | 'icon';
   className?: string;
 }
 
@@ -26,15 +26,17 @@ export default function ListingSaveButton({ listingId, variant = 'pill', classNa
           setShowPicker(true);
         }}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-colors',
+          'inline-flex items-center justify-center gap-2 rounded-full text-[#0F1729] transition-colors',
           variant === 'toolbar'
-            ? 'h-12 flex-1 bg-[#F5F6F7] text-sm text-[#0F1729] hover:bg-[#EBEBEB]'
-            : 'h-10 bg-[#F5F6F7] px-4 text-sm text-[#0F1729] hover:bg-[#EBEBEB]',
+            ? 'h-12 flex-1 bg-[#F5F6F7] type-btn hover:bg-[#EBEBEB]'
+            : variant === 'icon'
+            ? 'h-12 w-12 bg-[#F5F6F7] hover:bg-[#EBEBEB]'
+            : 'h-10 bg-[#F5F6F7] px-4 type-btn hover:bg-[#EBEBEB]',
           className
         )}
       >
         <Heart size={15} className={cn(isLiked && 'fill-[#EF4444] text-[#EF4444]')} />
-        Save
+        {variant !== 'icon' && 'Save'}
       </button>
       {showPicker && (
         <SaveToCollectionSheet

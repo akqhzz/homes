@@ -35,7 +35,7 @@ export default function BottomNav() {
           onClick={() => setActivePanel('saved-searches')}
           aria-label="Saved searches"
         >
-          <AppImageIcon src="/icons/saved-search.jpg" alt="Saved searches" size={19} />
+          <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={19} />
         </FloatingActionButton>
       )}
 
@@ -77,7 +77,7 @@ export default function BottomNav() {
           onClick={() => setActivePanel('cards')}
           aria-label="Cards mode"
         >
-          <AppImageIcon src="/icons/cards-mode.jpg" alt="Cards mode" size={19} />
+          <AppImageIcon src="/icons/cards-mode.png" alt="Cards mode" size={19} />
         </FloatingActionButton>
       )}
     </nav>

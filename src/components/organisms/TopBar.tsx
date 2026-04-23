@@ -65,11 +65,11 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
         >
           <Search size={17} className="text-[#9CA3AF] flex-shrink-0" />
           {selectedLocations.length > 0 || hasAppliedArea ? (
-            <span className="inline-flex items-center rounded-full bg-[#F0F1F2] px-2.5 py-0.5 text-sm font-medium text-[#0F1729] truncate max-w-full">
+            <span className="inline-flex items-center rounded-full bg-[#F0F1F2] px-2.5 py-0.5 type-body font-medium text-[#0F1729] truncate max-w-full">
               {locationLabel}
             </span>
           ) : (
-            <span className="text-sm font-medium text-[#9CA3AF] flex-1 truncate">
+            <span className="type-body font-medium text-[#9CA3AF] flex-1 truncate">
               {locationLabel}
             </span>
           )}
@@ -79,7 +79,7 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
             onClick={handleAreaClick}
             className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors p-0.5"
           >
-            <AppImageIcon src="/icons/area-selection.jpg" alt="Area selection" size={18} />
+            <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
           </button>
           {showAreaMenu && (
             <div className="absolute right-0 top-9 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
@@ -107,7 +107,7 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
       >
         <SlidersHorizontal size={18} className="text-[#0F1729]" />
         {filterCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 text-[8px] font-bold leading-none text-white">
+          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
             {filterCount}
           </span>
         )}

@@ -288,7 +288,7 @@ export default function MapPage() {
                 }}
                 className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
               >
-                <AppImageIcon src="/icons/area-selection.jpg" alt="Area selection" size={18} />
+                <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
                 Area
               </button>
               {hasAppliedArea && (
