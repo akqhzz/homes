@@ -120,7 +120,15 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
           type="button"
           aria-label="Close save to collection"
           className="fixed inset-0 z-50 bg-transparent"
-          onClick={onClose}
+          onPointerDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onClose();
+          }}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
         />
         <div
           className="fixed z-[60] w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"

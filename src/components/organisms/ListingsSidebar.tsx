@@ -94,7 +94,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
 
       {/* Listings grid */}
       <div className="flex-1 overflow-y-auto px-4 py-1.5">
-        <div className="grid grid-cols-2 justify-items-center gap-4 2xl:grid-cols-3">
+        <div className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-4 2xl:grid-cols-3">
           {sorted.map((listing) => (
             <div
               key={listing.id}
@@ -103,7 +103,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
               onMouseLeave={() => setHoveredListingId(null)}
               onClick={() => router.push(`/listings/${listing.id}`)}
             >
-              <ListingCard listing={listing} variant="carousel" className="w-80" />
+              <ListingCard listing={listing} variant="carousel" className="w-80" desktopTall />
             </div>
           ))}
         </div>

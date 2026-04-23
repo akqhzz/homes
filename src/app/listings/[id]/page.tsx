@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Bath, BedDouble, Calendar, Car, DollarSign, Heart, Home, MapPin, Ruler } from 'lucide-react';
+import { Bath, BedDouble, Calendar, Car, DollarSign, Home, MapPin, Ruler, ShieldCheck, Snowflake, Sun, TrainFront } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatDaysOnMarket, formatPriceFull, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import BackButton from '@/components/atoms/BackButton';
+import PageShell from '@/components/templates/PageShell';
+import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;
@@ -17,87 +19,123 @@ export default async function ListingPage({ params }: ListingPageProps) {
   const { id } = await params;
   const listing = MOCK_LISTINGS.find((item) => item.id === id);
   if (!listing) notFound();
+  const extendedDescription = `${listing.description} The home is arranged for everyday comfort with a practical floor plan, generous natural light, and flexible rooms that work for entertaining, focused work, or quiet evenings in. Recent updates emphasize durable finishes, efficient storage, and easy transitions between the kitchen, living area, and private spaces. The location keeps daily errands close while still feeling connected to transit, parks, restaurants, and neighborhood services.`;
+  const monthlyCost = listing.maintenanceFee ? `$${listing.maintenanceFee.toLocaleString()}` : 'None';
+  const agentImage = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=240&q=80';
 
   return (
-    <main className="h-full overflow-y-auto bg-white">
-      <div className="mx-auto w-full max-w-[1600px] px-5 py-5 lg:px-8 lg:py-7">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <BackButton />
-          <button className="inline-flex h-10 items-center gap-2 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">
-            <Heart size={15} />
-            Save
-          </button>
-        </div>
-
-        <section className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] lg:aspect-[16/10]">
-            <Image src={listing.images[0]} alt={listing.address} fill priority className="object-cover" sizes="(min-width: 1024px) 64vw, 100vw" />
+    <PageShell showBottomNav={false} desktopWide desktopHeaderVariant="listing" desktopHeaderListingId={listing.id}>
+      <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
+        <div className="mx-auto w-full max-w-[1600px] px-5 py-5 lg:px-8 lg:py-7">
+          <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
+            <BackButton />
+            <ListingSaveButton listingId={listing.id} />
           </div>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-            {listing.images.slice(1, 3).map((image, index) => (
-              <div key={image} className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] lg:aspect-auto">
-                <Image src={image} alt={`${listing.address} photo ${index + 2}`} fill className="object-cover" sizes="(min-width: 1024px) 28vw, 50vw" />
-              </div>
-            ))}
-          </div>
-        </section>
 
-        <section className="grid gap-8 py-8 lg:grid-cols-[1fr_320px]">
-          <div>
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h1 className="type-hero text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
-                <p className="mt-2 flex items-center gap-1.5 type-body text-[#6B7280]">
-                  <MapPin size={15} className="text-[#9CA3AF]" />
-                  {listing.address}, {listing.city}, {listing.province}
-                </p>
-              </div>
-              <span className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-label text-[#6B7280]">
-                {formatDaysOnMarket(listing.daysOnMarket)}
-              </span>
+          <section className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] lg:aspect-[16/10]">
+              <Image src={listing.images[0]} alt={listing.address} fill priority className="object-cover" sizes="(min-width: 1024px) 64vw, 100vw" />
             </div>
-
-            <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
-              <Fact icon={<BedDouble size={17} />} label="Beds" value={`${listing.beds}`} />
-              <Fact icon={<Bath size={17} />} label="Baths" value={`${listing.baths}`} />
-              <Fact icon={<Ruler size={17} />} label="Area" value={formatSqft(listing.sqft)} />
-              <Fact icon={<Home size={17} />} label="Type" value={formatPropertyType(listing.propertyType)} />
-            </div>
-
-            <div className="my-8 h-px bg-[#F5F6F7]" />
-
-            <h2 className="type-title text-[#0F1729]">About This Home</h2>
-            <p className="mt-3 max-w-3xl type-body leading-7 text-[#6B7280]">{listing.description}</p>
-
-            <div className="my-8 h-px bg-[#F5F6F7]" />
-
-            <h2 className="type-title text-[#0F1729]">Features & Amenities</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {listing.features.map((feature) => (
-                <span key={feature} className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-body font-medium text-[#6B7280]">
-                  {feature}
-                </span>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+              {listing.images.slice(1, 3).map((image, index) => (
+                <div key={image} className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-[#F5F6F7] lg:aspect-auto">
+                  <Image src={image} alt={`${listing.address} photo ${index + 2}`} fill className="object-cover" sizes="(min-width: 1024px) 28vw, 50vw" />
+                </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          <aside className="h-fit rounded-3xl border border-[#F0F0F0] p-4">
-            <div className="space-y-3">
-              <SideFact icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} />
-              <SideFact icon={<Car size={16} />} label="Parking" value={`${listing.parkingSpaces} space${listing.parkingSpaces === 1 ? '' : 's'}`} />
-              <SideFact icon={<DollarSign size={16} />} label="Taxes/Yr" value={`$${listing.taxes.toLocaleString()}`} />
-              {listing.maintenanceFee && (
-                <SideFact icon={<DollarSign size={16} />} label="Maint./Mo" value={`$${listing.maintenanceFee.toLocaleString()}`} />
-              )}
-              <SideFact icon={<Home size={16} />} label="MLS" value={listing.mlsNumber} />
+          <section className="grid gap-8 py-8 lg:grid-cols-[1fr_360px]">
+            <div>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h1 className="type-hero text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
+                  <p className="mt-2 flex items-center gap-1.5 type-body text-[#6B7280]">
+                    <MapPin size={15} className="text-[#9CA3AF]" />
+                    {listing.address}, {listing.city}, {listing.province}
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-label text-[#6B7280]">
+                  {formatDaysOnMarket(listing.daysOnMarket)}
+                </span>
+              </div>
+
+              <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
+                <Fact icon={<BedDouble size={17} />} label="Beds" value={`${listing.beds}`} />
+                <Fact icon={<Bath size={17} />} label="Baths" value={`${listing.baths}`} />
+                <Fact icon={<Ruler size={17} />} label="Area" value={formatSqft(listing.sqft)} />
+                <Fact icon={<Home size={17} />} label="Type" value={formatPropertyType(listing.propertyType)} />
+              </div>
+
+              <div className="my-8 h-px bg-[#F5F6F7]" />
+
+              <h2 className="type-title text-[#0F1729]">About This Home</h2>
+              <p className="mt-3 max-w-4xl type-body leading-7 text-[#6B7280]">{extendedDescription}</p>
+
+              <div className="my-8 h-px bg-[#F5F6F7]" />
+
+              <h2 className="type-title text-[#0F1729]">Home Facts</h2>
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <SideFact icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} />
+                <SideFact icon={<Car size={16} />} label="Parking" value={`${listing.parkingSpaces} space${listing.parkingSpaces === 1 ? '' : 's'}`} />
+                <SideFact icon={<DollarSign size={16} />} label="Taxes/Yr" value={`$${listing.taxes.toLocaleString()}`} />
+                <SideFact icon={<DollarSign size={16} />} label="Maint./Mo" value={monthlyCost} />
+                <SideFact icon={<Home size={16} />} label="MLS" value={listing.mlsNumber} />
+                <SideFact icon={<TrainFront size={16} />} label="Transit" value="5 min walk" />
+                <SideFact icon={<Sun size={16} />} label="Exposure" value={listing.propertyType === 'condo' ? 'South West' : 'Tree-lined lot'} />
+                <SideFact icon={<Snowflake size={16} />} label="Cooling" value="Central Air" />
+                <SideFact icon={<ShieldCheck size={16} />} label="Status" value="For Sale" />
+              </div>
+
+              <div className="my-8 h-px bg-[#F5F6F7]" />
+
+              <h2 className="type-title text-[#0F1729]">Features & Amenities</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {listing.features.map((feature) => (
+                  <span key={feature} className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-body font-medium text-[#6B7280]">
+                    {feature}
+                  </span>
+                ))}
+              </div>
+
+              <div className="my-8 h-px bg-[#F5F6F7]" />
+
+              <h2 className="type-title text-[#0F1729]">Neighborhood Notes</h2>
+              <p className="mt-3 max-w-4xl type-body leading-7 text-[#6B7280]">
+                Set in {listing.neighborhood}, this address is close to local cafes, grocery options, parks, and frequent transit. The surrounding blocks offer a balanced mix of residential calm and city access, making it practical for commuting, hosting, and daily routines.
+              </p>
             </div>
-            <button className="mt-5 h-12 w-full rounded-full bg-[#0F1729] type-label text-white transition-colors hover:bg-[#1F2937]">
-              Contact Agent
-            </button>
-          </aside>
-        </section>
-      </div>
-    </main>
+
+            <aside className="hidden h-fit rounded-3xl border border-[#F0F0F0] p-4 lg:sticky lg:top-6 lg:block">
+              <h2 className="type-title text-[#0F1729]">Contact Agent</h2>
+              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#F5F6F7] p-3">
+                <Image src={agentImage} alt="Maya Chen" width={56} height={56} className="h-14 w-14 rounded-xl object-cover" />
+                <div className="min-w-0">
+                  <p className="type-label text-[#0F1729]">Maya Chen</p>
+                  <p className="mt-0.5 type-caption text-[#9CA3AF]">Homes Realty Advisor</p>
+                  <p className="mt-1 type-caption text-[#6B7280]">Response in 10 minutes</p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-2">
+                <button className="h-12 rounded-full bg-[#0F1729] type-label text-white transition-colors hover:bg-[#1F2937]">
+                  Book A Tour
+                </button>
+                <button className="h-12 rounded-full bg-[#F5F6F7] type-label text-[#0F1729] transition-colors hover:bg-[#EBEBEB]">
+                  Contact Agent
+                </button>
+              </div>
+            </aside>
+          </section>
+        </div>
+
+        <div className="fixed inset-x-4 bottom-4 z-40 flex gap-2 rounded-[28px] bg-white/95 p-2 shadow-[0_12px_34px_rgba(15,23,41,0.18)] backdrop-blur lg:hidden">
+          <ListingSaveButton listingId={listing.id} variant="toolbar" />
+          <button className="h-12 flex-1 rounded-full bg-[#0F1729] type-label text-white">
+            Contact Agent
+          </button>
+        </div>
+      </main>
+    </PageShell>
   );
 }
 

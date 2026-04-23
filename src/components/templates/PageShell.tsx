@@ -15,14 +15,23 @@ interface PageShellProps {
   className?: string;
   showBottomNav?: boolean;
   desktopWide?: boolean;
+  desktopHeaderVariant?: 'default' | 'listing';
+  desktopHeaderListingId?: string;
 }
 
-export default function PageShell({ children, className, showBottomNav = true, desktopWide = false }: PageShellProps) {
+export default function PageShell({
+  children,
+  className,
+  showBottomNav = true,
+  desktopWide = false,
+  desktopHeaderVariant = 'default',
+  desktopHeaderListingId,
+}: PageShellProps) {
   const activePanel = useUIStore((s) => s.activePanel);
 
   return (
     <div className={cn('h-full flex flex-col overflow-hidden bg-white', className)}>
-      <DesktopHeader />
+      <DesktopHeader variant={desktopHeaderVariant} listingId={desktopHeaderListingId} />
       <div className={cn(
         'flex-1 overflow-hidden',
         desktopWide ? 'lg:w-full' : 'lg:max-w-2xl lg:mx-auto lg:w-full lg:border-x lg:border-[#F0F0F0]'

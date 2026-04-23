@@ -11,7 +11,6 @@ import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet'
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 248;
-const CAROUSEL_INFO_HEIGHT = CAROUSEL_TOTAL_HEIGHT - CAROUSEL_IMAGE_HEIGHT;
 const IMAGE_SWIPE_THRESHOLD = 24;
 const LISTING_IMAGE_FALLBACKS = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
@@ -24,9 +23,10 @@ interface ListingCardProps {
   listing: Listing;
   variant?: 'carousel' | 'grid' | 'full';
   className?: string;
+  desktopTall?: boolean;
 }
 
-export default function ListingCard({ listing, variant = 'carousel', className }: ListingCardProps) {
+export default function ListingCard({ listing, variant = 'carousel', className, desktopTall = false }: ListingCardProps) {
   const [imgIndex, setImgIndex] = useState(0);
   const [showSavePicker, setShowSavePicker] = useState(false);
   const [saveAnchorRect, setSaveAnchorRect] = useState<DOMRect | null>(null);
@@ -38,6 +38,9 @@ export default function ListingCard({ listing, variant = 'carousel', className }
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
   const imageAreaRef = useRef<HTMLDivElement>(null);
   const wheelLockRef = useRef(false);
+  const carouselImageHeight = desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT;
+  const carouselTotalHeight = desktopTall ? 260 : CAROUSEL_TOTAL_HEIGHT;
+  const carouselInfoHeight = carouselTotalHeight - carouselImageHeight;
 
   useEffect(() => {
     const node = imageAreaRef.current;
@@ -228,7 +231,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
           'w-72',
           className
         )}
-        style={{ height: CAROUSEL_TOTAL_HEIGHT }}
+        style={{ height: carouselTotalHeight }}
       >
         {/* Image strip: swiping here changes photos instead of moving the carousel. */}
         <div
@@ -236,7 +239,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
           data-card-image="true"
           className="relative overflow-hidden bg-[#F5F6F7]"
           style={{
-            height: CAROUSEL_IMAGE_HEIGHT,
+            height: carouselImageHeight,
             touchAction: 'none',
           }}
           onClick={(e) => {
@@ -274,7 +277,10 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         )}
 
         {listing.images.length > 1 && (
-          <div className="pointer-events-none absolute inset-x-1.5 top-[98px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
+          <div
+            className="pointer-events-none absolute inset-x-3 z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex"
+            style={{ top: desktopTall ? 105 : 98 }}
+          >
             <button
               type="button"
               aria-label="Previous image"
@@ -314,7 +320,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button
           className="absolute bottom-0 left-0 right-0 bg-white px-3.5 py-1.5 text-left"
-          style={{ height: CAROUSEL_INFO_HEIGHT, touchAction: 'pan-x' }}
+          style={{ height: carouselInfoHeight, touchAction: 'pan-x' }}
           onClick={openListingPage}
         >
           <div className="flex items-start justify-between gap-2">

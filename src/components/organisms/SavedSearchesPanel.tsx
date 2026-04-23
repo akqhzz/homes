@@ -169,7 +169,7 @@ export default function SavedSearchesPanel({
       {isDesktop && (
         <div
           ref={desktopPanelRef}
-          className="fixed left-1/2 top-[64px] z-[60] ml-[164px] max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+          className="fixed left-1/2 top-[64px] z-[60] -ml-48 max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
           <div className="px-4 pt-4">
             <p className="font-heading text-lg text-[#0F1729]">Saved Searches</p>

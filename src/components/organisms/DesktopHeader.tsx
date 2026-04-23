@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import * as Slider from '@radix-ui/react-slider';
 import {
+  ArrowLeft,
   Bell,
   Building2,
   ChevronRight,
@@ -26,6 +27,7 @@ import { useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { cn } from '@/lib/utils/cn';
 import { Location, PropertyType } from '@/lib/types';
+import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 
 const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [
   { value: 'condo', label: 'Condo', icon: Building2 },
@@ -62,7 +64,12 @@ const MENU_ITEMS = [
   { icon: MessageSquare, label: 'Send Feedback' },
 ];
 
-export default function DesktopHeader() {
+interface DesktopHeaderProps {
+  variant?: 'default' | 'listing';
+  listingId?: string;
+}
+
+export default function DesktopHeader({ variant = 'default', listingId }: DesktopHeaderProps) {
   const [showFilter, setShowFilter] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -83,6 +90,7 @@ export default function DesktopHeader() {
   const { collections, createCollection } = useSavedStore();
 
   const isCollectionsPage = pathname.startsWith('/saved');
+  const isListingVariant = variant === 'listing';
   const filterCount = activeFilterCount();
   const locationLabel =
     selectedLocations.length === 0
@@ -148,20 +156,30 @@ export default function DesktopHeader() {
   return (
     <>
       <header className="hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 gap-6 flex-shrink-0 z-30">
-        {/* Logo */}
-        <button
-          onClick={() => router.push('/')}
-          className="flex items-center gap-2 flex-shrink-0"
-        >
-          <span className="font-heading text-lg text-[#0F1729]">homes</span>
-        </button>
+        {isListingVariant ? (
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex h-10 items-center gap-2 rounded-full bg-[#F5F6F7] px-4 text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+        ) : (
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 flex-shrink-0"
+          >
+            <span className="font-heading text-lg text-[#0F1729]">homes</span>
+          </button>
+        )}
 
         {/* Centered search */}
         <div className={cn(
-          'flex-1 items-center justify-center gap-2 max-w-[500px] mx-auto',
+          'flex-1 items-center justify-center gap-2 max-w-[540px] mx-auto',
           isCollectionsPage ? 'hidden' : 'flex'
         )}>
-          <div ref={searchRef} className="relative w-[282px] flex-none">
+          <div ref={searchRef} className="relative w-[316px] flex-none">
             <div
               onClick={() => {
                 setShowSearch(true);
@@ -392,8 +410,26 @@ export default function DesktopHeader() {
         </div>
 
         {/* Right nav */}
-        <nav className={cn('flex items-center gap-1 flex-shrink-0', isCollectionsPage && 'ml-auto')}>
-          {isCollectionsPage ? (
+        <nav className={cn('flex items-center gap-1 flex-shrink-0', (isCollectionsPage || isListingVariant) && 'ml-auto')}>
+          {isListingVariant ? (
+            <>
+              {listingId && <ListingSaveButton listingId={listingId} />}
+              <div ref={menuRef} className="relative">
+                <button
+                  onClick={() => {
+                    setShowMenu((value) => !value);
+                    setShowFilter(false);
+                    setShowSearch(false);
+                  }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                  aria-label="Menu"
+                >
+                  <Menu size={19} />
+                </button>
+                {showMenu && <DesktopMenu />}
+              </div>
+            </>
+          ) : isCollectionsPage ? (
             <button
               onClick={() => router.push('/')}
               className="h-10 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-all hover:bg-[#1F2937]"
@@ -472,7 +508,7 @@ export default function DesktopHeader() {
                     })}
                     <button
                       onClick={() => router.push('/saved')}
-                      className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left transition-colors hover:bg-[#EBEBEB]"
+                      className="flex min-h-[84px] items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-left transition-colors hover:border-[#D1D5DB] hover:bg-[#F9FAFB]"
                     >
                       <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
                         {MOCK_LISTINGS[0]?.images[0] && (
@@ -490,41 +526,49 @@ export default function DesktopHeader() {
               )}
             </div>
           )}
-          <div ref={menuRef} className="relative">
-            <button
-              onClick={() => {
-                setShowMenu((value) => !value);
-                setShowFilter(false);
-                setShowSearch(false);
-              }}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
-              aria-label="Menu"
-            >
-              <Menu size={19} />
-            </button>
-            {showMenu && (
-              <div className="absolute right-0 top-12 z-40 w-72 overflow-hidden rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                {MENU_ITEMS.map((item) => (
-                  <button key={item.label} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
-                      <item.icon size={15} className="text-[#0F1729]" />
-                    </div>
-                    <span className="flex-1 text-sm font-medium text-[#0F1729]">{item.label}</span>
-                  </button>
-                ))}
-                <button className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-red-50">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
-                    <LogOut size={15} className="text-[#EF4444]" />
-                  </div>
-                  <span className="flex-1 text-sm font-medium text-[#EF4444]">Sign Out</span>
-                </button>
-              </div>
-            )}
-          </div>
+          {!isListingVariant && (
+            <div ref={menuRef} className="relative">
+              <button
+                onClick={() => {
+                  setShowMenu((value) => !value);
+                  setShowFilter(false);
+                  setShowSearch(false);
+                }}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                aria-label="Menu"
+              >
+                <Menu size={19} />
+              </button>
+              {showMenu && (
+                <DesktopMenu />
+              )}
+            </div>
+          )}
         </nav>
       </header>
 
     </>
+  );
+}
+
+function DesktopMenu() {
+  return (
+    <div className="absolute right-0 top-12 z-40 w-72 overflow-hidden rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+      {MENU_ITEMS.map((item) => (
+        <button key={item.label} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
+            <item.icon size={15} className="text-[#0F1729]" />
+          </div>
+          <span className="flex-1 text-sm font-medium text-[#0F1729]">{item.label}</span>
+        </button>
+      ))}
+      <button className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-red-50">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
+          <LogOut size={15} className="text-[#EF4444]" />
+        </div>
+        <span className="flex-1 text-sm font-medium text-[#EF4444]">Sign Out</span>
+      </button>
+    </div>
   );
 }
 
