@@ -36,7 +36,7 @@ export default function PageShell({
       {showDesktopHeader && <DesktopHeader variant={desktopHeaderVariant} listingId={desktopHeaderListingId} />}
       <div className={cn(
         'flex-1 overflow-hidden',
-        desktopWide ? 'lg:w-full' : 'lg:max-w-2xl lg:mx-auto lg:w-full lg:border-x lg:border-[#F0F0F0]'
+        desktopWide ? 'lg:mx-auto lg:w-full lg:max-w-[1872px]' : 'lg:max-w-2xl lg:mx-auto lg:w-full lg:border-x lg:border-[#F0F0F0]'
       )}>
         {children}
       </div>

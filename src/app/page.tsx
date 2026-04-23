@@ -254,7 +254,7 @@ export default function MapPage() {
       <DesktopHeader />
 
       {/* Main content — split on desktop */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="mx-auto flex w-full max-w-[1872px] flex-1 overflow-hidden">
         {/* Map panel */}
         <div className="relative flex-1 lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
           <MapView
@@ -369,7 +369,7 @@ export default function MapPage() {
         </div>
 
         {/* Desktop listings sidebar */}
-        <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[668px] 2xl:w-[1016px]">
+        <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[664px] 3xl:w-[1024px]">
           <ListingsSidebar listings={filteredListings} />
         </div>
       </div>

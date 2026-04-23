@@ -297,18 +297,18 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                         minPrice: min <= PRICE_MIN ? undefined : min,
                         maxPrice: max >= PRICE_MAX ? undefined : max,
                       })}
-                      className="relative flex h-12 w-full touch-none select-none items-center cursor-pointer"
+                      className="relative flex h-20 w-full touch-none select-none items-end pb-3 cursor-pointer"
                       aria-label="Desktop price range"
                     >
-                      <div className="pointer-events-none absolute left-0 right-0 top-1/2 flex h-9 -translate-y-1/2 items-end gap-1 px-1">
+                      <div className="pointer-events-none absolute bottom-[18px] left-0 right-0 flex h-12 items-end gap-1 px-1">
                         {PRICE_BUCKETS.map((count, index) => {
                           const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
                           const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
                           return (
                             <div
                               key={index}
-                              className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]/35' : 'bg-[#D1D5DB]/75')}
-                              style={{ height: `${Math.max(6, count * 2.3)}px` }}
+                              className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]' : 'bg-[#D1D5DB]')}
+                              style={{ height: `${Math.max(6, count * 3)}px` }}
                             />
                           );
                         })}

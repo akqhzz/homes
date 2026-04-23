@@ -43,6 +43,8 @@
   --font-button: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-caption: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-sans: var(--font-body);
+
+  --breakpoint-3xl: 117rem;
 }
 
 * {

@@ -21,7 +21,7 @@ export default function CollectionPage() {
   const collection = collections.find((c) => c.id === id);
   if (!collection) {
     return (
-      <PageShell showBottomNav={false} desktopWide showDesktopHeader={false}>
+      <PageShell showBottomNav={false} desktopWide>
         <div className="h-full flex items-center justify-center">
           <p className="text-[#9CA3AF]">Collection not found</p>
         </div>
@@ -38,7 +38,7 @@ export default function CollectionPage() {
     .filter(Boolean) as Array<(typeof MOCK_LISTINGS)[0] & { collectionData: (typeof collection.listings)[0] }>;
 
   return (
-    <PageShell showBottomNav={false} desktopWide showDesktopHeader={false}>
+    <PageShell showBottomNav={false} desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-6">
@@ -49,7 +49,7 @@ export default function CollectionPage() {
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="type-title lg:text-3xl text-center text-[#0F1729]">{collection.name}</h1>
+            <h1 className="type-title lg:text-4xl text-center text-[#0F1729]">{collection.name}</h1>
             <div className="absolute right-0 flex items-center gap-2">
               {collection.collaborators && collection.collaborators.length > 0 && (
                 <div className="flex -space-x-1.5">
@@ -67,7 +67,7 @@ export default function CollectionPage() {
 
         {/* Grid */}
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6">
-          <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4 lg:gap-5">
+          <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 lg:gap-5">
             {listings.map((listing) => (
               <div key={listing.id} className="flex flex-col gap-1.5">
                 <ListingCard listing={listing} variant="grid" />
