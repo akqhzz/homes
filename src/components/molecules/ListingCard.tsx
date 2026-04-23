@@ -187,7 +187,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
           </div>
           <div className="px-0.5 pb-1">
             <p className="type-heading leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="mt-0.5 type-meta-lg text-[#6B7280]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
+            <p className="mt-0.5 type-body text-[#6B7280]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
           </div>
         </div>
         {saveSheet}
@@ -326,10 +326,10 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="type-heading text-[#0F1729]">{formatPrice(listing.price)}</p>
-              <p className="mt-1 truncate type-meta-lg text-[#6B7280]">
+              <p className="mt-0.5 truncate type-body text-[#6B7280]">
                 {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
               </p>
-              <p className="mt-1.5 pr-2 type-caption text-[#9CA3AF] line-clamp-2">
+              <p className="mt-1 pr-2 type-caption text-[#9CA3AF] line-clamp-2">
                 {listing.address}
               </p>
             </div>
