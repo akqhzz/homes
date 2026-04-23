@@ -67,6 +67,7 @@ export default function DesktopHeader() {
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showCollections, setShowCollections] = useState(false);
+  const [creatingCollection, setCreatingCollection] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const filterRef = useRef<HTMLDivElement>(null);
@@ -122,6 +123,7 @@ export default function DesktopHeader() {
     if (!name) return;
     createCollection(name);
     setNewCollectionName('');
+    setCreatingCollection(false);
   };
 
   useEffect(() => {
@@ -373,6 +375,7 @@ export default function DesktopHeader() {
           </div>
 
           <button
+            data-saved-search-trigger="true"
             onPointerDown={(event) => event.stopPropagation()}
             onClick={() => {
               setShowFilter(false);
@@ -389,7 +392,7 @@ export default function DesktopHeader() {
         </div>
 
         {/* Right nav */}
-        <nav className="flex items-center gap-1 flex-shrink-0">
+        <nav className={cn('flex items-center gap-1 flex-shrink-0', isCollectionsPage && 'ml-auto')}>
           {isCollectionsPage ? (
             <button
               onClick={() => router.push('/')}
@@ -413,24 +416,39 @@ export default function DesktopHeader() {
               {showCollections && (
                 <div className="absolute right-0 top-12 z-40 w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                   <p className="mb-3 type-heading text-[#0F1729]">Collections</p>
-                  <div className="mb-3 flex gap-2">
-                    <input
-                      value={newCollectionName}
-                      onChange={(event) => setNewCollectionName(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') handleCreateCollection();
-                      }}
-                      placeholder="Create A Collection"
-                      className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none transition-colors focus:border-[#0F1729]"
-                    />
+                  {creatingCollection ? (
+                    <div className="mb-3 flex gap-2">
+                      <input
+                        value={newCollectionName}
+                        onChange={(event) => setNewCollectionName(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') handleCreateCollection();
+                          if (event.key === 'Escape') {
+                            setCreatingCollection(false);
+                            setNewCollectionName('');
+                          }
+                        }}
+                        placeholder="Collection Name..."
+                        className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none transition-colors focus:border-[#0F1729]"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleCreateCollection}
+                        className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F1729] text-white transition-colors hover:bg-[#1F2937]"
+                        aria-label="Create collection"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  ) : (
                     <button
-                      onClick={handleCreateCollection}
-                      className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F1729] text-white transition-colors hover:bg-[#1F2937]"
-                      aria-label="Create collection"
+                      onClick={() => setCreatingCollection(true)}
+                      className="mb-3 flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
                     >
                       <Plus size={16} />
+                      New Collection
                     </button>
-                  </div>
+                  )}
                   <div className="flex flex-col gap-2.5">
                     {collections.slice(0, 4).map((collection) => {
                       const listing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
@@ -454,10 +472,18 @@ export default function DesktopHeader() {
                     })}
                     <button
                       onClick={() => router.push('/saved')}
-                      className="flex items-center justify-between rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
+                      className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left transition-colors hover:bg-[#EBEBEB]"
                     >
-                      All Collections
-                      <ChevronRight size={15} />
+                      <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
+                        {MOCK_LISTINGS[0]?.images[0] && (
+                          <Image src={MOCK_LISTINGS[0].images[0]} alt="" fill sizes="56px" className="object-cover" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="type-label block truncate text-[#0F1729]">All Collections</span>
+                        <span className="block type-caption text-[#9CA3AF]">View Your Saved Homes</span>
+                      </span>
+                      <ChevronRight size={15} className="shrink-0 text-[#9CA3AF]" />
                     </button>
                   </div>
                 </div>

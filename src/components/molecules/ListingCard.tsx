@@ -274,7 +274,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         )}
 
         {listing.images.length > 1 && (
-          <div className="pointer-events-none absolute inset-x-2 top-[96px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
+          <div className="pointer-events-none absolute inset-x-1.5 top-[98px] z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
             <button
               type="button"
               aria-label="Previous image"
@@ -282,9 +282,9 @@ export default function ListingCard({ listing, variant = 'carousel', className }
                 event.stopPropagation();
                 showPreviousImage();
               }}
-              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
+              className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={14} />
             </button>
             <button
               type="button"
@@ -293,9 +293,9 @@ export default function ListingCard({ listing, variant = 'carousel', className }
                 event.stopPropagation();
                 showNextImage();
               }}
-              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
+              className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={14} />
             </button>
           </div>
         )}

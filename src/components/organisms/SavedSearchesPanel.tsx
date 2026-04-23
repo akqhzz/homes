@@ -50,7 +50,9 @@ export default function SavedSearchesPanel({
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
       if (!isDesktop) return;
-      if (!desktopPanelRef.current?.contains(event.target as Node)) setActivePanel('none');
+      const target = event.target as HTMLElement;
+      if (target.closest('[data-saved-search-trigger="true"]')) return;
+      if (!desktopPanelRef.current?.contains(target)) setActivePanel('none');
     };
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
@@ -167,7 +169,7 @@ export default function SavedSearchesPanel({
       {isDesktop && (
         <div
           ref={desktopPanelRef}
-          className="fixed top-20 z-[60] max-h-[calc(100vh-6rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_16px_48px_rgba(15,23,41,0.18)] lg:left-[calc(50%+168px)] xl:left-[calc(50%+190px)]"
+          className="fixed left-1/2 top-[64px] z-[60] ml-[164px] max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
           <div className="px-4 pt-4">
             <p className="font-heading text-lg text-[#0F1729]">Saved Searches</p>

@@ -40,6 +40,32 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
 
   const content = (
     <>
+      {creating ? (
+        <div className="mb-4 flex gap-2">
+          <input
+            value={newName}
+            onChange={(event) => setNewName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') createAndSave();
+            }}
+            placeholder="New Collection..."
+            className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
+            autoFocus
+          />
+          <Button onClick={createAndSave} size="lg" className="h-12 px-4">
+            Create
+          </Button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setCreating(true)}
+          className="mb-4 flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
+        >
+          <Plus size={16} />
+          New Collection
+        </button>
+      )}
+
       <div className="flex flex-col gap-2.5">
         {collections.map((collection) => {
           const alreadySaved = collection.listings.some((item) => item.listingId === listingId);
@@ -69,32 +95,6 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
           );
         })}
       </div>
-
-      {creating ? (
-        <div className="mt-4 flex gap-2">
-          <input
-            value={newName}
-            onChange={(event) => setNewName(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') createAndSave();
-            }}
-            placeholder="New Collection..."
-            className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-            autoFocus
-          />
-          <Button onClick={createAndSave} size="lg" className="h-12 px-4">
-            Create
-          </Button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setCreating(true)}
-          className="mt-4 flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
-        >
-          <Plus size={16} />
-          New Collection
-        </button>
-      )}
     </>
   );
 
