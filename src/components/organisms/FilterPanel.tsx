@@ -74,25 +74,7 @@ export function FilterPanelBody() {
   return (
     <>
       <Section title="Price Range">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Min Price</label>
-            <PriceInput
-              value={filters.minPrice}
-              placeholder="No min"
-              onChange={(v) => setFilters({ minPrice: v })}
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Max Price</label>
-            <PriceInput
-              value={filters.maxPrice}
-              placeholder="No max"
-              onChange={(v) => setFilters({ maxPrice: v })}
-            />
-          </div>
-        </div>
-        <div className="mt-5">
+        <div>
           <div className="pointer-events-none flex h-12 items-end gap-1 px-1">
             {PRICE_BUCKETS.map((count, index) => {
               const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
@@ -129,6 +111,24 @@ export function FilterPanelBody() {
               aria-label="Maximum price"
             />
           </Slider.Root>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Min Price</label>
+            <PriceInput
+              value={filters.minPrice}
+              placeholder="No min"
+              onChange={(v) => setFilters({ minPrice: v })}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block type-caption text-[#9CA3AF]">Max Price</label>
+            <PriceInput
+              value={filters.maxPrice}
+              placeholder="No max"
+              onChange={(v) => setFilters({ maxPrice: v })}
+            />
+          </div>
         </div>
       </Section>
 

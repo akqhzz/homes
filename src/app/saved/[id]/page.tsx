@@ -69,8 +69,8 @@ export default function CollectionPage() {
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6">
           <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 lg:gap-5">
             {listings.map((listing) => (
-              <div key={listing.id} className="flex flex-col gap-1.5">
-                <ListingCard listing={listing} variant="grid" />
+              <div key={listing.id} className="flex min-w-0 flex-col gap-1.5">
+                <ListingCard listing={listing} variant="carousel" className="w-full" />
                 {listing.collectionData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 px-0.5">
                     {listing.collectionData.tags.map((t) => (

@@ -105,7 +105,7 @@ export default function AreaSelectPanel({
 
   useEffect(() => {
     const node = carouselRef.current;
-    if (!node) return;
+    if (!node || !focusedNeighborhood) return;
     const handleTouchStart = () => {
       wheelLockRef.current = false;
     };
@@ -120,12 +120,34 @@ export default function AreaSelectPanel({
     node.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
     node.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
     node.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+    const previousHtmlOverscrollX = document.documentElement.style.overscrollBehaviorX;
+    const previousBodyOverscrollX = document.body.style.overscrollBehaviorX;
+    const previousHtmlTouchAction = document.documentElement.style.touchAction;
+    const previousBodyTouchAction = document.body.style.touchAction;
+    document.documentElement.style.overscrollBehaviorX = 'none';
+    document.body.style.overscrollBehaviorX = 'none';
+    document.documentElement.style.touchAction = 'pan-y';
+    document.body.style.touchAction = 'pan-y';
+
+    const handleDocumentTouchMove = (event: TouchEvent) => {
+      const target = event.target as Node | null;
+      if (target && node.contains(target)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    document.addEventListener('touchmove', handleDocumentTouchMove, { passive: false, capture: true });
     return () => {
       node.removeEventListener('touchstart', handleTouchStart, { capture: true });
       node.removeEventListener('touchmove', handleTouchMove, { capture: true });
       node.removeEventListener('wheel', handleWheel, { capture: true });
+      document.removeEventListener('touchmove', handleDocumentTouchMove, { capture: true });
+      document.documentElement.style.overscrollBehaviorX = previousHtmlOverscrollX;
+      document.body.style.overscrollBehaviorX = previousBodyOverscrollX;
+      document.documentElement.style.touchAction = previousHtmlTouchAction;
+      document.body.style.touchAction = previousBodyTouchAction;
     };
-  }, []);
+  }, [focusedNeighborhood]);
 
   const goToNeighborhood = (index: number) => {
     const nextIndex = Math.max(0, Math.min(AREA_NEIGHBORHOODS.length - 1, index));

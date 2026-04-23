@@ -36,9 +36,11 @@ export default function SavedSearchesPanel({
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
   const [saving, setSaving] = useState(canSaveCurrent && !activeSearchId);
+  const [updatedSearchId, setUpdatedSearchId] = useState<string | null>(null);
   const [isDesktop, setIsDesktop] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 1024));
   const inputRef = useRef<HTMLInputElement>(null);
   const desktopPanelRef = useRef<HTMLDivElement>(null);
+  const updateFeedbackTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!saving) return;
@@ -63,6 +65,14 @@ export default function SavedSearchesPanel({
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isDesktop, setActivePanel]);
+
+  useEffect(() => {
+    return () => {
+      if (updateFeedbackTimeoutRef.current) {
+        window.clearTimeout(updateFeedbackTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleLoadSearch = (search: SavedSearch) => {
     if (activeSearchId === search.id) {
@@ -127,6 +137,7 @@ export default function SavedSearchesPanel({
         <div className="flex flex-col gap-3">
           {searches.map((search) => {
             const isSelected = activeSearchId === search.id;
+            const showUpdatedState = updatedSearchId === search.id;
             return (
             <button
               key={search.id}
@@ -158,14 +169,25 @@ export default function SavedSearchesPanel({
                   </span>
                 )}
               </div>
-              {isSelected && activeSearchDirty ? (
+              {showUpdatedState ? (
+                <span className="shrink-0 rounded-full bg-[#E8F8F1] px-3 py-2 type-caption text-[#0B8A62]">
+                  Updated
+                </span>
+              ) : isSelected && activeSearchDirty ? (
                 <button
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
                     onUpdateSearch?.(search.id);
+                    setUpdatedSearchId(search.id);
+                    if (updateFeedbackTimeoutRef.current) {
+                      window.clearTimeout(updateFeedbackTimeoutRef.current);
+                    }
+                    updateFeedbackTimeoutRef.current = window.setTimeout(() => {
+                      setUpdatedSearchId((current) => (current === search.id ? null : current));
+                    }, 1400);
                   }}
-                  className="shrink-0 rounded-full bg-[#0F1729] px-2.5 py-1.5 type-caption text-white"
+                  className="shrink-0 rounded-full bg-[#0F1729] px-3 py-2 type-caption text-white"
                 >
                   Update?
                 </button>

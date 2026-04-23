@@ -185,9 +185,9 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
               />
             </button>
           </div>
-          <div className="px-0.5">
+          <div className="px-0.5 pb-1">
             <p className="type-heading leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="mt-0.5 type-caption text-[#6B7280]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
+            <p className="mt-0.5 type-meta-lg text-[#6B7280]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
           </div>
         </div>
         {saveSheet}
@@ -319,14 +319,14 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
 
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button
-          className="block bg-white px-3.5 pb-3.5 pt-2 text-left"
+          className="block min-h-[78px] bg-white px-3.5 pb-4.5 pt-2.5 text-left"
           style={{ touchAction: 'pan-x' }}
           onClick={openListingPage}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="type-heading text-[#0F1729]">{formatPrice(listing.price)}</p>
-              <p className="mt-1 truncate type-caption text-[#6B7280]">
+              <p className="mt-1 truncate type-meta-lg text-[#6B7280]">
                 {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
               </p>
               <p className="mt-1.5 pr-2 type-caption text-[#9CA3AF] line-clamp-2">
