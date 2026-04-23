@@ -1,8 +1,9 @@
 'use client';
-import { Map, Heart, Sparkles, Menu, Bookmark, LayoutGrid, Plus } from 'lucide-react';
+import { Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
+import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 const NAV_ITEMS = [
   { href: '/', icon: Map, label: 'Map' },
@@ -34,7 +35,7 @@ export default function BottomNav() {
           onClick={() => setActivePanel('saved-searches')}
           aria-label="Saved searches"
         >
-          <Bookmark size={17} className="text-[#0F1729]" />
+          <AppImageIcon src="/icons/saved-search.jpg" alt="Saved searches" size={19} />
         </FloatingActionButton>
       )}
 
@@ -76,7 +77,7 @@ export default function BottomNav() {
           onClick={() => setActivePanel('cards')}
           aria-label="Cards mode"
         >
-          <LayoutGrid size={17} className="text-[#0F1729]" />
+          <AppImageIcon src="/icons/cards-mode.jpg" alt="Cards mode" size={19} />
         </FloatingActionButton>
       )}
     </nav>

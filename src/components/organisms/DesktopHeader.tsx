@@ -1,25 +1,19 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import * as Slider from '@radix-ui/react-slider';
 import {
   ArrowLeft,
   Bell,
-  Building2,
   ChevronRight,
-  Home,
-  Hotel,
   LogOut,
   Menu,
   MessageSquare,
   Plus,
-  Rows3,
   Search,
   Share2,
   Shield,
   SlidersHorizontal,
   User,
-  Warehouse,
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
@@ -27,28 +21,10 @@ import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { cn } from '@/lib/utils/cn';
-import { Location, PropertyType } from '@/lib/types';
+import { Location } from '@/lib/types';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
-
-const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [
-  { value: 'condo', label: 'Condo', icon: Building2 },
-  { value: 'house', label: 'House', icon: Home },
-  { value: 'townhouse', label: 'Townhouse', icon: Hotel },
-  { value: 'semi-detached', label: 'Semi-Det.', icon: Rows3 },
-  { value: 'detached', label: 'Detached', icon: Warehouse },
-];
-const PRICE_MIN = 0;
-const PRICE_MAX = 2000000;
-const PRICE_STEP = 50000;
-const PRICE_BUCKETS = [2, 5, 8, 12, 10, 7, 4, 6, 3, 2, 1, 1];
-const LISTED_WITHIN_OPTIONS = [
-  { value: 1, label: '1 Day' },
-  { value: 3, label: '3 Days' },
-  { value: 7, label: '1 Week' },
-  { value: 14, label: '2 Weeks' },
-  { value: 30, label: '1 Month' },
-  { value: 90, label: '3 Months' },
-];
+import AppImageIcon from '@/components/atoms/AppImageIcon';
+import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 
 const LOCATION_SUGGESTIONS: Location[] = [
   { id: 'loc-downtown', name: 'Toronto Downtown', type: 'area', coordinates: { lat: 43.6532, lng: -79.3832 }, city: 'Toronto', province: 'ON' },
@@ -85,7 +61,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
   const collectionsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const { selectedLocations, filters, setFilters, resetFilters, addLocation, removeLocation, clearLocations } = useSearchStore();
+  const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { activePanel, setActivePanel } = useUIStore();
   const { collections, createCollection } = useSavedStore();
@@ -100,26 +76,11 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
       ? selectedLocations[0].name
       : `${selectedLocations[0].name}, +${selectedLocations.length - 1}`;
 
-  const priceRange = [filters.minPrice ?? PRICE_MIN, filters.maxPrice ?? PRICE_MAX];
-  const selectedListedWithin = LISTED_WITHIN_OPTIONS.find((option) => option.value === filters.maxDaysOnMarket)?.value ?? '';
-  const pricePercent = (value: number) => ((value - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
   const filteredLocations = LOCATION_SUGGESTIONS.filter(
     (location) =>
       !selectedLocations.some((selected) => selected.id === location.id) &&
       location.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
-
-  const togglePropertyType = (type: PropertyType) => {
-    setFilters({
-      propertyTypes: filters.propertyTypes.includes(type)
-        ? filters.propertyTypes.filter((item) => item !== type)
-        : [...filters.propertyTypes, type],
-    });
-  };
-
-  const setNumericFilter = (key: 'minSqft' | 'maxSqft', value: string) => {
-    setFilters({ [key]: value ? parseInt(value) : undefined });
-  };
 
   const selectLocation = (location: Location) => {
     addLocation(location);
@@ -280,118 +241,11 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             </button>
             {showFilter && (
               <div className="absolute right-0 top-12 z-40 flex max-h-[calc(100vh-9rem)] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                <div className="flex-1 space-y-5 overflow-y-auto p-4 pb-3">
-                  <div>
-                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Price Range</p>
-                    <div className="mb-4 grid grid-cols-2 gap-3">
-                      <PriceInput value={filters.minPrice} placeholder="No min" onChange={(value) => setFilters({ minPrice: value })} />
-                      <PriceInput value={filters.maxPrice} placeholder="No max" onChange={(value) => setFilters({ maxPrice: value })} />
-                    </div>
-                    <Slider.Root
-                      value={priceRange}
-                      min={PRICE_MIN}
-                      max={PRICE_MAX}
-                      step={PRICE_STEP}
-                      minStepsBetweenThumbs={1}
-                      onValueChange={([min, max]) => setFilters({
-                        minPrice: min <= PRICE_MIN ? undefined : min,
-                        maxPrice: max >= PRICE_MAX ? undefined : max,
-                      })}
-                      className="relative flex h-20 w-full touch-none select-none items-end pb-3 cursor-pointer"
-                      aria-label="Desktop price range"
-                    >
-                      <div className="pointer-events-none absolute bottom-[18px] left-0 right-0 flex h-12 items-end gap-1 px-1">
-                        {PRICE_BUCKETS.map((count, index) => {
-                          const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
-                          const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
-                          return (
-                            <div
-                              key={index}
-                              className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]' : 'bg-[#D1D5DB]')}
-                              style={{ height: `${Math.max(6, count * 3)}px` }}
-                            />
-                          );
-                        })}
-                      </div>
-                      <Slider.Track className="relative h-1.5 grow cursor-pointer overflow-hidden rounded-full bg-[#E5E7EB]">
-                        <Slider.Range className="absolute h-full rounded-full bg-[#0F1729]" />
-                      </Slider.Track>
-                      <Slider.Thumb className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10" />
-                      <Slider.Thumb className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10" />
-                    </Slider.Root>
-                  </div>
-                  <div>
-                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Property Type</p>
-                    <div className="flex flex-wrap gap-2">
-                      {PROPERTY_TYPES.map(({ value, label, icon: Icon }) => (
-                        <button
-                          key={value}
-                          onClick={() => togglePropertyType(value)}
-                          className={cn(
-                            'inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-medium transition-all hover:bg-[#F5F6F7]',
-                            filters.propertyTypes.includes(value)
-                              ? 'border-[#0F1729] bg-[#0F1729] text-white'
-                              : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
-                          )}
-                        >
-                          <Icon size={13} />
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <SegmentedFilter
-                    title="Bedrooms"
-                    options={['Any', '1+', '2+', '3+', '4+', '5+']}
-                    activeValue={filters.minBeds ? `${filters.minBeds}+` : 'Any'}
-                    onSelect={(value) => setFilters({ minBeds: value === 'Any' ? undefined : parseInt(value) })}
-                  />
-                  <SegmentedFilter
-                    title="Bathrooms"
-                    options={['Any', '1+', '2+', '3+', '4+']}
-                    activeValue={filters.minBaths ? `${filters.minBaths}+` : 'Any'}
-                    onSelect={(value) => setFilters({ minBaths: value === 'Any' ? undefined : parseInt(value) })}
-                  />
-                  <div>
-                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Listed Within</p>
-                    <select
-                      value={selectedListedWithin}
-                      onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
-                      className="h-11 w-full cursor-pointer rounded-full border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
-                    >
-                      <option value="">Any Time</option>
-                      {LISTED_WITHIN_OPTIONS.map(({ value, label }) => (
-                        <option key={value} value={value}>{label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Square Footage</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <input
-                        type="number"
-                        value={filters.minSqft ?? ''}
-                        onChange={(event) => setNumericFilter('minSqft', event.target.value)}
-                        placeholder="No min"
-                        className="h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm outline-none transition-colors hover:border-[#D1D5DB] focus:border-[#0F1729]"
-                      />
-                      <input
-                        type="number"
-                        value={filters.maxSqft ?? ''}
-                        onChange={(event) => setNumericFilter('maxSqft', event.target.value)}
-                        placeholder="No max"
-                        className="h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm outline-none transition-colors hover:border-[#D1D5DB] focus:border-[#0F1729]"
-                      />
-                    </div>
-                  </div>
+                <div className="flex-1 overflow-y-auto">
+                  <FilterPanelBody />
                 </div>
-                <div className="sticky bottom-0 grid grid-cols-2 gap-3 border-t border-[#F5F6F7] bg-white p-4">
-                  <button onClick={resetFilters} className="h-11 rounded-full bg-[#F5F6F7] text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]">
-                    Reset
-                  </button>
-                  <button onClick={() => setShowFilter(false)} className="h-11 rounded-full bg-[#0F1729] text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">
-                    Done
-                  </button>
+                <div className="sticky bottom-0 border-t border-[#F5F6F7] bg-white p-4">
+                  <FilterPanelFooter onDone={() => setShowFilter(false)} />
                 </div>
               </div>
             )}
@@ -410,7 +264,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
             aria-label="Saved searches"
           >
-            <SavedSearchIllustration />
+            <AppImageIcon src="/icons/saved-search.jpg" alt="Saved searches" size={20} />
           </button>
         </div>
 
@@ -445,7 +299,10 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                 }}
                 className="h-10 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-all hover:bg-[#1F2937]"
               >
-                Collections
+                <span className="inline-flex items-center gap-2">
+                  <AppImageIcon src="/icons/collection.jpg" alt="Collections" size={18} className="rounded-[5px]" />
+                  Collections
+                </span>
               </button>
               {showCollections && (
                 <div className="absolute right-0 top-12 z-40 w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
@@ -498,7 +355,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                             )}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="type-label block truncate text-[#0F1729]">{collection.name}</span>
+                            <span className="block truncate font-heading text-sm text-[#0F1729]">{collection.name}</span>
                             <span className="block type-caption text-[#9CA3AF]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                           </span>
                         </button>
@@ -514,7 +371,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="type-label block truncate text-[#0F1729]">All Collections</span>
+                        <span className="block truncate font-heading text-sm text-[#0F1729]">All Collections</span>
                         <span className="block type-caption text-[#9CA3AF]">View Your Saved Homes</span>
                       </span>
                       <ChevronRight size={15} className="shrink-0 text-[#9CA3AF]" />
@@ -566,78 +423,6 @@ function DesktopMenu() {
         </div>
         <span className="flex-1 text-sm font-medium text-[#EF4444]">Sign Out</span>
       </button>
-    </div>
-  );
-}
-
-function SegmentedFilter({
-  title,
-  options,
-  activeValue,
-  onSelect,
-}: {
-  title: string;
-  options: string[];
-  activeValue: string;
-  onSelect: (value: string) => void;
-}) {
-  return (
-    <div>
-      <p className="font-heading mb-3 text-lg text-[#0F1729]">{title}</p>
-      <div className="flex gap-2">
-        {options.map((option) => {
-          const active = activeValue === option;
-          return (
-            <button
-              key={option}
-              onClick={() => onSelect(option)}
-              className={cn(
-                'h-10 min-w-12 shrink-0 rounded-full border px-3 text-sm font-medium transition-all hover:bg-[#F5F6F7]',
-                active
-                  ? 'border-[#0F1729] bg-[#0F1729] text-white hover:bg-[#0F1729]'
-                  : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
-              )}
-            >
-              {option}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function SavedSearchIllustration() {
-  return (
-    <span className="relative block h-[19px] w-[19px]" aria-hidden="true">
-      <span className="absolute left-[3px] top-[5px] h-[11px] w-[12px] rotate-[-18deg] rounded-[4px] bg-[#D1D5DB] shadow-[0_1px_1px_rgba(15,23,41,0.14)]" />
-      <span className="absolute left-[5px] top-[3px] h-[11px] w-[12px] rotate-[-8deg] rounded-[4px] bg-[#F5F6F7] shadow-[0_1px_2px_rgba(15,23,41,0.16)]" />
-      <span className="absolute left-[7px] top-[1px] h-[11px] w-[12px] rotate-[7deg] rounded-[4px] border border-[#0F1729] bg-white shadow-[0_3px_5px_rgba(15,23,41,0.16)]">
-        <span className="absolute left-1 top-1 h-1.5 w-1.5 rounded-full bg-[#0F1729]" />
-      </span>
-    </span>
-  );
-}
-
-function PriceInput({
-  value,
-  placeholder,
-  onChange,
-}: {
-  value?: number;
-  placeholder: string;
-  onChange: (value: number | undefined) => void;
-}) {
-  return (
-    <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[#9CA3AF]">$</span>
-      <input
-        type="number"
-        value={value ?? ''}
-        onChange={(event) => onChange(event.target.value ? parseInt(event.target.value) : undefined)}
-        placeholder={placeholder}
-        className="h-11 w-full rounded-xl border border-[#E5E7EB] py-2.5 pl-7 pr-3 text-sm outline-none transition-colors hover:border-[#D1D5DB] focus:border-[#0F1729]"
-      />
     </div>
   );
 }

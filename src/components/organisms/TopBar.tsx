@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Search, Layers, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
+import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 interface TopBarProps {
   hasAppliedArea?: boolean;
@@ -78,7 +79,7 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
             onClick={handleAreaClick}
             className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors p-0.5"
           >
-            <Layers size={17} />
+            <AppImageIcon src="/icons/area-selection.jpg" alt="Area selection" size={18} />
           </button>
           {showAreaMenu && (
             <div className="absolute right-0 top-9 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">

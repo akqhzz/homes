@@ -146,7 +146,7 @@ export default function SavedPage() {
                             autoFocus
                           />
                         ) : (
-                          <p className="type-label text-[#0F1729] truncate">{col.name}</p>
+                          <p className="truncate font-heading text-sm text-[#0F1729]">{col.name}</p>
                         )}
                         <p className="type-caption text-[#9CA3AF] mt-0.5">
                           {col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}

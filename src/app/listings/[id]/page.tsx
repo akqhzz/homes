@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Bath, BedDouble, Calendar, Car, DollarSign, Home, MapPin, Ruler, ShieldCheck, Snowflake, Sun, TrainFront } from 'lucide-react';
+import { Bath, BedDouble, Calendar, Car, DollarSign, Home, MapPin, Ruler, Share2, ShieldCheck, Snowflake, Sun, TrainFront } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatDaysOnMarket, formatPriceFull, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import BackButton from '@/components/atoms/BackButton';
@@ -28,11 +28,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
     <PageShell showBottomNav={false} desktopWide desktopHeaderVariant="listing" desktopHeaderListingId={listing.id}>
       <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
         <div className="mx-auto w-full max-w-[1600px] px-5 py-5 lg:px-8 lg:pb-7 lg:pt-3">
-          <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
-            <BackButton />
-            <ListingSaveButton listingId={listing.id} />
-          </div>
-
           <ListingImageGallery images={listing.images} address={listing.address} />
 
           <section className="grid gap-8 py-8 lg:grid-cols-[1fr_360px]">
@@ -118,8 +113,16 @@ export default async function ListingPage({ params }: ListingPageProps) {
           </section>
         </div>
 
-        <div className="fixed inset-x-4 bottom-4 z-40 flex gap-2 rounded-[28px] bg-white/95 p-2 shadow-[0_12px_34px_rgba(15,23,41,0.18)] backdrop-blur lg:hidden">
+        <div className="fixed inset-x-4 bottom-4 z-40 flex items-center gap-2 rounded-[28px] bg-white/95 p-2 shadow-[0_12px_34px_rgba(15,23,41,0.18)] backdrop-blur lg:hidden">
+          <BackButton iconOnly className="h-12 w-12 shrink-0" />
           <ListingSaveButton listingId={listing.id} variant="toolbar" />
+          <button
+            type="button"
+            aria-label="Share listing"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
+          >
+            <Share2 size={16} />
+          </button>
           <button className="h-12 flex-1 rounded-full bg-[#0F1729] type-label text-white">
             Contact Agent
           </button>

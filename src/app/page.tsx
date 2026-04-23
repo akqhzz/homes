@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Layers } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -11,6 +10,7 @@ import BottomNav from '@/components/organisms/BottomNav';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
+import AppImageIcon from '@/components/atoms/AppImageIcon';
 import { Neighborhood, SavedSearch, SearchFilters } from '@/lib/types';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
@@ -288,7 +288,7 @@ export default function MapPage() {
                 }}
                 className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
               >
-                <Layers size={16} />
+                <AppImageIcon src="/icons/area-selection.jpg" alt="Area selection" size={18} />
                 Area
               </button>
               {hasAppliedArea && (

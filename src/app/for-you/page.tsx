@@ -42,8 +42,10 @@ export default function ForYouPage() {
   return (
     <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
-        <div className="px-4 pt-4 lg:pt-6 pb-3 flex-shrink-0">
-          <h1 className="type-title text-[#0F1729]">For You</h1>
+        <div className="flex-shrink-0 px-4 pt-4 pb-0">
+          <div className="mb-1 flex items-center justify-center">
+            <h1 className="type-title text-[#0F1729]">For You</h1>
+          </div>
         </div>
 
         <div className="flex flex-1 items-center overflow-hidden px-4 pb-24">

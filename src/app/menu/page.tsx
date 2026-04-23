@@ -13,8 +13,10 @@ export default function MenuPage() {
   return (
     <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
-        <div className="px-5 pt-5 pb-4 flex-shrink-0 border-b border-[#F5F6F7]">
-          <p className="type-subtitle text-[#0F1729]">homes</p>
+        <div className="flex-shrink-0 px-4 pt-4 pb-0">
+          <div className="mb-1 flex items-center justify-center">
+            <h1 className="type-title text-[#0F1729]">homes</h1>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto pb-24">
