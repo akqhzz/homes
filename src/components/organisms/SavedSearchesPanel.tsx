@@ -218,9 +218,6 @@ export default function SavedSearchesPanel({
           ref={desktopPanelRef}
           className="fixed left-1/2 top-[70px] z-[60] -ml-[232px] max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
-          <div className="px-4 pt-4">
-            <p className="type-subtitle text-[#0F1729]">Saved Searches</p>
-          </div>
           {content}
         </div>
       )}

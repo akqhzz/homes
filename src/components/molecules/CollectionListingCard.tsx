@@ -6,12 +6,14 @@ interface CollectionListingCardProps {
   listing: Listing;
   notes?: string;
   tags: string[];
+  tall?: boolean;
 }
 
 export default function CollectionListingCard({
   listing,
   notes,
   tags,
+  tall = false,
 }: CollectionListingCardProps) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
@@ -21,6 +23,7 @@ export default function CollectionListingCard({
         className="w-full"
         imageTouchMode="vertical-scroll"
         contentTouchMode="vertical-scroll"
+        desktopTall={tall}
       />
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 px-0.5">

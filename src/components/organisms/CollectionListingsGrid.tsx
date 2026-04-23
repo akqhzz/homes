@@ -12,10 +12,12 @@ type CollectionListingItem = Listing & {
 
 interface CollectionListingsGridProps {
   listings: CollectionListingItem[];
+  cardTall?: boolean;
 }
 
 export default function CollectionListingsGrid({
   listings,
+  cardTall = false,
 }: CollectionListingsGridProps) {
   if (listings.length === 0) {
     return (
@@ -42,6 +44,7 @@ export default function CollectionListingsGrid({
           listing={listing}
           notes={listing.collectionData.notes}
           tags={listing.collectionData.tags}
+          tall={cardTall}
         />
       ))}
     </div>

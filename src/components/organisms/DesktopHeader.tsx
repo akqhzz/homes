@@ -244,9 +244,6 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             </button>
             {showFilter && (
               <div className="absolute right-0 top-[58px] z-40 flex max-h-[min(640px,calc(100vh-12rem))] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                <div className="px-4 pt-4">
-                  <p className="type-subtitle text-[#0F1729]">Filters</p>
-                </div>
                 <div className="flex-1 overflow-y-auto">
                   <FilterPanelBody />
                 </div>
@@ -321,7 +318,6 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               </button>
               {showCollections && (
                 <div className="absolute right-0 top-12 z-40 w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                  <p className="mb-3 type-heading text-[#0F1729]">Collections</p>
                   {creatingCollection ? (
                     <div className="mb-3 flex gap-2">
                       <input
