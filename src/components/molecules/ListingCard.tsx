@@ -26,6 +26,7 @@ interface ListingCardProps {
   className?: string;
   desktopTall?: boolean;
   imageTouchMode?: 'locked' | 'vertical-scroll';
+  contentTouchMode?: 'locked' | 'vertical-scroll';
 }
 
 export default function ListingCard({
@@ -34,6 +35,7 @@ export default function ListingCard({
   className,
   desktopTall = false,
   imageTouchMode = 'locked',
+  contentTouchMode = 'locked',
 }: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
   const [imgIndex, setImgIndex] = useState(0);
@@ -327,7 +329,7 @@ export default function ListingCard({
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button
           className="block min-h-[78px] bg-white px-3.5 pb-4.5 pt-2.5 text-left"
-          style={{ touchAction: 'pan-x' }}
+          style={{ touchAction: contentTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'pan-x' }}
           onClick={openListingPage}
         >
           <div className="flex items-start justify-between gap-2">

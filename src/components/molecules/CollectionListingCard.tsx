@@ -20,6 +20,7 @@ export default function CollectionListingCard({
         variant="carousel"
         className="w-full"
         imageTouchMode="vertical-scroll"
+        contentTouchMode="vertical-scroll"
       />
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 px-0.5">

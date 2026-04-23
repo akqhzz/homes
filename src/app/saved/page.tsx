@@ -11,6 +11,7 @@ import PageShell from '@/components/templates/PageShell';
 import Avatar from '@/components/atoms/Avatar';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
+import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspaceHeader';
 
 interface MenuState {
   colId: string;
@@ -87,13 +88,11 @@ export default function SavedPage() {
   const isConfirmOpen = !!menuState && !!confirmDeleteId;
 
   return (
-    <PageShell desktopWide>
+    <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-4">
-          <div className="mb-1 flex items-center justify-center">
-            <h1 className="type-title lg:text-3xl text-[#0F1729]">Collections</h1>
-          </div>
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-6">
+          <CollectionWorkspaceHeader title="Collections" showBackButton />
         </div>
 
         {/* Collections */}

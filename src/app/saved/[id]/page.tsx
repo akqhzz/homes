@@ -14,6 +14,7 @@ import CollectionViewToggle, {
 import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspaceHeader';
 import CollectionListingsGrid from '@/components/organisms/CollectionListingsGrid';
 import { Collection } from '@/lib/types';
+import BackButton from '@/components/atoms/BackButton';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
 const ListingsCarousel = dynamic(() => import('@/components/organisms/ListingsCarousel'), { ssr: false });
@@ -92,61 +93,59 @@ export default function CollectionPage() {
 
   return (
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
-      <div className="flex h-full flex-col overflow-hidden bg-[#FCFCFB]">
-        <div className="border-b border-[#F0F1F2] bg-white/92 px-4 pb-4 pt-4 backdrop-blur-xl lg:px-8 lg:pb-5 lg:pt-6">
+      <div className="flex h-full flex-col overflow-hidden bg-white">
+        <div className="bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6">
           <CollectionWorkspaceHeader
             title={collection.name}
-            listingCount={listings.length}
-            collaborators={collection.collaborators}
+            subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
           />
         </div>
 
         <div className="flex-1 overflow-hidden">
           <div className="flex h-full flex-col lg:hidden">
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4">
-              {mobileView === 'list' ? (
+            {mobileView === 'list' ? (
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4">
                 <CollectionListingsGrid listings={listings} />
-              ) : (
-                <div className="relative h-full min-h-[28rem] overflow-hidden rounded-[28px] bg-[#EEF2F6] shadow-[0_16px_40px_rgba(15,23,41,0.08)]">
+              </div>
+            ) : (
+              <div className="relative min-h-0 flex-1">
+                <div className="absolute inset-0 overflow-hidden bg-[#EEF2F6]">
                   <MapView listings={listings} showListings />
-                  {isCarouselVisible && listings.length > 0 && (
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
-                      <ListingsCarousel listings={listings} className="pointer-events-auto pb-2" />
-                    </div>
-                  )}
                 </div>
-              )}
-            </div>
+                {isCarouselVisible && listings.length > 0 && (
+                  <div className="pointer-events-none absolute inset-x-0 bottom-24 z-20">
+                    <ListingsCarousel listings={listings} className="pointer-events-auto pb-2" />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div
               className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4 lg:hidden"
               style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
             >
-              <CollectionViewToggle
-                value={mobileView}
-                onChange={setMobileView}
-                className="pointer-events-auto"
-              />
+              <div className="pointer-events-auto flex items-center gap-2">
+                <BackButton
+                  iconOnly
+                  className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
+                />
+                <CollectionViewToggle
+                  value={mobileView}
+                  onChange={setMobileView}
+                />
+              </div>
             </div>
           </div>
 
           <div className="hidden h-full gap-4 px-6 py-5 lg:flex">
             <div className="flex min-w-0 flex-[0_0_46%] flex-col">
-              <div className="mb-3 px-2">
-                <p className="type-label text-[#6B7280]">Map view</p>
-              </div>
               <div className="min-h-0 flex-1 overflow-hidden rounded-[30px] bg-[#EEF2F6] shadow-[0_20px_50px_rgba(15,23,41,0.08)]">
                 <MapView listings={listings} showListings />
               </div>
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[30px] border border-[#F0F1F2] bg-white">
-              <div className="border-b border-[#F5F6F7] px-6 py-4">
-                <p className="type-label text-[#6B7280]">Saved listings</p>
-              </div>
-              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
-                <CollectionListingsGrid listings={listings} />
-              </div>
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto py-1">
+              <CollectionListingsGrid listings={listings} />
             </div>
           </div>
         </div>

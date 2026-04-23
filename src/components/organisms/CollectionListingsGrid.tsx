@@ -1,6 +1,7 @@
 'use client';
 import { Listing } from '@/lib/types';
 import CollectionListingCard from '@/components/molecules/CollectionListingCard';
+import { cn } from '@/lib/utils/cn';
 
 type CollectionListingItem = Listing & {
   collectionData: {
@@ -29,7 +30,12 @@ export default function CollectionListingsGrid({
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-4 sm:grid-cols-2 lg:w-max lg:grid-cols-[repeat(auto-fit,18rem)] lg:justify-center lg:gap-5">
+    <div
+      className={cn(
+        'grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-5',
+        'lg:grid-cols-[repeat(auto-fill,minmax(18rem,18rem))] lg:justify-start'
+      )}
+    >
       {listings.map((listing) => (
         <CollectionListingCard
           key={listing.id}
