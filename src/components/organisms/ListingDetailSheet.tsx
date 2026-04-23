@@ -150,7 +150,7 @@ export default function ListingDetailSheet() {
 
           {/* Description */}
           <div>
-            <h3 className="font-heading text-lg text-[#0F1729] mb-2">About this home</h3>
+            <h3 className="font-heading text-lg text-[#0F1729] mb-2">About This Home</h3>
             <p className="text-sm text-[#6B7280] leading-relaxed">{listing.description}</p>
           </div>
 
@@ -202,7 +202,7 @@ export default function ListingDetailSheet() {
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold text-sm text-[#0F1729]">{col.name}</p>
+                          <p className="font-heading text-sm text-[#0F1729]">{col.name}</p>
                           <p className="text-xs text-[#9CA3AF]">{col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}</p>
                         </div>
                       </button>

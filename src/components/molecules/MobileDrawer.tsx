@@ -26,6 +26,7 @@ export default function MobileDrawer({
   showBackdrop = true,
 }: MobileDrawerProps) {
   const drawerRef = useRef<HTMLElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const dragControls = useDragControls();
   const swipeStartRef = useRef<{ x: number; y: number; pointerId?: number } | null>(null);
   const trackingRef = useRef(false);
@@ -37,12 +38,17 @@ export default function MobileDrawer({
     dragging: boolean;
   } | null>(null);
 
-  const closeIfSwipeDown = useCallback((dx: number, dy: number) => {
-    if (dy > 72 && Math.abs(dy) > Math.abs(dx) * 1.15) onClose();
-  }, [onClose]);
+  const isDrawerContentScrolledTop = useCallback(() => !contentRef.current || contentRef.current.scrollTop <= 1, []);
 
-  const canStartDrawerSwipe = (target: HTMLElement) =>
-    !target.closest('input, textarea, select, a, [data-no-drawer-drag="true"]');
+  const closeIfSwipeDown = useCallback((dx: number, dy: number) => {
+    if (!isDrawerContentScrolledTop()) return;
+    if (dy > 72 && Math.abs(dy) > Math.abs(dx) * 1.15) onClose();
+  }, [isDrawerContentScrolledTop, onClose]);
+
+  const canStartDrawerSwipe = useCallback((target: HTMLElement) => {
+    if (!isDrawerContentScrolledTop()) return false;
+    return !target.closest('input, textarea, select, a, [data-no-drawer-drag="true"]');
+  }, [isDrawerContentScrolledTop]);
 
   const rememberPointerStart = (event: PointerEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
@@ -167,7 +173,7 @@ export default function MobileDrawer({
       node.removeEventListener('touchend', onTouchEnd, { capture: true });
       node.removeEventListener('touchcancel', onTouchEnd, { capture: true });
     };
-  }, [onClose]);
+  }, [canStartDrawerSwipe, isDrawerContentScrolledTop, onClose]);
 
   useEffect(() => {
     const handlePointerUp = (event: globalThis.PointerEvent) => {
@@ -234,6 +240,7 @@ export default function MobileDrawer({
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={{ top: 0, bottom: 0.28 }}
         onDragEnd={(_, info) => {
+          if (!isDrawerContentScrolledTop()) return;
           if (info.offset.y > 90 || info.velocity.y > 650) onClose();
         }}
         initial={{ y: 36, opacity: 0.98 }}
@@ -249,6 +256,7 @@ export default function MobileDrawer({
         <div
           onPointerDown={(e) => {
             e.stopPropagation();
+            if (!isDrawerContentScrolledTop()) return;
             swipeStartRef.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
             trackingRef.current = true;
             dragControls.start(e);
@@ -272,6 +280,7 @@ export default function MobileDrawer({
           </header>
         </div>
         <div
+          ref={contentRef}
           onPointerDown={startDrawerDrag}
           onTouchStart={handleTouchStart}
           className={cn('flex-1 overflow-y-auto', contentClassName)}

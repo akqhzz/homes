@@ -1,9 +1,9 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Bath, BedDouble, Calendar, Car, Heart, Home, MapPin, Ruler } from 'lucide-react';
+import { Bath, BedDouble, Calendar, Car, DollarSign, Heart, Home, MapPin, Ruler } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatDaysOnMarket, formatPriceFull, formatPropertyType, formatSqft } from '@/lib/utils/format';
+import BackButton from '@/components/atoms/BackButton';
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;
@@ -22,13 +22,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
     <main className="h-full overflow-y-auto bg-white">
       <div className="mx-auto max-w-6xl px-5 py-5 lg:px-8 lg:py-7">
         <div className="mb-5 flex items-center justify-between gap-3">
-          <Link
-            href="/"
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-[#F5F6F7] px-4 text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
-          >
-            <ArrowLeft size={16} />
-            Map
-          </Link>
+          <BackButton />
           <button className="inline-flex h-10 items-center gap-2 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">
             <Heart size={15} />
             Save
@@ -72,12 +66,12 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
             <div className="my-8 h-px bg-[#F5F6F7]" />
 
-            <h2 className="font-heading text-2xl text-[#0F1729]">About this home</h2>
+            <h2 className="font-heading text-2xl text-[#0F1729]">About This Home</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[#6B7280]">{listing.description}</p>
 
             <div className="my-8 h-px bg-[#F5F6F7]" />
 
-            <h2 className="font-heading text-2xl text-[#0F1729]">Features</h2>
+            <h2 className="font-heading text-2xl text-[#0F1729]">Features & Amenities</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {listing.features.map((feature) => (
                 <span key={feature} className="rounded-full bg-[#F5F6F7] px-3 py-1.5 text-sm font-medium text-[#6B7280]">
@@ -89,8 +83,12 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
           <aside className="h-fit rounded-3xl border border-[#F0F0F0] p-4">
             <div className="space-y-3">
-              <SideFact icon={<Calendar size={16} />} label="Year built" value={listing.yearBuilt.toString()} />
+              <SideFact icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} />
               <SideFact icon={<Car size={16} />} label="Parking" value={`${listing.parkingSpaces} space${listing.parkingSpaces === 1 ? '' : 's'}`} />
+              <SideFact icon={<DollarSign size={16} />} label="Taxes/Yr" value={`$${listing.taxes.toLocaleString()}`} />
+              {listing.maintenanceFee && (
+                <SideFact icon={<DollarSign size={16} />} label="Maint./Mo" value={`$${listing.maintenanceFee.toLocaleString()}`} />
+              )}
               <SideFact icon={<Home size={16} />} label="MLS" value={listing.mlsNumber} />
             </div>
             <button className="mt-5 h-12 w-full rounded-full bg-[#0F1729] text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]">

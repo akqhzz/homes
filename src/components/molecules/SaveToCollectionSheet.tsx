@@ -60,9 +60,9 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-[#0F1729]">{collection.name}</span>
+                <span className="font-heading block truncate text-sm text-[#0F1729]">{collection.name}</span>
                 <span className="block text-xs text-[#9CA3AF]">
-                  {alreadySaved ? 'Already saved here' : `${collection.listings.length} listing${collection.listings.length === 1 ? '' : 's'}`}
+                  {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
                 </span>
               </span>
             </button>
@@ -78,7 +78,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
             onKeyDown={(event) => {
               if (event.key === 'Enter') createAndSave();
             }}
-            placeholder="New collection..."
+            placeholder="New Collection..."
             className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
             autoFocus
           />
@@ -92,7 +92,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
           className="mt-4 flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
         >
           <Plus size={16} />
-          New collection
+          New Collection
         </button>
       )}
     </>
@@ -107,7 +107,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
     <>
       <div className="lg:hidden">
         <MobileDrawer
-          title="Save to collection"
+          title="Save To Collection"
           onClose={onClose}
           heightClassName="max-h-[60dvh]"
           contentClassName="px-4 pb-4"
@@ -127,7 +127,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
           style={{ left, top }}
           onClick={(event) => event.stopPropagation()}
         >
-          <p className="mb-3 font-heading text-lg text-[#0F1729]">Save to collection</p>
+          <p className="mb-3 font-heading text-lg text-[#0F1729]">Save To Collection</p>
           {content}
         </div>
       </div>

@@ -202,7 +202,7 @@ export default function DesktopHeader() {
               <div className="absolute right-0 top-12 z-40 max-h-[calc(100vh-7rem)] w-[390px] overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 <div className="space-y-5">
                   <div>
-                    <p className="mb-3 text-sm font-semibold text-[#0F1729]">Price Range</p>
+                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Price Range</p>
                     <div className="mb-4 grid grid-cols-2 gap-3">
                       <PriceInput value={filters.minPrice} placeholder="No min" onChange={(value) => setFilters({ minPrice: value })} />
                       <PriceInput value={filters.maxPrice} placeholder="No max" onChange={(value) => setFilters({ maxPrice: value })} />
@@ -228,7 +228,7 @@ export default function DesktopHeader() {
                     </Slider.Root>
                   </div>
                   <div>
-                    <p className="mb-3 text-sm font-semibold text-[#0F1729]">Property Type</p>
+                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Property Type</p>
                     <div className="flex flex-wrap gap-2">
                       {PROPERTY_TYPES.map(({ value, label }) => (
                         <button
@@ -259,7 +259,7 @@ export default function DesktopHeader() {
                     onSelect={(value) => setFilters({ minBaths: value === 'Any' ? undefined : parseInt(value) })}
                   />
                   <div>
-                    <p className="mb-3 text-sm font-semibold text-[#0F1729]">Listed Within</p>
+                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Listed Within</p>
                     <div className="grid grid-cols-2 gap-2">
                       {[
                         { value: 1, label: '1 day' },
@@ -283,7 +283,7 @@ export default function DesktopHeader() {
                     </div>
                   </div>
                   <div>
-                    <p className="mb-3 text-sm font-semibold text-[#0F1729]">Square Footage</p>
+                    <p className="font-heading mb-3 text-lg text-[#0F1729]">Square Footage</p>
                     <div className="grid grid-cols-2 gap-3">
                       <input
                         type="number"
@@ -316,7 +316,7 @@ export default function DesktopHeader() {
 
           <button
             onClick={() => setActivePanel('saved-searches')}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0F1729] text-white shadow-[var(--shadow-control)] transition-colors hover:bg-[#1F2937]"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
             aria-label="Saved searches"
           >
             <Bookmark size={17} />
@@ -328,8 +328,10 @@ export default function DesktopHeader() {
           <button
             onClick={() => router.push('/saved')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-sm font-medium transition-all hover:bg-[#F5F6F7]',
-              pathname.startsWith('/saved') ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:text-[#0F1729]'
+              'h-10 rounded-full px-4 text-sm font-semibold transition-all',
+              pathname.startsWith('/saved')
+                ? 'bg-[#0F1729] text-white hover:bg-[#1F2937]'
+                : 'bg-[#0F1729] text-white hover:bg-[#1F2937]'
             )}
           >
             Saved
@@ -385,7 +387,7 @@ function SegmentedFilter({
 }) {
   return (
     <div>
-      <p className="mb-3 text-sm font-semibold text-[#0F1729]">{title}</p>
+      <p className="font-heading mb-3 text-lg text-[#0F1729]">{title}</p>
       <div className="flex gap-2">
         {options.map((option) => {
           const active = activeValue === option;

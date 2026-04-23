@@ -64,7 +64,7 @@ export default function SavedSearchesPanel({
     <>
       {/* Save current search */}
       <div className="px-4 py-4 border-b border-[#F5F6F7]">
-        <p className="text-sm font-semibold text-[#0F1729] mb-3">Save current search</p>
+        <p className="font-heading text-base text-[#0F1729] mb-3">Save Current Search</p>
         {saving ? (
           <div className="flex gap-2">
             <input
@@ -84,14 +84,14 @@ export default function SavedSearchesPanel({
             className="flex items-center gap-2 w-full px-4 py-3 border border-dashed border-[#D1D5DB] rounded-xl text-sm text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729] transition-colors"
           >
             <Plus size={16} />
-            Save &quot;{selectedLocations.length > 0 ? selectedLocations.map(l => l.name).join(', ') : 'current search'}&quot;
+            Save &quot;{selectedLocations.length > 0 ? selectedLocations.map(l => l.name).join(', ') : 'Current Search'}&quot;
           </button>
         )}
       </div>
 
       {/* Saved searches list */}
       <div className="px-4 py-4">
-        <p className="text-sm font-semibold text-[#0F1729] mb-3">My Searches</p>
+        <p className="font-heading text-base text-[#0F1729] mb-3">My Searches</p>
         <div className="flex flex-col gap-3">
           {searches.map((search) => {
             const isSelected = activeSearchId === search.id;
@@ -116,7 +116,7 @@ export default function SavedSearchesPanel({
                 />
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-[#0F1729]">{search.name}</p>
+                <p className="font-heading text-sm text-[#0F1729]">{search.name}</p>
                 <p className="text-xs text-[#9CA3AF] mt-0.5">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>

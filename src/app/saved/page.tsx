@@ -146,7 +146,7 @@ export default function SavedPage() {
                             autoFocus
                           />
                         ) : (
-                          <p className="font-bold text-[#0F1729] truncate">{col.name}</p>
+                          <p className="font-heading text-[#0F1729] truncate">{col.name}</p>
                         )}
                         <p className="text-xs text-[#9CA3AF] mt-0.5">
                           {col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}
@@ -256,7 +256,7 @@ export default function SavedPage() {
       <AnimatePresence>
         {showNewCollection && (
           <MobileDrawer
-            title="New collection"
+            title="New Collection"
             onClose={() => setShowNewCollection(false)}
             heightClassName="max-h-[50dvh]"
             contentClassName="px-4 pb-4"

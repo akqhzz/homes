@@ -288,7 +288,7 @@ export default function MapView({
             longitude={markerCoordinates.lng}
             latitude={markerCoordinates.lat}
             anchor={showRight ? 'left' : 'right'}
-            offset={showRight ? [20, -124] : [-20, -124]}
+            offset={showRight ? [44, -124] : [-16, -124]}
           >
             <div onClick={(event) => event.stopPropagation()} className="hidden w-72 lg:block">
               <ListingCard listing={selectedListing} variant="carousel" />
@@ -459,8 +459,8 @@ function MockMap({
           <div
             className="absolute hidden w-72 lg:block"
             style={showRight
-              ? { left: `min(calc(${x}% + 20px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
-              : { right: `min(calc(${100 - x}% + 20px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
+              ? { left: `min(calc(${x}% + 44px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
+              : { right: `min(calc(${100 - x}% + 16px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
             onClick={(event) => event.stopPropagation()}
           >
             <ListingCard listing={selectedListing} variant="carousel" />

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Map, MapPin, Home, ArrowDownWideNarrow, Check } from 'lucide-react';
 import { Listing } from '@/lib/types';
@@ -62,9 +63,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const router = useRouter();
 
   const { isLiked, swipeDislike } = useSavedStore();
-  const { openListingDetail, setActivePanel } = useUIStore();
+  const { setActivePanel } = useUIStore();
   const { setViewState, setSelectedListingId } = useMapStore();
 
   const sortedListings = useMemo(() => {
@@ -404,11 +406,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             contentClassName="p-4"
             footer={(
               <Button
-                onClick={() => { setShowDetailDrawer(false); openListingDetail((drawerListing ?? listing).id); }}
+                onClick={() => {
+                  const detailListing = drawerListing ?? listing;
+                  setShowDetailDrawer(false);
+                  router.push(`/listings/${detailListing.id}`);
+                }}
                 fullWidth
                 size="lg"
               >
-                Full Listing Details
+                Full Listing Detail
               </Button>
             )}
           >

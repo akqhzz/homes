@@ -182,7 +182,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
             </button>
           </div>
           <div className="px-0.5">
-            <p className="font-bold text-[#0F1729] text-sm">{formatPrice(listing.price)}</p>
+            <p className="font-heading text-sm text-[#0F1729]">{formatPrice(listing.price)}</p>
             <p className="text-xs text-[#9CA3AF] mt-0.5">{listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft</p>
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
             </button>
           </div>
           <div className="p-4">
-            <p className="text-lg font-semibold text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="font-heading text-lg text-[#0F1729]">{formatPrice(listing.price)}</p>
             <p className="text-sm text-[#6B7280] mt-1">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
             <div className="flex items-center gap-1 mt-1.5 text-xs text-[#9CA3AF]">
               <MapPin size={11} />
@@ -292,7 +292,7 @@ export default function ListingCard({ listing, variant = 'carousel', className }
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[15px] font-semibold leading-[1.25] text-[#0F1729]">{formatPrice(listing.price)}</p>
+              <p className="font-heading text-[15px] leading-[1.25] text-[#0F1729]">{formatPrice(listing.price)}</p>
               <p className="mt-1 truncate text-xs leading-[1.25] text-[#6B7280]">
                 {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
               </p>
