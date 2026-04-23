@@ -153,16 +153,9 @@ export default function SavedSearchesPanel({
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
                 {isSelected && activeSearchDirty && (
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onUpdateSearch?.(search.id);
-                    }}
-                    className="mt-2 inline-flex h-7 items-center rounded-full bg-[#0F1729] px-2.5 type-caption text-white"
-                  >
+                  <span className="mt-2 inline-flex h-7 items-center rounded-full bg-[#0F1729] px-2.5 type-caption text-white">
                     Update?
-                  </button>
+                  </span>
                 )}
                 {search.newListingsCount && search.newListingsCount > 0 && (
                   <span className="inline-flex items-center mt-1.5 px-2 py-0.5 bg-[#0F1729] text-white type-caption font-medium rounded-full">
@@ -170,7 +163,20 @@ export default function SavedSearchesPanel({
                   </span>
                 )}
               </div>
-              <ChevronRight size={18} className="text-[#9CA3AF] flex-shrink-0" />
+              {isSelected && activeSearchDirty ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onUpdateSearch?.(search.id);
+                  }}
+                  className="shrink-0 rounded-full bg-[#0F1729] px-2.5 py-1 type-caption text-white"
+                >
+                  Update?
+                </button>
+              ) : (
+                <ChevronRight size={18} className="text-[#9CA3AF] flex-shrink-0" />
+              )}
             </button>
             );
           })}

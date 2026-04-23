@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
-const CAROUSEL_TOTAL_HEIGHT = 258;
+const CAROUSEL_TOTAL_HEIGHT = 248;
 const IMAGE_SWIPE_THRESHOLD = 24;
 const CARD_IMAGE_COUNT = 7;
 const LISTING_IMAGE_FALLBACKS = [
@@ -41,7 +41,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
   const imageAreaRef = useRef<HTMLDivElement>(null);
   const wheelLockRef = useRef(false);
   const carouselImageHeight = desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT;
-  const carouselTotalHeight = desktopTall ? 272 : CAROUSEL_TOTAL_HEIGHT;
+  const carouselTotalHeight = desktopTall ? 260 : CAROUSEL_TOTAL_HEIGHT;
   const carouselInfoHeight = carouselTotalHeight - carouselImageHeight;
 
   useEffect(() => {
@@ -188,7 +188,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
           </div>
           <div className="px-0.5">
             <p className="type-heading leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="mt-0.5 type-body text-[#6B7280]">{listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft</p>
+            <p className="mt-0.5 type-caption text-[#6B7280]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
           </div>
         </div>
         {saveSheet}
@@ -211,7 +211,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
           </div>
           <div className="p-4">
             <p className="type-subtitle text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="mt-1 type-body text-[#6B7280]">{listing.beds}bd · {listing.baths}ba · {listing.sqft.toLocaleString()} sqft</p>
+            <p className="mt-1 type-body text-[#6B7280]">{listing.beds}bd · {listing.baths}ba · {formatSqftCompact(listing.sqft)} sqft</p>
             <div className="mt-1.5 flex items-center gap-1 type-caption text-[#9CA3AF]">
               <MapPin size={11} />
               <span>{listing.address}</span>
@@ -266,7 +266,7 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
         {/* Image dots */}
         {displayImages.length > 1 && (
           <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 pointer-events-none z-10">
-            {displayImages.map((_, i) => (
+            {getVisibleDotIndexes(displayImages.length, imgIndex).map((i) => (
               <div
                 key={i}
                 className={cn(
@@ -321,17 +321,17 @@ export default function ListingCard({ listing, variant = 'carousel', className, 
 
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button
-          className="absolute bottom-0 left-0 right-0 bg-white px-3.5 pb-3 pt-2 text-left"
+          className="absolute bottom-0 left-0 right-0 bg-white px-3.5 pb-2.5 pt-1.5 text-left"
           style={{ height: carouselInfoHeight, touchAction: 'pan-x' }}
           onClick={openListingPage}
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="type-heading text-[#0F1729]">{formatPrice(listing.price)}</p>
-              <p className="mt-1 truncate type-body-lg text-[#6B7280]">
-                {listing.beds}bd {listing.baths}ba {listing.sqft.toLocaleString()}sqft
+              <p className="mt-1 truncate type-caption text-[#6B7280]">
+                {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
               </p>
-              <p className="mt-1 type-body text-[#9CA3AF] line-clamp-1">
+              <p className="mt-1.5 type-caption text-[#9CA3AF] line-clamp-1">
                 {listing.address}
               </p>
             </div>
@@ -377,4 +377,14 @@ function ListingImage({
 function getCardImages(images: string[]) {
   const available = images.length > 0 ? images : LISTING_IMAGE_FALLBACKS;
   return Array.from({ length: CARD_IMAGE_COUNT }, (_, index) => available[index % available.length] ?? LISTING_IMAGE_FALLBACKS[index % LISTING_IMAGE_FALLBACKS.length]);
+}
+
+function getVisibleDotIndexes(total: number, activeIndex: number) {
+  if (total <= 4) return Array.from({ length: total }, (_, index) => index);
+  const start = Math.min(Math.max(0, activeIndex - 1), total - 4);
+  return Array.from({ length: 4 }, (_, index) => start + index);
+}
+
+function formatSqftCompact(value: number) {
+  return String(value);
 }

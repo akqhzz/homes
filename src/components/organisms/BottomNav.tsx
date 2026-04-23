@@ -48,7 +48,7 @@ export default function BottomNav() {
             <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={19} />
           )}
           {activeSearchDirty && (
-            <span className="absolute right-[10px] top-[10px] h-2.5 w-2.5 rounded-full bg-[#0F1729] ring-2 ring-white" />
+            <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white" />
           )}
         </FloatingActionButton>
       )}

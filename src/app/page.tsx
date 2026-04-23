@@ -387,7 +387,7 @@ export default function MapPage() {
                   editAppliedArea();
                   setActivePanel('area-select');
                 }}
-                className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
               >
                 <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
                 Area
@@ -395,7 +395,7 @@ export default function MapPage() {
               {hasAppliedArea && (
                 <button
                   onClick={clearAppliedArea}
-                  className="h-11 rounded-full bg-white px-4 text-sm font-semibold text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                  className="h-11 rounded-full bg-white px-4 type-btn text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
                 >
                   Clear
                 </button>
