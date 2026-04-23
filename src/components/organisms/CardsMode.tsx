@@ -378,14 +378,14 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                       setShowSortDrawer(false);
                     }}
                     className={cn(
-                      'flex h-12 items-center justify-between rounded-2xl border px-4 text-sm font-semibold transition-colors',
+                      'flex min-h-12 items-center justify-between gap-3 whitespace-normal rounded-2xl border px-4 py-3 text-left text-sm font-semibold leading-snug transition-colors',
                       selected
                         ? 'border-[#9CA3AF] bg-white text-[#0F1729] shadow-[inset_0_0_0_1px_#9CA3AF]'
                         : 'border-transparent bg-[#F5F6F7] text-[#0F1729]'
                     )}
                   >
-                    {option.label}
-                    {selected && <Check size={16} />}
+                    <span className="min-w-0 flex-1 break-words">{option.label}</span>
+                    {selected && <Check size={16} className="shrink-0" />}
                   </button>
                 );
               })}

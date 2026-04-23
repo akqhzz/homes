@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
-import { Search, Layers, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
@@ -87,13 +87,6 @@ export default function DesktopHeader() {
               ) : (
                 <span className="flex-1 truncate text-sm font-medium text-[#9CA3AF]">{locationLabel}</span>
               )}
-            </button>
-            <button
-              onClick={() => setActivePanel('area-select')}
-              className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors"
-              aria-label="Set search area"
-            >
-              <Layers size={15} />
             </button>
           </div>
 

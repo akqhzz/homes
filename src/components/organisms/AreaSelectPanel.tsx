@@ -65,6 +65,10 @@ export default function AreaSelectPanel({
 
   const selectedCount = selectedNeighborhoods.size;
   const hasSelection = selectedCount > 0 || pointCount > 0;
+  const focusedIndex = focusedNeighborhood
+    ? AREA_NEIGHBORHOODS.findIndex((neighborhood) => neighborhood.id === focusedNeighborhood.id)
+    : -1;
+  const carouselIndex = focusedIndex >= 0 ? focusedIndex : currentIndex;
   const title = hasSelection
     ? selectedCount > 0
       ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
@@ -250,6 +254,7 @@ export default function AreaSelectPanel({
 
       <AnimatePresence>
         {focusedNeighborhood && (
+          <>
           <motion.div
             ref={carouselRef}
             key="neighborhood-carousel"
@@ -262,8 +267,8 @@ export default function AreaSelectPanel({
           >
             <motion.div
               className="pointer-events-auto flex overflow-visible"
-              animate={{ x: Math.max(0, (viewportWidth - CARD_WIDTH) / 2) - currentIndex * (CARD_WIDTH + CARD_GAP) }}
-              transition={instantMove ? { duration: 0 } : { type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              animate={{ x: Math.max(0, (viewportWidth - CARD_WIDTH) / 2) - carouselIndex * (CARD_WIDTH + CARD_GAP) }}
+              transition={instantMove || carouselIndex !== currentIndex ? { duration: 0 } : { type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               style={{ gap: CARD_GAP, touchAction: 'none', willChange: 'transform' }}
               onPointerDownCapture={handlePointerDown}
               onPointerUpCapture={handlePointerUp}
@@ -305,6 +310,35 @@ export default function AreaSelectPanel({
               })}
             </motion.div>
           </motion.div>
+          <motion.div
+            key="desktop-neighborhood-card"
+            initial={{ y: 18, opacity: 0, scale: 0.98 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 18, opacity: 0, scale: 0.98 }}
+            transition={{ type: 'tween', duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute bottom-6 left-1/2 z-40 hidden w-[420px] -translate-x-1/2 gap-3 overflow-hidden rounded-2xl bg-white p-3 text-left shadow-[0_12px_34px_rgba(15,23,41,0.18)] lg:flex"
+          >
+            <img src={focusedNeighborhood.thumbnail} alt="" className="h-28 w-32 shrink-0 rounded-xl object-cover" draggable={false} />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <p className="truncate text-base font-semibold text-[#0F1729]">{focusedNeighborhood.name}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 text-[11px] font-semibold text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>
+                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 text-[11px] font-semibold text-[#6B7280]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
+                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 text-[11px] font-semibold text-[#6B7280]">Walk {focusedNeighborhood.walkScore}</span>
+              </div>
+              <button
+                onClick={() => onToggleNeighborhood(focusedNeighborhood.id)}
+                className={cn(
+                  'mt-auto flex h-10 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-colors',
+                  selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
+                )}
+              >
+                {selectedNeighborhoods.has(focusedNeighborhood.id) ? <Check size={14} /> : <Plus size={14} />}
+                {selectedNeighborhoods.has(focusedNeighborhood.id) ? 'Included' : 'Include'}
+              </button>
+            </div>
+          </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

@@ -1,5 +1,5 @@
 'use client';
-import { PointerEvent, ReactNode } from 'react';
+import { PointerEvent, ReactNode, TouchEvent, useRef } from 'react';
 import { motion, useDragControls } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -26,10 +26,47 @@ export default function MobileDrawer({
   showBackdrop = true,
 }: MobileDrawerProps) {
   const dragControls = useDragControls();
-  const startDrawerDrag = (event: PointerEvent<HTMLElement>) => {
+  const swipeStartRef = useRef<{ x: number; y: number; pointerId?: number } | null>(null);
+
+  const closeIfSwipeDown = (dx: number, dy: number) => {
+    if (dy > 72 && Math.abs(dy) > Math.abs(dx) * 1.15) onClose();
+  };
+
+  const canStartDrawerSwipe = (target: HTMLElement) =>
+    !target.closest('button, input, textarea, select, a, [data-no-drawer-drag="true"]');
+
+  const rememberPointerStart = (event: PointerEvent<HTMLElement>) => {
     const target = event.target as HTMLElement;
-    if (target.closest('button, input, textarea, select, a, [data-no-drawer-drag="true"]')) return;
+    if (!canStartDrawerSwipe(target)) return false;
+    swipeStartRef.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    return true;
+  };
+
+  const startDrawerDrag = (event: PointerEvent<HTMLElement>) => {
+    if (!rememberPointerStart(event)) return;
     dragControls.start(event);
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLElement>) => {
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!start || start.pointerId !== event.pointerId) return;
+    closeIfSwipeDown(event.clientX - start.x, event.clientY - start.y);
+  };
+
+  const handleTouchStart = (event: TouchEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+    if (!canStartDrawerSwipe(target)) return;
+    const touch = event.touches[0];
+    swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event: TouchEvent<HTMLElement>) => {
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!start) return;
+    const touch = event.changedTouches[0];
+    closeIfSwipeDown(touch.clientX - start.x, touch.clientY - start.y);
   };
 
   return (
@@ -51,10 +88,16 @@ export default function MobileDrawer({
         aria-modal="true"
         onPointerDown={(event) => event.stopPropagation()}
         onPointerMove={(event) => event.stopPropagation()}
-        onPointerUp={(event) => event.stopPropagation()}
+        onPointerUp={(event) => {
+          handlePointerUp(event);
+          event.stopPropagation();
+        }}
         onTouchStart={(event) => event.stopPropagation()}
         onTouchMove={(event) => event.stopPropagation()}
-        onTouchEnd={(event) => event.stopPropagation()}
+        onTouchEnd={(event) => {
+          handleTouchEnd(event);
+          event.stopPropagation();
+        }}
         drag="y"
         dragControls={dragControls}
         dragListener={false}
@@ -77,8 +120,10 @@ export default function MobileDrawer({
         <div
           onPointerDown={(e) => {
             e.stopPropagation();
+            swipeStartRef.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
             dragControls.start(e);
           }}
+          onTouchStart={handleTouchStart}
           style={{ touchAction: 'none' }}
           className="cursor-grab active:cursor-grabbing"
         >
@@ -98,6 +143,7 @@ export default function MobileDrawer({
         </div>
         <div
           onPointerDown={startDrawerDrag}
+          onTouchStart={handleTouchStart}
           className={cn('flex-1 overflow-y-auto', contentClassName)}
         >
           {children}

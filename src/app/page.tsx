@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Layers } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -42,6 +43,7 @@ export default function MapPage() {
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setViewState = useMapStore((s) => s.setViewState);
   const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
+  const [hoveredNeighborhood, setHoveredNeighborhood] = useState<Neighborhood | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [isDrawingArea, setIsDrawingArea] = useState(false);
   const [drawnBoundary, setDrawnBoundary] = useState<{ lat: number; lng: number }[]>([]);
@@ -124,6 +126,7 @@ export default function MapPage() {
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
+    setHoveredNeighborhood(null);
   };
 
   const undoBoundary = () => {
@@ -178,6 +181,7 @@ export default function MapPage() {
     setAppliedBoundary(drawnBoundary);
     setActivePanel('none');
     setFocusedNeighborhood(null);
+    setHoveredNeighborhood(null);
     setIsDrawingArea(false);
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
@@ -191,6 +195,7 @@ export default function MapPage() {
     setAppliedBoundary(drawnBoundary);
     setActivePanel('none');
     setFocusedNeighborhood(null);
+    setHoveredNeighborhood(null);
     setIsDrawingArea(false);
   };
 
@@ -205,6 +210,7 @@ export default function MapPage() {
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
+    setHoveredNeighborhood(null);
     setIsDrawingArea(false);
     setCarouselVisible(false);
     setSelectedListingId(null);
@@ -219,6 +225,27 @@ export default function MapPage() {
     }
   };
 
+  const handleNeighborhoodClick = (neighborhood: Neighborhood) => {
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+    if (!isDesktop) {
+      setFocusedNeighborhood(neighborhood);
+      return;
+    }
+    setSelectedNeighborhoods((prev) => {
+      setAreaUndoStack((stack) => [...stack, new Set(prev)]);
+      setAreaRedoStack([]);
+      const next = new Set(prev);
+      if (next.has(neighborhood.id)) {
+        next.delete(neighborhood.id);
+        setFocusedNeighborhood(null);
+      } else {
+        next.add(neighborhood.id);
+        setFocusedNeighborhood(neighborhood);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="h-full flex flex-col overflow-hidden bg-[#F5F6F7]">
       {/* Desktop header (hidden on mobile) */}
@@ -227,27 +254,41 @@ export default function MapPage() {
       {/* Main content — split on desktop */}
       <div className="flex-1 flex overflow-hidden">
         {/* Map panel */}
-        <div className="flex-1 relative">
+        <div className="relative flex-1 lg:flex-none lg:basis-[44%]">
           <MapView
             listings={isAreaSelect ? [] : filteredListings}
             showNeighborhoods={isAreaSelect}
             showListings={!isAreaSelect}
             selectedNeighborhoodId={isAreaSelect ? focusedNeighborhood?.id ?? null : null}
+            previewNeighborhoodId={isAreaSelect ? hoveredNeighborhood?.id ?? null : null}
             includedNeighborhoodIds={isAreaSelect ? selectedNeighborhoods : appliedNeighborhoods}
-            onNeighborhoodClick={(neighborhood) => {
-              setFocusedNeighborhood(neighborhood);
-            }}
+            onNeighborhoodClick={handleNeighborhoodClick}
+            onNeighborhoodHover={setHoveredNeighborhood}
             onAreaMapClick={(coordinates) => {
               if (isDrawingArea) {
                 setDrawnBoundary((points) => [...points, coordinates]);
                 setRedoBoundary([]);
               } else {
                 setFocusedNeighborhood(null);
+                setHoveredNeighborhood(null);
               }
             }}
             drawnBoundary={isAreaSelect ? drawnBoundary : appliedBoundary}
             isAreaMode={isAreaSelect}
           />
+
+          {!isAreaSelect && (
+            <button
+              onClick={() => {
+                editAppliedArea();
+                setActivePanel('area-select');
+              }}
+              className="pointer-events-auto absolute left-5 top-5 z-20 hidden h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] lg:flex"
+            >
+              <Layers size={16} />
+              Area
+            </button>
+          )}
 
           {/* Mobile top bar (hidden on desktop — search lives in DesktopHeader) */}
           <div className={isAreaSelect ? 'hidden' : 'lg:hidden'}>
@@ -315,7 +356,7 @@ export default function MapPage() {
         </div>
 
         {/* Desktop listings sidebar */}
-        <div className="hidden lg:block w-[420px] overflow-hidden">
+        <div className="hidden min-w-[680px] flex-1 overflow-hidden lg:block">
           <ListingsSidebar listings={filteredListings} />
         </div>
       </div>

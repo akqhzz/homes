@@ -81,20 +81,20 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
       </div>
 
       {/* Listings grid */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="flex flex-col items-center gap-3">
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="grid grid-cols-2 gap-4">
           {sorted.map((listing) => (
             <div
               key={listing.id}
               className={cn(
-                'w-72 rounded-2xl transition-all cursor-pointer',
+                'min-w-0 rounded-2xl transition-all cursor-pointer',
                 selectedListingId === listing.id && 'ring-2 ring-[#0F1729] ring-offset-2'
               )}
               onMouseEnter={() => setSelectedListingId(listing.id)}
               onMouseLeave={() => setSelectedListingId(null)}
               onClick={() => openListingDetail(listing.id)}
             >
-              <ListingCard listing={listing} variant="carousel" />
+              <ListingCard listing={listing} variant="carousel" className="w-full" />
             </div>
           ))}
         </div>

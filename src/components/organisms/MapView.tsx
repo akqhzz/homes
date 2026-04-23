@@ -44,8 +44,10 @@ interface MapViewProps {
   showNeighborhoods?: boolean;
   showListings?: boolean;
   selectedNeighborhoodId?: string | null;
+  previewNeighborhoodId?: string | null;
   includedNeighborhoodIds?: Set<string>;
   onNeighborhoodClick?: (neighborhood: Neighborhood) => void;
+  onNeighborhoodHover?: (neighborhood: Neighborhood | null) => void;
   onAreaMapClick?: (coordinates: { lat: number; lng: number }) => void;
   drawnBoundary?: { lat: number; lng: number }[];
   showAmenities?: boolean;
@@ -57,8 +59,10 @@ export default function MapView({
   showNeighborhoods = false,
   showListings = true,
   selectedNeighborhoodId,
+  previewNeighborhoodId,
   includedNeighborhoodIds,
   onNeighborhoodClick,
+  onNeighborhoodHover,
   onAreaMapClick,
   drawnBoundary = [],
   showAmenities = false,
@@ -106,7 +110,7 @@ export default function MapView({
   const useAreaNeighborhoodGeometry = isAreaMode || Boolean(includedNeighborhoodIds?.size);
   const renderNeighborhoods = getRenderNeighborhoods(useAreaNeighborhoodGeometry);
   const boundaryNeighborhoods = renderNeighborhoods.filter(
-    (nbh) => nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
+    (nbh) => nbh.id === selectedNeighborhoodId || nbh.id === previewNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
   );
 
   if (!MAPBOX_TOKEN) {
@@ -119,8 +123,10 @@ export default function MapView({
         showListings={showListings}
         showNeighborhoods={showNeighborhoods}
         selectedNeighborhoodId={selectedNeighborhoodId}
+        previewNeighborhoodId={previewNeighborhoodId}
         includedNeighborhoodIds={includedNeighborhoodIds}
         onNeighborhoodClick={onNeighborhoodClick}
+        onNeighborhoodHover={onNeighborhoodHover}
         onAreaMapClick={onAreaMapClick}
         drawnBoundary={drawnBoundary}
         showAmenities={showAmenities}
@@ -229,20 +235,22 @@ export default function MapView({
             latitude={nbh.coordinates.lat}
             anchor={isAreaMode ? 'center' : 'bottom'}
           >
-            <NeighborhoodPin
-              neighborhood={nbh}
-              isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
-              onClick={() => {
-                mapRef.current?.fitBounds(getNeighborhoodBounds(nbh), {
-                  padding: { top: 160, bottom: 180, left: 72, right: 72 },
-                  duration: 420,
-                  maxZoom: 14.4,
-                });
-                onNeighborhoodClick?.(nbh);
-              }}
-              size={isAreaMode ? 'sm' : 'default'}
-              showLabel={!isAreaMode}
-            />
+            <div onMouseEnter={() => onNeighborhoodHover?.(nbh)} onMouseLeave={() => onNeighborhoodHover?.(null)}>
+              <NeighborhoodPin
+                neighborhood={nbh}
+                isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
+                onClick={() => {
+                  mapRef.current?.fitBounds(getNeighborhoodBounds(nbh), {
+                    padding: { top: 160, bottom: 180, left: 72, right: 72 },
+                    duration: 420,
+                    maxZoom: 14.4,
+                  });
+                  onNeighborhoodClick?.(nbh);
+                }}
+                size={isAreaMode ? 'sm' : 'default'}
+                showLabel={!isAreaMode}
+              />
+            </div>
           </Marker>
         ))}
 
@@ -270,14 +278,16 @@ export default function MapView({
         const selectedListing = listings.find((item) => item.id === selectedListingId);
         if (!selectedListing) return null;
         const markerCoordinates = getSpreadListingCoordinates(selectedListing, listings.findIndex((item) => item.id === selectedListingId));
+        const popupAnchor = markerCoordinates.lng > viewState.longitude ? 'right' : 'left';
         return (
           <Popup
             longitude={markerCoordinates.lng}
             latitude={markerCoordinates.lat}
-            anchor="left"
+            anchor={popupAnchor}
             closeButton={false}
             closeOnClick={false}
             offset={16}
+            maxWidth="320px"
             className="hidden lg:block"
           >
             <div onClick={(event) => event.stopPropagation()} className="w-72">
@@ -298,8 +308,10 @@ function MockMap({
   showListings = true,
   showNeighborhoods = false,
   selectedNeighborhoodId,
+  previewNeighborhoodId,
   includedNeighborhoodIds,
   onNeighborhoodClick,
+  onNeighborhoodHover,
   onAreaMapClick,
   drawnBoundary = [],
   showAmenities = false,
@@ -312,8 +324,10 @@ function MockMap({
   showListings?: boolean;
   showNeighborhoods?: boolean;
   selectedNeighborhoodId?: string | null;
+  previewNeighborhoodId?: string | null;
   includedNeighborhoodIds?: Set<string>;
   onNeighborhoodClick?: (neighborhood: Neighborhood) => void;
+  onNeighborhoodHover?: (neighborhood: Neighborhood | null) => void;
   onAreaMapClick?: (coordinates: { lat: number; lng: number }) => void;
   drawnBoundary?: { lat: number; lng: number }[];
   showAmenities?: boolean;
@@ -322,7 +336,7 @@ function MockMap({
   const useAreaNeighborhoodGeometry = isAreaMode || Boolean(includedNeighborhoodIds?.size);
   const renderNeighborhoods = getRenderNeighborhoods(useAreaNeighborhoodGeometry);
   const boundaryNeighborhoods = renderNeighborhoods.filter(
-    (nbh) => nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
+    (nbh) => nbh.id === selectedNeighborhoodId || nbh.id === previewNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
   );
 
   return (
@@ -377,6 +391,8 @@ function MockMap({
             className="absolute"
             style={{ left: `${x}%`, top: `${y}%`, transform: isAreaMode ? 'translate(-50%, -50%)' : 'translate(-50%, -100%)' }}
             onClick={(e) => { e.stopPropagation(); onNeighborhoodClick?.(nbh); }}
+            onMouseEnter={() => onNeighborhoodHover?.(nbh)}
+            onMouseLeave={() => onNeighborhoodHover?.(null)}
           >
             <NeighborhoodPin
               neighborhood={nbh}
