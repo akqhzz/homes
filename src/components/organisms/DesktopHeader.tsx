@@ -64,7 +64,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
   const pathname = usePathname();
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
-  const { searches, activeSearchId } = useSavedSearchStore();
+  const { searches, activeSearchId, activeSearchDirty } = useSavedSearchStore();
   const { activePanel, setActivePanel } = useUIStore();
   const { collections, createCollection } = useSavedStore();
 
@@ -229,7 +229,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                 setShowMenu(false);
               }}
               className={cn(
-                'relative flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select',
+                'relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select',
                 filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
               aria-label="Filters"
@@ -243,7 +243,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               )}
             </button>
             {showFilter && (
-              <div className="absolute right-0 top-12 z-40 flex max-h-[calc(100vh-9rem)] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+              <div className="absolute right-0 top-12 z-40 flex max-h-[min(640px,calc(100vh-12rem))] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 <div className="px-4 pt-4">
                   <p className="type-subtitle text-[#0F1729]">Filters</p>
                 </div>
@@ -267,7 +267,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               setShowCollections(false);
               setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches');
             }}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
             aria-label="Saved searches"
           >
             {activeSearch?.thumbnail ? (
@@ -276,6 +276,9 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               </span>
             ) : (
               <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={20} />
+            )}
+            {activeSearchDirty && (
+              <span className="absolute right-[10px] top-[10px] h-2.5 w-2.5 rounded-full bg-[#0F1729] ring-2 ring-white" />
             )}
           </button>
         </div>
@@ -309,7 +312,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                   setShowSearch(false);
                   setShowMenu(false);
                 }}
-                className="h-10 rounded-full bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-all hover:bg-[#EBEBEB]"
+                className="h-11 rounded-full bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-all hover:bg-[#EBEBEB]"
               >
                 <span className="inline-flex items-center gap-2">
                   <AppImageIcon src="/icons/collection.png" alt="Collections" size={18} className="rounded-[5px]" />

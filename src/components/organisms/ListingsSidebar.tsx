@@ -42,7 +42,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
   const sorted = sortListings(listings, sort);
   const locationLabel =
     selectedLocations.length === 0
-      ? 'the selected area'
+      ? 'Selected Area'
       : selectedLocations.length === 1
       ? selectedLocations[0].name
       : `${selectedLocations[0].name} + ${selectedLocations.length - 1} more`;
@@ -63,7 +63,7 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between px-5 py-1.5">
         <p className="type-heading text-[#0F1729]">
-          {listings.length} Listings in {locationLabel}
+          {listings.length} Listings In {locationLabel}
         </p>
 
         <div ref={sortRef} className="relative">

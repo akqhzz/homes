@@ -14,14 +14,20 @@ interface SavedSearchesPanelProps {
   hasActiveCriteria?: boolean;
   currentBoundary?: Coordinates[];
   currentNeighborhoodIds?: string[];
-  onApplySearch?: (search: SavedSearch) => void;
+  activeSearchDirty?: boolean;
+  onSelectSearch?: (search: SavedSearch) => void;
+  onDeselectSearch?: () => void;
+  onUpdateSearch?: (searchId: string) => void;
 }
 
 export default function SavedSearchesPanel({
   hasActiveCriteria,
   currentBoundary = [],
   currentNeighborhoodIds = [],
-  onApplySearch,
+  activeSearchDirty = false,
+  onSelectSearch,
+  onDeselectSearch,
+  onUpdateSearch,
 }: SavedSearchesPanelProps) {
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const { selectedLocations, filters, setLocations, replaceFilters } = useSearchStore();
@@ -59,10 +65,16 @@ export default function SavedSearchesPanel({
   }, [isDesktop, setActivePanel]);
 
   const handleLoadSearch = (search: SavedSearch) => {
+    if (activeSearchId === search.id) {
+      setActiveSearchId(null);
+      onDeselectSearch?.();
+      setActivePanel('none');
+      return;
+    }
     setActiveSearchId(search.id);
     setLocations(search.locations);
     replaceFilters(search.filters);
-    onApplySearch?.(search);
+    onSelectSearch?.(search);
     setActivePanel('none');
   };
 
@@ -136,10 +148,22 @@ export default function SavedSearchesPanel({
                 />
               )}
               <div className="flex-1 min-w-0">
-                <p className="type-heading text-[#0F1729]">{search.name}</p>
+                <p className="font-heading text-sm text-[#0F1729]">{search.name}</p>
                 <p className="type-caption text-[#9CA3AF] mt-0.5">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
+                {isSelected && activeSearchDirty && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onUpdateSearch?.(search.id);
+                    }}
+                    className="mt-2 inline-flex h-7 items-center rounded-full bg-[#0F1729] px-2.5 type-caption text-white"
+                  >
+                    Update?
+                  </button>
+                )}
                 {search.newListingsCount && search.newListingsCount > 0 && (
                   <span className="inline-flex items-center mt-1.5 px-2 py-0.5 bg-[#0F1729] text-white type-caption font-medium rounded-full">
                     {search.newListingsCount} new

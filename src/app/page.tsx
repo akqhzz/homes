@@ -6,12 +6,20 @@ import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useMapStore } from '@/store/mapStore';
+import { useSavedSearchStore } from '@/store/savedSearchStore';
 import BottomNav from '@/components/organisms/BottomNav';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 import { Neighborhood, SavedSearch, SearchFilters } from '@/lib/types';
+
+interface SearchSnapshot {
+  locations: SavedSearch['locations'];
+  filters: SearchFilters;
+  areaBoundary: { lat: number; lng: number }[];
+  neighborhoodIds: string[];
+}
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
 const SearchPanel = dynamic(() => import('@/components/organisms/SearchPanel'), { ssr: false });
@@ -36,12 +44,46 @@ function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
   });
 }
 
+function createSearchSnapshot(
+  locations: SavedSearch['locations'],
+  filters: SearchFilters,
+  areaBoundary: { lat: number; lng: number }[],
+  neighborhoods: Set<string>
+): SearchSnapshot {
+  return {
+    locations: locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
+    filters: { ...filters, propertyTypes: [...filters.propertyTypes] },
+    areaBoundary: areaBoundary.map((point) => ({ ...point })),
+    neighborhoodIds: [...neighborhoods].sort(),
+  };
+}
+
+function searchToSnapshot(search: SavedSearch): SearchSnapshot {
+  return {
+    locations: search.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
+    filters: { ...search.filters, propertyTypes: [...search.filters.propertyTypes] },
+    areaBoundary: search.areaBoundary?.map((point) => ({ ...point })) ?? [],
+    neighborhoodIds: [...(search.neighborhoodIds ?? [])].sort(),
+  };
+}
+
+function areSearchSnapshotsEqual(a: SearchSnapshot, b: SearchSnapshot) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 export default function MapPage() {
   const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
-  const { filters, selectedLocations } = useSearchStore();
+  const { filters, selectedLocations, setLocations, replaceFilters } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setViewState = useMapStore((s) => s.setViewState);
+  const {
+    searches,
+    activeSearchId,
+    setActiveSearchId,
+    setActiveSearchDirty,
+    updateSearch,
+  } = useSavedSearchStore();
   const [focusedNeighborhood, setFocusedNeighborhood] = useState<Neighborhood | null>(null);
   const [areaFocusToken, setAreaFocusToken] = useState(0);
   const [hoveredNeighborhood, setHoveredNeighborhood] = useState<Neighborhood | null>(null);
@@ -53,6 +95,7 @@ export default function MapPage() {
   const [areaRedoStack, setAreaRedoStack] = useState<Set<string>[]>([]);
   const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
   const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
+  const [preSavedSearchState, setPreSavedSearchState] = useState<SearchSnapshot | null>(null);
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const filteredListings = applyFilters(MOCK_LISTINGS, filters);
@@ -60,6 +103,7 @@ export default function MapPage() {
   const isAreaSelect = activePanel === 'area-select';
   const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
   const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0 || selectedLocations.length > 0;
+  const activeSavedSearch = searches.find((search) => search.id === activeSearchId) ?? null;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -95,6 +139,19 @@ export default function MapPage() {
       window.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeSavedSearch) {
+      setActiveSearchDirty(false);
+      return;
+    }
+    setActiveSearchDirty(
+      !areSearchSnapshotsEqual(
+        createSearchSnapshot(selectedLocations, filters, appliedBoundary, appliedNeighborhoods),
+        searchToSnapshot(activeSavedSearch)
+      )
+    );
+  }, [activeSavedSearch, appliedBoundary, appliedNeighborhoods, filters, selectedLocations, setActiveSearchDirty]);
 
   const toggleNeighborhood = (id: string) => {
     setSelectedNeighborhoods((prev) => {
@@ -224,6 +281,50 @@ export default function MapPage() {
         zoom: nextBoundary.length > 0 || nextNeighborhoods.size > 0 ? 13.8 : 13,
       });
     }
+  };
+
+  const handleSelectSavedSearch = (search: SavedSearch) => {
+    setPreSavedSearchState((current) =>
+      current ?? createSearchSnapshot(selectedLocations, filters, appliedBoundary, appliedNeighborhoods)
+    );
+    applySavedSearch(search);
+  };
+
+  const handleDeselectSavedSearch = () => {
+    const fallback = preSavedSearchState;
+    setActiveSearchId(null);
+    setActiveSearchDirty(false);
+    if (!fallback) return;
+    setLocations(fallback.locations);
+    replaceFilters(fallback.filters);
+    setAppliedBoundary(fallback.areaBoundary);
+    setAppliedNeighborhoods(new Set(fallback.neighborhoodIds));
+    setSelectedNeighborhoods(new Set(fallback.neighborhoodIds));
+    setDrawnBoundary(fallback.areaBoundary);
+    setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
+    setFocusedNeighborhood(null);
+    setHoveredNeighborhood(null);
+    setPreSavedSearchState(null);
+    const target = fallback.areaBoundary[0] ?? fallback.locations[0]?.coordinates;
+    if (target) {
+      setViewState({
+        longitude: target.lng,
+        latitude: target.lat,
+        zoom: fallback.areaBoundary.length > 0 || fallback.neighborhoodIds.length > 0 ? 13.8 : 13,
+      });
+    }
+  };
+
+  const handleUpdateSavedSearch = (searchId: string) => {
+    updateSearch(searchId, {
+      name: searches.find((search) => search.id === searchId)?.name ?? 'Saved Search',
+      locations: selectedLocations,
+      filters,
+      areaBoundary: appliedBoundary,
+      neighborhoodIds: [...appliedNeighborhoods],
+    });
   };
 
   const handleNeighborhoodClick = (neighborhood: Neighborhood) => {
@@ -395,7 +496,13 @@ export default function MapPage() {
             hasActiveCriteria={hasActiveSearchCriteria}
             currentBoundary={appliedBoundary}
             currentNeighborhoodIds={[...appliedNeighborhoods]}
-            onApplySearch={applySavedSearch}
+            activeSearchDirty={activeSavedSearch !== null && !areSearchSnapshotsEqual(
+              createSearchSnapshot(selectedLocations, filters, appliedBoundary, appliedNeighborhoods),
+              searchToSnapshot(activeSavedSearch)
+            )}
+            onSelectSearch={handleSelectSavedSearch}
+            onDeselectSearch={handleDeselectSavedSearch}
+            onUpdateSearch={handleUpdateSavedSearch}
           />
         )}
       </AnimatePresence>

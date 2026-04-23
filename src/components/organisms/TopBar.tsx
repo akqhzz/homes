@@ -56,7 +56,7 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
 
   return (
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
-      <div className="flex w-full max-w-[352px] items-center gap-2.5">
+      <div className="flex w-full max-w-[300px] items-center gap-2.5">
       {/* Search pill */}
       <motion.div layoutId="map-search-bar" className="flex flex-1 items-center gap-2.5 rounded-full bg-white px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
         <button

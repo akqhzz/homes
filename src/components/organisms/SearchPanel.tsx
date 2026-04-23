@@ -100,47 +100,49 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
         transition={{ type: 'tween', duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         className="fixed left-4 right-4 top-4 z-[60] lg:left-1/2 lg:right-auto lg:top-20 lg:w-[520px] lg:-translate-x-1/2"
       >
-        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2.5 shadow-[var(--shadow-control)]">
-          <button
-            onClick={handleClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[#F5F6F7]"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
-            <input
-              ref={inputRef}
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={selectedLocations.length === 0 ? 'Where?' : 'Add another...'}
-              className="min-w-20 flex-1 bg-transparent text-sm text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
-            />
-          </div>
-          {(query || selectedLocations.length > 0) && (
+        <div className="flex items-center gap-2.5">
+          <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full bg-white px-3 py-2.5 shadow-[var(--shadow-control)]">
             <button
-              onClick={() => { setQuery(''); clearLocations(); }}
-              className="shrink-0 text-[#9CA3AF] hover:text-[#0F1729]"
+              onClick={handleClose}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[#F5F6F7]"
             >
-              <X size={16} />
+              <ArrowLeft size={18} />
             </button>
-          )}
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+              <input
+                ref={inputRef}
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={selectedLocations.length === 0 ? 'Where?' : 'Add another...'}
+                className="min-w-20 flex-1 bg-transparent type-body text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
+              />
+            </div>
+            {(query || selectedLocations.length > 0) && (
+              <button
+                onClick={() => { setQuery(''); clearLocations(); }}
+                className="shrink-0 text-[#9CA3AF] hover:text-[#0F1729]"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
           <div ref={areaMenuRef} className="relative shrink-0">
             <button
               onClick={handleAreaClick}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[#9CA3AF] hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"
               aria-label="Area select"
             >
               <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
             </button>
             {showAreaMenu && (
-              <div className="absolute right-0 top-10 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+              <div className="absolute right-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
                 <button
                   onClick={() => {
                     setShowAreaMenu(false);
                     onEditArea?.();
                   }}
-                  className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
+                  className="w-full rounded-xl px-3 py-2 text-left font-button text-[#0F1729] hover:bg-[#F5F6F7]"
                 >
                   Edit area
                 </button>
@@ -149,7 +151,7 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
                     setShowAreaMenu(false);
                     onClearArea?.();
                   }}
-                  className="w-full rounded-xl px-3 py-2 text-left font-medium text-[#6B7280] hover:bg-[#F5F6F7]"
+                  className="w-full rounded-xl px-3 py-2 text-left font-button text-[#6B7280] hover:bg-[#F5F6F7]"
                 >
                   Clear area
                 </button>

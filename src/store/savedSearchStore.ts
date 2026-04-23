@@ -43,13 +43,17 @@ interface SaveSearchInput {
 interface SavedSearchStore {
   searches: SavedSearch[];
   activeSearchId: string | null;
+  activeSearchDirty: boolean;
   saveSearch: (input: SaveSearchInput) => string;
+  updateSearch: (id: string, input: SaveSearchInput) => void;
   setActiveSearchId: (id: string | null) => void;
+  setActiveSearchDirty: (value: boolean) => void;
 }
 
 export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
   searches: INITIAL_SEARCHES,
   activeSearchId: null,
+  activeSearchDirty: false,
   saveSearch: (input) => {
     const id = `ss-${Date.now()}`;
     const search: SavedSearch = {
@@ -66,8 +70,26 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
     set((state) => ({
       searches: [search, ...state.searches],
       activeSearchId: id,
+      activeSearchDirty: false,
     }));
     return id;
   },
+  updateSearch: (id, input) =>
+    set((state) => ({
+      searches: state.searches.map((search) =>
+        search.id === id
+          ? {
+              ...search,
+              locations: input.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
+              filters: normalizeFilters(input.filters),
+              areaBoundary: input.areaBoundary?.map((point) => ({ ...point })),
+              neighborhoodIds: input.neighborhoodIds?.length ? [...input.neighborhoodIds] : undefined,
+              createdAt: search.createdAt,
+            }
+          : search
+      ),
+      activeSearchDirty: false,
+    })),
   setActiveSearchId: (activeSearchId) => set({ activeSearchId }),
+  setActiveSearchDirty: (activeSearchDirty) => set({ activeSearchDirty }),
 }));
