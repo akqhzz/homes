@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import type { Feature, LineString, Polygon } from 'geojson';
 import Map, { Layer, Marker, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Listing, Neighborhood } from '@/lib/types';
+import { Listing, Location, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { closePolygon, getNeighborhoodBounds } from '@/lib/geo';
 import { getMapboxToken } from '@/lib/mapbox-token';
@@ -39,6 +39,7 @@ interface MapViewProps {
   onNeighborhoodHover?: (neighborhood: Neighborhood | null) => void;
   onAreaMapClick?: (coordinates: { lat: number; lng: number }) => void;
   drawnBoundary?: { lat: number; lng: number }[];
+  searchedLocations?: Location[];
   showAmenities?: boolean;
   isAreaMode?: boolean;
 }
@@ -54,6 +55,7 @@ export default function MapView({
   onNeighborhoodHover,
   onAreaMapClick,
   drawnBoundary = [],
+  searchedLocations = [],
   showAmenities = false,
   isAreaMode = false,
 }: MapViewProps) {
@@ -64,7 +66,7 @@ export default function MapView({
 
   const mapStyle = isSatelliteMode
     ? 'mapbox://styles/mapbox/satellite-streets-v12'
-    : 'mapbox://styles/mapbox/streets-v12';
+    : 'mapbox://styles/mapbox/standard';
 
   const handleMarkerClick = useCallback(
     (listingId: string, coords: { lat: number; lng: number }) => {
@@ -127,6 +129,13 @@ export default function MapView({
       onClick={handleMapPointer}
       mapStyle={mapStyle}
       mapboxAccessToken={MAPBOX_TOKEN}
+      config={{
+        basemap: {
+          theme: 'faded',
+          lightPreset: 'day',
+          show3dObjects: false,
+        },
+      }}
       style={{ width: '100%', height: '100%' }}
       minZoom={9}
       maxZoom={18}
@@ -139,6 +148,7 @@ export default function MapView({
             paint={{
               'fill-color': includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B',
               'fill-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 0.08 : 0.03,
+              'fill-emissive-strength': 0.2,
             }}
           />
           <Layer
@@ -152,11 +162,48 @@ export default function MapView({
               'line-color': includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B',
               'line-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 1 : showNeighborhoods ? 0.5 : 0.42,
               'line-width': includedNeighborhoodIds?.has(neighborhood.id) ? 3 : showNeighborhoods ? 2 : 1.5,
-              'line-dasharray': includedNeighborhoodIds?.has(neighborhood.id) ? [1.5, 1] : showNeighborhoods ? [1, 0] : [1.2, 1.8],
+              'line-dasharray': includedNeighborhoodIds?.has(neighborhood.id) ? [1.5, 1] : [1.2, 1.8],
+              'line-emissive-strength': 0.8,
             }}
           />
         </Source>
       ))}
+
+      {!isAreaMode && searchedLocations
+        .filter((location) => (location.boundary?.length ?? 0) > 2)
+        .map((location) => (
+          <Source
+            key={location.id}
+            id={`searched-location-boundary-${location.id}`}
+            type="geojson"
+            data={getLocationBoundaryFeature(location)}
+          >
+            <Layer
+              id={`searched-location-boundary-fill-${location.id}`}
+              type="fill"
+              paint={{
+                'fill-color': '#0F1729',
+                'fill-opacity': 0.06,
+                'fill-emissive-strength': 0.22,
+              }}
+            />
+            <Layer
+              id={`searched-location-boundary-line-${location.id}`}
+              type="line"
+              layout={{
+                'line-join': 'round',
+                'line-cap': 'round',
+              }}
+              paint={{
+                'line-color': '#0F1729',
+                'line-width': 2.5,
+                'line-opacity': 0.72,
+                'line-dasharray': [1.5, 1],
+                'line-emissive-strength': 0.8,
+              }}
+            />
+          </Source>
+        ))}
 
       {drawnBoundary.length > 1 && (
         <Source id="drawn-search-boundary" type="geojson" data={getDrawnBoundaryFeature(drawnBoundary)}>
@@ -171,6 +218,7 @@ export default function MapView({
               'line-color': '#0F1729',
               'line-width': 3,
               'line-dasharray': [1.5, 1],
+              'line-emissive-strength': 0.8,
             }}
           />
           {drawnBoundary.length > 2 && (
@@ -180,6 +228,7 @@ export default function MapView({
               paint={{
                 'fill-color': '#0F1729',
                 'fill-opacity': 0.08,
+                'fill-emissive-strength': 0.22,
               }}
             />
           )}
@@ -313,6 +362,19 @@ function getDrawnBoundaryFeature(points: { lat: number; lng: number }[]): Featur
 
 function getNeighborhoodBoundaryFeature(neighborhood: Neighborhood) {
   const boundary = closePolygon(neighborhood.boundary ?? []);
+
+  return {
+    type: 'Feature' as const,
+    properties: {},
+    geometry: {
+      type: 'Polygon' as const,
+      coordinates: [boundary.map((point) => [point.lng, point.lat])],
+    },
+  };
+}
+
+function getLocationBoundaryFeature(location: Location) {
+  const boundary = closePolygon(location.boundary ?? []);
 
   return {
     type: 'Feature' as const,

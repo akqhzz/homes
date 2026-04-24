@@ -26,6 +26,7 @@ export function useLocationSearch(
       coordinates: neighborhood.coordinates,
       city: neighborhood.city,
       province: 'ON',
+      boundary: neighborhood.boundary,
     }))
     .filter((location) => !selectedLocations.some((selected) => selected.id === location.id));
 

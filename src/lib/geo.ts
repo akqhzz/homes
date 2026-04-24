@@ -38,6 +38,16 @@ export function pointInBoundingBox(point: Coordinates, bbox: BoundingBox) {
   return point.lng >= west && point.lng <= east && point.lat >= south && point.lat <= north;
 }
 
+export function getPolygonFromBounds(bounds: BoundingBox): Coordinates[] {
+  const [west, south, east, north] = bounds;
+  return closePolygon([
+    { lng: west, lat: north },
+    { lng: east, lat: north },
+    { lng: east, lat: south },
+    { lng: west, lat: south },
+  ]);
+}
+
 export function getBoundsFromPoints(points: Coordinates[]): BoundingBox | null {
   if (points.length === 0) return null;
 
@@ -85,6 +95,11 @@ export function getSuggestedZoom(bounds: BoundingBox) {
 }
 
 export function getLocationBounds(location: Location): BoundingBox {
+  if (location.boundary && location.boundary.length > 2) {
+    const boundaryBounds = getBoundsFromPoints(location.boundary);
+    if (boundaryBounds) return boundaryBounds;
+  }
+
   if (location.bbox) return location.bbox;
 
   const radiusByType: Record<Location['type'], number> = {
@@ -122,6 +137,10 @@ function toRadians(value: number) {
 }
 
 export function listingMatchesLocation(listing: Listing, location: Location) {
+  if (location.boundary && location.boundary.length > 2) {
+    return pointInPolygon(listing.coordinates, location.boundary);
+  }
+
   if (location.bbox && pointInBoundingBox(listing.coordinates, location.bbox)) return true;
 
   const radiusKmByType: Record<Location['type'], number> = {

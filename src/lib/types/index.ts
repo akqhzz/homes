@@ -78,6 +78,7 @@ export interface Location {
   city?: string;
   province?: string;
   bbox?: [number, number, number, number];
+  boundary?: Coordinates[];
 }
 
 export interface Collection {

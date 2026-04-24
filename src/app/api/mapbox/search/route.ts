@@ -1,4 +1,5 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
+import { closePolygon, getPolygonFromBounds } from '@/lib/geo';
 import { normalizeMapboxFeature } from '@/lib/mapbox';
 import { getMapboxToken } from '@/lib/mapbox-token';
 
@@ -16,6 +17,7 @@ export async function GET(request: Request) {
         coordinates: neighborhood.coordinates,
         city: neighborhood.city,
         province: 'ON',
+        boundary: closePolygon(neighborhood.boundary ?? []),
       })),
     });
   }
@@ -44,7 +46,48 @@ export async function GET(request: Request) {
   const payload = (await response.json()) as { features?: unknown[] };
   const results = (payload.features ?? [])
     .map((feature) => normalizeMapboxFeature(feature as never))
+    .map((location) => enrichLocationBoundary(location))
     .filter(Boolean);
 
   return Response.json({ results });
+}
+
+function enrichLocationBoundary(location: ReturnType<typeof normalizeMapboxFeature>) {
+  if (!location) return null;
+
+  const matchedNeighborhood = MOCK_NEIGHBORHOODS.find((neighborhood) =>
+    matchesKnownNeighborhood(location.name, neighborhood.name)
+  );
+
+  if (matchedNeighborhood?.boundary) {
+    return {
+      ...location,
+      type: 'neighborhood' as const,
+      boundary: closePolygon(matchedNeighborhood.boundary),
+    };
+  }
+
+  if (location.bbox) {
+    return {
+      ...location,
+      boundary: getPolygonFromBounds(location.bbox),
+    };
+  }
+
+  return location;
+}
+
+function normalizeBoundaryName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function matchesKnownNeighborhood(locationName: string, neighborhoodName: string) {
+  const normalizedLocation = normalizeBoundaryName(locationName);
+  const normalizedNeighborhood = normalizeBoundaryName(neighborhoodName);
+
+  return (
+    normalizedLocation === normalizedNeighborhood ||
+    normalizedLocation.startsWith(`${normalizedNeighborhood} `) ||
+    normalizedLocation.includes(` ${normalizedNeighborhood} `)
+  );
 }

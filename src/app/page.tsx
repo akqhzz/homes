@@ -431,6 +431,7 @@ export default function MapPage() {
             listings={isAreaSelect ? [] : filteredListings}
             showNeighborhoods={isAreaSelect}
             showListings={!isAreaSelect}
+            searchedLocations={isAreaSelect ? [] : selectedLocations}
             selectedNeighborhoodId={isAreaSelect ? focusedNeighborhood?.id ?? null : null}
             previewNeighborhoodId={isAreaSelect ? hoveredNeighborhood?.id ?? null : null}
             includedNeighborhoodIds={isAreaSelect ? selectedNeighborhoods : appliedNeighborhoods}
