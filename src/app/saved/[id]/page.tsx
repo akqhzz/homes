@@ -14,6 +14,7 @@ import CollectionListingsGrid from '@/components/organisms/CollectionListingsGri
 import { Collection } from '@/lib/types';
 import BackButton from '@/components/atoms/BackButton';
 import ControlPillButton from '@/components/atoms/ControlPillButton';
+import DesktopSortMenu from '@/components/molecules/DesktopSortMenu';
 import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
 import CollectionTagsPanel from '@/components/organisms/CollectionTagsPanel';
 import AnchoredPopover from '@/components/molecules/AnchoredPopover';
@@ -414,30 +415,16 @@ export default function CollectionPage() {
               open={!!desktopSortAnchor}
               anchorRect={desktopSortAnchor}
               onClose={() => setDesktopSortAnchor(null)}
-              className="fixed z-[60] w-[22rem] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+              className="fixed z-[60]"
             >
-              <div>
-                {SORT_OPTIONS.map((option) => {
-                  const selected = sort === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        setSort(option.value);
-                        setDesktopSortAnchor(null);
-                      }}
-                      className={cn(
-                        'flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors',
-                        selected ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:bg-[#F5F6F7] hover:text-[#0F1729]'
-                      )}
-                    >
-                      <span className="type-btn">{option.label}</span>
-                      {selected && <span className="type-caption text-[#0F1729]">Active</span>}
-                    </button>
-                  );
-                })}
-              </div>
+              <DesktopSortMenu
+                options={SORT_OPTIONS}
+                value={sort}
+                onChange={(value) => {
+                  setSort(value);
+                  setDesktopSortAnchor(null);
+                }}
+              />
             </AnchoredPopover>
 
             <AnchoredPopover

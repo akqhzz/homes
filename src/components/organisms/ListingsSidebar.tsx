@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowDownWideNarrow, Check } from 'lucide-react';
+import { ArrowDownWideNarrow } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { useMapStore } from '@/store/mapStore';
 import { useSearchStore } from '@/store/searchStore';
 import ListingCard from '@/components/molecules/ListingCard';
+import DesktopSortMenu from '@/components/molecules/DesktopSortMenu';
 import { cn } from '@/lib/utils/cn';
 
 type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'sqft-desc';
@@ -75,26 +76,15 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
             Sort
           </button>
           {showSort && (
-            <div className="absolute right-0 top-12 z-20 w-52 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
-              {SORT_OPTIONS.map(({ value, label }) => {
-                const selected = sort === value;
-                return (
-                  <button
-                    key={value}
-                    onClick={() => {
-                      setSort(value);
-                      setShowSort(false);
-                    }}
-                    className={cn(
-                      'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-button transition-colors',
-                      selected ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:bg-[#F5F6F7] hover:text-[#0F1729]'
-                    )}
-                  >
-                    {label}
-                    {selected && <Check size={14} />}
-                  </button>
-                );
-              })}
+            <div className="absolute right-0 top-12 z-20">
+              <DesktopSortMenu
+                options={SORT_OPTIONS}
+                value={sort}
+                onChange={(value) => {
+                  setSort(value);
+                  setShowSort(false);
+                }}
+              />
             </div>
           )}
         </div>

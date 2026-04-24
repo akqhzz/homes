@@ -111,7 +111,7 @@ function CollectionTagsPanelContent({
               onTouchCancel={clearLongPress}
             >
               {editingTag === tag ? (
-                <div className="flex items-center gap-1 rounded-full border border-[#D1D5DB] bg-white pl-2 pr-1 text-[#0F1729]">
+                <div className="flex items-center gap-1 bg-white pl-2 pr-1 text-[#0F1729]">
                   <input
                     value={editingValue}
                     onChange={(event) => setEditingValue(event.target.value)}
@@ -230,7 +230,7 @@ export default function CollectionTagsPanel({
 
   if (desktop) {
     return (
-      <div className="w-[22rem] rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+      <div className="w-[18rem] rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
         <CollectionTagsPanelContent {...props} />
       </div>
     );
