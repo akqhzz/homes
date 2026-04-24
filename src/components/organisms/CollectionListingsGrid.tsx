@@ -13,7 +13,7 @@ type CollectionListingItem = Listing & {
 interface CollectionListingsGridProps {
   listings: CollectionListingItem[];
   cardTall?: boolean;
-  onTagClick: (listingId: string) => void;
+  onTagClick: (listingId: string, anchorRect: DOMRect | null) => void;
 }
 
 export default function CollectionListingsGrid({
@@ -47,7 +47,7 @@ export default function CollectionListingsGrid({
           notes={listing.collectionData.notes}
           tags={listing.collectionData.tags}
           tall={cardTall}
-          onTagClick={() => onTagClick(listing.id)}
+          onTagClick={(anchorRect) => onTagClick(listing.id, anchorRect)}
         />
       ))}
     </div>

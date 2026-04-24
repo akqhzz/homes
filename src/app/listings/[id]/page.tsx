@@ -27,7 +27,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
   return (
     <PageShell showBottomNav={false} desktopWide desktopHeaderVariant="listing" desktopHeaderListingId={listing.id}>
       <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
-        <div className="mx-auto w-full max-w-[1600px] px-5 py-5 lg:px-8 lg:pb-7 lg:pt-3">
+        <div className="layout-content-wide px-5 py-5 lg:px-8 lg:pb-7 lg:pt-3">
           <ListingImageGallery images={listing.images} address={listing.address} />
 
           <section className="grid gap-8 py-8 lg:grid-cols-[1fr_360px]">

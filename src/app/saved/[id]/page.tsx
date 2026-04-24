@@ -15,6 +15,7 @@ import { Collection } from '@/lib/types';
 import BackButton from '@/components/atoms/BackButton';
 import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
 import CollectionTagsPanel from '@/components/organisms/CollectionTagsPanel';
+import AnchoredPopover from '@/components/molecules/AnchoredPopover';
 import { cn } from '@/lib/utils/cn';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
@@ -29,8 +30,8 @@ type CollectionView = 'list' | 'map';
 type SortOption = 'manual' | 'price-asc' | 'price-desc';
 type TagPanelState =
   | null
-  | { mode: 'filter' }
-  | { mode: 'assign'; listingId: string };
+  | { mode: 'filter'; anchorRect: DOMRect | null }
+  | { mode: 'assign'; listingId: string; anchorRect: DOMRect | null };
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'manual', label: 'Saved order' },
@@ -89,7 +90,7 @@ export default function CollectionPage() {
   const [mobileView, setMobileView] = useState<CollectionView>('list');
   const [sort, setSort] = useState<SortOption>('manual');
   const [showSortDrawer, setShowSortDrawer] = useState(false);
-  const [showDesktopSort, setShowDesktopSort] = useState(false);
+  const [desktopSortAnchor, setDesktopSortAnchor] = useState<DOMRect | null>(null);
   const [tagPanelState, setTagPanelState] = useState<TagPanelState>(null);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [compactMobileHeader, setCompactMobileHeader] = useState(false);
@@ -171,9 +172,9 @@ export default function CollectionPage() {
               <>
                 <button
                   type="button"
-                  onClick={() => {
-                    setTagPanelState({ mode: 'filter' });
-                    setShowDesktopSort(false);
+                  onClick={(event) => {
+                    setTagPanelState({ mode: 'filter', anchorRect: event.currentTarget.getBoundingClientRect() });
+                    setDesktopSortAnchor(null);
                   }}
                   className={desktopActionButtonClassName}
                 >
@@ -182,9 +183,17 @@ export default function CollectionPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowDesktopSort((current) => !current);
+                  onClick={(event) => {
+                    const rect = event.currentTarget.getBoundingClientRect();
                     setTagPanelState(null);
+                    setDesktopSortAnchor((current) =>
+                      current &&
+                      current.top === rect.top &&
+                      current.left === rect.left &&
+                      current.width === rect.width
+                        ? null
+                        : rect
+                    );
                   }}
                   className={desktopActionButtonClassName}
                 >
@@ -206,7 +215,7 @@ export default function CollectionPage() {
                 <CollectionListingsGrid
                   listings={sortedListings}
                   cardTall
-                  onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId })}
+                  onTagClick={(listingId, anchorRect) => setTagPanelState({ mode: 'assign', listingId, anchorRect })}
                 />
               </div>
             ) : (
@@ -300,7 +309,7 @@ export default function CollectionPage() {
                     aria-label="Tags"
                     onClick={() => {
                       setShowSortDrawer(false);
-                      setTagPanelState({ mode: 'filter' });
+                      setTagPanelState({ mode: 'filter', anchorRect: null });
                     }}
                     className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
                   >
@@ -321,15 +330,20 @@ export default function CollectionPage() {
             <div className="min-h-0 min-w-0 flex-1 overflow-y-auto py-1">
               <CollectionListingsGrid
                 listings={sortedListings}
-                onTagClick={(listingId) => {
-                  setShowDesktopSort(false);
-                  setTagPanelState({ mode: 'assign', listingId });
+                onTagClick={(listingId, anchorRect) => {
+                  setDesktopSortAnchor(null);
+                  setTagPanelState({ mode: 'assign', listingId, anchorRect });
                 }}
               />
             </div>
 
-            {showDesktopSort && (
-              <div className="fixed right-6 top-28 z-[60] w-[22rem] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+            <AnchoredPopover
+              open={!!desktopSortAnchor}
+              anchorRect={desktopSortAnchor}
+              onClose={() => setDesktopSortAnchor(null)}
+              className="fixed z-[60] w-[22rem] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+            >
+              <div>
                 {SORT_OPTIONS.map((option) => {
                   const selected = sort === option.value;
                   return (
@@ -338,7 +352,7 @@ export default function CollectionPage() {
                       type="button"
                       onClick={() => {
                         setSort(option.value);
-                        setShowDesktopSort(false);
+                        setDesktopSortAnchor(null);
                       }}
                       className={cn(
                         'flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors',
@@ -351,23 +365,28 @@ export default function CollectionPage() {
                   );
                 })}
               </div>
-            )}
+            </AnchoredPopover>
 
-            {tagPanelState && (
-              <div className="fixed right-6 top-28 z-[60]">
+            <AnchoredPopover
+              open={!!tagPanelState}
+              anchorRect={tagPanelState?.anchorRect ?? null}
+              onClose={() => setTagPanelState(null)}
+              className="fixed z-[60]"
+            >
+              <div>
                 <CollectionTagsPanel
-                  title={tagPanelState.mode === 'assign' ? 'Assign tags' : 'Filter by tags'}
-                  open
-                  mode={tagPanelState.mode === 'assign' ? 'assign' : 'filter'}
+                  title={tagPanelState?.mode === 'assign' ? 'Assign tags' : 'Filter by tags'}
+                  open={!!tagPanelState}
+                  mode={tagPanelState?.mode === 'assign' ? 'assign' : 'filter'}
                   availableTags={availableTags}
                   selectedTags={
-                    tagPanelState.mode === 'assign'
+                    tagPanelState?.mode === 'assign'
                       ? assigningListing?.collectionData.tags ?? []
                       : activeTagFilters
                   }
                   onClose={() => setTagPanelState(null)}
                   onToggleTag={(tag) => {
-                    if (tagPanelState.mode === 'assign' && tagPanelState.listingId) {
+                    if (tagPanelState?.mode === 'assign' && tagPanelState.listingId) {
                       toggleListingTag(tagPanelState.listingId, tag);
                       return;
                     }
@@ -382,7 +401,7 @@ export default function CollectionPage() {
                   desktop
                 />
               </div>
-            )}
+            </AnchoredPopover>
           </div>
         </div>
       </div>

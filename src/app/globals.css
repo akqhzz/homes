@@ -37,6 +37,7 @@
   --shadow-xl: 0 20px 40px rgba(0,0,0,0.15), 0 8px 16px rgba(0,0,0,0.1);
   --shadow-control: 0 2px 10px rgba(0,0,0,0.09), 0 1px 3px rgba(0,0,0,0.05);
   --shadow-sheet: 0 -12px 32px rgba(15,23,41,0.16);
+  --layout-content-max: 100rem;
 
   --font-body-sans: var(--font-body), system-ui, -apple-system, sans-serif;
   --font-heading: var(--font-lora), Georgia, serif;
@@ -207,4 +208,10 @@ main {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+.layout-content-wide {
+  width: 100%;
+  max-width: var(--layout-content-max);
+  margin-inline: auto;
 }

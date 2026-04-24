@@ -8,7 +8,7 @@ interface CollectionListingCardProps {
   notes?: string;
   tags: string[];
   tall?: boolean;
-  onTagClick: () => void;
+  onTagClick: (anchorRect: DOMRect | null) => void;
 }
 
 export default function CollectionListingCard({
@@ -32,7 +32,7 @@ export default function CollectionListingCard({
             type="button"
             onClick={(event) => {
               event.stopPropagation();
-              onTagClick();
+              onTagClick(event.currentTarget.getBoundingClientRect());
             }}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
             aria-label="Manage tags"
