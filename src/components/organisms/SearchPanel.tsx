@@ -3,25 +3,11 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { ArrowLeft, X, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Location } from '@/lib/types';
+import { useLocationSearch } from '@/hooks/useLocationSearch';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
-
-const LOCATION_SUGGESTIONS: Location[] = [
-  { id: 'loc-downtown', name: 'Toronto Downtown', type: 'area', coordinates: { lat: 43.6532, lng: -79.3832 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-midtown', name: 'Midtown', type: 'area', coordinates: { lat: 43.6966, lng: -79.4031 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-annex', name: 'Annex', type: 'neighborhood', coordinates: { lat: 43.6680, lng: -79.4050 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-yorkville', name: 'YorkVille', type: 'neighborhood', coordinates: { lat: 43.6700, lng: -79.3930 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-kensington', name: 'Kensington', type: 'neighborhood', coordinates: { lat: 43.6545, lng: -79.4030 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-queen-west', name: 'Queen West', type: 'neighborhood', coordinates: { lat: 43.6475, lng: -79.4200 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-king-west', name: 'King West', type: 'neighborhood', coordinates: { lat: 43.6440, lng: -79.3970 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-scarborough', name: 'Scarborough', type: 'area', coordinates: { lat: 43.7731, lng: -79.2576 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-etobicoke', name: 'Etobicoke', type: 'area', coordinates: { lat: 43.6435, lng: -79.5653 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-north-york', name: 'North York', type: 'area', coordinates: { lat: 43.7615, lng: -79.4111 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-mississauga', name: 'Mississauga', type: 'city', coordinates: { lat: 43.5890, lng: -79.6441 }, city: 'Mississauga', province: 'ON' },
-  { id: 'loc-markham', name: 'Markham', type: 'city', coordinates: { lat: 43.8561, lng: -79.3370 }, city: 'Markham', province: 'ON' },
-];
 
 interface SearchPanelProps {
   hasAppliedArea?: boolean;
@@ -36,6 +22,7 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
   const areaMenuRef = useRef<HTMLDivElement>(null);
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
+  const { results, isLoading } = useLocationSearch(query, selectedLocations);
 
   useLayoutEffect(() => {
     inputRef.current?.focus();
@@ -55,13 +42,7 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [showAreaMenu]);
 
-  const filtered = query.trim()
-    ? LOCATION_SUGGESTIONS.filter(
-        (l) =>
-          l.name.toLowerCase().includes(query.toLowerCase()) &&
-          !selectedLocations.some((s) => s.id === l.id)
-      )
-    : LOCATION_SUGGESTIONS.filter((l) => !selectedLocations.some((s) => s.id === l.id));
+  const filtered = results;
 
   const handleSelect = (loc: Location) => {
     addLocation(loc);
@@ -207,12 +188,15 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
                     ) : loc.name}
                   </p>
                   <p className="text-xs text-[#9CA3AF] mt-0.5">
-                    {loc.city ? `${loc.city}, ON` : 'ON'}
+                    {[loc.city, loc.province].filter(Boolean).join(', ') || 'Canada'}
                   </p>
                 </div>
               </motion.button>
             ))}
           </AnimatePresence>
+          {isLoading && (
+            <p className="text-sm text-[#9CA3AF] text-center py-8">Searching locations…</p>
+          )}
           {filtered.length === 0 && query && (
             <p className="text-sm text-[#9CA3AF] text-center py-8">No results for &quot;{query}&quot;</p>
           )}

@@ -157,11 +157,6 @@ main {
 }
 
 /* Mapbox overrides */
-.mapboxgl-ctrl-logo,
-.mapboxgl-ctrl-attrib {
-  display: none !important;
-}
-
 .mapboxgl-map {
   font-family: var(--font-body-sans);
 }

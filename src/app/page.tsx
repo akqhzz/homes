@@ -3,6 +3,17 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
+import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
+import {
+  getBoundsCenter,
+  getBoundsFromPoints,
+  getLocationBounds,
+  getNeighborhoodBounds,
+  getSuggestedZoom,
+  listingMatchesLocation,
+  mergeBounds,
+  pointInPolygon,
+} from '@/lib/geo';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useMapStore } from '@/store/mapStore';
@@ -42,6 +53,60 @@ function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
     if (filters.maxDaysOnMarket && l.daysOnMarket > filters.maxDaysOnMarket) return false;
     return true;
   });
+}
+
+function filterListingsBySearchArea(
+  listings: typeof MOCK_LISTINGS,
+  selectedLocations: SavedSearch['locations'],
+  boundary: { lat: number; lng: number }[],
+  neighborhoodIds: Set<string>
+) {
+  if (boundary.length >= 3) {
+    return listings.filter((listing) => pointInPolygon(listing.coordinates, boundary));
+  }
+
+  if (neighborhoodIds.size > 0) {
+    const selectedNeighborhoods = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhoodIds.has(neighborhood.id));
+    return listings.filter((listing) =>
+      selectedNeighborhoods.some((neighborhood) =>
+        pointInPolygon(listing.coordinates, neighborhood.boundary ?? [])
+      )
+    );
+  }
+
+  if (selectedLocations.length > 0) {
+    return listings.filter((listing) =>
+      selectedLocations.some((location) => listingMatchesLocation(listing, location))
+    );
+  }
+
+  return listings;
+}
+
+function getSearchViewState(
+  selectedLocations: SavedSearch['locations'],
+  boundary: { lat: number; lng: number }[],
+  neighborhoodIds: Set<string>
+) {
+  const bounds =
+    boundary.length >= 3
+      ? getBoundsFromPoints(boundary)
+      : neighborhoodIds.size > 0
+      ? mergeBounds(
+          MOCK_NEIGHBORHOODS
+            .filter((neighborhood) => neighborhoodIds.has(neighborhood.id))
+            .map((neighborhood) => getNeighborhoodBounds(neighborhood))
+        )
+      : mergeBounds(selectedLocations.map((location) => getLocationBounds(location)));
+
+  if (!bounds) return null;
+
+  const center = getBoundsCenter(bounds);
+  return {
+    longitude: center.lng,
+    latitude: center.lat,
+    zoom: getSuggestedZoom(bounds),
+  };
 }
 
 function createSearchSnapshot(
@@ -98,7 +163,12 @@ export default function MapPage() {
   const [preSavedSearchState, setPreSavedSearchState] = useState<SearchSnapshot | null>(null);
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
-  const filteredListings = applyFilters(MOCK_LISTINGS, filters);
+  const filteredListings = filterListingsBySearchArea(
+    applyFilters(MOCK_LISTINGS, filters),
+    selectedLocations,
+    appliedBoundary,
+    appliedNeighborhoods
+  );
   const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
   const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
@@ -152,6 +222,13 @@ export default function MapPage() {
       )
     );
   }, [activeSavedSearch, appliedBoundary, appliedNeighborhoods, filters, selectedLocations, setActiveSearchDirty]);
+
+  useEffect(() => {
+    if (isAreaSelect) return;
+    const nextViewState = getSearchViewState(selectedLocations, appliedBoundary, appliedNeighborhoods);
+    if (!nextViewState) return;
+    setViewState(nextViewState);
+  }, [appliedBoundary, appliedNeighborhoods, isAreaSelect, selectedLocations, setViewState]);
 
   const toggleNeighborhood = (id: string) => {
     setSelectedNeighborhoods((prev) => {
@@ -273,14 +350,8 @@ export default function MapPage() {
     setCarouselVisible(false);
     setSelectedListingId(null);
 
-    const target = nextBoundary[0] ?? search.locations[0]?.coordinates;
-    if (target) {
-      setViewState({
-        longitude: target.lng,
-        latitude: target.lat,
-        zoom: nextBoundary.length > 0 || nextNeighborhoods.size > 0 ? 13.8 : 13,
-      });
-    }
+    const nextViewState = getSearchViewState(search.locations, nextBoundary, nextNeighborhoods);
+    if (nextViewState) setViewState(nextViewState);
   };
 
   const handleSelectSavedSearch = (search: SavedSearch) => {
@@ -307,14 +378,12 @@ export default function MapPage() {
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
     setPreSavedSearchState(null);
-    const target = fallback.areaBoundary[0] ?? fallback.locations[0]?.coordinates;
-    if (target) {
-      setViewState({
-        longitude: target.lng,
-        latitude: target.lat,
-        zoom: fallback.areaBoundary.length > 0 || fallback.neighborhoodIds.length > 0 ? 13.8 : 13,
-      });
-    }
+    const nextViewState = getSearchViewState(
+      fallback.locations,
+      fallback.areaBoundary,
+      new Set(fallback.neighborhoodIds)
+    );
+    if (nextViewState) setViewState(nextViewState);
   };
 
   const handleUpdateSavedSearch = (searchId: string) => {

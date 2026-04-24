@@ -623,7 +623,11 @@ function CardModeListingCard({
                 className="pointer-events-auto relative h-24 w-24 shrink-0 overflow-hidden rounded-[24px] bg-white/90 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl"
                 aria-label="Open map preview"
               >
-                <Image src="/map.png" alt="" fill sizes="96px" className="object-cover" draggable={false} />
+                {mapThumb(listing) ? (
+                  <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} />
+                ) : (
+                  <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
+                )}
                 <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-full text-[#0F1729] drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
                   <MapPin size={20} fill="#0F1729" strokeWidth={1.8} />
                   <Home

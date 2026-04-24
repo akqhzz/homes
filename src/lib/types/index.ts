@@ -77,6 +77,7 @@ export interface Location {
   coordinates: Coordinates;
   city?: string;
   province?: string;
+  bbox?: [number, number, number, number];
 }
 
 export interface Collection {

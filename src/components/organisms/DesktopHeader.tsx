@@ -20,6 +20,7 @@ import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
+import { useLocationSearch } from '@/hooks/useLocationSearch';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { cn } from '@/lib/utils/cn';
 import { Location } from '@/lib/types';
@@ -27,14 +28,6 @@ import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
-
-const LOCATION_SUGGESTIONS: Location[] = [
-  { id: 'loc-downtown', name: 'Toronto Downtown', type: 'area', coordinates: { lat: 43.6532, lng: -79.3832 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-midtown', name: 'Midtown', type: 'area', coordinates: { lat: 43.6966, lng: -79.4031 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-annex', name: 'Annex', type: 'neighborhood', coordinates: { lat: 43.6680, lng: -79.4050 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-yorkville', name: 'Yorkville', type: 'neighborhood', coordinates: { lat: 43.6700, lng: -79.3930 }, city: 'Toronto', province: 'ON' },
-  { id: 'loc-kensington', name: 'Kensington', type: 'neighborhood', coordinates: { lat: 43.6545, lng: -79.4030 }, city: 'Toronto', province: 'ON' },
-];
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -64,6 +57,11 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
   const router = useRouter();
   const pathname = usePathname();
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
+  const { results: filteredLocations, isLoading: isSearchLoading } = useLocationSearch(
+    searchQuery,
+    selectedLocations,
+    showSearch
+  );
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { searches, activeSearchId, activeSearchDirty } = useSavedSearchStore();
   const { activePanel, setActivePanel } = useUIStore();
@@ -79,12 +77,6 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
       : selectedLocations.length === 1
       ? selectedLocations[0].name
       : `${selectedLocations[0].name}, +${selectedLocations.length - 1}`;
-
-  const filteredLocations = LOCATION_SUGGESTIONS.filter(
-    (location) =>
-      !selectedLocations.some((selected) => selected.id === location.id) &&
-      location.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  );
 
   const selectLocation = (location: Location) => {
     addLocation(location);
@@ -213,10 +205,15 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                       </div>
                       <div className="min-w-0">
                         <p className="truncate type-label text-[#0F1729]">{location.name}</p>
-                        <p className="type-caption text-[#9CA3AF]">{location.city}, ON</p>
+                        <p className="type-caption text-[#9CA3AF]">
+                          {[location.city, location.province].filter(Boolean).join(', ') || 'Canada'}
+                        </p>
                       </div>
                     </button>
                   ))}
+                  {isSearchLoading && (
+                    <div className="px-3 py-3 type-caption text-[#9CA3AF]">Searching locations…</div>
+                  )}
                 </div>
               </div>
             )}

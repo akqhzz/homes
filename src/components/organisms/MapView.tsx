@@ -1,11 +1,11 @@
 'use client';
 import { useCallback, useRef } from 'react';
-import Image from 'next/image';
 import type { Feature, LineString, Polygon } from 'geojson';
 import Map, { Layer, Marker, NavigationControl, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
+import { closePolygon, getNeighborhoodBounds } from '@/lib/geo';
 import PriceMarker from '@/components/molecules/PriceMarker';
 import NeighborhoodPin from '@/components/molecules/NeighborhoodPin';
 import ListingCard from '@/components/molecules/ListingCard';
@@ -14,19 +14,6 @@ import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
-const MOCK_MAP_BOUNDS = {
-  north: 43.695,
-  south: 43.635,
-  west: -79.44,
-  east: -79.345,
-};
-const AREA_NEIGHBORHOOD_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  'nbh-annex': { lat: 43.6815, lng: -79.4190 },
-  'nbh-yorkville': { lat: 43.6810, lng: -79.3760 },
-  'nbh-kensington': { lat: 43.6575, lng: -79.4235 },
-  'nbh-church-st': { lat: 43.6580, lng: -79.3605 },
-  'nbh-king-west': { lat: 43.6405, lng: -79.3955 },
-};
 const LISTING_MARKER_OFFSETS = [
   { lat: 0.0000, lng: 0.0000 },
   { lat: 0.0017, lng: -0.0019 },
@@ -108,33 +95,18 @@ export default function MapView({
     onAreaMapClick?.({ lat: e.lngLat.lat, lng: e.lngLat.lng });
   }, [handleMapClick, onAreaMapClick, showListings]);
 
-  const useAreaNeighborhoodGeometry = isAreaMode || Boolean(includedNeighborhoodIds?.size);
-  const renderNeighborhoods = getRenderNeighborhoods(useAreaNeighborhoodGeometry);
-  const boundaryNeighborhoods = renderNeighborhoods.filter(
-    (nbh) => nbh.id === selectedNeighborhoodId || nbh.id === previewNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
-  );
+  const renderNeighborhoods = getRenderNeighborhoods();
+  const boundaryNeighborhoods = showNeighborhoods
+    ? renderNeighborhoods
+    : renderNeighborhoods.filter(
+        (nbh) =>
+          nbh.id === selectedNeighborhoodId ||
+          nbh.id === previewNeighborhoodId ||
+          includedNeighborhoodIds?.has(nbh.id)
+      );
 
   if (!MAPBOX_TOKEN) {
-    return (
-      <MockMap
-        listings={listings}
-        selectedId={selectedListingId}
-        hoveredId={hoveredListingId}
-        onMarkerClick={handleMarkerClick}
-        onMapClick={() => { setSelectedListingId(null); setCarouselVisible(false); }}
-        showListings={showListings}
-        showNeighborhoods={showNeighborhoods}
-        selectedNeighborhoodId={selectedNeighborhoodId}
-        previewNeighborhoodId={previewNeighborhoodId}
-        includedNeighborhoodIds={includedNeighborhoodIds}
-        onNeighborhoodClick={onNeighborhoodClick}
-        onNeighborhoodHover={onNeighborhoodHover}
-        onAreaMapClick={onAreaMapClick}
-        drawnBoundary={drawnBoundary}
-        showAmenities={showAmenities}
-        isAreaMode={isAreaMode}
-      />
-    );
+    return <div className="h-full w-full bg-[#E8ECEF]" />;
   }
 
   return (
@@ -170,9 +142,9 @@ export default function MapView({
             }}
             paint={{
               'line-color': includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B',
-              'line-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 1 : 0.42,
-              'line-width': includedNeighborhoodIds?.has(neighborhood.id) ? 3 : 1.5,
-              'line-dasharray': includedNeighborhoodIds?.has(neighborhood.id) ? [1.5, 1] : [1.2, 1.8],
+              'line-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 1 : showNeighborhoods ? 0.5 : 0.42,
+              'line-width': includedNeighborhoodIds?.has(neighborhood.id) ? 3 : showNeighborhoods ? 2 : 1.5,
+              'line-dasharray': includedNeighborhoodIds?.has(neighborhood.id) ? [1.5, 1] : showNeighborhoods ? [1, 0] : [1.2, 1.8],
             }}
           />
         </Source>
@@ -243,7 +215,7 @@ export default function MapView({
                 isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
                 onClick={() => {
                   if (!isAreaMode) {
-                    mapRef.current?.fitBounds(getNeighborhoodBounds(nbh), {
+                    mapRef.current?.fitBounds(getNeighborhoodBoundsForMap(nbh), {
                       padding: { top: 160, bottom: 180, left: 72, right: 72 },
                       duration: 420,
                       maxZoom: 14.4,
@@ -300,177 +272,6 @@ export default function MapView({
   );
 }
 
-function MockMap({
-  listings,
-  selectedId,
-  hoveredId,
-  onMarkerClick,
-  onMapClick,
-  showListings = true,
-  showNeighborhoods = false,
-  selectedNeighborhoodId,
-  previewNeighborhoodId,
-  includedNeighborhoodIds,
-  onNeighborhoodClick,
-  onNeighborhoodHover,
-  onAreaMapClick,
-  drawnBoundary = [],
-  showAmenities = false,
-  isAreaMode = false,
-}: {
-  listings: Listing[];
-  selectedId: string | null;
-  hoveredId: string | null;
-  onMarkerClick: (id: string, coords: { lat: number; lng: number }) => void;
-  onMapClick: () => void;
-  showListings?: boolean;
-  showNeighborhoods?: boolean;
-  selectedNeighborhoodId?: string | null;
-  previewNeighborhoodId?: string | null;
-  includedNeighborhoodIds?: Set<string>;
-  onNeighborhoodClick?: (neighborhood: Neighborhood) => void;
-  onNeighborhoodHover?: (neighborhood: Neighborhood | null) => void;
-  onAreaMapClick?: (coordinates: { lat: number; lng: number }) => void;
-  drawnBoundary?: { lat: number; lng: number }[];
-  showAmenities?: boolean;
-  isAreaMode?: boolean;
-}) {
-  const useAreaNeighborhoodGeometry = isAreaMode || Boolean(includedNeighborhoodIds?.size);
-  const renderNeighborhoods = getRenderNeighborhoods(useAreaNeighborhoodGeometry);
-  const boundaryNeighborhoods = renderNeighborhoods.filter(
-    (nbh) => nbh.id === selectedNeighborhoodId || nbh.id === previewNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)
-  );
-
-  return (
-    <div
-      className="w-full h-full relative"
-      onClick={(e) => {
-        if (showListings) {
-          onMapClick();
-          return;
-        }
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        onAreaMapClick?.({
-          lat: MOCK_MAP_BOUNDS.north - y * (MOCK_MAP_BOUNDS.north - MOCK_MAP_BOUNDS.south),
-          lng: MOCK_MAP_BOUNDS.west + x * (MOCK_MAP_BOUNDS.east - MOCK_MAP_BOUNDS.west),
-        });
-      }}
-    >
-      <Image src="/map.png" className="absolute inset-0 object-cover" alt="map" fill sizes="100vw" draggable={false} />
-      {boundaryNeighborhoods.length > 0 && (
-        <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {boundaryNeighborhoods.map((neighborhood) => (
-            <polygon
-              key={neighborhood.id}
-              points={mockBoundaryPoints(neighborhood)}
-              fill={includedNeighborhoodIds?.has(neighborhood.id) ? 'rgba(15,23,41,0.08)' : 'rgba(100,116,139,0.03)'}
-              stroke={includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B'}
-              strokeDasharray={includedNeighborhoodIds?.has(neighborhood.id) ? '5 4' : '3 5'}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              strokeWidth={includedNeighborhoodIds?.has(neighborhood.id) ? '2.5' : '1.5'}
-              strokeOpacity={includedNeighborhoodIds?.has(neighborhood.id) ? 1 : 0.42}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-        </svg>
-      )}
-      {showAmenities && AMENITY_POINTS.map((amenity, i) => (
-        <div
-          key={amenity.id}
-          className="absolute h-2.5 w-2.5 rounded-full border-2 border-white bg-[#0F1729] shadow-sm"
-          style={{ left: `${18 + ((i * 19) % 65)}%`, top: `${22 + ((i * 29) % 58)}%` }}
-          title={amenity.label}
-        />
-      ))}
-      {showNeighborhoods && renderNeighborhoods.map((nbh) => {
-        const { x, y } = mockPointFromCoordinates(nbh.coordinates);
-        return (
-          <div
-            key={nbh.id}
-            className="absolute"
-            style={{ left: `${x}%`, top: `${y}%`, transform: isAreaMode ? 'translate(-50%, -50%)' : 'translate(-50%, -100%)' }}
-            onClick={(e) => { e.stopPropagation(); onNeighborhoodClick?.(nbh); }}
-            onMouseEnter={() => onNeighborhoodHover?.(nbh)}
-            onMouseLeave={() => onNeighborhoodHover?.(null)}
-          >
-            <NeighborhoodPin
-              neighborhood={nbh}
-              isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
-              size={isAreaMode ? 'sm' : 'default'}
-              showLabel
-            />
-          </div>
-        );
-      })}
-      {drawnBoundary.length > 0 && (
-        <>
-          {drawnBoundary.length > 1 && (
-            <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <polyline
-              points={drawnBoundary.map((point) => `${mockPointFromCoordinates(point).x},${mockPointFromCoordinates(point).y}`).join(' ')}
-              fill={drawnBoundary.length > 2 ? 'rgba(15,23,41,0.08)' : 'none'}
-              stroke="#0F1729"
-              strokeDasharray="6 4"
-              strokeWidth="3"
-              vectorEffect="non-scaling-stroke"
-            />
-            </svg>
-          )}
-          {drawnBoundary.map((point, index) => {
-            const { x, y } = mockPointFromCoordinates(point);
-            return (
-              <div
-                key={`${point.lat}-${point.lng}-${index}`}
-                className="absolute h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0F1729] shadow-[0_1px_2px_rgba(15,23,41,0.2)]"
-                style={{ left: `${x}%`, top: `${y}%` }}
-              />
-            );
-          })}
-        </>
-      )}
-      {showListings && listings.map((listing, i) => {
-        const x = 8 + ((i * 43 + 11) % 82);
-        const y = 8 + ((i * 61 + 5) % 78);
-        return (
-          <div
-            key={listing.id}
-            className="absolute"
-            style={{ left: `${x}%`, top: `${y}%` }}
-            onClick={(e) => { e.stopPropagation(); onMarkerClick(listing.id, listing.coordinates); }}
-          >
-            <PriceMarker
-              price={listing.price}
-              isSelected={listing.id === selectedId || listing.id === hoveredId}
-            />
-          </div>
-        );
-      })}
-      {showListings && selectedId && (() => {
-        const selectedListing = listings.find((listing) => listing.id === selectedId);
-        if (!selectedListing) return null;
-        const index = listings.findIndex((listing) => listing.id === selectedId);
-        const x = 8 + ((index * 43 + 11) % 82);
-        const y = 8 + ((index * 61 + 5) % 78);
-        const showRight = x < 50;
-        return (
-          <div
-            className="absolute hidden w-72 lg:block"
-            style={showRight
-              ? { left: `min(calc(${x}% + 78px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }
-              : { right: `min(calc(${100 - x}% + 16px), calc(100% - 304px))`, top: `clamp(12px, ${y - 8}%, calc(100% - 260px))` }}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <ListingCard listing={selectedListing} variant="carousel" />
-          </div>
-        );
-      })()}
-    </div>
-  );
-}
-
 const AMENITY_POINTS = [
   { id: 'amenity-transit-1', label: 'Transit', lat: 43.657, lng: -79.391 },
   { id: 'amenity-park-1', label: 'Park', lat: 43.663, lng: -79.404 },
@@ -503,15 +304,7 @@ function getDrawnBoundaryFeature(points: { lat: number; lng: number }[]): Featur
 }
 
 function getNeighborhoodBoundaryFeature(neighborhood: Neighborhood) {
-  const { lat, lng } = neighborhood.coordinates;
-  const boundary = normalizeBoundaryAroundPin(neighborhood, neighborhood.boundary ?? [
-    { lat: lat + 0.011, lng: lng - 0.012 },
-    { lat: lat + 0.012, lng: lng + 0.011 },
-    { lat: lat + 0.001, lng: lng + 0.016 },
-    { lat: lat - 0.011, lng: lng + 0.006 },
-    { lat: lat - 0.009, lng: lng - 0.014 },
-    { lat: lat + 0.011, lng: lng - 0.012 },
-  ]);
+  const boundary = closePolygon(neighborhood.boundary ?? []);
 
   return {
     type: 'Feature' as const,
@@ -523,68 +316,23 @@ function getNeighborhoodBoundaryFeature(neighborhood: Neighborhood) {
   };
 }
 
-function mockBoundaryPoints(neighborhood: Neighborhood) {
-  const boundary = neighborhood.boundary ? normalizeBoundaryAroundPin(neighborhood, neighborhood.boundary) : [];
-  if (boundary.length > 2) {
-    return boundary
-      .map((point) => {
-        const { x, y } = mockPointFromCoordinates(point);
-        return `${x},${y}`;
-      })
-      .join(' ');
+function getNeighborhoodBoundsForMap(neighborhood: Neighborhood): [[number, number], [number, number]] {
+  const bounds = getNeighborhoodBounds(neighborhood);
+  if (!bounds) {
+    return [
+      [neighborhood.coordinates.lng, neighborhood.coordinates.lat],
+      [neighborhood.coordinates.lng, neighborhood.coordinates.lat],
+    ];
   }
-  return '50,0 100,24 82,74 0,93 10,36';
-}
 
-function normalizeBoundaryAroundPin(
-  neighborhood: Neighborhood,
-  boundary: { lat: number; lng: number }[]
-) {
-  if (boundary.length < 3) return boundary;
-
-  const openBoundary = boundary.slice(0, -1);
-  const lats = openBoundary.map((point) => point.lat);
-  const lngs = openBoundary.map((point) => point.lng);
-  const center = {
-    lat: (Math.min(...lats) + Math.max(...lats)) / 2,
-    lng: (Math.min(...lngs) + Math.max(...lngs)) / 2,
-  };
-  const scale = 1.24;
-  const shifted = openBoundary.map((point) => ({
-    lat: neighborhood.coordinates.lat + (point.lat - center.lat) * scale,
-    lng: neighborhood.coordinates.lng + (point.lng - center.lng) * scale,
-  }));
-
-  return [...shifted, shifted[0]];
-}
-
-function mockPointFromCoordinates(point: { lat: number; lng: number }) {
-  return {
-    x: ((point.lng - MOCK_MAP_BOUNDS.west) / (MOCK_MAP_BOUNDS.east - MOCK_MAP_BOUNDS.west)) * 100,
-    y: ((MOCK_MAP_BOUNDS.north - point.lat) / (MOCK_MAP_BOUNDS.north - MOCK_MAP_BOUNDS.south)) * 100,
-  };
-}
-
-function getNeighborhoodBounds(neighborhood: Neighborhood): [[number, number], [number, number]] {
-  const boundary = normalizeBoundaryAroundPin(neighborhood, neighborhood.boundary ?? []);
-  const points = boundary.length > 0 ? boundary : [neighborhood.coordinates];
-  const lngs = points.map((point) => point.lng);
-  const lats = points.map((point) => point.lat);
   return [
-    [Math.min(...lngs), Math.min(...lats)],
-    [Math.max(...lngs), Math.max(...lats)],
+    [bounds[0], bounds[1]],
+    [bounds[2], bounds[3]],
   ];
 }
 
-function getRenderNeighborhoods(isAreaMode: boolean) {
-  if (!isAreaMode) return MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
-
-  return MOCK_NEIGHBORHOODS
-    .filter((neighborhood) => neighborhood.id !== 'nbh-king-west' && AREA_NEIGHBORHOOD_COORDINATES[neighborhood.id])
-    .map((neighborhood) => ({
-      ...neighborhood,
-      coordinates: AREA_NEIGHBORHOOD_COORDINATES[neighborhood.id],
-    }));
+function getRenderNeighborhoods() {
+  return MOCK_NEIGHBORHOODS;
 }
 
 function getSpreadListingCoordinates(listing: Listing, index: number) {
