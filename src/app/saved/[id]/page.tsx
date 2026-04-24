@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
@@ -86,9 +86,9 @@ export default function CollectionPage() {
     addTagToListing,
     removeTagFromListing,
     removeFromCollection,
-    toggleLike,
-    isLiked,
   } = useSavedStore();
+  const isLiked = useSavedStore((state) => state.isLiked);
+  const toggleLike = useSavedStore((state) => state.toggleLike);
   const { activePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
   const setSelectedListingId = useMapStore((state) => state.setSelectedListingId);
   const setViewState = useMapStore((state) => state.setViewState);
@@ -100,6 +100,8 @@ export default function CollectionPage() {
   const [tagPanelState, setTagPanelState] = useState<TagPanelState>(null);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [compactMobileHeaderProgress, setCompactMobileHeaderProgress] = useState(0);
+  const [pendingRemovalByCollection, setPendingRemovalByCollection] = useState<Record<string, string[]>>({});
+  const pendingRemovalIdsRef = useRef<string[]>([]);
 
   const collection = collections.find((item) => item.id === id);
   const listings = collection ? getCollectionListings(collection) : [];
@@ -116,6 +118,10 @@ export default function CollectionPage() {
     ? listings.find((listing) => listing.id === tagPanelState.listingId) ?? null
     : null;
   const hasActiveTagFilters = activeTagFilters.length > 0;
+  const pendingRemovalIds = useMemo(
+    () => (collection ? pendingRemovalByCollection[collection.id] ?? [] : []),
+    [collection, pendingRemovalByCollection]
+  );
 
   useEffect(() => {
     setCarouselVisible(false);
@@ -132,6 +138,18 @@ export default function CollectionPage() {
       setSelectedListingId(null);
     }
   }, [mobileView, setCarouselVisible, setSelectedListingId]);
+
+  useEffect(() => {
+    pendingRemovalIdsRef.current = pendingRemovalIds;
+  }, [pendingRemovalIds]);
+
+  useEffect(() => {
+    const collectionId = collection?.id;
+    return () => {
+      if (!collectionId) return;
+      pendingRemovalIdsRef.current.forEach((listingId) => removeFromCollection(collectionId, listingId));
+    };
+  }, [collection?.id, removeFromCollection]);
 
   if (!collection) {
     return (
@@ -162,9 +180,29 @@ export default function CollectionPage() {
     setActiveTagFilters((current) => (current.includes(tag) ? current : [...current, tag]));
   };
 
-  const handleRemoveListing = (listingId: string) => {
-    if (isLiked(listingId)) toggleLike(listingId);
-    removeFromCollection(collection.id, listingId);
+  const handleCollectionLikeToggle = (listingId: string) => {
+    if (!collection) return;
+    const pendingRemoval = pendingRemovalIds.includes(listingId);
+    if (!pendingRemoval && isLiked(listingId)) {
+      toggleLike(listingId);
+      setPendingRemovalByCollection((current) => ({
+        ...current,
+        [collection.id]: [...(current[collection.id] ?? []), listingId],
+      }));
+      return;
+    }
+    setPendingRemovalByCollection((current) => ({
+      ...current,
+      [collection.id]: (current[collection.id] ?? []).filter((id) => id !== listingId),
+    }));
+  };
+
+  const handleCollectionResave = (listingId: string) => {
+    if (!collection) return;
+    setPendingRemovalByCollection((current) => ({
+      ...current,
+      [collection.id]: (current[collection.id] ?? []).filter((id) => id !== listingId),
+    }));
   };
 
   return (
@@ -226,7 +264,9 @@ export default function CollectionPage() {
                   listings={sortedListings}
                   cardTall
                   onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
-                  onRemoveListing={handleRemoveListing}
+                  pendingRemovalIds={pendingRemovalIds}
+                  onToggleListingLike={handleCollectionLikeToggle}
+                  onSavedListing={handleCollectionResave}
                 />
               </div>
             ) : (
@@ -344,7 +384,7 @@ export default function CollectionPage() {
                     }}
                     className={cn(
                       'relative flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]',
-                      hasActiveTagFilters && 'shadow-[inset_0_0_0_1.5px_#374151]'
+                      hasActiveTagFilters && 'bg-white shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
                     )}
                   >
                     <Tag size={18} />
@@ -360,7 +400,7 @@ export default function CollectionPage() {
           </div>
 
           <div className="mx-auto hidden w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden lg:flex">
-            <div className="relative min-h-0 min-w-0 flex-1 lg:ml-4 lg:mr-2 lg:mt-4 lg:overflow-hidden lg:rounded-[28px]">
+            <div className="relative min-w-0 flex-1 lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
               <MapView listings={sortedListings} showListings />
             </div>
 
@@ -372,7 +412,9 @@ export default function CollectionPage() {
                     setDesktopSortAnchor(null);
                     setTagPanelState({ mode: 'assign', listingId, anchorRect });
                   }}
-                  onRemoveListing={handleRemoveListing}
+                  pendingRemovalIds={pendingRemovalIds}
+                  onToggleListingLike={handleCollectionLikeToggle}
+                  onSavedListing={handleCollectionResave}
                 />
               </div>
             </div>

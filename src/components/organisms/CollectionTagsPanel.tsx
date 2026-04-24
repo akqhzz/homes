@@ -81,7 +81,7 @@ function CollectionTagsPanelContent({
             <div
               key={tag}
               className={cn(
-                'inline-flex select-none items-center gap-1 rounded-full border px-1.5 py-1 transition-colors',
+                'inline-flex select-none items-center gap-1 rounded-full border px-1.5 py-0.5 transition-colors',
                 selected
                   ? 'border-[#0F1729] bg-[#0F1729] text-white'
                   : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729]'
@@ -108,7 +108,7 @@ function CollectionTagsPanelContent({
               onTouchCancel={clearLongPress}
             >
               {editingTag === tag ? (
-                <div className="flex items-center gap-2 pl-2">
+                <div className="flex items-center gap-1 rounded-full border border-[#D1D5DB] bg-white pl-2 pr-1 text-[#0F1729] shadow-[0_1px_4px_rgba(15,23,41,0.06)]">
                   <input
                     value={editingValue}
                     onChange={(event) => setEditingValue(event.target.value)}
@@ -122,9 +122,18 @@ function CollectionTagsPanelContent({
                       }
                     }}
                     onBlur={() => finishRenameTag(tag)}
-                    className="h-8 min-w-0 rounded-full bg-transparent px-2 text-sm outline-none"
+                    className="h-8 min-w-0 bg-transparent pr-1 text-sm outline-none"
                     autoFocus
                   />
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => finishRenameTag(tag)}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-[#D1D5DB] bg-[#F9FAFB] text-[#0F1729] transition-colors hover:bg-[#F3F4F6]"
+                    aria-label="Confirm tag rename"
+                  >
+                    <Check size={13} />
+                  </button>
                 </div>
               ) : (
                 <>
@@ -137,7 +146,7 @@ function CollectionTagsPanelContent({
                       }
                       onToggleTag(tag);
                     }}
-                    className="inline-flex min-h-7 items-center gap-1 rounded-full px-2.5 text-[0.8rem] font-medium"
+                    className="inline-flex min-h-6 items-center gap-1 rounded-full px-2.5 text-[0.74rem] font-medium"
                   >
                     {tag}
                     {selected && <Check size={12} />}

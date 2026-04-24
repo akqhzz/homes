@@ -9,7 +9,9 @@ interface CollectionListingCardProps {
   tags: string[];
   tall?: boolean;
   onTagClick: (anchorRect: DOMRect | null) => void;
-  onRemove: () => void;
+  pendingRemoval?: boolean;
+  onToggleLike: () => void;
+  onSavedToCollection: () => void;
 }
 
 export default function CollectionListingCard({
@@ -18,7 +20,9 @@ export default function CollectionListingCard({
   tags,
   tall = false,
   onTagClick,
-  onRemove,
+  pendingRemoval = false,
+  onToggleLike,
+  onSavedToCollection,
 }: CollectionListingCardProps) {
   const hasTags = tags.length > 0;
 
@@ -31,8 +35,9 @@ export default function CollectionListingCard({
         imageTouchMode="vertical-scroll"
         contentTouchMode="vertical-scroll"
         desktopTall={tall}
-        likedOverride
-        onLikeToggle={() => onRemove()}
+        likedOverride={!pendingRemoval}
+        onLikeToggle={() => onToggleLike()}
+        onSavedToCollection={onSavedToCollection}
         topRightSlot={(
           <button
             type="button"
@@ -43,13 +48,13 @@ export default function CollectionListingCard({
             className={[
               'relative flex h-8 min-w-8 items-center justify-center gap-1 rounded-full px-2 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)] transition-colors',
               hasTags
-                ? 'bg-white/95 text-[#0F1729] shadow-[inset_0_0_0_1px_rgba(15,23,41,0.16),0_2px_8px_rgba(0,0,0,0.10)]'
+                ? 'bg-white/95 text-[#0F1729] shadow-[inset_0_0_0_1px_rgba(15,23,41,0.12),0_2px_8px_rgba(0,0,0,0.08)]'
                 : 'bg-white/85',
             ].join(' ')}
             aria-label="Manage tags"
           >
             <Tag size={14} />
-            {hasTags && <span className="type-nano text-[#374151]">{tags.length}</span>}
+            {hasTags && <span className="text-[0.62rem] font-semibold leading-none text-[#4B5563]">{tags.length}</span>}
           </button>
         )}
       />
@@ -58,7 +63,7 @@ export default function CollectionListingCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="type-micro rounded-full bg-[#F5F6F7] px-2 py-0.5 text-[#6B7280]"
+              className="rounded-full bg-[#F5F6F7] px-1.5 py-0.5 text-[0.62rem] font-medium leading-none text-[#6B7280]"
             >
               {tag}
             </span>

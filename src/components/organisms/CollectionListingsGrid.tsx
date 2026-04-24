@@ -14,14 +14,18 @@ interface CollectionListingsGridProps {
   listings: CollectionListingItem[];
   cardTall?: boolean;
   onTagClick: (listingId: string, anchorRect: DOMRect | null) => void;
-  onRemoveListing: (listingId: string) => void;
+  pendingRemovalIds?: string[];
+  onToggleListingLike: (listingId: string) => void;
+  onSavedListing: (listingId: string) => void;
 }
 
 export default function CollectionListingsGrid({
   listings,
   cardTall = false,
   onTagClick,
-  onRemoveListing,
+  pendingRemovalIds = [],
+  onToggleListingLike,
+  onSavedListing,
 }: CollectionListingsGridProps) {
   if (listings.length === 0) {
     return (
@@ -50,7 +54,9 @@ export default function CollectionListingsGrid({
           tags={listing.collectionData.tags}
           tall={cardTall}
           onTagClick={(anchorRect) => onTagClick(listing.id, anchorRect)}
-          onRemove={() => onRemoveListing(listing.id)}
+          pendingRemoval={pendingRemovalIds.includes(listing.id)}
+          onToggleLike={() => onToggleListingLike(listing.id)}
+          onSavedToCollection={() => onSavedListing(listing.id)}
         />
       ))}
     </div>

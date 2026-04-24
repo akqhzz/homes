@@ -30,6 +30,7 @@ interface ListingCardProps {
   topRightSlot?: ReactNode;
   likedOverride?: boolean;
   onLikeToggle?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onSavedToCollection?: () => void;
 }
 
 export default function ListingCard({
@@ -42,6 +43,7 @@ export default function ListingCard({
   topRightSlot,
   likedOverride,
   onLikeToggle,
+  onSavedToCollection,
 }: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
   const [imgIndex, setImgIndex] = useState(0);
@@ -50,6 +52,7 @@ export default function ListingCard({
   const router = useRouter();
   const isLiked = useSavedStore((s) => s.isLiked(listing.id));
   const toggleLike = useSavedStore((s) => s.toggleLike);
+  const removeFromAllCollections = useSavedStore((s) => s.removeFromAllCollections);
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
   const imagePointerMoved = useRef(false);
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
@@ -155,7 +158,7 @@ export default function ListingCard({
 
   const handleSaveClick = (event?: React.MouseEvent) => {
     event?.stopPropagation();
-    if (event && onLikeToggle) {
+    if (event && onLikeToggle && resolvedLiked) {
       onLikeToggle(event as React.MouseEvent<HTMLButtonElement>);
       return;
     }
@@ -164,6 +167,7 @@ export default function ListingCard({
     }
     if (resolvedLiked) {
       toggleLike(listing.id);
+      removeFromAllCollections(listing.id);
       return;
     }
     setShowSavePicker(true);
@@ -173,6 +177,7 @@ export default function ListingCard({
     <SaveToCollectionSheet
       listingId={listing.id}
       onClose={() => setShowSavePicker(false)}
+      onSaved={onSavedToCollection}
       anchorRect={saveAnchorRect}
     />
   ) : null;
