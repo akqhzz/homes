@@ -338,20 +338,30 @@ export default function AreaSelectPanel({
                 return (
                   <article
                     key={neighborhood.id}
-                    className="flex h-[152px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
+                    className="relative flex h-[140px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
                   >
-                    <Image src={neighborhood.thumbnail} alt="" width={104} height={136} className="h-full w-[104px] shrink-0 rounded-xl object-cover" draggable={false} />
-                    <div className="flex min-w-0 flex-1 flex-col py-0.5">
+                    <button
+                      onClick={onCloseNeighborhood}
+                      className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                      aria-label="Close neighborhood card"
+                    >
+                      <X size={14} />
+                    </button>
+                    <Image src={neighborhood.thumbnail} alt="" width={100} height={124} className="h-full w-[100px] shrink-0 rounded-xl object-cover" draggable={false} />
+                    <div className="flex min-w-0 flex-1 flex-col py-0.5 pr-8">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate type-label text-[#0F1729]">{neighborhood.name}</p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
+                        <p className="truncate type-heading text-[#0F1729]">{neighborhood.name}</p>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
                           <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{neighborhood.listingCount} listings</span>
                           <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{formatAvgPrice(neighborhood.avgPrice)}</span>
                           <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">Walk {neighborhood.walkScore}</span>
                         </div>
                       </div>
                       <button
-                        onClick={() => onToggleNeighborhood(neighborhood.id)}
+                        onClick={() => {
+                          onToggleNeighborhood(neighborhood.id);
+                          if (included) onCloseNeighborhood();
+                        }}
                         className={cn(
                           'mt-2 flex h-9 w-[92px] items-center justify-center gap-1.5 self-end rounded-full px-3 type-caption font-semibold transition-colors',
                           included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
@@ -383,16 +393,20 @@ export default function AreaSelectPanel({
               >
                 <X size={14} />
               </button>
-              <p className="truncate type-body-lg font-semibold text-[#0F1729]">{focusedNeighborhood.name}</p>
+              <p className="truncate type-heading text-[#0F1729]">{focusedNeighborhood.name}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>
                 <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
                 <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">Walk {focusedNeighborhood.walkScore}</span>
               </div>
               <button
-                onClick={() => onToggleNeighborhood(focusedNeighborhood.id)}
+                onClick={() => {
+                  const included = selectedNeighborhoods.has(focusedNeighborhood.id);
+                  onToggleNeighborhood(focusedNeighborhood.id);
+                  if (included) onCloseNeighborhood();
+                }}
                 className={cn(
-                  'mt-auto flex h-10 items-center justify-center gap-1.5 rounded-full px-4 type-label transition-colors',
+                  'mt-auto mr-0 flex h-10 w-fit items-center justify-center gap-1.5 self-end rounded-full px-4 type-label transition-colors',
                   selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
                 )}
               >

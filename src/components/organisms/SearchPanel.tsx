@@ -1,12 +1,13 @@
 'use client';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { ArrowLeft, X, MapPin } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Location } from '@/lib/types';
 import { useLocationSearch } from '@/hooks/useLocationSearch';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
+import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 interface SearchPanelProps {
@@ -152,10 +153,10 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}
           transition={{ delay: 0.04, duration: 0.16 }}
-          className="mt-2 max-h-[62dvh] overflow-y-auto rounded-3xl bg-white py-2 shadow-[0_12px_30px_rgba(15,23,41,0.16)]"
+          className="mt-2 max-h-[62dvh] overflow-y-auto rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
           {selectedLocations.length > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2">
+            <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
               <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                 {selectedLocations.map((loc) => (
                   <SearchLocationChip
@@ -171,40 +172,27 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
             </div>
           )}
           {selectedLocations.length === 0 && hasAppliedArea && areaSummaryLabel && (
-            <div className="flex items-center gap-2 px-4 py-2">
+            <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
               <span className="inline-flex items-center rounded-full bg-[#F0F0F0] px-3 py-1 text-sm font-medium text-[#0F1729]">
                 {areaSummaryLabel}
               </span>
             </div>
           )}
-        <div className="px-4 py-3">
+        <div className="py-1">
           <AnimatePresence>
-            {filtered.map((loc) => (
-              <motion.button
+            {filtered.map((loc, index) => (
+              <motion.div
                 key={loc.id}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                onClick={() => handleSelect(loc)}
-                className="w-full flex items-start gap-3 py-3.5 border-b border-[#F5F6F7] text-left hover:bg-[#F9F9F9] -mx-4 px-4 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-[#F5F6F7] flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MapPin size={15} className="text-[#9CA3AF]" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#0F1729]">
-                    {query ? (
-                      <>
-                        <span className="font-bold">{loc.name.slice(0, query.length)}</span>
-                        {loc.name.slice(query.length)}
-                      </>
-                    ) : loc.name}
-                  </p>
-                  <p className="text-xs text-[#9CA3AF] mt-0.5">
-                    {[loc.city, loc.province].filter(Boolean).join(', ') || 'Canada'}
-                  </p>
-                </div>
-              </motion.button>
+                <SearchLocationResultItem
+                  location={loc}
+                  onSelect={() => handleSelect(loc)}
+                  highlighted={index === 0 && Boolean(query.trim())}
+                />
+              </motion.div>
             ))}
           </AnimatePresence>
           {isLoading && (

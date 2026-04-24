@@ -40,7 +40,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/standard/static/${lng},${lat},14,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
+  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${lng},${lat},14,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
 }
 
 interface CardsModeProps {
@@ -449,7 +449,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             )}
           >
             {mapThumb(drawerListing ?? listing) ? (
-              <Image src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" width={800} height={400} className="w-full flex-1 object-cover" />
+                  <Image src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" width={800} height={400} className="w-full flex-1 object-cover" unoptimized />
             ) : (
               <div className="mx-4 mb-4 flex flex-1 items-center justify-center rounded-2xl bg-[#E8ECEF]">
                 <div className="text-center p-6">
@@ -625,7 +625,7 @@ function CardModeListingCard({
                 aria-label="Open map preview"
               >
                 {mapThumb(listing) ? (
-                  <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} />
+                  <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
                 ) : (
                   <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
                 )}

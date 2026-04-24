@@ -27,6 +27,7 @@ import { Location } from '@/lib/types';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
+import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 
 const MENU_ITEMS = [
@@ -192,24 +193,12 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                 )}
                 <div className="py-1">
                   {filteredLocations.map((location, index) => (
-                    <button
+                    <SearchLocationResultItem
                       key={location.id}
-                      onClick={() => selectLocation(location)}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]',
-                        index === 0 && searchQuery.trim() && 'bg-[#F5F6F7]'
-                      )}
-                    >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7]">
-                        <Search size={14} className="text-[#9CA3AF]" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate type-label text-[#0F1729]">{location.name}</p>
-                        <p className="type-caption text-[#9CA3AF]">
-                          {[location.city, location.province].filter(Boolean).join(', ') || 'Canada'}
-                        </p>
-                      </div>
-                    </button>
+                      location={location}
+                      onSelect={() => selectLocation(location)}
+                      highlighted={index === 0 && Boolean(searchQuery.trim())}
+                    />
                   ))}
                   {isSearchLoading && (
                     <div className="px-3 py-3 type-caption text-[#9CA3AF]">Searching locations…</div>

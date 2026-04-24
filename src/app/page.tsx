@@ -140,6 +140,20 @@ function normalizeAreaName(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
+function getCarryoverAliases(neighborhoodId: string) {
+  const aliases: Record<string, string[]> = {
+    'nbh-yorkville': ['Bay-Cloverhill'],
+    'nbh-kensington': ['Kensington Market', 'Kensington-Chinatown'],
+    'nbh-church-st': ['Church Street', 'Church-Wellesley', 'Church Wellesley'],
+    'nbh-cabbagetown': ['Cabbagetown-South St.James Town', 'Cabbagetown South St James Town'],
+    'nbh-queen-west': ['West Queen West'],
+    'nbh-king-west': ['Wellington Place'],
+    'nbh-grange-park': ['Discovery District', 'University'],
+  };
+
+  return aliases[neighborhoodId] ?? [];
+}
+
 function getCarryoverAreaSelection(locations: SavedSearch['locations']) {
   const matchedNeighborhoodIds = new Set<string>();
   let fallbackBoundary: { lat: number; lng: number }[] = [];
@@ -149,10 +163,12 @@ function getCarryoverAreaSelection(locations: SavedSearch['locations']) {
     const normalizedLocationName = normalizeAreaName(location.name);
     const matchingNeighborhood = MOCK_NEIGHBORHOODS.find((neighborhood) => {
       const normalizedNeighborhoodName = normalizeAreaName(neighborhood.name);
+      const normalizedAliases = getCarryoverAliases(neighborhood.id).map(normalizeAreaName);
       return (
         normalizedNeighborhoodName === normalizedLocationName ||
         normalizedNeighborhoodName.includes(normalizedLocationName) ||
-        normalizedLocationName.includes(normalizedNeighborhoodName)
+        normalizedLocationName.includes(normalizedNeighborhoodName) ||
+        normalizedAliases.includes(normalizedLocationName)
       );
     });
 
@@ -220,6 +236,9 @@ export default function MapPage() {
           selectedLocations.filter((location) => (location.boundary?.length ?? 0) > 2).length === 1 ? '' : 's'
         }`
       : undefined;
+  const areaPreviewNeighborhoodId =
+    hoveredNeighborhood?.id ??
+    (focusedNeighborhood && !selectedNeighborhoods.has(focusedNeighborhood.id) ? focusedNeighborhood.id : null);
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -512,7 +531,7 @@ export default function MapPage() {
             showListings={!isAreaSelect}
             searchedLocations={selectedLocations}
             selectedNeighborhoodId={isAreaSelect ? focusedNeighborhood?.id ?? null : null}
-            previewNeighborhoodId={isAreaSelect ? hoveredNeighborhood?.id ?? null : null}
+            previewNeighborhoodId={isAreaSelect ? areaPreviewNeighborhoodId : null}
             includedNeighborhoodIds={isAreaSelect ? selectedNeighborhoods : appliedNeighborhoods}
             onNeighborhoodClick={handleNeighborhoodClick}
             onNeighborhoodHover={setHoveredNeighborhood}

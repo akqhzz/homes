@@ -80,12 +80,11 @@ function getNeighborhoodAliases(neighborhoodId: string) {
     'nbh-annex': ['Annex'],
     'nbh-yorkville': ['Yorkville', 'YorkVille', 'Bay-Cloverhill'],
     'nbh-kensington': ['Kensington', 'Kensington Market', 'Kensington-Chinatown'],
-    'nbh-discovery': ['Discovery District', 'University'],
     'nbh-church-st': ['Church St Corridor', 'Church Street', 'Church-Wellesley', 'Church Wellesley'],
     'nbh-cabbagetown': ['Cabbagetown', 'Cabbagetown-South St.James Town', 'Cabbagetown South St James Town'],
     'nbh-queen-west': ['Queen West', 'West Queen West'],
     'nbh-king-west': ['King West', 'Wellington Place'],
-    'nbh-grange-park': ['Grange Park'],
+    'nbh-grange-park': ['Grange Park', 'Discovery District', 'University'],
   };
 
   return aliases[neighborhoodId] ?? [];
