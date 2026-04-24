@@ -15,6 +15,26 @@ import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
 
 const MAPBOX_TOKEN = getMapboxToken();
+// Boundary system: active boundaries are used for applied search/area selections and draw mode.
+// Preview boundaries are hover-only in area-select and intentionally lighter/dashed.
+const ACTIVE_BOUNDARY_STYLE = {
+  lineColor: '#64748B',
+  lineOpacity: 0.78,
+  lineWidth: 1.15,
+  lineDasharray: [1, 0],
+  fillColor: '#0F1729',
+  fillOpacity: 0.04,
+};
+
+const PREVIEW_BOUNDARY_STYLE = {
+  lineColor: '#94A3B8',
+  lineOpacity: 0.65,
+  lineWidth: 1,
+  lineDasharray: [2, 2],
+  fillColor: '#CBD5E1',
+  fillOpacity: 0.02,
+};
+
 const LISTING_MARKER_OFFSETS = [
   { lat: 0.0000, lng: 0.0000 },
   { lat: 0.0017, lng: -0.0019 },
@@ -95,7 +115,12 @@ export default function MapView({
 
   const renderNeighborhoods = getRenderNeighborhoods();
   const boundaryNeighborhoods = showNeighborhoods
-    ? renderNeighborhoods
+    ? renderNeighborhoods.filter(
+        (nbh) =>
+          nbh.id === selectedNeighborhoodId ||
+          nbh.id === previewNeighborhoodId ||
+          includedNeighborhoodIds?.has(nbh.id)
+      )
     : renderNeighborhoods.filter(
         (nbh) =>
           nbh.id === selectedNeighborhoodId ||
@@ -150,8 +175,8 @@ export default function MapView({
             id={`neighborhood-boundary-fill-${neighborhood.id}`}
             type="fill"
             paint={{
-              'fill-color': includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B',
-              'fill-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 0.08 : 0.03,
+              'fill-color': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).fillColor,
+              'fill-opacity': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).fillOpacity,
               'fill-emissive-strength': 0.2,
             }}
           />
@@ -163,10 +188,10 @@ export default function MapView({
               'line-cap': 'round',
             }}
             paint={{
-              'line-color': includedNeighborhoodIds?.has(neighborhood.id) ? '#0F1729' : '#64748B',
-              'line-opacity': includedNeighborhoodIds?.has(neighborhood.id) ? 1 : showNeighborhoods ? 0.5 : 0.42,
-              'line-width': includedNeighborhoodIds?.has(neighborhood.id) ? 3 : showNeighborhoods ? 2 : 1.5,
-              'line-dasharray': includedNeighborhoodIds?.has(neighborhood.id) ? [1.5, 1] : [1.2, 1.8],
+              'line-color': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineColor,
+              'line-opacity': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineOpacity,
+              'line-width': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineWidth,
+              'line-dasharray': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineDasharray,
               'line-emissive-strength': 0.8,
             }}
           />
@@ -186,8 +211,8 @@ export default function MapView({
               id={`searched-location-boundary-fill-${location.id}`}
               type="fill"
               paint={{
-                'fill-color': '#0F1729',
-                'fill-opacity': 0.06,
+                'fill-color': ACTIVE_BOUNDARY_STYLE.fillColor,
+                'fill-opacity': ACTIVE_BOUNDARY_STYLE.fillOpacity,
                 'fill-emissive-strength': 0.22,
               }}
             />
@@ -199,10 +224,10 @@ export default function MapView({
                 'line-cap': 'round',
               }}
               paint={{
-                'line-color': '#0F1729',
-                'line-width': 2.5,
-                'line-opacity': 0.72,
-                'line-dasharray': [1.5, 1],
+                'line-color': ACTIVE_BOUNDARY_STYLE.lineColor,
+                'line-width': ACTIVE_BOUNDARY_STYLE.lineWidth,
+                'line-opacity': ACTIVE_BOUNDARY_STYLE.lineOpacity,
+                'line-dasharray': ACTIVE_BOUNDARY_STYLE.lineDasharray,
                 'line-emissive-strength': 0.8,
               }}
             />
@@ -219,9 +244,10 @@ export default function MapView({
               'line-cap': 'round',
             }}
             paint={{
-              'line-color': '#0F1729',
-              'line-width': 3,
-              'line-dasharray': [1.5, 1],
+              'line-color': ACTIVE_BOUNDARY_STYLE.lineColor,
+              'line-width': ACTIVE_BOUNDARY_STYLE.lineWidth,
+              'line-opacity': ACTIVE_BOUNDARY_STYLE.lineOpacity,
+              'line-dasharray': ACTIVE_BOUNDARY_STYLE.lineDasharray,
               'line-emissive-strength': 0.8,
             }}
           />
@@ -230,8 +256,8 @@ export default function MapView({
               id="drawn-search-boundary-fill"
               type="fill"
               paint={{
-                'fill-color': '#0F1729',
-                'fill-opacity': 0.08,
+                'fill-color': ACTIVE_BOUNDARY_STYLE.fillColor,
+                'fill-opacity': ACTIVE_BOUNDARY_STYLE.fillOpacity,
                 'fill-emissive-strength': 0.22,
               }}
             />
@@ -306,9 +332,9 @@ export default function MapView({
                     }
                     onNeighborhoodClick?.(item.neighborhoods[0]);
                   }}
-                  variant={isAreaMode ? 'area-card' : 'default'}
+                  variant="default"
                   size={isAreaMode ? 'sm' : 'default'}
-                  showLabel={!isAreaMode}
+                  showLabel
                 />
               </div>
             )}
@@ -340,12 +366,13 @@ export default function MapView({
         if (!selectedListing) return null;
         const markerCoordinates = getSpreadListingCoordinates(selectedListing, listings.findIndex((item) => item.id === selectedListingId));
         const showRight = markerCoordinates.lng < viewState.longitude;
+        const isUpperHalf = markerCoordinates.lat > viewState.latitude;
         return (
           <Marker
             longitude={markerCoordinates.lng}
             latitude={markerCoordinates.lat}
             anchor={showRight ? 'left' : 'right'}
-            offset={showRight ? [78, -124] : [-16, -124]}
+            offset={showRight ? [58, isUpperHalf ? -72 : -118] : [-34, isUpperHalf ? -72 : -118]}
           >
             <div onClick={(event) => event.stopPropagation()} className="hidden w-72 lg:block">
               <ListingCard listing={selectedListing} variant="carousel" />
@@ -431,6 +458,15 @@ function getNeighborhoodBoundsForMap(neighborhood: Neighborhood): [[number, numb
 
 function getRenderNeighborhoods() {
   return MOCK_NEIGHBORHOODS;
+}
+
+function getBoundaryPaintState(
+  neighborhoodId: string,
+  includedNeighborhoodIds?: Set<string>,
+  previewNeighborhoodId?: string | null
+) {
+  const isPreview = previewNeighborhoodId === neighborhoodId && !includedNeighborhoodIds?.has(neighborhoodId);
+  return isPreview ? PREVIEW_BOUNDARY_STYLE : ACTIVE_BOUNDARY_STYLE;
 }
 
 function getNeighborhoodAnchor(neighborhood: Neighborhood) {
