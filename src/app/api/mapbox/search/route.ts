@@ -55,8 +55,9 @@ export async function GET(request: Request) {
 function enrichLocationBoundary(location: ReturnType<typeof normalizeMapboxFeature>) {
   if (!location) return null;
 
+  const normalizedLocation = normalizeBoundaryName(location.name);
   const matchedNeighborhood = MOCK_NEIGHBORHOODS.find((neighborhood) =>
-    matchesKnownNeighborhood(location.name, neighborhood.name)
+    getNeighborhoodAliases(neighborhood.id).some((alias) => normalizeBoundaryName(alias) === normalizedLocation)
   );
 
   if (matchedNeighborhood?.boundary) {
@@ -74,13 +75,18 @@ function normalizeBoundaryName(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
-function matchesKnownNeighborhood(locationName: string, neighborhoodName: string) {
-  const normalizedLocation = normalizeBoundaryName(locationName);
-  const normalizedNeighborhood = normalizeBoundaryName(neighborhoodName);
+function getNeighborhoodAliases(neighborhoodId: string) {
+  const aliases: Record<string, string[]> = {
+    'nbh-annex': ['Annex'],
+    'nbh-yorkville': ['Yorkville', 'YorkVille', 'Bay-Cloverhill'],
+    'nbh-kensington': ['Kensington', 'Kensington Market', 'Kensington-Chinatown'],
+    'nbh-discovery': ['Discovery District', 'University'],
+    'nbh-church-st': ['Church St Corridor', 'Church Street', 'Church-Wellesley', 'Church Wellesley'],
+    'nbh-cabbagetown': ['Cabbagetown', 'Cabbagetown-South St.James Town', 'Cabbagetown South St James Town'],
+    'nbh-queen-west': ['Queen West', 'West Queen West'],
+    'nbh-king-west': ['King West', 'Wellington Place'],
+    'nbh-grange-park': ['Grange Park'],
+  };
 
-  return (
-    normalizedLocation === normalizedNeighborhood ||
-    normalizedLocation.startsWith(`${normalizedNeighborhood} `) ||
-    normalizedLocation.includes(` ${normalizedNeighborhood} `)
-  );
+  return aliases[neighborhoodId] ?? [];
 }
