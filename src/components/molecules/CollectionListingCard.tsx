@@ -9,6 +9,7 @@ interface CollectionListingCardProps {
   tags: string[];
   tall?: boolean;
   onTagClick: (anchorRect: DOMRect | null) => void;
+  onRemove: () => void;
 }
 
 export default function CollectionListingCard({
@@ -17,6 +18,7 @@ export default function CollectionListingCard({
   tags,
   tall = false,
   onTagClick,
+  onRemove,
 }: CollectionListingCardProps) {
   const hasTags = tags.length > 0;
 
@@ -29,6 +31,8 @@ export default function CollectionListingCard({
         imageTouchMode="vertical-scroll"
         contentTouchMode="vertical-scroll"
         desktopTall={tall}
+        likedOverride
+        onLikeToggle={() => onRemove()}
         topRightSlot={(
           <button
             type="button"
@@ -39,13 +43,13 @@ export default function CollectionListingCard({
             className={[
               'relative flex h-8 min-w-8 items-center justify-center gap-1 rounded-full px-2 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)] transition-colors',
               hasTags
-                ? 'bg-[#0F1729] text-white'
+                ? 'bg-white/95 text-[#0F1729] shadow-[inset_0_0_0_1px_rgba(15,23,41,0.16),0_2px_8px_rgba(0,0,0,0.10)]'
                 : 'bg-white/85',
             ].join(' ')}
             aria-label="Manage tags"
           >
             <Tag size={14} />
-            {hasTags && <span className="type-nano">{tags.length}</span>}
+            {hasTags && <span className="type-nano text-[#374151]">{tags.length}</span>}
           </button>
         )}
       />

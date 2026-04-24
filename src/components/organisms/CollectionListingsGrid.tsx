@@ -14,12 +14,14 @@ interface CollectionListingsGridProps {
   listings: CollectionListingItem[];
   cardTall?: boolean;
   onTagClick: (listingId: string, anchorRect: DOMRect | null) => void;
+  onRemoveListing: (listingId: string) => void;
 }
 
 export default function CollectionListingsGrid({
   listings,
   cardTall = false,
   onTagClick,
+  onRemoveListing,
 }: CollectionListingsGridProps) {
   if (listings.length === 0) {
     return (
@@ -48,6 +50,7 @@ export default function CollectionListingsGrid({
           tags={listing.collectionData.tags}
           tall={cardTall}
           onTagClick={(anchorRect) => onTagClick(listing.id, anchorRect)}
+          onRemove={() => onRemoveListing(listing.id)}
         />
       ))}
     </div>

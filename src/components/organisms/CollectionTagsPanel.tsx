@@ -1,6 +1,6 @@
 'use client';
-import { useMemo, useState } from 'react';
-import { Check, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { Check, Pencil, Plus, Trash2 } from 'lucide-react';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import AnchoredPopover from '@/components/molecules/AnchoredPopover';
 import { cn } from '@/lib/utils/cn';
@@ -35,6 +35,8 @@ function CollectionTagsPanelContent({
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
   const [editingTag, setEditingTag] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
+  const longPressTimer = useRef<number | null>(null);
+  const longPressTriggered = useRef(false);
 
   const uniqueTags = useMemo(
     () => Array.from(new Set(availableTags.map((tag) => tag.trim()).filter(Boolean))),
@@ -58,6 +60,18 @@ function CollectionTagsPanelContent({
     setEditingValue('');
   };
 
+  const clearLongPress = () => {
+    if (longPressTimer.current !== null) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const openTagMenu = (tag: string, anchorRect: DOMRect) => {
+    setMenuTag(tag);
+    setMenuAnchor(anchorRect);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
@@ -67,11 +81,31 @@ function CollectionTagsPanelContent({
             <div
               key={tag}
               className={cn(
-                'inline-flex items-center gap-1 rounded-full border px-1.5 py-1 transition-colors',
+                'inline-flex select-none items-center gap-1 rounded-full border px-1.5 py-1 transition-colors',
                 selected
                   ? 'border-[#0F1729] bg-[#0F1729] text-white'
                   : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729]'
               )}
+              style={{ WebkitTouchCallout: 'none' }}
+              onContextMenu={(event) => {
+                if (!onRenameTag && !onDeleteTag) return;
+                event.preventDefault();
+                event.stopPropagation();
+                openTagMenu(tag, event.currentTarget.getBoundingClientRect());
+              }}
+              onTouchStart={(event) => {
+                if (!onRenameTag && !onDeleteTag) return;
+                clearLongPress();
+                longPressTriggered.current = false;
+                const anchorRect = event.currentTarget.getBoundingClientRect();
+                longPressTimer.current = window.setTimeout(() => {
+                  longPressTriggered.current = true;
+                  openTagMenu(tag, anchorRect);
+                }, 420);
+              }}
+              onTouchEnd={clearLongPress}
+              onTouchMove={clearLongPress}
+              onTouchCancel={clearLongPress}
             >
               {editingTag === tag ? (
                 <div className="flex items-center gap-2 pl-2">
@@ -96,28 +130,18 @@ function CollectionTagsPanelContent({
                 <>
                   <button
                     type="button"
-                    onClick={() => onToggleTag(tag)}
+                    onClick={() => {
+                      if (longPressTriggered.current) {
+                        longPressTriggered.current = false;
+                        return;
+                      }
+                      onToggleTag(tag);
+                    }}
                     className="inline-flex min-h-7 items-center gap-1 rounded-full px-2.5 text-[0.8rem] font-medium"
                   >
                     {tag}
                     {selected && <Check size={12} />}
                   </button>
-                  {(onRenameTag || onDeleteTag) && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        setMenuTag(tag);
-                        setMenuAnchor(event.currentTarget.getBoundingClientRect());
-                      }}
-                      className={cn(
-                        'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
-                        selected ? 'hover:bg-white/10' : 'hover:bg-[#F5F6F7]'
-                      )}
-                      aria-label="Tag options"
-                    >
-                      <MoreHorizontal size={14} />
-                    </button>
-                  )}
                 </>
               )}
             </div>

@@ -28,6 +28,8 @@ interface ListingCardProps {
   imageTouchMode?: 'locked' | 'vertical-scroll';
   contentTouchMode?: 'locked' | 'vertical-scroll';
   topRightSlot?: ReactNode;
+  likedOverride?: boolean;
+  onLikeToggle?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export default function ListingCard({
@@ -38,6 +40,8 @@ export default function ListingCard({
   imageTouchMode = 'locked',
   contentTouchMode = 'locked',
   topRightSlot,
+  likedOverride,
+  onLikeToggle,
 }: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
   const [imgIndex, setImgIndex] = useState(0);
@@ -53,6 +57,7 @@ export default function ListingCard({
   const wheelLockRef = useRef(false);
   const carouselImageHeight = desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT;
   const carouselTotalHeight = desktopTall ? 264 : CAROUSEL_TOTAL_HEIGHT;
+  const resolvedLiked = likedOverride ?? isLiked;
 
   useEffect(() => {
     const node = imageAreaRef.current;
@@ -150,10 +155,14 @@ export default function ListingCard({
 
   const handleSaveClick = (event?: React.MouseEvent) => {
     event?.stopPropagation();
+    if (event && onLikeToggle) {
+      onLikeToggle(event as React.MouseEvent<HTMLButtonElement>);
+      return;
+    }
     if (event?.currentTarget instanceof HTMLElement) {
       setSaveAnchorRect(event.currentTarget.getBoundingClientRect());
     }
-    if (isLiked) {
+    if (resolvedLiked) {
       toggleLike(listing.id);
       return;
     }
@@ -188,11 +197,11 @@ export default function ListingCard({
           <ListingImage src={displayImages[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
             <button
               className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
-              onClick={handleSaveClick}
+                onClick={handleSaveClick}
             >
               <Heart
                 size={13}
-                className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#6B7280]')}
+                className={cn(resolvedLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#6B7280]')}
               />
             </button>
           </div>
@@ -216,7 +225,7 @@ export default function ListingCard({
               className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
               onClick={handleSaveClick}
             >
-              <Heart size={14} className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')} />
+              <Heart size={14} className={cn(resolvedLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')} />
             </button>
           </div>
           <div className="p-4">
@@ -325,7 +334,7 @@ export default function ListingCard({
           >
             <Heart
               size={14}
-              className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
+              className={cn(resolvedLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
             />
           </button>
         </div>

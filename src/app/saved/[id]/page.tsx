@@ -13,6 +13,7 @@ import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspac
 import CollectionListingsGrid from '@/components/organisms/CollectionListingsGrid';
 import { Collection } from '@/lib/types';
 import BackButton from '@/components/atoms/BackButton';
+import ControlPillButton from '@/components/atoms/ControlPillButton';
 import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
 import CollectionTagsPanel from '@/components/organisms/CollectionTagsPanel';
 import AnchoredPopover from '@/components/molecules/AnchoredPopover';
@@ -84,6 +85,9 @@ export default function CollectionPage() {
     deleteCollectionTag,
     addTagToListing,
     removeTagFromListing,
+    removeFromCollection,
+    toggleLike,
+    isLiked,
   } = useSavedStore();
   const { activePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
   const setSelectedListingId = useMapStore((state) => state.setSelectedListingId);
@@ -158,8 +162,10 @@ export default function CollectionPage() {
     setActiveTagFilters((current) => (current.includes(tag) ? current : [...current, tag]));
   };
 
-  const desktopActionButtonClassName =
-    'flex h-11 items-center gap-2 rounded-full bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-colors hover:bg-[#EBEBEB]';
+  const handleRemoveListing = (listingId: string) => {
+    if (isLiked(listingId)) toggleLike(listingId);
+    removeFromCollection(collection.id, listingId);
+  };
 
   return (
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
@@ -172,27 +178,18 @@ export default function CollectionPage() {
             compactProgress={mobileView === 'map' ? 1 : compactMobileHeaderProgress}
             rightSlot={(
               <>
-                <button
-                  type="button"
+                <ControlPillButton
                   onClick={(event) => {
                     setDesktopSortAnchor(null);
                     setTagPanelState({ mode: 'filter', anchorRect: event.currentTarget.getBoundingClientRect() });
                   }}
-                  className={cn(
-                    desktopActionButtonClassName,
-                    hasActiveTagFilters && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
-                  )}
+                  active={hasActiveTagFilters}
+                  badge={hasActiveTagFilters ? activeTagFilters.length : null}
                 >
                   <Tag size={16} />
                   Tags
-                  {hasActiveTagFilters && (
-                    <span className="rounded-full bg-[#0F1729] px-1.5 py-0.5 type-nano text-white">
-                      {activeTagFilters.length}
-                    </span>
-                  )}
-                </button>
-                <button
-                  type="button"
+                </ControlPillButton>
+                <ControlPillButton
                   onClick={(event) => {
                     const rect = event.currentTarget.getBoundingClientRect();
                     setTagPanelState(null);
@@ -205,11 +202,10 @@ export default function CollectionPage() {
                         : rect
                     );
                   }}
-                  className={desktopActionButtonClassName}
                 >
                   <ArrowDownWideNarrow size={16} />
                   Sort
-                </button>
+                </ControlPillButton>
               </>
             )}
           />
@@ -230,6 +226,7 @@ export default function CollectionPage() {
                   listings={sortedListings}
                   cardTall
                   onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
+                  onRemoveListing={handleRemoveListing}
                 />
               </div>
             ) : (
@@ -323,6 +320,8 @@ export default function CollectionPage() {
                     <Map size={16} />
                     Map
                   </button>
+                </div>
+                <div className="flex items-center rounded-full bg-white px-1.5 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
                   {mobileView === 'list' && (
                     <button
                       type="button"
@@ -361,7 +360,7 @@ export default function CollectionPage() {
           </div>
 
           <div className="mx-auto hidden w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden lg:flex">
-            <div className="relative min-w-0 flex-1 lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
+            <div className="relative min-h-0 min-w-0 flex-1 lg:ml-4 lg:mr-2 lg:mt-4 lg:overflow-hidden lg:rounded-[28px]">
               <MapView listings={sortedListings} showListings />
             </div>
 
@@ -373,6 +372,7 @@ export default function CollectionPage() {
                     setDesktopSortAnchor(null);
                     setTagPanelState({ mode: 'assign', listingId, anchorRect });
                   }}
+                  onRemoveListing={handleRemoveListing}
                 />
               </div>
             </div>
