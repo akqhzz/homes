@@ -210,6 +210,7 @@ export default function CollectionPage() {
       <div className="flex h-full flex-col overflow-hidden bg-white">
         <div className="relative bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6">
           <CollectionWorkspaceHeader
+            className="min-h-[3.9rem] lg:min-h-0"
             title={collection.name}
             subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
             compact={mobileView === 'map'}
@@ -249,13 +250,13 @@ export default function CollectionPage() {
           />
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <div className="flex h-full flex-col lg:hidden">
             {mobileView === 'list' ? (
               <div
                 className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4"
                 onScroll={(event) => {
-                  const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 168));
+                  const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 240));
                   const eased = raw * raw * (3 - 2 * raw);
                   setCompactMobileHeaderProgress(eased);
                 }}
@@ -361,50 +362,40 @@ export default function CollectionPage() {
                     Map
                   </button>
                 </div>
-                <div className="flex items-center rounded-full bg-white px-1.5 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
-                  {mobileView === 'list' && (
-                    <button
-                      type="button"
-                      aria-label="Sort"
-                      onClick={() => {
-                        setTagPanelState(null);
-                        setShowSortDrawer(true);
-                      }}
-                      className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
-                    >
-                      <ArrowDownWideNarrow size={18} />
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    aria-label="Tags"
+                {mobileView === 'list' && (
+                  <ControlPillButton
                     onClick={() => {
-                      setShowSortDrawer(false);
-                      setTagPanelState({ mode: 'filter', anchorRect: null });
+                      setTagPanelState(null);
+                      setShowSortDrawer(true);
                     }}
-                    className={cn(
-                      'relative flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]',
-                      hasActiveTagFilters && 'bg-white shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
-                    )}
+                    className="h-11 w-11 justify-center px-0"
+                    aria-label="Sort"
                   >
-                    <Tag size={18} />
-                    {hasActiveTagFilters && (
-                      <span className="absolute right-[7px] top-[7px] flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0F1729] px-1 type-nano text-white">
-                        {activeTagFilters.length}
-                      </span>
-                    )}
-                  </button>
-                </div>
+                    <ArrowDownWideNarrow size={18} />
+                  </ControlPillButton>
+                )}
+                <ControlPillButton
+                  onClick={() => {
+                    setShowSortDrawer(false);
+                    setTagPanelState({ mode: 'filter', anchorRect: null });
+                  }}
+                  active={hasActiveTagFilters}
+                  badge={hasActiveTagFilters ? activeTagFilters.length : null}
+                  className="h-11 w-11 justify-center px-0"
+                  aria-label="Tags"
+                >
+                  <Tag size={18} />
+                </ControlPillButton>
               </div>
             </div>
           </div>
 
-          <div className="mx-auto hidden w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden lg:flex">
-            <div className="relative min-w-0 flex-1 lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
+          <div className="mx-auto hidden h-full w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden lg:flex">
+            <div className="relative min-h-0 min-w-0 flex-1 self-stretch lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
               <MapView listings={sortedListings} showListings />
             </div>
 
-            <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[688px] 3xl:w-[1024px]">
+            <div className="hidden h-full shrink-0 overflow-hidden lg:block lg:w-[688px] 3xl:w-[1024px]">
               <div className="h-full overflow-y-auto px-4 py-4">
                 <CollectionListingsGrid
                   listings={sortedListings}

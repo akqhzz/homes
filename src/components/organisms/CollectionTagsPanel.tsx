@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Check, Pencil, Plus, Trash2 } from 'lucide-react';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import AnchoredPopover from '@/components/molecules/AnchoredPopover';
+import CreateInlineField from '@/components/molecules/CreateInlineField';
 import { cn } from '@/lib/utils/cn';
 
 type PanelMode = 'assign' | 'filter';
@@ -82,7 +83,9 @@ function CollectionTagsPanelContent({
               key={tag}
               className={cn(
                 'inline-flex select-none items-center gap-1 rounded-full border px-1.5 py-0.5 transition-colors',
-                selected
+                editingTag === tag
+                  ? 'border-[#D1D5DB] bg-transparent text-[#0F1729]'
+                  : selected
                   ? 'border-[#0F1729] bg-[#0F1729] text-white'
                   : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729]'
               )}
@@ -108,7 +111,7 @@ function CollectionTagsPanelContent({
               onTouchCancel={clearLongPress}
             >
               {editingTag === tag ? (
-                <div className="flex items-center gap-1 rounded-full border border-[#D1D5DB] bg-white pl-2 pr-1 text-[#0F1729] shadow-[0_1px_4px_rgba(15,23,41,0.06)]">
+                <div className="flex items-center gap-1 rounded-full border border-[#D1D5DB] bg-white pl-2 pr-1 text-[#0F1729]">
                   <input
                     value={editingValue}
                     onChange={(event) => setEditingValue(event.target.value)}
@@ -129,7 +132,7 @@ function CollectionTagsPanelContent({
                     type="button"
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => finishRenameTag(tag)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-[#D1D5DB] bg-[#F9FAFB] text-[#0F1729] transition-colors hover:bg-[#F3F4F6]"
+                    className="flex h-7 w-7 items-center justify-center text-[#6B7280] transition-colors hover:text-[#0F1729]"
                     aria-label="Confirm tag rename"
                   >
                     <Check size={13} />
@@ -158,41 +161,18 @@ function CollectionTagsPanelContent({
         })}
       </div>
 
-      {creating ? (
-        <div className="flex gap-2">
-          <input
-            value={newTagName}
-            onChange={(event) => setNewTagName(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') handleCreateTag();
-              if (event.key === 'Escape') {
-                setCreating(false);
-                setNewTagName('');
-              }
-            }}
-            placeholder="Tag name..."
-            className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-            autoFocus
-          />
-          <button
-            type="button"
-            onClick={handleCreateTag}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F1729] text-white transition-colors hover:bg-[#1F2937]"
-            aria-label="Create tag"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setCreating(true)}
-          className="flex w-full items-center gap-2 rounded-xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
-        >
-          <Plus size={16} />
-          Create new tag
-        </button>
-      )}
+      <CreateInlineField
+        open={creating}
+        onOpenChange={setCreating}
+        value={newTagName}
+        onValueChange={setNewTagName}
+        placeholder="Tag name..."
+        collapsedLabel="Create new tag"
+        onSubmit={handleCreateTag}
+        autoFocus
+        submitStyle="icon"
+        submitIcon={<Plus size={16} />}
+      />
 
       <AnchoredPopover
         open={!!menuTag && !!menuAnchor}

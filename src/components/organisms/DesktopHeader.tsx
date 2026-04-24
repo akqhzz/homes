@@ -24,6 +24,7 @@ import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { cn } from '@/lib/utils/cn';
 import { Location } from '@/lib/types';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
+import CreateInlineField from '@/components/molecules/CreateInlineField';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 
@@ -318,39 +319,20 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               </button>
               {showCollections && (
                 <div className="absolute right-0 top-12 z-40 w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                  {creatingCollection ? (
-                    <div className="mb-3 flex gap-2">
-                      <input
-                        value={newCollectionName}
-                        onChange={(event) => setNewCollectionName(event.target.value)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter') handleCreateCollection();
-                          if (event.key === 'Escape') {
-                            setCreatingCollection(false);
-                            setNewCollectionName('');
-                          }
-                        }}
-                        placeholder="Collection Name..."
-                        className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none transition-colors focus:border-[#0F1729]"
-                        autoFocus
-                      />
-                      <button
-                        onClick={handleCreateCollection}
-                        className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0F1729] text-white transition-colors hover:bg-[#1F2937]"
-                        aria-label="Create collection"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setCreatingCollection(true)}
-                      className="mb-3 flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
-                    >
-                      <Plus size={16} />
-                      New Collection
-                    </button>
-                  )}
+                  <CreateInlineField
+                    open={creatingCollection}
+                    onOpenChange={setCreatingCollection}
+                    value={newCollectionName}
+                    onValueChange={setNewCollectionName}
+                    placeholder="Collection Name..."
+                    collapsedLabel="New Collection"
+                    onSubmit={handleCreateCollection}
+                    autoFocus
+                    submitStyle="icon"
+                    submitIcon={<Plus size={16} />}
+                    className="mb-3"
+                    collapsedClassName="mb-3 rounded-2xl font-medium"
+                  />
                   <div className="flex flex-col gap-2.5">
                     {collections.slice(0, 4).map((collection) => {
                       const listing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);

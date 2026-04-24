@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ChevronRight, Plus } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import { Coordinates, SavedSearch } from '@/lib/types';
-import Button from '@/components/atoms/Button';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
+import CreateInlineField from '@/components/molecules/CreateInlineField';
 import { cn } from '@/lib/utils/cn';
 
 interface SavedSearchesPanelProps {
@@ -107,28 +107,18 @@ export default function SavedSearchesPanel({
       {/* Save current search */}
       <div className="px-4 py-4">
         <p className="type-heading text-[#0F1729] mb-3">Save Current Search</p>
-        {saving ? (
-          <div className="flex gap-2">
-            <input
-              ref={inputRef}
-              value={newSearchName}
-              onChange={(e) => setNewSearchName(e.target.value)}
-              placeholder="Search name..."
-              className="h-12 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-              autoFocus={canSaveCurrent}
-              onKeyDown={(e) => e.key === 'Enter' && handleSaveCurrent()}
-            />
-            <Button size="lg" onClick={handleSaveCurrent} className="h-12 px-5">Save</Button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setSaving(true)}
-            className="flex items-center gap-2 w-full px-4 py-3 border border-dashed border-[#D1D5DB] rounded-xl text-sm text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729] transition-colors"
-          >
-            <Plus size={16} />
-            Save &quot;{selectedLocations.length > 0 ? selectedLocations.map(l => l.name).join(', ') : 'Current Search'}&quot;
-          </button>
-        )}
+        <CreateInlineField
+          open={saving}
+          onOpenChange={setSaving}
+          value={newSearchName}
+          onValueChange={setNewSearchName}
+          placeholder="Search name..."
+          collapsedLabel={`Save "${selectedLocations.length > 0 ? selectedLocations.map((l) => l.name).join(', ') : 'Current Search'}"`}
+          onSubmit={handleSaveCurrent}
+          inputRef={inputRef}
+          autoFocus={canSaveCurrent}
+          submitLabel="Save"
+        />
       </div>
 
       {/* Saved searches list */}

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSavedStore } from '@/store/savedStore';
@@ -10,7 +10,7 @@ import { MOCK_LISTINGS } from '@/lib/mock-data';
 import PageShell from '@/components/templates/PageShell';
 import Avatar from '@/components/atoms/Avatar';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
-import Button from '@/components/atoms/Button';
+import CreateInlineField from '@/components/molecules/CreateInlineField';
 import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspaceHeader';
 
 interface MenuState {
@@ -272,34 +272,16 @@ export default function SavedPage() {
             heightClassName="max-h-[50dvh]"
             contentClassName="px-4 pb-4"
           >
-            {creatingCollection ? (
-              <div className="flex gap-2">
-                <input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Collection name..."
-                  className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleCreate();
-                    if (e.key === 'Escape') {
-                      setCreatingCollection(false);
-                      setNewName('');
-                    }
-                  }}
-                />
-                <Button onClick={handleCreate} size="lg" className="h-12 px-5">Create</Button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setCreatingCollection(true)}
-                className="flex w-full items-center gap-2 rounded-xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
-              >
-                <Plus size={16} />
-                Create new collection
-              </button>
-            )}
+            <CreateInlineField
+              open={creatingCollection}
+              onOpenChange={setCreatingCollection}
+              value={newName}
+              onValueChange={setNewName}
+              placeholder="Collection name..."
+              collapsedLabel="Create new collection"
+              onSubmit={handleCreate}
+              autoFocus
+            />
           </MobileDrawer>
         )}
       </AnimatePresence>

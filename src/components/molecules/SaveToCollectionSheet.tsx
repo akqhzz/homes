@@ -6,7 +6,7 @@ import { Check, Plus } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
-import Button from '@/components/atoms/Button';
+import CreateInlineField from '@/components/molecules/CreateInlineField';
 
 interface SaveToCollectionSheetProps {
   listingId: string;
@@ -40,31 +40,19 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
 
   const content = (
     <>
-      {creating ? (
-        <div className="mb-4 flex gap-2">
-          <input
-            value={newName}
-            onChange={(event) => setNewName(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') createAndSave();
-            }}
-            placeholder="New Collection..."
-            className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-            autoFocus
-          />
-          <Button onClick={createAndSave} size="lg" className="h-12 px-4">
-            Create
-          </Button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setCreating(true)}
-          className="mb-4 flex w-full items-center gap-2 rounded-2xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
-        >
-          <Plus size={16} />
-          New Collection
-        </button>
-      )}
+      <CreateInlineField
+        open={creating}
+        onOpenChange={setCreating}
+        value={newName}
+        onValueChange={setNewName}
+        placeholder="New Collection..."
+        collapsedLabel="New Collection"
+        onSubmit={createAndSave}
+        autoFocus
+        submitLabel="Create"
+        className="mb-4"
+        collapsedClassName="mb-4 rounded-2xl font-medium"
+      />
 
       <div className="flex flex-col gap-2.5">
         {collections.map((collection) => {
