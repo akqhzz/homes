@@ -9,6 +9,7 @@ interface CollectionWorkspaceHeaderProps {
   showBackButton?: boolean;
   compact?: boolean;
   compactProgress?: number;
+  hideSubtitleOnMobile?: boolean;
   rightSlot?: ReactNode;
   className?: string;
 }
@@ -19,6 +20,7 @@ export default function CollectionWorkspaceHeader({
   showBackButton = true,
   compact = false,
   compactProgress,
+  hideSubtitleOnMobile = false,
   rightSlot,
   className,
 }: CollectionWorkspaceHeaderProps) {
@@ -56,7 +58,10 @@ export default function CollectionWorkspaceHeader({
         </h1>
         {subtitle && (
           <p
-            className="text-[0.9rem] leading-[1.4] text-[#6B7280] transition-all duration-300 ease-out"
+            className={cn(
+              'text-[0.9rem] leading-[1.4] text-[#6B7280] transition-all duration-300 ease-out',
+              hideSubtitleOnMobile && 'hidden lg:block'
+            )}
             style={{
               marginTop: `${4 * (1 - progress)}px`,
               maxHeight: `${40 * (1 - progress)}px`,

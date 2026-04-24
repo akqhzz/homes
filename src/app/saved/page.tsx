@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
+import { Ellipsis, Pencil, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSavedStore } from '@/store/savedStore';
@@ -22,6 +22,7 @@ interface MenuState {
 export default function SavedPage() {
   const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
   const [showNewCollection, setShowNewCollection] = useState(false);
+  const [creatingCollection, setCreatingCollection] = useState(false);
   const [newName, setNewName] = useState('');
   const [menuState, setMenuState] = useState<MenuState | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export default function SavedPage() {
   useEffect(() => {
     const handleCreateIntent = () => {
       setNewName('');
+      setCreatingCollection(false);
       setShowNewCollection(true);
     };
     window.addEventListener('homes:create-collection', handleCreateIntent);
@@ -55,6 +57,7 @@ export default function SavedPage() {
     if (!newName.trim()) return;
     createCollection(newName.trim());
     setNewName('');
+    setCreatingCollection(false);
     setShowNewCollection(false);
   };
 
@@ -96,6 +99,7 @@ export default function SavedPage() {
             title="Collections"
             subtitle={`${collections.length} collection${collections.length === 1 ? '' : 's'}`}
             showBackButton
+            hideSubtitleOnMobile
           />
         </div>
 
@@ -259,22 +263,43 @@ export default function SavedPage() {
       <AnimatePresence>
         {showNewCollection && (
           <MobileDrawer
-            title="New Collection"
-            onClose={() => setShowNewCollection(false)}
+            title="Create Collection"
+            onClose={() => {
+              setShowNewCollection(false);
+              setCreatingCollection(false);
+              setNewName('');
+            }}
             heightClassName="max-h-[50dvh]"
             contentClassName="px-4 pb-4"
           >
-            <div className="flex gap-2">
-              <input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Collection name..."
-                className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
-                autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-              />
-              <Button onClick={handleCreate} size="lg" className="h-12 px-5">Create</Button>
-            </div>
+            {creatingCollection ? (
+              <div className="flex gap-2">
+                <input
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Collection name..."
+                  className="h-12 min-w-0 flex-1 rounded-2xl border border-[#E5E7EB] px-4 text-sm outline-none focus:border-[#0F1729]"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreate();
+                    if (e.key === 'Escape') {
+                      setCreatingCollection(false);
+                      setNewName('');
+                    }
+                  }}
+                />
+                <Button onClick={handleCreate} size="lg" className="h-12 px-5">Create</Button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setCreatingCollection(true)}
+                className="flex w-full items-center gap-2 rounded-xl border border-dashed border-[#D1D5DB] px-4 py-3 text-sm text-[#6B7280] transition-colors hover:border-[#0F1729] hover:text-[#0F1729]"
+              >
+                <Plus size={16} />
+                Create new collection
+              </button>
+            )}
           </MobileDrawer>
         )}
       </AnimatePresence>

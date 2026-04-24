@@ -165,16 +165,10 @@ export default function CollectionPage() {
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
       <div className="flex h-full flex-col overflow-hidden bg-white">
         <div className="relative bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6">
-          <div className="mb-3 flex justify-start lg:hidden">
-            <BackButton
-              iconOnly
-              className="h-11 w-11 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
-            />
-          </div>
           <CollectionWorkspaceHeader
             title={collection.name}
             subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
-            compact={mobileView === 'map' || compactMobileHeaderProgress >= 0.98}
+            compact={mobileView === 'map'}
             compactProgress={mobileView === 'map' ? 1 : compactMobileHeaderProgress}
             rightSlot={(
               <>
@@ -227,8 +221,8 @@ export default function CollectionPage() {
               <div
                 className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4"
                 onScroll={(event) => {
-                  const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 120));
-                  const eased = 1 - Math.pow(1 - raw, 2);
+                  const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 168));
+                  const eased = raw * raw * (3 - 2 * raw);
                   setCompactMobileHeaderProgress(eased);
                 }}
               >
@@ -291,51 +285,77 @@ export default function CollectionPage() {
               className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4 lg:hidden"
               style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
             >
-              <div className="pointer-events-auto flex items-center rounded-full bg-white px-1.5 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
-                <button
-                  type="button"
-                  aria-label={mobileView === 'list' ? 'Map view' : 'List view'}
-                  onClick={() => {
-                    setShowSortDrawer(false);
-                    setTagPanelState(null);
-                    setMobileView((value) => (value === 'list' ? 'map' : 'list'));
-                  }}
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
-                >
-                  {mobileView === 'list' ? <Map size={18} /> : <LayoutList size={18} />}
-                </button>
-                {mobileView === 'list' && (
+              <div className="pointer-events-auto flex items-center gap-2">
+                <BackButton
+                  iconOnly
+                  className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
+                />
+                <div className="flex items-center rounded-full bg-white px-1.5 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
                   <button
                     type="button"
-                    aria-label="Sort"
+                    aria-label="List view"
                     onClick={() => {
+                      setShowSortDrawer(false);
                       setTagPanelState(null);
-                      setShowSortDrawer(true);
+                      setMobileView('list');
                     }}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                    className={cn(
+                      'flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors',
+                      mobileView === 'list' ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
+                    )}
                   >
-                    <ArrowDownWideNarrow size={18} />
+                    <LayoutList size={16} />
+                    List
                   </button>
-                )}
-                <button
-                  type="button"
-                  aria-label="Tags"
-                  onClick={() => {
-                    setShowSortDrawer(false);
-                    setTagPanelState({ mode: 'filter', anchorRect: null });
-                  }}
-                  className={cn(
-                    'relative flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]',
-                    hasActiveTagFilters && 'shadow-[inset_0_0_0_1.5px_#374151]'
+                  <button
+                    type="button"
+                    aria-label="Map view"
+                    onClick={() => {
+                      setShowSortDrawer(false);
+                      setTagPanelState(null);
+                      setMobileView('map');
+                    }}
+                    className={cn(
+                      'flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors',
+                      mobileView === 'map' ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
+                    )}
+                  >
+                    <Map size={16} />
+                    Map
+                  </button>
+                  {mobileView === 'list' && (
+                    <button
+                      type="button"
+                      aria-label="Sort"
+                      onClick={() => {
+                        setTagPanelState(null);
+                        setShowSortDrawer(true);
+                      }}
+                      className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                    >
+                      <ArrowDownWideNarrow size={18} />
+                    </button>
                   )}
-                >
-                  <Tag size={18} />
-                  {hasActiveTagFilters && (
-                    <span className="absolute right-[7px] top-[7px] flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0F1729] px-1 type-nano text-white">
-                      {activeTagFilters.length}
-                    </span>
-                  )}
-                </button>
+                  <button
+                    type="button"
+                    aria-label="Tags"
+                    onClick={() => {
+                      setShowSortDrawer(false);
+                      setTagPanelState({ mode: 'filter', anchorRect: null });
+                    }}
+                    className={cn(
+                      'relative flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]',
+                      hasActiveTagFilters && 'shadow-[inset_0_0_0_1.5px_#374151]'
+                    )}
+                  >
+                    <Tag size={18} />
+                    {hasActiveTagFilters && (
+                      <span className="absolute right-[7px] top-[7px] flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0F1729] px-1 type-nano text-white">
+                        {activeTagFilters.length}
+                      </span>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

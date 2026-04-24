@@ -49,13 +49,18 @@ function CollectionTagsPanelContent({
     setCreating(false);
   };
 
+  const finishRenameTag = (originalTag: string) => {
+    const nextValue = editingValue.trim();
+    if (onRenameTag && nextValue && nextValue !== originalTag) {
+      onRenameTag(originalTag, nextValue);
+    }
+    setEditingTag(null);
+    setEditingValue('');
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
-        {uniqueTags.length === 0 && (
-          <p className="font-heading text-base text-[#0F1729]">No tags available</p>
-        )}
-
         {uniqueTags.map((tag) => {
           const selected = selectedTags.includes(tag);
           return (
@@ -75,15 +80,14 @@ function CollectionTagsPanelContent({
                     onChange={(event) => setEditingValue(event.target.value)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' && onRenameTag) {
-                        onRenameTag(tag, editingValue);
-                        setEditingTag(null);
-                        setEditingValue('');
+                        finishRenameTag(tag);
                       }
                       if (event.key === 'Escape') {
                         setEditingTag(null);
                         setEditingValue('');
                       }
                     }}
+                    onBlur={() => finishRenameTag(tag)}
                     className="h-8 min-w-0 rounded-full bg-transparent px-2 text-sm outline-none"
                     autoFocus
                   />

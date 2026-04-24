@@ -1,5 +1,5 @@
 'use client';
-import { type CSSProperties, type ReactNode, useEffect } from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -22,6 +22,9 @@ export default function AnchoredPopover({
   align = 'right',
   offset = 8,
 }: AnchoredPopoverProps) {
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [style, setStyle] = useState<CSSProperties>({});
+
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -31,17 +34,47 @@ export default function AnchoredPopover({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, open]);
 
-  if (!open || !anchorRect || typeof document === 'undefined') return null;
+  useEffect(() => {
+    if (!open || !anchorRect) return;
 
-  const style: CSSProperties = align === 'left'
-    ? { top: anchorRect.bottom + offset, left: anchorRect.left }
-    : { top: anchorRect.bottom + offset, right: window.innerWidth - anchorRect.right };
+    const updatePosition = () => {
+      const node = popoverRef.current;
+      if (!node) return;
+
+      const rect = node.getBoundingClientRect();
+      const viewportPadding = 12;
+      const preferredLeft =
+        align === 'left' ? anchorRect.left : anchorRect.right - rect.width;
+      const maxLeft = Math.max(viewportPadding, window.innerWidth - rect.width - viewportPadding);
+      const left = Math.min(Math.max(viewportPadding, preferredLeft), maxLeft);
+
+      const preferredTop = anchorRect.bottom + offset;
+      const fitsBelow = preferredTop + rect.height <= window.innerHeight - viewportPadding;
+      const top = fitsBelow
+        ? preferredTop
+        : Math.max(viewportPadding, anchorRect.top - rect.height - offset);
+
+      setStyle({ left, top });
+    };
+
+    const frame = window.requestAnimationFrame(updatePosition);
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [align, anchorRect, offset, open]);
+
+  if (!open || !anchorRect || typeof document === 'undefined') return null;
 
   return createPortal(
     <>
       <div className="fixed inset-0 z-[45]" onClick={onClose} />
       <AnimatePresence>
         <motion.div
+          ref={popoverRef}
           initial={{ opacity: 0, y: 6, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 6, scale: 0.98 }}
