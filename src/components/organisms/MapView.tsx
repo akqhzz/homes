@@ -1,11 +1,11 @@
 'use client';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Feature, LineString, Polygon } from 'geojson';
 import Map, { Layer, Marker, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing, Location, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
-import { closePolygon, getNeighborhoodBounds } from '@/lib/geo';
+import { closePolygon, getNeighborhoodBounds, getPolygonCentroid } from '@/lib/geo';
 import { getMapboxToken } from '@/lib/mapbox-token';
 import PriceMarker from '@/components/molecules/PriceMarker';
 import NeighborhoodPin from '@/components/molecules/NeighborhoodPin';
@@ -63,25 +63,20 @@ export default function MapView({
   const { setCarouselVisible, isSatelliteMode, isCarouselVisible } = useUIStore();
   const isLiked = useSavedStore((s) => s.isLiked);
   const mapRef = useRef<MapRef | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [neighborhoodDisplayItems, setNeighborhoodDisplayItems] = useState<NeighborhoodDisplayItem[]>([]);
 
   const mapStyle = isSatelliteMode
     ? 'mapbox://styles/mapbox/satellite-streets-v12'
     : 'mapbox://styles/mapbox/standard';
 
   const handleMarkerClick = useCallback(
-    (listingId: string, coords: { lat: number; lng: number }) => {
+    (listingId: string) => {
       setSelectedListingId(listingId);
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
       setCarouselVisible(!isDesktop);
-      // Pan map to show the listing with offset for bottom carousel
-      mapRef.current?.flyTo({
-        center: [coords.lng, coords.lat],
-        zoom: Math.max(viewState.zoom, 14),
-        duration: 600,
-        offset: isDesktop ? [-140, 0] : [0, -100],
-      });
     },
-    [setSelectedListingId, setCarouselVisible, viewState.zoom]
+    [setSelectedListingId, setCarouselVisible]
   );
 
   const handleMapClick = useCallback(() => {
@@ -108,6 +103,14 @@ export default function MapView({
           includedNeighborhoodIds?.has(nbh.id)
       );
 
+  useEffect(() => {
+    if (!mapLoaded) return;
+
+    setNeighborhoodDisplayItems(
+      buildNeighborhoodDisplayItems(renderNeighborhoods, mapRef.current, viewState.zoom)
+    );
+  }, [mapLoaded, renderNeighborhoods, viewState.zoom]);
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-[#E8ECEF] p-6 text-center">
@@ -126,6 +129,7 @@ export default function MapView({
       ref={mapRef}
       {...viewState}
       onMove={(e) => setViewState(e.viewState)}
+      onLoad={() => setMapLoaded(true)}
       onClick={handleMapPointer}
       mapStyle={mapStyle}
       mapboxAccessToken={MAPBOX_TOKEN}
@@ -259,31 +263,55 @@ export default function MapView({
       ))}
 
       {showNeighborhoods &&
-        renderNeighborhoods.map((nbh) => (
+        neighborhoodDisplayItems.map((item) => (
           <Marker
-            key={nbh.id}
-            longitude={nbh.coordinates.lng}
-            latitude={nbh.coordinates.lat}
-            anchor={isAreaMode ? 'center' : 'bottom'}
+            key={item.id}
+            longitude={item.anchor.lng}
+            latitude={item.anchor.lat}
+            anchor="center"
           >
-            <div onMouseEnter={() => onNeighborhoodHover?.(nbh)} onMouseLeave={() => onNeighborhoodHover?.(null)}>
+            {item.type === 'cluster' ? (
               <NeighborhoodPin
-                neighborhood={nbh}
-                isSelected={nbh.id === selectedNeighborhoodId || includedNeighborhoodIds?.has(nbh.id)}
+                neighborhood={item.neighborhoods[0]}
+                variant="cluster"
+                count={item.neighborhoods.length}
                 onClick={() => {
-                  if (!isAreaMode) {
-                    mapRef.current?.fitBounds(getNeighborhoodBoundsForMap(nbh), {
-                      padding: { top: 160, bottom: 180, left: 72, right: 72 },
-                      duration: 420,
-                      maxZoom: 14.4,
-                    });
-                  }
-                  onNeighborhoodClick?.(nbh);
+                  const bounds = getCombinedNeighborhoodBounds(item.neighborhoods);
+                  if (!bounds) return;
+                  mapRef.current?.fitBounds(bounds, {
+                    padding: { top: 140, bottom: 180, left: 48, right: 48 },
+                    duration: 380,
+                    maxZoom: Math.max(viewState.zoom + 1.3, 14.8),
+                  });
                 }}
-                size={isAreaMode ? 'sm' : 'default'}
-                showLabel
               />
-            </div>
+            ) : (
+              <div
+                onMouseEnter={() => onNeighborhoodHover?.(item.neighborhoods[0])}
+                onMouseLeave={() => onNeighborhoodHover?.(null)}
+              >
+                <NeighborhoodPin
+                  neighborhood={item.neighborhoods[0]}
+                  isSelected={
+                    item.neighborhoods[0].id === selectedNeighborhoodId ||
+                    includedNeighborhoodIds?.has(item.neighborhoods[0].id)
+                  }
+                  onClick={() => {
+                    if (!isAreaMode) {
+                      mapRef.current?.fitBounds(getNeighborhoodBoundsForMap(item.neighborhoods[0]), {
+                        padding: { top: 160, bottom: 180, left: 72, right: 72 },
+                        duration: 420,
+                        maxZoom: 14.4,
+                      });
+                    }
+                    onNeighborhoodClick?.(item.neighborhoods[0]);
+                  }}
+                  variant={isAreaMode ? 'area-card' : 'default'}
+                  size={isAreaMode ? 'sm' : 'default'}
+                  showLabel={!isAreaMode}
+                />
+              </div>
+            )}
           </Marker>
         ))}
 
@@ -301,7 +329,7 @@ export default function MapView({
             price={listing.price}
             isSelected={listing.id === selectedListingId || listing.id === hoveredListingId}
             isSaved={isLiked(listing.id)}
-            onClick={() => handleMarkerClick(listing.id, listing.coordinates)}
+            onClick={() => handleMarkerClick(listing.id)}
           />
         </Marker>
         );
@@ -403,6 +431,96 @@ function getNeighborhoodBoundsForMap(neighborhood: Neighborhood): [[number, numb
 
 function getRenderNeighborhoods() {
   return MOCK_NEIGHBORHOODS;
+}
+
+function getNeighborhoodAnchor(neighborhood: Neighborhood) {
+  return neighborhood.boundary && neighborhood.boundary.length > 2
+    ? getPolygonCentroid(neighborhood.boundary)
+    : neighborhood.coordinates;
+}
+
+type NeighborhoodDisplayItem =
+  | { id: string; type: 'cluster'; anchor: { lat: number; lng: number }; neighborhoods: Neighborhood[] }
+  | { id: string; type: 'pin'; anchor: { lat: number; lng: number }; neighborhoods: [Neighborhood] };
+
+function buildNeighborhoodDisplayItems(
+  neighborhoods: Neighborhood[],
+  map: MapRef | null,
+  zoom: number
+): NeighborhoodDisplayItem[] {
+  if (!map) {
+    return neighborhoods.map((neighborhood) => ({
+      id: neighborhood.id,
+      type: 'pin',
+      anchor: getNeighborhoodAnchor(neighborhood),
+      neighborhoods: [neighborhood],
+    }));
+  }
+
+  const threshold = zoom >= 14.2 ? 44 : zoom >= 13.4 ? 62 : 84;
+  const projected = neighborhoods.map((neighborhood) => {
+    const anchor = getNeighborhoodAnchor(neighborhood);
+    return {
+      neighborhood,
+      anchor,
+      point: map.project([anchor.lng, anchor.lat]),
+    };
+  });
+
+  const visited = new Set<string>();
+  const items: NeighborhoodDisplayItem[] = [];
+
+  for (const current of projected) {
+    if (visited.has(current.neighborhood.id)) continue;
+    const cluster = [current];
+    visited.add(current.neighborhood.id);
+
+    for (const candidate of projected) {
+      if (visited.has(candidate.neighborhood.id)) continue;
+      if (distance(current.point.x, current.point.y, candidate.point.x, candidate.point.y) < threshold) {
+        cluster.push(candidate);
+        visited.add(candidate.neighborhood.id);
+      }
+    }
+
+    if (cluster.length === 1) {
+      items.push({
+        id: current.neighborhood.id,
+        type: 'pin',
+        anchor: current.anchor,
+        neighborhoods: [current.neighborhood],
+      });
+      continue;
+    }
+
+    items.push({
+      id: `cluster-${cluster.map((item) => item.neighborhood.id).join('-')}`,
+      type: 'cluster',
+      anchor: {
+        lng: cluster.reduce((sum, item) => sum + item.anchor.lng, 0) / cluster.length,
+        lat: cluster.reduce((sum, item) => sum + item.anchor.lat, 0) / cluster.length,
+      },
+      neighborhoods: cluster.map((item) => item.neighborhood),
+    });
+  }
+
+  return items;
+}
+
+function distance(x1: number, y1: number, x2: number, y2: number) {
+  return Math.hypot(x2 - x1, y2 - y1);
+}
+
+function getCombinedNeighborhoodBounds(neighborhoods: Neighborhood[]) {
+  return neighborhoods
+    .map((neighborhood) => getNeighborhoodBoundsForMap(neighborhood))
+    .reduce<[[number, number], [number, number]] | null>((combined, current) => {
+      if (!combined) return current;
+      return [
+        [Math.min(combined[0][0], current[0][0]), Math.min(combined[0][1], current[0][1])],
+        [Math.max(combined[1][0], current[1][0]), Math.max(combined[1][1], current[1][1])],
+      ];
+    }, null);
 }
 
 function getSpreadListingCoordinates(listing: Listing, index: number) {

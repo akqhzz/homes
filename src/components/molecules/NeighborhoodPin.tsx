@@ -9,9 +9,55 @@ interface NeighborhoodPinProps {
   onClick?: () => void;
   size?: 'default' | 'sm';
   showLabel?: boolean;
+  variant?: 'default' | 'area-card' | 'cluster';
+  count?: number;
 }
 
-export default function NeighborhoodPin({ neighborhood, isSelected, onClick, size = 'default', showLabel = true }: NeighborhoodPinProps) {
+export default function NeighborhoodPin({
+  neighborhood,
+  isSelected,
+  onClick,
+  size = 'default',
+  showLabel = true,
+  variant = 'default',
+  count,
+}: NeighborhoodPinProps) {
+  if (variant === 'cluster') {
+    return (
+      <button
+        onClick={onClick}
+        className="flex h-11 min-w-11 items-center justify-center rounded-full border border-white/80 bg-[#0F1729]/88 px-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,23,41,0.28)] backdrop-blur"
+      >
+        {count}
+      </button>
+    );
+  }
+
+  if (variant === 'area-card') {
+    return (
+      <button
+        onClick={onClick}
+        className={cn(
+          'flex items-center gap-2 rounded-full border bg-white/94 p-1 pr-3 shadow-[0_10px_24px_rgba(15,23,41,0.14)] backdrop-blur transition-all duration-150 hover:scale-[1.02] active:scale-100',
+          isSelected ? 'border-[#0F1729] ring-2 ring-[#0F1729]/10' : 'border-white/80'
+        )}
+      >
+        <div className="h-9 w-9 overflow-hidden rounded-full">
+          <Image
+            src={neighborhood.thumbnail}
+            alt={neighborhood.name}
+            width={36}
+            height={36}
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <span className="max-w-[108px] truncate text-[11px] font-semibold leading-none text-[#0F1729]">
+          {neighborhood.name}
+        </span>
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={onClick}

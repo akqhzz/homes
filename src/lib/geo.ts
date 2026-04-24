@@ -72,6 +72,31 @@ export function getNeighborhoodBounds(neighborhood: Neighborhood) {
   return getBoundsFromPoints(neighborhood.boundary ?? [neighborhood.coordinates]);
 }
 
+export function getPolygonCentroid(points: Coordinates[]) {
+  const closed = closePolygon(points);
+  if (closed.length < 4) return points[0] ?? { lat: 0, lng: 0 };
+
+  let area = 0;
+  let centroidLng = 0;
+  let centroidLat = 0;
+
+  for (let index = 0; index < closed.length - 1; index++) {
+    const current = closed[index];
+    const next = closed[index + 1];
+    const factor = current.lng * next.lat - next.lng * current.lat;
+    area += factor;
+    centroidLng += (current.lng + next.lng) * factor;
+    centroidLat += (current.lat + next.lat) * factor;
+  }
+
+  if (Math.abs(area) < Number.EPSILON) return points[0] ?? { lat: 0, lng: 0 };
+
+  return {
+    lng: centroidLng / (3 * area),
+    lat: centroidLat / (3 * area),
+  };
+}
+
 export function getBoundsCenter(bounds: BoundingBox) {
   const [west, south, east, north] = bounds;
   return {

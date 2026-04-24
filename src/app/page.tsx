@@ -138,7 +138,7 @@ function areSearchSnapshotsEqual(a: SearchSnapshot, b: SearchSnapshot) {
 
 export default function MapPage() {
   const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
-  const { filters, selectedLocations, setLocations, replaceFilters } = useSearchStore();
+  const { filters, selectedLocations, setLocations, replaceFilters, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setViewState = useMapStore((s) => s.setViewState);
@@ -172,6 +172,8 @@ export default function MapPage() {
   const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
   const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
+  const hasSearchBoundary = selectedLocations.some((location) => (location.boundary?.length ?? 0) > 2);
+  const hasVisibleBoundary = hasAppliedArea || hasSearchBoundary;
   const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0 || selectedLocations.length > 0;
   const activeSavedSearch = searches.find((search) => search.id === activeSearchId) ?? null;
 
@@ -262,6 +264,15 @@ export default function MapPage() {
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
+  };
+
+  const clearVisibleBoundaries = () => {
+    clearAppliedArea();
+    const remainingLocations = selectedLocations.filter((location) => (location.boundary?.length ?? 0) < 3);
+    if (remainingLocations.length !== selectedLocations.length) {
+      if (remainingLocations.length === 0) clearLocations();
+      else setLocations(remainingLocations);
+    }
   };
 
   const undoBoundary = () => {
@@ -462,9 +473,9 @@ export default function MapPage() {
                 <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
                 Area
               </button>
-              {hasAppliedArea && (
+              {hasVisibleBoundary && (
                 <button
-                  onClick={clearAppliedArea}
+                  onClick={clearVisibleBoundaries}
                   className="h-11 rounded-full bg-white px-4 type-btn text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
                 >
                   Clear
@@ -476,9 +487,9 @@ export default function MapPage() {
           {/* Mobile top bar (hidden on desktop — search lives in DesktopHeader) */}
           <div className={isAreaSelect ? 'hidden' : 'lg:hidden'}>
             <TopBar
-              hasAppliedArea={hasAppliedArea}
+              hasAppliedArea={hasVisibleBoundary}
               onEditArea={editAppliedArea}
-              onClearArea={clearAppliedArea}
+              onClearArea={clearVisibleBoundaries}
             />
           </div>
 
@@ -553,9 +564,9 @@ export default function MapPage() {
         {activePanel === 'search' && (
           <SearchPanel
             key="search"
-            hasAppliedArea={hasAppliedArea}
+            hasAppliedArea={hasVisibleBoundary}
             onEditArea={editAppliedArea}
-            onClearArea={clearAppliedArea}
+            onClearArea={clearVisibleBoundaries}
           />
         )}
         {activePanel === 'filter' && <FilterPanel key="filter" totalListings={filteredListings.length} />}
