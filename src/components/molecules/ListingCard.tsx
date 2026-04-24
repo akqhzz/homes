@@ -30,7 +30,8 @@ interface ListingCardProps {
   topRightSlot?: ReactNode;
   likedOverride?: boolean;
   onLikeToggle?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  onSavedToCollection?: () => void;
+  onSavedToCollection?: (collectionId: string) => void;
+  excludedCollectionIds?: string[];
 }
 
 export default function ListingCard({
@@ -44,6 +45,7 @@ export default function ListingCard({
   likedOverride,
   onLikeToggle,
   onSavedToCollection,
+  excludedCollectionIds,
 }: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
   const [imgIndex, setImgIndex] = useState(0);
@@ -179,6 +181,7 @@ export default function ListingCard({
       onClose={() => setShowSavePicker(false)}
       onSaved={onSavedToCollection}
       anchorRect={saveAnchorRect}
+      excludedCollectionIds={excludedCollectionIds}
     />
   ) : null;
 

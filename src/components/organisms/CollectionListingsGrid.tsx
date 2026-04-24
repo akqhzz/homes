@@ -12,15 +12,17 @@ type CollectionListingItem = Listing & {
 
 interface CollectionListingsGridProps {
   listings: CollectionListingItem[];
+  currentCollectionId: string;
   cardTall?: boolean;
   onTagClick: (listingId: string, anchorRect: DOMRect | null) => void;
   pendingRemovalIds?: string[];
   onToggleListingLike: (listingId: string) => void;
-  onSavedListing: (listingId: string) => void;
+  onSavedListing: (listingId: string, collectionId: string) => void;
 }
 
 export default function CollectionListingsGrid({
   listings,
+  currentCollectionId,
   cardTall = false,
   onTagClick,
   pendingRemovalIds = [],
@@ -53,10 +55,11 @@ export default function CollectionListingsGrid({
           notes={listing.collectionData.notes}
           tags={listing.collectionData.tags}
           tall={cardTall}
+          currentCollectionId={currentCollectionId}
           onTagClick={(anchorRect) => onTagClick(listing.id, anchorRect)}
           pendingRemoval={pendingRemovalIds.includes(listing.id)}
           onToggleLike={() => onToggleListingLike(listing.id)}
-          onSavedToCollection={() => onSavedListing(listing.id)}
+          onSavedToCollection={(collectionId) => onSavedListing(listing.id, collectionId)}
         />
       ))}
     </div>

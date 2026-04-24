@@ -11,11 +11,18 @@ import CreateInlineField from '@/components/molecules/CreateInlineField';
 interface SaveToCollectionSheetProps {
   listingId: string;
   onClose: () => void;
-  onSaved?: () => void;
+  onSaved?: (collectionId: string) => void;
   anchorRect?: DOMRect | null;
+  excludedCollectionIds?: string[];
 }
 
-export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anchorRect }: SaveToCollectionSheetProps) {
+export default function SaveToCollectionSheet({
+  listingId,
+  onClose,
+  onSaved,
+  anchorRect,
+  excludedCollectionIds = [],
+}: SaveToCollectionSheetProps) {
   const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
   const collections = useSavedStore((s) => s.collections);
@@ -27,7 +34,7 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
   const finishSave = (collectionId: string) => {
     if (!isLiked) toggleLike(listingId);
     addToCollection(collectionId, listingId);
-    onSaved?.();
+    onSaved?.(collectionId);
     onClose();
   };
 
@@ -56,7 +63,9 @@ export default function SaveToCollectionSheet({ listingId, onClose, onSaved, anc
 
       <div className="flex flex-col gap-2.5">
         {collections.map((collection) => {
-          const alreadySaved = collection.listings.some((item) => item.listingId === listingId);
+          const alreadySaved =
+            !excludedCollectionIds.includes(collection.id) &&
+            collection.listings.some((item) => item.listingId === listingId);
           const thumbnailListing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
           return (
             <button

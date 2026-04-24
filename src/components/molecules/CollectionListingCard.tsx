@@ -8,10 +8,11 @@ interface CollectionListingCardProps {
   notes?: string;
   tags: string[];
   tall?: boolean;
+  currentCollectionId: string;
   onTagClick: (anchorRect: DOMRect | null) => void;
   pendingRemoval?: boolean;
   onToggleLike: () => void;
-  onSavedToCollection: () => void;
+  onSavedToCollection: (collectionId: string) => void;
 }
 
 export default function CollectionListingCard({
@@ -19,6 +20,7 @@ export default function CollectionListingCard({
   notes,
   tags,
   tall = false,
+  currentCollectionId,
   onTagClick,
   pendingRemoval = false,
   onToggleLike,
@@ -38,6 +40,7 @@ export default function CollectionListingCard({
         likedOverride={!pendingRemoval}
         onLikeToggle={() => onToggleLike()}
         onSavedToCollection={onSavedToCollection}
+        excludedCollectionIds={pendingRemoval ? [currentCollectionId] : []}
         topRightSlot={(
           <button
             type="button"

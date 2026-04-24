@@ -11,6 +11,7 @@ import { MOCK_LISTINGS } from '@/lib/mock-data';
 import PageShell from '@/components/templates/PageShell';
 import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspaceHeader';
 import CollectionListingsGrid from '@/components/organisms/CollectionListingsGrid';
+import CollectionListingsCarousel from '@/components/organisms/CollectionListingsCarousel';
 import { Collection } from '@/lib/types';
 import BackButton from '@/components/atoms/BackButton';
 import ControlPillButton from '@/components/atoms/ControlPillButton';
@@ -21,7 +22,6 @@ import AnchoredPopover from '@/components/molecules/AnchoredPopover';
 import { cn } from '@/lib/utils/cn';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
-const ListingsCarousel = dynamic(() => import('@/components/organisms/ListingsCarousel'), { ssr: false });
 const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingDetailSheet'), { ssr: false });
 
 type CollectionListingItem = (typeof MOCK_LISTINGS)[0] & {
@@ -101,6 +101,7 @@ export default function CollectionPage() {
   const [tagPanelState, setTagPanelState] = useState<TagPanelState>(null);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [compactMobileHeaderProgress, setCompactMobileHeaderProgress] = useState(0);
+  const [isDesktopViewport, setIsDesktopViewport] = useState(false);
   const [pendingRemovalByCollection, setPendingRemovalByCollection] = useState<Record<string, string[]>>({});
   const pendingRemovalIdsRef = useRef<string[]>([]);
 
@@ -123,6 +124,7 @@ export default function CollectionPage() {
     () => (collection ? pendingRemovalByCollection[collection.id] ?? [] : []),
     [collection, pendingRemovalByCollection]
   );
+  const mobileHeaderProgress = mobileView === 'map' ? 1 : compactMobileHeaderProgress;
 
   useEffect(() => {
     setCarouselVisible(false);
@@ -139,6 +141,13 @@ export default function CollectionPage() {
       setSelectedListingId(null);
     }
   }, [mobileView, setCarouselVisible, setSelectedListingId]);
+
+  useEffect(() => {
+    const updateViewport = () => setIsDesktopViewport(window.innerWidth >= 1024);
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
 
   useEffect(() => {
     pendingRemovalIdsRef.current = pendingRemovalIds;
@@ -198,8 +207,9 @@ export default function CollectionPage() {
     }));
   };
 
-  const handleCollectionResave = (listingId: string) => {
+  const handleCollectionResave = (listingId: string, collectionId: string) => {
     if (!collection) return;
+    if (collection.id !== collectionId) return;
     setPendingRemovalByCollection((current) => ({
       ...current,
       [collection.id]: (current[collection.id] ?? []).filter((id) => id !== listingId),
@@ -209,13 +219,19 @@ export default function CollectionPage() {
   return (
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
       <div className="flex h-full flex-col overflow-hidden bg-white">
-        <div className="relative bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6">
+        <div
+          className="relative bg-white px-4 lg:px-8 lg:pb-5 lg:pt-6"
+          style={isDesktopViewport ? undefined : {
+            paddingTop: `${16 - mobileHeaderProgress * 3}px`,
+            paddingBottom: `${16 - mobileHeaderProgress * 8}px`,
+          }}
+        >
           <CollectionWorkspaceHeader
-            className="min-h-[3.9rem] lg:min-h-0"
+            className="lg:min-h-0"
             title={collection.name}
             subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
             compact={mobileView === 'map'}
-            compactProgress={mobileView === 'map' ? 1 : compactMobileHeaderProgress}
+            compactProgress={mobileHeaderProgress}
             rightSlot={(
               <>
                 <ControlPillButton
@@ -264,6 +280,7 @@ export default function CollectionPage() {
               >
                 <CollectionListingsGrid
                   listings={sortedListings}
+                  currentCollectionId={collection.id}
                   cardTall
                   onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
                   pendingRemovalIds={pendingRemovalIds}
@@ -277,8 +294,16 @@ export default function CollectionPage() {
                   <MapView listings={sortedListings} showListings />
                 </div>
                 {isCarouselVisible && sortedListings.length > 0 && (
-                  <div className="pointer-events-none absolute inset-x-0 bottom-24 z-20">
-                    <ListingsCarousel listings={sortedListings} className="pointer-events-auto pb-2" />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20">
+                    <CollectionListingsCarousel
+                      listings={sortedListings}
+                      currentCollectionId={collection.id}
+                      pendingRemovalIds={pendingRemovalIds}
+                      onToggleListingLike={handleCollectionLikeToggle}
+                      onSavedListing={handleCollectionResave}
+                      onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
+                      className="pointer-events-auto pb-2"
+                    />
                   </div>
                 )}
               </div>
@@ -344,7 +369,6 @@ export default function CollectionPage() {
                     )}
                   >
                     <LayoutList size={16} />
-                    List
                   </button>
                   <button
                     type="button"
@@ -360,7 +384,6 @@ export default function CollectionPage() {
                     )}
                   >
                     <Map size={16} />
-                    Map
                   </button>
                 </div>
                 {mobileView === 'list' && (
@@ -400,6 +423,7 @@ export default function CollectionPage() {
               <div className="h-full overflow-y-auto px-4 py-4">
                 <CollectionListingsGrid
                   listings={sortedListings}
+                  currentCollectionId={collection.id}
                   onTagClick={(listingId, anchorRect) => {
                     setDesktopSortAnchor(null);
                     setTagPanelState({ mode: 'assign', listingId, anchorRect });
