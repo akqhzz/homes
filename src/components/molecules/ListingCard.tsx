@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Heart, MapPin } from 'lucide-react';
@@ -27,6 +27,7 @@ interface ListingCardProps {
   desktopTall?: boolean;
   imageTouchMode?: 'locked' | 'vertical-scroll';
   contentTouchMode?: 'locked' | 'vertical-scroll';
+  topRightSlot?: ReactNode;
 }
 
 export default function ListingCard({
@@ -36,6 +37,7 @@ export default function ListingCard({
   desktopTall = false,
   imageTouchMode = 'locked',
   contentTouchMode = 'locked',
+  topRightSlot,
 }: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
   const [imgIndex, setImgIndex] = useState(0);
@@ -315,16 +317,18 @@ export default function ListingCard({
           </div>
         )}
 
-        {/* Heart */}
-        <button
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)] z-10"
-          onClick={handleSaveClick}
-        >
-          <Heart
-            size={14}
-            className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
-          />
-        </button>
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
+          {topRightSlot}
+          <button
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
+            onClick={handleSaveClick}
+          >
+            <Heart
+              size={14}
+              className={cn(isLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
+            />
+          </button>
+        </div>
 
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button

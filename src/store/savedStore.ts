@@ -15,6 +15,7 @@ interface SavedStore {
   createCollection: (name: string) => string;
   renameCollection: (id: string, name: string) => void;
   deleteCollection: (id: string) => void;
+  addCollectionTag: (collectionId: string, tag: string) => void;
   reorderListings: (collectionId: string, fromIndex: number, toIndex: number) => void;
   updateListingNote: (collectionId: string, listingId: string, note: string) => void;
   addTagToListing: (collectionId: string, listingId: string, tag: string) => void;
@@ -102,6 +103,19 @@ export const useSavedStore = create<SavedStore>()(
       deleteCollection: (id) =>
         set((s) => ({ collections: s.collections.filter((c) => c.id !== id) })),
 
+      addCollectionTag: (collectionId, tag) =>
+        set((s) => ({
+          collections: s.collections.map((c) => {
+            if (c.id !== collectionId) return c;
+            if (c.tags.includes(tag)) return c;
+            return {
+              ...c,
+              tags: [...c.tags, tag],
+              updatedAt: new Date().toISOString(),
+            };
+          }),
+        })),
+
       reorderListings: (collectionId, fromIndex, toIndex) =>
         set((s) => ({
           collections: s.collections.map((c) => {
@@ -141,6 +155,8 @@ export const useSavedStore = create<SavedStore>()(
                   ? { ...l, tags: [...l.tags, tag] }
                   : l
               ),
+              tags: c.tags.includes(tag) ? c.tags : [...c.tags, tag],
+              updatedAt: new Date().toISOString(),
             };
           }),
         })),

@@ -92,12 +92,16 @@ export default function SavedPage() {
       <div className="h-full flex flex-col overflow-hidden bg-white">
         {/* Header */}
         <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-6">
-          <CollectionWorkspaceHeader title="Collections" showBackButton />
+          <CollectionWorkspaceHeader
+            title="Collections"
+            subtitle={`${collections.length} collection${collections.length === 1 ? '' : 's'}`}
+            showBackButton
+          />
         </div>
 
         {/* Collections */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6">
-          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:mx-auto lg:w-max lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
+        <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6 lg:pt-8">
+          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:mx-auto lg:w-max lg:grid-cols-3 lg:gap-6 2xl:grid-cols-4 3xl:grid-cols-5">
             {collections.map((col) => {
               const firstListing = col.listings.length > 0
                 ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
@@ -106,7 +110,7 @@ export default function SavedPage() {
               return (
                 <motion.article
                   key={col.id}
-                  className="relative w-full overflow-visible rounded-2xl bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5"
+                  className="relative w-full overflow-visible rounded-2xl bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5 lg:w-80"
                   whileTap={{ scale: 0.98 }}
                 >
                   <div

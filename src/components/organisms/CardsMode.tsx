@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, Map, MapPin, Home, ArrowDownWideNarrow, Check } from 'lucide-react';
+import { X, Heart, Map, MapPin, Home, ArrowDownWideNarrow } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -14,6 +14,7 @@ import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
+import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
 const SWIPE_THRESHOLD = 38;
@@ -377,37 +378,17 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
       <AnimatePresence>
         {showSortDrawer && (
-          <MobileDrawer
+          <SortOptionsDrawer
             title="Sort cards"
+            open={showSortDrawer}
+            value={sortMode}
+            options={SORT_OPTIONS}
             onClose={() => setShowSortDrawer(false)}
-            heightClassName="h-auto max-h-[78dvh]"
-            contentClassName="px-4 pb-4 overflow-visible"
-          >
-            <div className="flex flex-col gap-2">
-              {SORT_OPTIONS.map((option) => {
-                const selected = sortMode === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => {
-                      setSortMode(option.value);
-                      setCurrentIndex(0);
-                      setShowSortDrawer(false);
-                    }}
-                    className={cn(
-                      'flex min-h-12 items-center justify-between gap-3 whitespace-normal rounded-2xl border px-4 py-3 text-left type-label leading-snug transition-colors',
-                      selected
-                        ? 'border-[#9CA3AF] bg-white text-[#0F1729] shadow-[inset_0_0_0_1px_#9CA3AF]'
-                        : 'border-transparent bg-[#F5F6F7] text-[#0F1729]'
-                    )}
-                  >
-                    <span className="min-w-0 flex-1 break-words">{option.label}</span>
-                    {selected && <Check size={16} className="shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-          </MobileDrawer>
+            onChange={(value) => {
+              setSortMode(value);
+              setCurrentIndex(0);
+            }}
+          />
         )}
       </AnimatePresence>
 

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
-import { ArrowDownWideNarrow, LayoutList, Map, Tags } from 'lucide-react';
+import { ArrowDownWideNarrow, LayoutList, Map, Tag } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
@@ -13,6 +13,8 @@ import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspac
 import CollectionListingsGrid from '@/components/organisms/CollectionListingsGrid';
 import { Collection } from '@/lib/types';
 import BackButton from '@/components/atoms/BackButton';
+import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
+import CollectionTagsPanel from '@/components/organisms/CollectionTagsPanel';
 import { cn } from '@/lib/utils/cn';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
@@ -25,6 +27,10 @@ type CollectionListingItem = (typeof MOCK_LISTINGS)[0] & {
 
 type CollectionView = 'list' | 'map';
 type SortOption = 'manual' | 'price-asc' | 'price-desc';
+type TagPanelState =
+  | null
+  | { mode: 'filter' }
+  | { mode: 'assign'; listingId: string };
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'manual', label: 'Saved order' },
@@ -70,18 +76,40 @@ function getCollectionViewport(
 
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
-  const { collections } = useSavedStore();
+  const {
+    collections,
+    addCollectionTag,
+    addTagToListing,
+    removeTagFromListing,
+  } = useSavedStore();
   const { activePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
   const setSelectedListingId = useMapStore((state) => state.setSelectedListingId);
   const setViewState = useMapStore((state) => state.setViewState);
+
   const [mobileView, setMobileView] = useState<CollectionView>('list');
   const [sort, setSort] = useState<SortOption>('manual');
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showSortDrawer, setShowSortDrawer] = useState(false);
+  const [showDesktopSort, setShowDesktopSort] = useState(false);
+  const [tagPanelState, setTagPanelState] = useState<TagPanelState>(null);
+  const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
+  const [compactMobileHeader, setCompactMobileHeader] = useState(false);
 
   const collection = collections.find((item) => item.id === id);
-
   const listings = collection ? getCollectionListings(collection) : [];
-  const sortedListings = sortCollectionListings(listings, sort);
+  const availableTags = Array.from(
+    new Set([...(collection?.tags ?? []), ...listings.flatMap((listing) => listing.collectionData.tags)])
+  );
+
+  const filteredListings = activeTagFilters.length === 0
+    ? listings
+    : listings.filter((listing) =>
+        listing.collectionData.tags.some((tag) => activeTagFilters.includes(tag))
+      );
+  const sortedListings = sortCollectionListings(filteredListings, sort);
+
+  const assigningListing = tagPanelState?.mode === 'assign'
+    ? listings.find((listing) => listing.id === tagPanelState.listingId) ?? null
+    : null;
 
   useEffect(() => {
     setCarouselVisible(false);
@@ -89,8 +117,8 @@ export default function CollectionPage() {
   }, [id, setCarouselVisible, setSelectedListingId]);
 
   useEffect(() => {
-    setViewState(getCollectionViewport(collection ? getCollectionListings(collection) : []));
-  }, [collection, setViewState]);
+    setViewState(getCollectionViewport(sortedListings));
+  }, [sortedListings, setViewState]);
 
   useEffect(() => {
     if (mobileView !== 'map') {
@@ -109,6 +137,28 @@ export default function CollectionPage() {
     );
   }
 
+  const toggleListingTag = (listingId: string, tag: string) => {
+    const listing = listings.find((item) => item.id === listingId);
+    if (!listing) return;
+    if (listing.collectionData.tags.includes(tag)) {
+      removeTagFromListing(collection.id, listingId, tag);
+      return;
+    }
+    addTagToListing(collection.id, listingId, tag);
+  };
+
+  const createTag = (tag: string) => {
+    addCollectionTag(collection.id, tag);
+    if (tagPanelState?.mode === 'assign' && tagPanelState.listingId) {
+      addTagToListing(collection.id, tagPanelState.listingId, tag);
+      return;
+    }
+    setActiveTagFilters((current) => (current.includes(tag) ? current : [...current, tag]));
+  };
+
+  const desktopActionButtonClassName =
+    'flex h-11 items-center gap-2 rounded-full bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-colors hover:bg-[#EBEBEB]';
+
   return (
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
       <div className="flex h-full flex-col overflow-hidden bg-white">
@@ -116,54 +166,96 @@ export default function CollectionPage() {
           <CollectionWorkspaceHeader
             title={collection.name}
             subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
+            compact={mobileView === 'map' || compactMobileHeader}
+            rightSlot={(
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTagPanelState({ mode: 'filter' });
+                    setShowDesktopSort(false);
+                  }}
+                  className={desktopActionButtonClassName}
+                >
+                  <Tag size={16} />
+                  Tags
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDesktopSort((current) => !current);
+                    setTagPanelState(null);
+                  }}
+                  className={desktopActionButtonClassName}
+                >
+                  <ArrowDownWideNarrow size={16} />
+                  Sort
+                </button>
+              </>
+            )}
           />
         </div>
 
         <div className="flex-1 overflow-hidden">
           <div className="flex h-full flex-col lg:hidden">
             {mobileView === 'list' ? (
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4">
-                <CollectionListingsGrid listings={sortedListings} cardTall />
+              <div
+                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4"
+                onScroll={(event) => setCompactMobileHeader(event.currentTarget.scrollTop > 36)}
+              >
+                <CollectionListingsGrid
+                  listings={sortedListings}
+                  cardTall
+                  onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId })}
+                />
               </div>
             ) : (
               <div className="relative min-h-0 flex-1">
-                <div className="absolute inset-0 overflow-hidden bg-[#EEF2F6]">
+                <div className="absolute inset-x-4 bottom-24 top-4 overflow-hidden rounded-[30px] bg-[#EEF2F6] shadow-[0_18px_44px_rgba(15,23,41,0.10)]">
                   <MapView listings={sortedListings} showListings />
                 </div>
                 {isCarouselVisible && sortedListings.length > 0 && (
-                  <div className="pointer-events-none absolute inset-x-0 bottom-22 z-20">
+                  <div className="pointer-events-none absolute inset-x-0 bottom-26 z-20">
                     <ListingsCarousel listings={sortedListings} className="pointer-events-auto pb-2" />
                   </div>
                 )}
               </div>
             )}
 
-            {showSortMenu && mobileView === 'list' && (
-              <div className="pointer-events-none fixed inset-x-0 bottom-[6.75rem] z-30 flex justify-center px-4">
-                <div className="pointer-events-auto w-[min(22rem,100%)] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                  {SORT_OPTIONS.map((option) => {
-                    const active = sort === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => {
-                          setSort(option.value);
-                          setShowSortMenu(false);
-                        }}
-                        className={cn(
-                          'flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors',
-                          active ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:bg-[#F5F6F7] hover:text-[#0F1729]'
-                        )}
-                      >
-                        <span className="type-btn">{option.label}</span>
-                        {active && <span className="type-caption text-[#0F1729]">Active</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <SortOptionsDrawer
+              title="Sort cards"
+              open={showSortDrawer}
+              value={sort}
+              options={SORT_OPTIONS}
+              onClose={() => setShowSortDrawer(false)}
+              onChange={setSort}
+            />
+
+            <CollectionTagsPanel
+              title={tagPanelState?.mode === 'assign' ? 'Assign tags' : 'Filter by tags'}
+              open={tagPanelState !== null}
+              mode={tagPanelState?.mode === 'assign' ? 'assign' : 'filter'}
+              availableTags={availableTags}
+              selectedTags={
+                tagPanelState?.mode === 'assign'
+                  ? assigningListing?.collectionData.tags ?? []
+                  : activeTagFilters
+              }
+              onClose={() => setTagPanelState(null)}
+              onToggleTag={(tag) => {
+                if (tagPanelState?.mode === 'assign' && tagPanelState.listingId) {
+                  toggleListingTag(tagPanelState.listingId, tag);
+                  return;
+                }
+                setActiveTagFilters((current) =>
+                  current.includes(tag)
+                    ? current.filter((item) => item !== tag)
+                    : [...current, tag]
+                );
+              }}
+              onCreateTag={createTag}
+              onClearFilters={() => setActiveTagFilters([])}
+            />
 
             <div
               className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4 lg:hidden"
@@ -179,7 +271,8 @@ export default function CollectionPage() {
                     type="button"
                     aria-label={mobileView === 'list' ? 'Map view' : 'List view'}
                     onClick={() => {
-                      setShowSortMenu(false);
+                      setShowSortDrawer(false);
+                      setTagPanelState(null);
                       setMobileView((value) => (value === 'list' ? 'map' : 'list'));
                     }}
                     className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
@@ -191,13 +284,13 @@ export default function CollectionPage() {
                     aria-label="Sort"
                     disabled={mobileView !== 'list'}
                     onClick={() => {
-                      if (mobileView === 'list') setShowSortMenu((value) => !value);
+                      if (mobileView !== 'list') return;
+                      setTagPanelState(null);
+                      setShowSortDrawer(true);
                     }}
                     className={cn(
                       'flex h-11 w-11 items-center justify-center rounded-full transition-colors',
-                      mobileView === 'list'
-                        ? 'text-[#0F1729] hover:bg-[#F5F6F7]'
-                        : 'text-[#C4C4C4]'
+                      mobileView === 'list' ? 'text-[#0F1729] hover:bg-[#F5F6F7]' : 'text-[#C4C4C4]'
                     )}
                   >
                     <ArrowDownWideNarrow size={18} />
@@ -205,9 +298,13 @@ export default function CollectionPage() {
                   <button
                     type="button"
                     aria-label="Tags"
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#C4C4C4] transition-colors hover:bg-[#F5F6F7]"
+                    onClick={() => {
+                      setShowSortDrawer(false);
+                      setTagPanelState({ mode: 'filter' });
+                    }}
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
                   >
-                    <Tags size={18} />
+                    <Tag size={18} />
                   </button>
                 </div>
               </div>
@@ -222,8 +319,70 @@ export default function CollectionPage() {
             </div>
 
             <div className="min-h-0 min-w-0 flex-1 overflow-y-auto py-1">
-              <CollectionListingsGrid listings={sortedListings} />
+              <CollectionListingsGrid
+                listings={sortedListings}
+                onTagClick={(listingId) => {
+                  setShowDesktopSort(false);
+                  setTagPanelState({ mode: 'assign', listingId });
+                }}
+              />
             </div>
+
+            {showDesktopSort && (
+              <div className="fixed right-6 top-28 z-[60] w-[22rem] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                {SORT_OPTIONS.map((option) => {
+                  const selected = sort === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setSort(option.value);
+                        setShowDesktopSort(false);
+                      }}
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-colors',
+                        selected ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:bg-[#F5F6F7] hover:text-[#0F1729]'
+                      )}
+                    >
+                      <span className="type-btn">{option.label}</span>
+                      {selected && <span className="type-caption text-[#0F1729]">Active</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {tagPanelState && (
+              <div className="fixed right-6 top-28 z-[60]">
+                <CollectionTagsPanel
+                  title={tagPanelState.mode === 'assign' ? 'Assign tags' : 'Filter by tags'}
+                  open
+                  mode={tagPanelState.mode === 'assign' ? 'assign' : 'filter'}
+                  availableTags={availableTags}
+                  selectedTags={
+                    tagPanelState.mode === 'assign'
+                      ? assigningListing?.collectionData.tags ?? []
+                      : activeTagFilters
+                  }
+                  onClose={() => setTagPanelState(null)}
+                  onToggleTag={(tag) => {
+                    if (tagPanelState.mode === 'assign' && tagPanelState.listingId) {
+                      toggleListingTag(tagPanelState.listingId, tag);
+                      return;
+                    }
+                    setActiveTagFilters((current) =>
+                      current.includes(tag)
+                        ? current.filter((item) => item !== tag)
+                        : [...current, tag]
+                    );
+                  }}
+                  onCreateTag={createTag}
+                  onClearFilters={() => setActiveTagFilters([])}
+                  desktop
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 'use client';
+import type { ReactNode } from 'react';
 import BackButton from '@/components/atoms/BackButton';
 import { cn } from '@/lib/utils/cn';
 
@@ -6,6 +7,8 @@ interface CollectionWorkspaceHeaderProps {
   title: string;
   subtitle?: string;
   showBackButton?: boolean;
+  compact?: boolean;
+  rightSlot?: ReactNode;
   className?: string;
 }
 
@@ -13,6 +16,8 @@ export default function CollectionWorkspaceHeader({
   title,
   subtitle,
   showBackButton = true,
+  compact = false,
+  rightSlot,
   className,
 }: CollectionWorkspaceHeaderProps) {
   return (
@@ -24,12 +29,24 @@ export default function CollectionWorkspaceHeader({
         />
       )}
 
-      <div className="min-w-0 text-center">
-        <h1 className="text-[1.28rem] font-medium leading-[1.2] tracking-[-0.01em] text-[#0F1729] lg:text-[1.55rem]">
+      {rightSlot && (
+        <div className="absolute right-0 hidden items-center gap-2 lg:flex">
+          {rightSlot}
+        </div>
+      )}
+
+      <div className="min-w-0 text-center transition-all duration-300 ease-out">
+        <h1 className={cn(
+          'font-medium tracking-[-0.01em] text-[#0F1729] transition-all duration-300 ease-out',
+          compact ? 'text-[1.05rem] leading-[1.15] lg:text-[1.25rem]' : 'text-[1.28rem] leading-[1.2] lg:text-[1.55rem]'
+        )}>
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-1 text-[0.9rem] leading-[1.4] text-[#6B7280]">{subtitle}</p>
+          <p className={cn(
+            'text-[0.9rem] leading-[1.4] text-[#6B7280] transition-all duration-300 ease-out',
+            compact ? 'mt-0 max-h-0 overflow-hidden opacity-0' : 'mt-1 max-h-10 opacity-100'
+          )}>{subtitle}</p>
         )}
       </div>
     </div>

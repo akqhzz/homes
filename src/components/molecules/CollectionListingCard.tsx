@@ -1,4 +1,5 @@
 'use client';
+import { Tag } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import ListingCard from '@/components/molecules/ListingCard';
 
@@ -7,6 +8,7 @@ interface CollectionListingCardProps {
   notes?: string;
   tags: string[];
   tall?: boolean;
+  onTagClick: () => void;
 }
 
 export default function CollectionListingCard({
@@ -14,6 +16,7 @@ export default function CollectionListingCard({
   notes,
   tags,
   tall = false,
+  onTagClick,
 }: CollectionListingCardProps) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
@@ -24,6 +27,19 @@ export default function CollectionListingCard({
         imageTouchMode="vertical-scroll"
         contentTouchMode="vertical-scroll"
         desktopTall={tall}
+        topRightSlot={(
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onTagClick();
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
+            aria-label="Manage tags"
+          >
+            <Tag size={14} />
+          </button>
+        )}
       />
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 px-0.5">
