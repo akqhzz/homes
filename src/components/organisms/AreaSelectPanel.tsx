@@ -207,7 +207,7 @@ export default function AreaSelectPanel({
             <button
               type="button"
               onClick={handleBack}
-              className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-left text-sm text-[#0F1729] backdrop-blur-xl lg:w-[292px] lg:flex-none"
+              className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-left text-sm text-[#0F1729] backdrop-blur-xl lg:w-[264px] lg:flex-none"
               aria-label="Close area selection"
             >
               <div className="flex w-full items-center gap-2.5">
@@ -217,6 +217,19 @@ export default function AreaSelectPanel({
                 <p className="min-w-0 flex-1 truncate type-body leading-tight">{title}</p>
               </div>
             </button>
+            {hasSelection && !focusedNeighborhood && (
+              <div className="pointer-events-auto hidden items-center gap-2 lg:flex">
+                <button onClick={onClearSelection} className="flex h-11 items-center justify-center rounded-full bg-white px-4 type-label text-[#0F1729] shadow-[var(--shadow-control)]">
+                  Clear
+                </button>
+                <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+                  <Undo2 size={15} />
+                </button>
+                <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+                  <Redo2 size={15} />
+                </button>
+              </div>
+            )}
             <button
               onClick={onApply}
               className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-4 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:absolute lg:right-0 lg:top-0"
@@ -276,7 +289,7 @@ export default function AreaSelectPanel({
 
         {hasSelection && !isDrawing && !focusedNeighborhood && (
           <div
-            className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto"
+            className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
             <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">

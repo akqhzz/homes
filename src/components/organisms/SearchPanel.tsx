@@ -11,11 +11,13 @@ import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 interface SearchPanelProps {
   hasAppliedArea?: boolean;
+  areaSummaryLabel?: string;
+  onOpenAreaSelect?: () => void;
   onEditArea?: () => void;
   onClearArea?: () => void;
 }
 
-export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClearArea }: SearchPanelProps) {
+export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, onOpenAreaSelect, onEditArea, onClearArea }: SearchPanelProps) {
   const [query, setQuery] = useState('');
   const [showAreaMenu, setShowAreaMenu] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +59,10 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
   const handleAreaClick = () => {
     if (hasAppliedArea) {
       setShowAreaMenu((value) => !value);
+      return;
+    }
+    if (onOpenAreaSelect) {
+      onOpenAreaSelect();
       return;
     }
     setAreaSelectMode(true);
@@ -162,6 +168,13 @@ export default function SearchPanel({ hasAppliedArea = false, onEditArea, onClea
               <button onClick={clearLocations} className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-1 text-sm font-medium text-[#6B7280] hover:text-[#0F1729]">
                 Clear
               </button>
+            </div>
+          )}
+          {selectedLocations.length === 0 && hasAppliedArea && areaSummaryLabel && (
+            <div className="flex items-center gap-2 px-4 py-2">
+              <span className="inline-flex items-center rounded-full bg-[#F0F0F0] px-3 py-1 text-sm font-medium text-[#0F1729]">
+                {areaSummaryLabel}
+              </span>
             </div>
           )}
         <div className="px-4 py-3">

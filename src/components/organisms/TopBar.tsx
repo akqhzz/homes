@@ -9,11 +9,13 @@ import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 interface TopBarProps {
   hasAppliedArea?: boolean;
+  areaSummaryLabel?: string;
+  onOpenAreaSelect?: () => void;
   onEditArea?: () => void;
   onClearArea?: () => void;
 }
 
-export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea }: TopBarProps) {
+export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpenAreaSelect, onEditArea, onClearArea }: TopBarProps) {
   const [showAreaMenu, setShowAreaMenu] = useState(false);
   const areaMenuRef = useRef<HTMLDivElement>(null);
   const { selectedLocations } = useSearchStore();
@@ -23,12 +25,16 @@ export default function TopBar({ hasAppliedArea = false, onEditArea, onClearArea
   const filterCount = activeFilterCount();
   const locationLabel =
     selectedLocations.length === 0
-      ? hasAppliedArea ? '1 area' : 'Where?'
+      ? hasAppliedArea ? areaSummaryLabel ?? '1 area' : 'Where?'
       : `${selectedLocations.length} area${selectedLocations.length === 1 ? '' : 's'}`;
 
   const handleAreaClick = () => {
     if (hasAppliedArea) {
       setShowAreaMenu((value) => !value);
+      return;
+    }
+    if (onOpenAreaSelect) {
+      onOpenAreaSelect();
       return;
     }
     setAreaSelectMode(true);

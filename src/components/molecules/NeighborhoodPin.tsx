@@ -1,4 +1,5 @@
 'use client';
+import type { MouseEvent } from 'react';
 import Image from 'next/image';
 import { Neighborhood } from '@/lib/types';
 import { cn } from '@/lib/utils/cn';
@@ -22,10 +23,15 @@ export default function NeighborhoodPin({
   variant = 'default',
   count,
 }: NeighborhoodPinProps) {
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onClick?.();
+  };
+
   if (variant === 'cluster') {
     return (
       <button
-        onClick={onClick}
+        onClick={handleClick}
         className="flex h-11 min-w-11 items-center justify-center rounded-full border border-white/80 bg-[#0F1729]/88 px-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,23,41,0.28)] backdrop-blur"
       >
         {count}
@@ -35,7 +41,7 @@ export default function NeighborhoodPin({
 
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className={cn(
         'flex flex-col items-center gap-1 no-select transition-all duration-150',
         'hover:scale-105 active:scale-100'

@@ -32,7 +32,7 @@ const PREVIEW_BOUNDARY_STYLE = {
   lineWidth: 1,
   lineDasharray: [2, 2],
   fillColor: '#0F1729',
-  fillOpacity: 0.02,
+  fillOpacity: 0.04,
 };
 
 const LISTING_MARKER_OFFSETS = [
@@ -198,7 +198,7 @@ export default function MapView({
         </Source>
       ))}
 
-      {!isAreaMode && searchedLocations
+      {searchedLocations
         .filter((location) => (location.boundary?.length ?? 0) > 2)
         .map((location) => (
           <Source
@@ -307,7 +307,7 @@ export default function MapView({
                   mapRef.current?.fitBounds(bounds, {
                     padding: { top: 140, bottom: 180, left: 48, right: 48 },
                     duration: 380,
-                    maxZoom: Math.max(viewState.zoom + 2.6, 17),
+                    maxZoom: 18,
                   });
                 }}
               />
@@ -372,7 +372,7 @@ export default function MapView({
             longitude={markerCoordinates.lng}
             latitude={markerCoordinates.lat}
             anchor={showRight ? 'left' : 'right'}
-            offset={showRight ? [42, isUpperHalf ? -18 : -118] : [-52, isUpperHalf ? -18 : -118]}
+            offset={showRight ? [34, isUpperHalf ? 14 : -118] : [-60, isUpperHalf ? 14 : -118]}
           >
             <div onClick={(event) => event.stopPropagation()} className="hidden w-72 lg:block">
               <ListingCard listing={selectedListing} variant="carousel" />
@@ -493,7 +493,7 @@ function buildNeighborhoodDisplayItems(
     }));
   }
 
-  const threshold = zoom >= 15 ? 28 : zoom >= 14.2 ? 40 : zoom >= 13.4 ? 58 : 82;
+  const threshold = zoom >= 17 ? 9 : zoom >= 16 ? 15 : zoom >= 15 ? 24 : zoom >= 14.2 ? 38 : zoom >= 13.4 ? 56 : 82;
   const projected = neighborhoods.map((neighborhood) => {
     const anchor = getNeighborhoodAnchor(neighborhood);
     return {

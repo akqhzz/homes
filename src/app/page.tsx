@@ -136,8 +136,42 @@ function areSearchSnapshotsEqual(a: SearchSnapshot, b: SearchSnapshot) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+function normalizeAreaName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function getCarryoverAreaSelection(locations: SavedSearch['locations']) {
+  const matchedNeighborhoodIds = new Set<string>();
+  let fallbackBoundary: { lat: number; lng: number }[] = [];
+
+  for (const location of locations) {
+    if ((location.boundary?.length ?? 0) < 3) continue;
+    const normalizedLocationName = normalizeAreaName(location.name);
+    const matchingNeighborhood = MOCK_NEIGHBORHOODS.find((neighborhood) => {
+      const normalizedNeighborhoodName = normalizeAreaName(neighborhood.name);
+      return (
+        normalizedNeighborhoodName === normalizedLocationName ||
+        normalizedNeighborhoodName.includes(normalizedLocationName) ||
+        normalizedLocationName.includes(normalizedNeighborhoodName)
+      );
+    });
+
+    if (matchingNeighborhood) {
+      matchedNeighborhoodIds.add(matchingNeighborhood.id);
+      continue;
+    }
+
+    if (fallbackBoundary.length === 0) fallbackBoundary = location.boundary ?? [];
+  }
+
+  return {
+    matchedNeighborhoodIds,
+    fallbackBoundary,
+  };
+}
+
 export default function MapPage() {
-  const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
+  const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible, setAreaSelectMode } = useUIStore();
   const { filters, selectedLocations, setLocations, replaceFilters, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
@@ -176,6 +210,16 @@ export default function MapPage() {
   const hasVisibleBoundary = hasAppliedArea || hasSearchBoundary;
   const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0 || selectedLocations.length > 0;
   const activeSavedSearch = searches.find((search) => search.id === activeSearchId) ?? null;
+  const areaSummaryLabel =
+    appliedNeighborhoods.size > 0
+      ? `${appliedNeighborhoods.size} area${appliedNeighborhoods.size === 1 ? '' : 's'}`
+      : appliedBoundary.length >= 3
+      ? 'Custom area'
+      : hasSearchBoundary
+      ? `${selectedLocations.filter((location) => (location.boundary?.length ?? 0) > 2).length} area${
+          selectedLocations.filter((location) => (location.boundary?.length ?? 0) > 2).length === 1 ? '' : 's'
+        }`
+      : undefined;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -251,6 +295,29 @@ export default function MapPage() {
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
     setIsDrawingArea(false);
+    setActivePanel('area-select');
+  };
+
+  const openAreaSelect = () => {
+    if (hasAppliedArea) {
+      editAppliedArea();
+      return;
+    }
+
+    const { matchedNeighborhoodIds, fallbackBoundary } = getCarryoverAreaSelection(selectedLocations);
+    setSelectedNeighborhoods(new Set(matchedNeighborhoodIds));
+    setDrawnBoundary(fallbackBoundary);
+    setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
+    setHoveredNeighborhood(null);
+    setFocusedNeighborhood(
+      matchedNeighborhoodIds.size > 0
+        ? MOCK_NEIGHBORHOODS.find((neighborhood) => neighborhood.id === [...matchedNeighborhoodIds][0]) ?? null
+        : null
+    );
+    setIsDrawingArea(false);
+    setAreaSelectMode(true);
     setActivePanel('area-select');
   };
 
@@ -443,7 +510,7 @@ export default function MapPage() {
             listings={isAreaSelect ? [] : filteredListings}
             showNeighborhoods={isAreaSelect}
             showListings={!isAreaSelect}
-            searchedLocations={isAreaSelect ? [] : selectedLocations}
+            searchedLocations={selectedLocations}
             selectedNeighborhoodId={isAreaSelect ? focusedNeighborhood?.id ?? null : null}
             previewNeighborhoodId={isAreaSelect ? hoveredNeighborhood?.id ?? null : null}
             includedNeighborhoodIds={isAreaSelect ? selectedNeighborhoods : appliedNeighborhoods}
@@ -466,8 +533,7 @@ export default function MapPage() {
             <div className="pointer-events-auto absolute left-5 top-5 z-20 hidden items-center gap-2 lg:flex">
               <button
                 onClick={() => {
-                  editAppliedArea();
-                  setActivePanel('area-select');
+                  openAreaSelect();
                 }}
                 className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
               >
@@ -489,6 +555,8 @@ export default function MapPage() {
           <div className={isAreaSelect ? 'hidden' : 'lg:hidden'}>
             <TopBar
               hasAppliedArea={hasVisibleBoundary}
+              areaSummaryLabel={areaSummaryLabel}
+              onOpenAreaSelect={openAreaSelect}
               onEditArea={editAppliedArea}
               onClearArea={clearVisibleBoundaries}
             />
@@ -566,6 +634,8 @@ export default function MapPage() {
           <SearchPanel
             key="search"
             hasAppliedArea={hasVisibleBoundary}
+            areaSummaryLabel={areaSummaryLabel}
+            onOpenAreaSelect={openAreaSelect}
             onEditArea={editAppliedArea}
             onClearArea={clearVisibleBoundaries}
           />
