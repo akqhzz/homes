@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useRef } from 'react';
 import type { Feature, LineString, Polygon } from 'geojson';
-import Map, { Layer, Marker, NavigationControl, Source, type MapRef } from 'react-map-gl/mapbox';
+import Map, { Layer, Marker, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
@@ -64,7 +64,7 @@ export default function MapView({
 
   const mapStyle = isSatelliteMode
     ? 'mapbox://styles/mapbox/satellite-streets-v12'
-    : 'mapbox://styles/mapbox/light-v11';
+    : 'mapbox://styles/mapbox/streets-v12';
 
   const handleMarkerClick = useCallback(
     (listingId: string, coords: { lat: number; lng: number }) => {
@@ -131,8 +131,6 @@ export default function MapView({
       minZoom={9}
       maxZoom={18}
     >
-      {!isAreaMode && <NavigationControl position="bottom-right" showCompass={false} style={{ bottom: 280, right: 12 }} />}
-
       {boundaryNeighborhoods.map((neighborhood) => (
         <Source key={neighborhood.id} id={`neighborhood-boundary-${neighborhood.id}`} type="geojson" data={getNeighborhoodBoundaryFeature(neighborhood)}>
           <Layer
