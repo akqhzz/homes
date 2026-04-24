@@ -1,5 +1,5 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
-import { closePolygon, getPolygonFromBounds } from '@/lib/geo';
+import { closePolygon } from '@/lib/geo';
 import { normalizeMapboxFeature } from '@/lib/mapbox';
 import { getMapboxToken } from '@/lib/mapbox-token';
 
@@ -64,13 +64,6 @@ function enrichLocationBoundary(location: ReturnType<typeof normalizeMapboxFeatu
       ...location,
       type: 'neighborhood' as const,
       boundary: closePolygon(matchedNeighborhood.boundary),
-    };
-  }
-
-  if (location.bbox) {
-    return {
-      ...location,
-      boundary: getPolygonFromBounds(location.bbox),
     };
   }
 
