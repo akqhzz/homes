@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, Map, MapPin, Home, ArrowDownWideNarrow } from 'lucide-react';
+import { X, Heart, Map, MapPin, ArrowDownWideNarrow } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -40,7 +40,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/pin-s+0F1729(${lng},${lat})/${lng},${lat},14,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
+  return `https://api.mapbox.com/styles/v1/mapbox/standard/static/${lng},${lat},14,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
 }
 
 interface CardsModeProps {
@@ -629,15 +629,6 @@ function CardModeListingCard({
                 ) : (
                   <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
                 )}
-                <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-full text-[#0F1729] drop-shadow-[0_1px_2px_rgba(255,255,255,0.9)]">
-                  <MapPin size={20} fill="#0F1729" strokeWidth={1.8} />
-                  <Home
-                    size={8}
-                    fill="white"
-                    strokeWidth={2.5}
-                    className="absolute left-1/2 top-[4px] -translate-x-1/2 text-white"
-                  />
-                </span>
               </button>
             </div>
           </div>

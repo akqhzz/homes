@@ -204,18 +204,19 @@ export default function AreaSelectPanel({
       <div className="pointer-events-none absolute inset-0 z-30">
         {!isDrawing ? (
           <div className="absolute left-4 right-4 top-4 flex items-center gap-2 lg:block">
-            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-sm text-[#0F1729] backdrop-blur-xl lg:w-[340px] lg:flex-none">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-left text-sm text-[#0F1729] backdrop-blur-xl lg:w-[292px] lg:flex-none"
+              aria-label="Close area selection"
+            >
               <div className="flex w-full items-center gap-2.5">
-                <button
-                  onClick={handleBack}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]"
-                  aria-label="Back"
-                >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
                   <ArrowLeft size={16} strokeWidth={2.4} />
-                </button>
+                </span>
                 <p className="min-w-0 flex-1 truncate type-body leading-tight">{title}</p>
               </div>
-            </div>
+            </button>
             <button
               onClick={onApply}
               className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-4 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:absolute lg:right-0 lg:top-0"

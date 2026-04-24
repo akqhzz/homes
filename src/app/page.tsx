@@ -411,6 +411,7 @@ export default function MapPage() {
     setAreaFocusToken((token) => token + 1);
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
     if (!isDesktop) {
+      toggleNeighborhood(neighborhood.id);
       setFocusedNeighborhood(neighborhood);
       return;
     }
