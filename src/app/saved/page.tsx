@@ -123,7 +123,7 @@ export default function SavedPage() {
                     }}
                   >
                     {/* Cover — first listing image, full fill */}
-                    <div className="relative aspect-[4/3] overflow-hidden bg-[#E5E7EB]">
+                    <div className="relative aspect-[16/11] overflow-hidden bg-[#E5E7EB] sm:aspect-[4/3]">
                       {firstListing ? (
                         <Image src={firstListing.images[0]} alt="" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
                       ) : (

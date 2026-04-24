@@ -16,6 +16,8 @@ interface SavedStore {
   renameCollection: (id: string, name: string) => void;
   deleteCollection: (id: string) => void;
   addCollectionTag: (collectionId: string, tag: string) => void;
+  renameCollectionTag: (collectionId: string, oldTag: string, newTag: string) => void;
+  deleteCollectionTag: (collectionId: string, tag: string) => void;
   reorderListings: (collectionId: string, fromIndex: number, toIndex: number) => void;
   updateListingNote: (collectionId: string, listingId: string, note: string) => void;
   addTagToListing: (collectionId: string, listingId: string, tag: string) => void;
@@ -111,6 +113,40 @@ export const useSavedStore = create<SavedStore>()(
             return {
               ...c,
               tags: [...c.tags, tag],
+              updatedAt: new Date().toISOString(),
+            };
+          }),
+        })),
+
+      renameCollectionTag: (collectionId, oldTag, newTag) =>
+        set((s) => ({
+          collections: s.collections.map((c) => {
+            if (c.id !== collectionId) return c;
+            const normalized = newTag.trim();
+            if (!normalized || oldTag === normalized) return c;
+            return {
+              ...c,
+              tags: c.tags.map((tag) => (tag === oldTag ? normalized : tag)),
+              listings: c.listings.map((listing) => ({
+                ...listing,
+                tags: listing.tags.map((tag) => (tag === oldTag ? normalized : tag)),
+              })),
+              updatedAt: new Date().toISOString(),
+            };
+          }),
+        })),
+
+      deleteCollectionTag: (collectionId, tag) =>
+        set((s) => ({
+          collections: s.collections.map((c) => {
+            if (c.id !== collectionId) return c;
+            return {
+              ...c,
+              tags: c.tags.filter((item) => item !== tag),
+              listings: c.listings.map((listing) => ({
+                ...listing,
+                tags: listing.tags.filter((item) => item !== tag),
+              })),
               updatedAt: new Date().toISOString(),
             };
           }),

@@ -80,6 +80,8 @@ export default function CollectionPage() {
   const {
     collections,
     addCollectionTag,
+    renameCollectionTag,
+    deleteCollectionTag,
     addTagToListing,
     removeTagFromListing,
   } = useSavedStore();
@@ -93,24 +95,23 @@ export default function CollectionPage() {
   const [desktopSortAnchor, setDesktopSortAnchor] = useState<DOMRect | null>(null);
   const [tagPanelState, setTagPanelState] = useState<TagPanelState>(null);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
-  const [compactMobileHeader, setCompactMobileHeader] = useState(false);
+  const [compactMobileHeaderProgress, setCompactMobileHeaderProgress] = useState(0);
 
   const collection = collections.find((item) => item.id === id);
   const listings = collection ? getCollectionListings(collection) : [];
   const availableTags = Array.from(
     new Set([...(collection?.tags ?? []), ...listings.flatMap((listing) => listing.collectionData.tags)])
   );
-
   const filteredListings = activeTagFilters.length === 0
     ? listings
     : listings.filter((listing) =>
         listing.collectionData.tags.some((tag) => activeTagFilters.includes(tag))
       );
   const sortedListings = sortCollectionListings(filteredListings, sort);
-
   const assigningListing = tagPanelState?.mode === 'assign'
     ? listings.find((listing) => listing.id === tagPanelState.listingId) ?? null
     : null;
+  const hasActiveTagFilters = activeTagFilters.length > 0;
 
   useEffect(() => {
     setCarouselVisible(false);
@@ -163,23 +164,38 @@ export default function CollectionPage() {
   return (
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
       <div className="flex h-full flex-col overflow-hidden bg-white">
-        <div className="bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6">
+        <div className="relative bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6">
+          <div className="mb-3 flex justify-start lg:hidden">
+            <BackButton
+              iconOnly
+              className="h-11 w-11 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
+            />
+          </div>
           <CollectionWorkspaceHeader
             title={collection.name}
             subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
-            compact={mobileView === 'map' || compactMobileHeader}
+            compact={mobileView === 'map' || compactMobileHeaderProgress >= 0.98}
+            compactProgress={mobileView === 'map' ? 1 : compactMobileHeaderProgress}
             rightSlot={(
               <>
                 <button
                   type="button"
                   onClick={(event) => {
-                    setTagPanelState({ mode: 'filter', anchorRect: event.currentTarget.getBoundingClientRect() });
                     setDesktopSortAnchor(null);
+                    setTagPanelState({ mode: 'filter', anchorRect: event.currentTarget.getBoundingClientRect() });
                   }}
-                  className={desktopActionButtonClassName}
+                  className={cn(
+                    desktopActionButtonClassName,
+                    hasActiveTagFilters && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
+                  )}
                 >
                   <Tag size={16} />
                   Tags
+                  {hasActiveTagFilters && (
+                    <span className="rounded-full bg-[#0F1729] px-1.5 py-0.5 type-nano text-white">
+                      {activeTagFilters.length}
+                    </span>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -210,21 +226,25 @@ export default function CollectionPage() {
             {mobileView === 'list' ? (
               <div
                 className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4"
-                onScroll={(event) => setCompactMobileHeader(event.currentTarget.scrollTop > 36)}
+                onScroll={(event) => {
+                  const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 120));
+                  const eased = 1 - Math.pow(1 - raw, 2);
+                  setCompactMobileHeaderProgress(eased);
+                }}
               >
                 <CollectionListingsGrid
                   listings={sortedListings}
                   cardTall
-                  onTagClick={(listingId, anchorRect) => setTagPanelState({ mode: 'assign', listingId, anchorRect })}
+                  onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
                 />
               </div>
             ) : (
               <div className="relative min-h-0 flex-1">
-                <div className="absolute inset-x-4 bottom-24 top-4 overflow-hidden rounded-[30px] bg-[#EEF2F6] shadow-[0_18px_44px_rgba(15,23,41,0.10)]">
+                <div className="absolute inset-0 overflow-hidden bg-[#EEF2F6]">
                   <MapView listings={sortedListings} showListings />
                 </div>
                 {isCarouselVisible && sortedListings.length > 0 && (
-                  <div className="pointer-events-none absolute inset-x-0 bottom-26 z-20">
+                  <div className="pointer-events-none absolute inset-x-0 bottom-24 z-20">
                     <ListingsCarousel listings={sortedListings} className="pointer-events-auto pb-2" />
                   </div>
                 )}
@@ -263,78 +283,78 @@ export default function CollectionPage() {
                 );
               }}
               onCreateTag={createTag}
-              onClearFilters={() => setActiveTagFilters([])}
+              onRenameTag={(oldTag, newTag) => renameCollectionTag(collection.id, oldTag, newTag)}
+              onDeleteTag={(tag) => deleteCollectionTag(collection.id, tag)}
             />
 
             <div
               className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4 lg:hidden"
               style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
             >
-              <div className="pointer-events-auto flex items-center gap-2">
-                <BackButton
-                  iconOnly
-                  className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
-                />
-                <div className="flex items-center rounded-full bg-white px-1.5 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
-                  <button
-                    type="button"
-                    aria-label={mobileView === 'list' ? 'Map view' : 'List view'}
-                    onClick={() => {
-                      setShowSortDrawer(false);
-                      setTagPanelState(null);
-                      setMobileView((value) => (value === 'list' ? 'map' : 'list'));
-                    }}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
-                  >
-                    {mobileView === 'list' ? <Map size={18} /> : <LayoutList size={18} />}
-                  </button>
+              <div className="pointer-events-auto flex items-center rounded-full bg-white px-1.5 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
+                <button
+                  type="button"
+                  aria-label={mobileView === 'list' ? 'Map view' : 'List view'}
+                  onClick={() => {
+                    setShowSortDrawer(false);
+                    setTagPanelState(null);
+                    setMobileView((value) => (value === 'list' ? 'map' : 'list'));
+                  }}
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                >
+                  {mobileView === 'list' ? <Map size={18} /> : <LayoutList size={18} />}
+                </button>
+                {mobileView === 'list' && (
                   <button
                     type="button"
                     aria-label="Sort"
-                    disabled={mobileView !== 'list'}
                     onClick={() => {
-                      if (mobileView !== 'list') return;
                       setTagPanelState(null);
                       setShowSortDrawer(true);
                     }}
-                    className={cn(
-                      'flex h-11 w-11 items-center justify-center rounded-full transition-colors',
-                      mobileView === 'list' ? 'text-[#0F1729] hover:bg-[#F5F6F7]' : 'text-[#C4C4C4]'
-                    )}
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
                   >
                     <ArrowDownWideNarrow size={18} />
                   </button>
-                  <button
-                    type="button"
-                    aria-label="Tags"
-                    onClick={() => {
-                      setShowSortDrawer(false);
-                      setTagPanelState({ mode: 'filter', anchorRect: null });
-                    }}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
-                  >
-                    <Tag size={18} />
-                  </button>
-                </div>
+                )}
+                <button
+                  type="button"
+                  aria-label="Tags"
+                  onClick={() => {
+                    setShowSortDrawer(false);
+                    setTagPanelState({ mode: 'filter', anchorRect: null });
+                  }}
+                  className={cn(
+                    'relative flex h-11 w-11 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]',
+                    hasActiveTagFilters && 'shadow-[inset_0_0_0_1.5px_#374151]'
+                  )}
+                >
+                  <Tag size={18} />
+                  {hasActiveTagFilters && (
+                    <span className="absolute right-[7px] top-[7px] flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0F1729] px-1 type-nano text-white">
+                      {activeTagFilters.length}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="hidden h-full gap-4 px-6 py-5 lg:flex">
-            <div className="flex min-w-0 flex-[0_0_46%] flex-col">
-              <div className="min-h-0 flex-1 overflow-hidden rounded-[30px] bg-[#EEF2F6] shadow-[0_20px_50px_rgba(15,23,41,0.08)]">
-                <MapView listings={sortedListings} showListings />
-              </div>
+          <div className="mx-auto hidden w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden lg:flex">
+            <div className="relative min-w-0 flex-1 lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
+              <MapView listings={sortedListings} showListings />
             </div>
 
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto py-1">
-              <CollectionListingsGrid
-                listings={sortedListings}
-                onTagClick={(listingId, anchorRect) => {
-                  setDesktopSortAnchor(null);
-                  setTagPanelState({ mode: 'assign', listingId, anchorRect });
-                }}
-              />
+            <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[688px] 3xl:w-[1024px]">
+              <div className="h-full overflow-y-auto px-4 py-4">
+                <CollectionListingsGrid
+                  listings={sortedListings}
+                  onTagClick={(listingId, anchorRect) => {
+                    setDesktopSortAnchor(null);
+                    setTagPanelState({ mode: 'assign', listingId, anchorRect });
+                  }}
+                />
+              </div>
             </div>
 
             <AnchoredPopover
@@ -397,7 +417,8 @@ export default function CollectionPage() {
                     );
                   }}
                   onCreateTag={createTag}
-                  onClearFilters={() => setActiveTagFilters([])}
+                  onRenameTag={(oldTag, newTag) => renameCollectionTag(collection.id, oldTag, newTag)}
+                  onDeleteTag={(tag) => deleteCollectionTag(collection.id, tag)}
                   desktop
                 />
               </div>

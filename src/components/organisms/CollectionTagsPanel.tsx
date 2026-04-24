@@ -1,7 +1,8 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { Check, Plus, Tag } from 'lucide-react';
+import { Check, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
+import AnchoredPopover from '@/components/molecules/AnchoredPopover';
 import { cn } from '@/lib/utils/cn';
 
 type PanelMode = 'assign' | 'filter';
@@ -15,20 +16,25 @@ interface CollectionTagsPanelProps {
   onClose: () => void;
   onToggleTag: (tag: string) => void;
   onCreateTag: (tag: string) => void;
-  onClearFilters?: () => void;
+  onRenameTag?: (oldTag: string, newTag: string) => void;
+  onDeleteTag?: (tag: string) => void;
   desktop?: boolean;
 }
 
 function CollectionTagsPanelContent({
-  mode,
   availableTags,
   selectedTags,
   onToggleTag,
   onCreateTag,
-  onClearFilters,
+  onRenameTag,
+  onDeleteTag,
 }: Omit<CollectionTagsPanelProps, 'title' | 'open' | 'onClose' | 'desktop'>) {
   const [newTagName, setNewTagName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [menuTag, setMenuTag] = useState<string | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
+  const [editingTag, setEditingTag] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState('');
 
   const uniqueTags = useMemo(
     () => Array.from(new Set(availableTags.map((tag) => tag.trim()).filter(Boolean))),
@@ -45,43 +51,74 @@ function CollectionTagsPanelContent({
 
   return (
     <div className="flex flex-col gap-4">
-      {mode === 'filter' && onClearFilters && (
-        <button
-          type="button"
-          onClick={onClearFilters}
-          className="flex min-h-11 items-center justify-center rounded-2xl bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
-        >
-          Clear Filters
-        </button>
-      )}
-
       <div className="flex flex-wrap gap-2">
+        {uniqueTags.length === 0 && (
+          <p className="font-heading text-base text-[#0F1729]">No tags available</p>
+        )}
+
         {uniqueTags.map((tag) => {
           const selected = selectedTags.includes(tag);
           return (
-            <button
+            <div
               key={tag}
-              type="button"
-              onClick={() => onToggleTag(tag)}
               className={cn(
-                'inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[0.8rem] font-medium transition-colors',
+                'inline-flex items-center gap-1 rounded-full border px-1.5 py-1 transition-colors',
                 selected
                   ? 'border-[#0F1729] bg-[#0F1729] text-white'
                   : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729]'
               )}
             >
-              <Tag size={12} />
-              {tag}
-              {selected && <Check size={12} />}
-            </button>
+              {editingTag === tag ? (
+                <div className="flex items-center gap-2 pl-2">
+                  <input
+                    value={editingValue}
+                    onChange={(event) => setEditingValue(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' && onRenameTag) {
+                        onRenameTag(tag, editingValue);
+                        setEditingTag(null);
+                        setEditingValue('');
+                      }
+                      if (event.key === 'Escape') {
+                        setEditingTag(null);
+                        setEditingValue('');
+                      }
+                    }}
+                    className="h-8 min-w-0 rounded-full bg-transparent px-2 text-sm outline-none"
+                    autoFocus
+                  />
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => onToggleTag(tag)}
+                    className="inline-flex min-h-7 items-center gap-1 rounded-full px-2.5 text-[0.8rem] font-medium"
+                  >
+                    {tag}
+                    {selected && <Check size={12} />}
+                  </button>
+                  {(onRenameTag || onDeleteTag) && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        setMenuTag(tag);
+                        setMenuAnchor(event.currentTarget.getBoundingClientRect());
+                      }}
+                      className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
+                        selected ? 'hover:bg-white/10' : 'hover:bg-[#F5F6F7]'
+                      )}
+                      aria-label="Tag options"
+                    >
+                      <MoreHorizontal size={14} />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           );
         })}
-
-        {uniqueTags.length === 0 && (
-          <p className="type-body text-[#9CA3AF]">
-            {mode === 'assign' ? 'No tags yet. Create one below.' : 'No tags yet. Create one to start filtering.'}
-          </p>
-        )}
       </div>
 
       {creating ? (
@@ -119,6 +156,48 @@ function CollectionTagsPanelContent({
           Create new tag
         </button>
       )}
+
+      <AnchoredPopover
+        open={!!menuTag && !!menuAnchor}
+        anchorRect={menuAnchor}
+        onClose={() => {
+          setMenuTag(null);
+          setMenuAnchor(null);
+        }}
+        className="fixed z-[70] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+      >
+        <div>
+          {onRenameTag && menuTag && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingTag(menuTag);
+                setEditingValue(menuTag);
+                setMenuTag(null);
+                setMenuAnchor(null);
+              }}
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
+            >
+              <Pencil size={14} />
+              Rename
+            </button>
+          )}
+          {onDeleteTag && menuTag && (
+            <button
+              type="button"
+              onClick={() => {
+                onDeleteTag(menuTag);
+                setMenuTag(null);
+                setMenuAnchor(null);
+              }}
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+          )}
+        </div>
+      </AnchoredPopover>
     </div>
   );
 }

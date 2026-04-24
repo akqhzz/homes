@@ -18,12 +18,14 @@ export default function CollectionListingCard({
   tall = false,
   onTagClick,
 }: CollectionListingCardProps) {
+  const hasTags = tags.length > 0;
+
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <ListingCard
         listing={listing}
         variant="carousel"
-        className="w-full"
+        className="w-full lg:w-80"
         imageTouchMode="vertical-scroll"
         contentTouchMode="vertical-scroll"
         desktopTall={tall}
@@ -34,10 +36,16 @@ export default function CollectionListingCard({
               event.stopPropagation();
               onTagClick(event.currentTarget.getBoundingClientRect());
             }}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
+            className={[
+              'relative flex h-8 min-w-8 items-center justify-center gap-1 rounded-full px-2 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)] transition-colors',
+              hasTags
+                ? 'bg-[#0F1729] text-white'
+                : 'bg-white/85',
+            ].join(' ')}
             aria-label="Manage tags"
           >
             <Tag size={14} />
+            {hasTags && <span className="type-nano">{tags.length}</span>}
           </button>
         )}
       />

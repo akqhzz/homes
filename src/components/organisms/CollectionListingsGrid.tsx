@@ -36,8 +36,8 @@ export default function CollectionListingsGrid({
   return (
     <div
       className={cn(
-        'grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-5',
-        'lg:grid-cols-[repeat(auto-fill,minmax(18rem,18rem))] lg:justify-start'
+        'grid w-full grid-cols-1 gap-4 sm:grid-cols-2',
+        'lg:mx-auto lg:w-max lg:max-w-full lg:grid-cols-2 lg:justify-items-center lg:gap-4 3xl:grid-cols-3'
       )}
     >
       {listings.map((listing) => (
