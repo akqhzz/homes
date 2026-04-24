@@ -6,6 +6,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { closePolygon, getNeighborhoodBounds } from '@/lib/geo';
+import { getMapboxToken } from '@/lib/mapbox-token';
 import PriceMarker from '@/components/molecules/PriceMarker';
 import NeighborhoodPin from '@/components/molecules/NeighborhoodPin';
 import ListingCard from '@/components/molecules/ListingCard';
@@ -13,7 +14,7 @@ import { useMapStore } from '@/store/mapStore';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
+const MAPBOX_TOKEN = getMapboxToken();
 const LISTING_MARKER_OFFSETS = [
   { lat: 0.0000, lng: 0.0000 },
   { lat: 0.0017, lng: -0.0019 },
@@ -106,7 +107,16 @@ export default function MapView({
       );
 
   if (!MAPBOX_TOKEN) {
-    return <div className="h-full w-full bg-[#E8ECEF]" />;
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-[#E8ECEF] p-6 text-center">
+        <div className="max-w-sm rounded-3xl bg-white/90 px-5 py-4 shadow-[var(--shadow-control)]">
+          <p className="type-label text-[#0F1729]">Mapbox token not loaded</p>
+          <p className="mt-1 type-caption text-[#6B7280]">
+            Restart the Next.js server after adding `NEXT_PUBLIC_MAPBOX_TOKEN` to `.env.local`.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

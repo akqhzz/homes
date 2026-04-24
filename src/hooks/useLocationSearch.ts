@@ -2,6 +2,7 @@
 
 import { useDeferredValue, useEffect, useState } from 'react';
 import { Location } from '@/lib/types';
+import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 
 interface UseLocationSearchResult {
   results: Location[];
@@ -16,6 +17,17 @@ export function useLocationSearch(
   const [results, setResults] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const deferredQuery = useDeferredValue(query.trim());
+
+  const fallbackResults = MOCK_NEIGHBORHOODS.slice(0, 8)
+    .map<Location>((neighborhood) => ({
+      id: neighborhood.id,
+      name: neighborhood.name,
+      type: 'neighborhood',
+      coordinates: neighborhood.coordinates,
+      city: neighborhood.city,
+      province: 'ON',
+    }))
+    .filter((location) => !selectedLocations.some((selected) => selected.id === location.id));
 
   useEffect(() => {
     if (!enabled || !deferredQuery) return;
@@ -49,7 +61,7 @@ export function useLocationSearch(
   }, [deferredQuery, enabled, selectedLocations]);
 
   return {
-    results: enabled && deferredQuery ? results : [],
+    results: !enabled ? [] : deferredQuery ? results : fallbackResults,
     isLoading: enabled && Boolean(deferredQuery) ? isLoading : false,
   };
 }

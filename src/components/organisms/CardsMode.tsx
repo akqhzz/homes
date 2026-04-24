@@ -10,13 +10,14 @@ import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
+import { getMapboxToken } from '@/lib/mapbox-token';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
+const MAPBOX_TOKEN = getMapboxToken();
 const SWIPE_THRESHOLD = 38;
 const CARD_MODE_IMAGE_HEIGHT = 305;
 const CARD_MODE_IMAGE_COUNT = 8;
