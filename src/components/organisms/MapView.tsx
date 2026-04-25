@@ -19,17 +19,17 @@ const MAPBOX_TOKEN = getMapboxToken();
 // Boundary system: active boundaries are used for applied search/area selections and draw mode.
 // Preview boundaries are hover-only in area-select and intentionally lighter/dashed.
 const ACTIVE_BOUNDARY_STYLE = {
-  lineColor: '#2E8255',
-  lineOpacity: 0.92,
+  lineColor: '#21503F',
+  lineOpacity: 0.96,
   lineWidth: 0.9,
   lineDasharray: [1, 0],
-  fillColor: '#2E8255',
-  fillOpacity: 0.08,
+  fillColor: '#337B61',
+  fillOpacity: 0.05,
 };
 
 const PREVIEW_BOUNDARY_STYLE = {
-  lineColor: '#83BE9C',
-  lineOpacity: 0.72,
+  lineColor: '#86BEA7',
+  lineOpacity: 0.78,
   lineWidth: 0.9,
   lineDasharray: [2, 2],
   fillColor: ACTIVE_BOUNDARY_STYLE.fillColor,

@@ -47,7 +47,9 @@ export default function DesktopSidebar() {
               aria-label={label}
               className={cn(
                 'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-2 transition-colors',
-                active ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]' : 'text-[#64748B] hover:text-[#334155]'
+                active
+                  ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
+                  : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'
               )}
             >
               <Icon size={24} strokeWidth={active ? 2.25 : 1.9} />
@@ -66,7 +68,9 @@ export default function DesktopSidebar() {
           aria-label="Menu"
           className={cn(
             'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-2 transition-colors',
-            showMenu ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]' : 'text-[#64748B] hover:text-[#334155]'
+            showMenu
+              ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
+              : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'
           )}
         >
           <Menu size={24} strokeWidth={2} />
