@@ -6,7 +6,6 @@ import { Collection } from '@/lib/types';
 interface SavedStore {
   collections: Collection[];
   likedListingIds: Set<string>;
-  dislikedListingIds: Set<string>;
 
   toggleLike: (listingId: string) => void;
   isLiked: (listingId: string) => boolean;
@@ -25,8 +24,6 @@ interface SavedStore {
   removeTagFromListing: (collectionId: string, listingId: string, tag: string) => void;
 
   swipeDislike: (listingId: string) => void;
-  swipeUndo: () => void;
-  swipeHistory: string[];
 }
 
 export const useSavedStore = create<SavedStore>()(
@@ -34,8 +31,6 @@ export const useSavedStore = create<SavedStore>()(
     (set, get) => ({
       collections: [],
       likedListingIds: new Set<string>(),
-      dislikedListingIds: new Set<string>(),
-      swipeHistory: [],
 
       toggleLike: (listingId) =>
         set((s) => {
@@ -224,23 +219,9 @@ export const useSavedStore = create<SavedStore>()(
           }),
         })),
 
-      swipeDislike: (listingId) =>
-        set((s) => ({
-          dislikedListingIds: new Set([...s.dislikedListingIds, listingId]),
-          swipeHistory: [...s.swipeHistory, listingId],
-        })),
-
-      swipeUndo: () =>
-        set((s) => {
-          if (s.swipeHistory.length === 0) return s;
-          const prev = [...s.swipeHistory];
-          const last = prev.pop()!;
-          const disliked = new Set(s.dislikedListingIds);
-          disliked.delete(last);
-          const liked = new Set(s.likedListingIds);
-          liked.delete(last);
-          return { swipeHistory: prev, dislikedListingIds: disliked, likedListingIds: liked };
-        }),
+      swipeDislike: () => {
+        // Cards mode advances locally; there is no undo UI or downstream read of disliked state.
+      },
     }),
     {
       name: 'homes-saved-v2',
@@ -248,13 +229,10 @@ export const useSavedStore = create<SavedStore>()(
       partialize: (s) => ({
         collections: s.collections,
         likedListingIds: Array.from(s.likedListingIds),
-        dislikedListingIds: Array.from(s.dislikedListingIds),
-        swipeHistory: s.swipeHistory,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.likedListingIds = new Set(state.likedListingIds as unknown as string[]);
-          state.dislikedListingIds = new Set(state.dislikedListingIds as unknown as string[]);
         }
       },
     }
