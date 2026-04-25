@@ -46,7 +46,7 @@ export default function DesktopSidebar() {
               onClick={() => router.push(href)}
               aria-label={label}
               className={cn(
-                'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-2 transition-colors',
+                'flex w-[62px] flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors',
                 active
                   ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
                   : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'
@@ -67,7 +67,7 @@ export default function DesktopSidebar() {
           onClick={() => setShowMenu((value) => !value)}
           aria-label="Menu"
           className={cn(
-            'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-2 transition-colors',
+            'flex w-[62px] flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors',
             showMenu
               ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
               : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SquareDashedMousePointer } from 'lucide-react';
+import { Pencil, SquareDashedMousePointer } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
 import {
@@ -347,6 +347,25 @@ export default function MapPage() {
     setActivePanel('area-select');
   };
 
+  const openDrawAreaSelect = () => {
+    if (hasAppliedArea) {
+      setSelectedNeighborhoods(new Set(appliedNeighborhoods));
+      setDrawnBoundary(appliedBoundary);
+    } else {
+      const { matchedNeighborhoodIds, fallbackBoundary } = getCarryoverAreaSelection(selectedLocations);
+      setSelectedNeighborhoods(new Set(matchedNeighborhoodIds));
+      setDrawnBoundary(fallbackBoundary);
+    }
+    setRedoBoundary([]);
+    setAreaUndoStack([]);
+    setAreaRedoStack([]);
+    setFocusedNeighborhood(null);
+    setHoveredNeighborhood(null);
+    setIsDrawingArea(true);
+    setAreaSelectMode(true);
+    setActivePanel('area-select');
+  };
+
   const clearAppliedArea = () => {
     setAppliedNeighborhoods(new Set());
     setAppliedBoundary([]);
@@ -571,6 +590,13 @@ export default function MapPage() {
           {!isAreaSelect && (
             <div className="pointer-events-auto absolute left-5 top-5 z-20 hidden items-center gap-2 lg:flex">
               <button
+                onClick={openDrawAreaSelect}
+                className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+              >
+                <Pencil size={18} className="text-[#0F1729]" />
+                Draw
+              </button>
+              <button
                 onClick={() => {
                   openAreaSelect();
                 }}
@@ -582,7 +608,7 @@ export default function MapPage() {
               {hasVisibleBoundary && (
                 <button
                   onClick={clearVisibleBoundaries}
-                  className="h-11 rounded-full bg-white px-4 type-btn text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                  className="h-11 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
                 >
                   Clear Areas
                 </button>

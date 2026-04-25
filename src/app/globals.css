@@ -29,7 +29,7 @@
   --color-brand-900: #112b22;
   --color-brand-surface: var(--color-brand-50);
   --color-brand-surface-strong: var(--color-brand-100);
-  --color-brand-text: var(--color-brand-700);
+  --color-brand-text: var(--color-brand-900);
 
   --color-marker-default-bg: var(--color-brand-500);
   --color-marker-default-text: #ffffff;

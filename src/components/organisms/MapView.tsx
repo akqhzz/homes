@@ -335,7 +335,7 @@ export default function MapView({
           latitude={point.lat}
           anchor="center"
         >
-          <div className="h-1.5 w-1.5 rounded-full bg-[#0F1729] shadow-[0_1px_2px_rgba(15,23,41,0.24)]" />
+          <div className="h-1.5 w-1.5 rounded-full bg-[#21503F] shadow-[0_1px_2px_rgba(15,23,41,0.24)]" />
         </Marker>
       ))}
 

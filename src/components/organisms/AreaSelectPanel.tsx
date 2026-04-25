@@ -67,12 +67,54 @@ export default function AreaSelectPanel({
     setAreaSelectMode(false);
     onBack();
   };
+  const desktopTopLabel = isDrawing ? 'Tap map to draw' : title;
 
   return (
     <>
       <div className="pointer-events-none absolute inset-0 z-30">
-        {!isDrawing ? (
-          <div className="absolute left-4 right-4 top-4 flex items-center gap-2 lg:flex lg:items-center">
+        <div className="absolute left-4 right-4 top-4 flex items-center gap-2 lg:flex lg:items-center">
+          <div className="hidden items-center gap-2 lg:flex">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="pointer-events-auto flex h-11 min-w-0 max-w-[244px] items-center rounded-full bg-white/70 px-2.5 text-left text-sm text-[#0F1729] backdrop-blur-xl"
+              aria-label={isDrawing ? 'Close drawing mode' : 'Close area selection'}
+            >
+              <div className="flex w-full items-center gap-2.5">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
+                  {isDrawing ? <Pencil size={15} strokeWidth={2.2} /> : <ArrowLeft size={16} strokeWidth={2.4} />}
+                </span>
+                <p className="min-w-0 flex-1 truncate type-body leading-tight">{desktopTopLabel}</p>
+              </div>
+            </button>
+            {(hasVisibleBoundary || canUndoBoundary || canRedoBoundary) && (
+              <div className="pointer-events-auto flex items-center gap-2">
+                {hasVisibleBoundary && !isDrawing && (
+                  <button
+                    onClick={onClearSelection}
+                    className="h-11 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                  >
+                    Clear Areas
+                  </button>
+                )}
+                <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+                  <Undo2 size={15} />
+                </button>
+                <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+                  <Redo2 size={15} />
+                </button>
+              </div>
+            )}
+            <button
+              onClick={onApply}
+              className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:px-9"
+            >
+              Done
+            </button>
+          </div>
+
+          {!isDrawing ? (
+          <div className="flex items-center gap-2 lg:hidden lg:items-center">
             <button
               type="button"
               onClick={handleBack}
@@ -114,7 +156,7 @@ export default function AreaSelectPanel({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="absolute left-4 right-4 top-4 rounded-full bg-white px-4 py-2.5 text-sm text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] pointer-events-auto"
+            className="absolute left-4 right-4 top-4 rounded-full bg-white px-4 py-2.5 text-sm text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] pointer-events-auto lg:hidden"
           >
             <div className="flex items-center gap-3">
               <Pencil size={15} />
@@ -130,10 +172,11 @@ export default function AreaSelectPanel({
             </div>
           </motion.div>
         )}
+        </div>
 
         {!isDrawing && !focusedNeighborhood ? (
           <div
-            className="absolute bottom-0 right-5 flex flex-col items-end gap-3"
+            className="absolute bottom-0 right-5 flex flex-col items-end gap-3 lg:hidden"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
             <FloatingActionButton size="md" onClick={onToggleDrawing} aria-label="Draw boundary">
