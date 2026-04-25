@@ -91,7 +91,7 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
           >
             <Search size={17} className="text-[#9CA3AF] flex-shrink-0" />
             {selectedLocations.length > 0 || hasAppliedArea ? (
-              <span className="inline-flex items-center rounded-full bg-[#F0F1F2] px-2.5 py-0.5 type-body font-medium text-[#0F1729] truncate max-w-full">
+              <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 type-body font-medium text-[var(--color-brand-text)]">
                 {locationLabel}
               </span>
             ) : (

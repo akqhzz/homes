@@ -17,9 +17,22 @@
   --color-accent: #EF4444;
   --color-accent-orange: #F97316;
   --color-success: #10B981;
+  --color-brand-50: #eff8f3;
+  --color-brand-100: #d8ecdf;
+  --color-brand-200: #b3d8c1;
+  --color-brand-300: #83be9c;
+  --color-brand-400: #559f75;
+  --color-brand-500: #2E8255;
+  --color-brand-600: #256947;
+  --color-brand-700: #1e5439;
+  --color-brand-800: #183f2c;
+  --color-brand-900: #122f21;
+  --color-brand-surface: var(--color-brand-50);
+  --color-brand-surface-strong: var(--color-brand-100);
+  --color-brand-text: var(--color-brand-700);
 
-  --color-marker-default-bg: #ffffff;
-  --color-marker-default-text: #0F1729;
+  --color-marker-default-bg: var(--color-brand-500);
+  --color-marker-default-text: #ffffff;
   --color-marker-active-bg: #0F1729;
   --color-marker-active-text: #ffffff;
   --color-marker-saved-bg: #EF4444;

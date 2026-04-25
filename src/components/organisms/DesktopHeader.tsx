@@ -165,7 +165,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                   className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
                 />
               ) : selectedLocations.length > 0 ? (
-                <span className="inline-flex max-w-full items-center truncate rounded-full bg-[#F0F1F2] px-2.5 py-0.5 text-sm font-medium text-[#0F1729]">
+                <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-sm font-medium text-[var(--color-brand-text)]">
                   {locationLabel}
                 </span>
               ) : (
@@ -178,9 +178,9 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                   <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
                     <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                       {selectedLocations.map((location) => (
-                        <span key={location.id} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#F5F6F7] px-2.5 py-1 text-xs font-medium text-[#0F1729]">
+                        <span key={location.id} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 text-xs font-medium text-[var(--color-brand-text)]">
                           {location.name}
-                          <button onClick={() => removeLocation(location.id)} className="text-[#9CA3AF] hover:text-[#0F1729]">×</button>
+                          <button onClick={() => removeLocation(location.id)} className="text-[var(--color-brand-400)] hover:text-[var(--color-brand-700)]">×</button>
                         </span>
                       ))}
                     </div>

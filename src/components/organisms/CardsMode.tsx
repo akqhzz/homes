@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
+import { ChevronRight, Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
@@ -87,7 +87,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   useEffect(() => {
     const updateWidth = () => {
       setViewportWidth(window.innerWidth);
-      setCardWidth(Math.max(292, window.innerWidth - 24));
+      setCardWidth(Math.max(292, window.innerWidth - 16));
     };
     updateWidth();
     window.addEventListener('resize', updateWidth);
@@ -279,14 +279,14 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         onClick={onClose}
         label="Close cards view"
         className="absolute z-20"
-        style={{ right: '1.25rem', top: 'calc(env(safe-area-inset-top, 0px) + 0.95rem)' }}
+        style={{ right: '1rem', top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
         variant="glass"
       />
 
       {/* Card stack */}
       <div
         ref={trackRef}
-        className="flex-1 relative px-3 pt-3 pb-2 min-h-0 overflow-hidden"
+        className="relative min-h-0 flex-1 overflow-hidden px-2 pt-2 pb-2"
         style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', overscrollBehaviorY: 'contain' }}
         onWheel={handleTrackWheel}
         onPointerDownCapture={handleTrackPointerDown}
@@ -640,16 +640,29 @@ function CardModeListingCard({
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3">
             <div className="flex items-end gap-2">
-              <div className="flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-5 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
-                <div className="flex w-full min-w-0 items-center justify-between gap-2">
+              <div className="relative flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-4 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
+                <div className="flex w-full min-w-0 items-start justify-between gap-2">
                   <p className="type-price min-w-0 truncate leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
-                  <span className="shrink-0 rounded-full bg-[#F5F6F7] px-2.5 py-1 type-caption font-semibold text-[#6B7280]">
+                  <span className="shrink-0 pt-0.5 type-caption font-medium text-[#6B7280]">
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>
                 </div>
-                <p className="mt-2 type-body-lg text-[#5C5F66]">
-                  {listing.beds} bd {listing.baths} ba {formatSqft(listing.sqft)}sqft
+                <p className="mt-0.5 type-body text-[#6B7280]">
+                  {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{String(listing.sqft)}sqft
                 </p>
+                <button
+                  type="button"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onOpenDetail();
+                  }}
+                  className="pointer-events-auto absolute bottom-2.5 right-3 inline-flex items-center gap-0.5 text-[11px] font-medium text-[#6B7280] transition-colors hover:text-[#0F1729]"
+                  aria-label="View details"
+                >
+                  Details
+                  <ChevronRight size={11} />
+                </button>
               </div>
               <button
                 type="button"
@@ -664,6 +677,7 @@ function CardModeListingCard({
                 {mapThumb(listing) ? (
                   <>
                     <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
+                    <div className="pointer-events-none absolute inset-0 bg-white/18" />
                     <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[82%]">
                       <MapListingPin size={18} dotSize={5} className="drop-shadow-[0_4px_12px_rgba(15,23,41,0.2)]" />
                     </div>

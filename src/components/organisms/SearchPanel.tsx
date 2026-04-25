@@ -172,7 +172,7 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
           )}
           {selectedLocations.length === 0 && hasAppliedArea && areaSummaryLabel && (
             <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
-              <span className="inline-flex items-center rounded-full bg-[#F0F0F0] px-3 py-1 text-sm font-medium text-[#0F1729]">
+              <span className="inline-flex items-center rounded-full bg-[var(--color-brand-surface)] px-3 py-1 text-sm font-medium text-[var(--color-brand-text)]">
                 {areaSummaryLabel}
               </span>
             </div>

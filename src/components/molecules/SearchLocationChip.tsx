@@ -14,14 +14,14 @@ export default function SearchLocationChip({ location, onRemove, className }: Se
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 bg-[#F0F0F0] text-[#0F1729] text-sm font-medium rounded-full px-3 py-1 flex-shrink-0',
+        'inline-flex items-center gap-1.5 rounded-full bg-[var(--color-brand-surface)] px-3 py-1 text-sm font-medium text-[var(--color-brand-text)] flex-shrink-0',
         className
       )}
     >
       {getPrimaryLocationLabel(location.name)}
       <button
         onClick={onRemove}
-        className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors -mr-0.5"
+        className="text-[var(--color-brand-400)] hover:text-[var(--color-brand-700)] transition-colors -mr-0.5"
         aria-label="Remove"
       >
         <X size={13} />

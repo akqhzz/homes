@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
@@ -23,11 +23,13 @@ export default function SavedPage() {
   const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
   const [showNewCollection, setShowNewCollection] = useState(false);
   const [creatingCollection, setCreatingCollection] = useState(false);
+  const [showDesktopCreate, setShowDesktopCreate] = useState(false);
   const [newName, setNewName] = useState('');
   const [menuState, setMenuState] = useState<MenuState | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameName, setRenameName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const desktopCreateRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -39,6 +41,18 @@ export default function SavedPage() {
     window.addEventListener('homes:create-collection', handleCreateIntent);
     return () => window.removeEventListener('homes:create-collection', handleCreateIntent);
   }, []);
+
+  useEffect(() => {
+    if (!showDesktopCreate) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!desktopCreateRef.current?.contains(event.target as Node)) {
+        setShowDesktopCreate(false);
+        setCreatingCollection(false);
+      }
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [showDesktopCreate]);
 
   const closeMenu = () => {
     setMenuState(null);
@@ -59,6 +73,7 @@ export default function SavedPage() {
     setNewName('');
     setCreatingCollection(false);
     setShowNewCollection(false);
+    setShowDesktopCreate(false);
   };
 
   const startRename = (id: string, name: string) => {
@@ -101,21 +116,35 @@ export default function SavedPage() {
             showBackButton
             hideSubtitleOnMobile
             rightSlot={(
-              <div className="w-[220px]">
-                <CreateInlineField
-                  open={creatingCollection}
-                  onOpenChange={setCreatingCollection}
-                  value={newName}
-                  onValueChange={setNewName}
-                  placeholder="Collection name..."
-                  collapsedLabel="Add Collection"
-                  onSubmit={handleCreate}
-                  autoFocus
-                  className="justify-end"
-                  collapsedClassName="h-11 justify-center rounded-full border-[#E5E7EB] bg-[#F5F6F7] px-4 py-0 font-medium text-[#0F1729] hover:border-[#D1D5DB] hover:bg-[#EBEBEB]"
-                  inputClassName="h-11 rounded-full"
-                  submitClassName="h-11 w-11"
-                />
+              <div ref={desktopCreateRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDesktopCreate((value) => !value);
+                    setCreatingCollection(false);
+                    setNewName('');
+                  }}
+                  className="flex h-11 items-center justify-center rounded-full bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
+                >
+                  Add
+                </button>
+                {showDesktopCreate && (
+                  <div className="absolute right-0 top-[3.25rem] z-20 w-[250px] rounded-[22px] bg-white p-3 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                    <CreateInlineField
+                      open={creatingCollection}
+                      onOpenChange={setCreatingCollection}
+                      value={newName}
+                      onValueChange={setNewName}
+                      placeholder="Collection name..."
+                      collapsedLabel="New collection"
+                      onSubmit={handleCreate}
+                      autoFocus
+                      inputClassName="h-11 rounded-full"
+                      collapsedClassName="h-11 justify-center rounded-full border-[#E5E7EB] bg-[#F5F6F7] px-4 py-0 font-medium text-[#0F1729] hover:border-[#D1D5DB] hover:bg-[#EBEBEB]"
+                      submitClassName="h-11 w-11"
+                    />
+                  </div>
+                )}
               </div>
             )}
           />
