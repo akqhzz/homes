@@ -102,13 +102,11 @@ export default function ListingCard({
   }, []);
 
   const showNextImage = () => {
-    if (displayImages.length <= 1) return;
-    setImgIndex((index) => (index + 1) % displayImages.length);
+    setImgIndex((index) => Math.min(index + 1, displayImages.length - 1));
   };
 
   const showPreviousImage = () => {
-    if (displayImages.length <= 1) return;
-    setImgIndex((index) => (index - 1 + displayImages.length) % displayImages.length);
+    setImgIndex((index) => Math.max(index - 1, 0));
   };
 
   const handleImageWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -382,28 +380,32 @@ export default function ListingCard({
             className="pointer-events-none absolute inset-x-3 z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex"
             style={{ top: desktopTall ? 105 : 98 }}
           >
-            <button
-              type="button"
-              aria-label="Previous image"
-              onClick={(event) => {
-                event.stopPropagation();
-                showPreviousImage();
-              }}
-              className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <button
-              type="button"
-              aria-label="Next image"
-              onClick={(event) => {
-                event.stopPropagation();
-                showNextImage();
-              }}
-              className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
-            >
-              <ChevronRight size={14} />
-            </button>
+            {imgIndex > 0 ? (
+              <button
+                type="button"
+                aria-label="Previous image"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  showPreviousImage();
+                }}
+                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
+              >
+                <ChevronLeft size={14} />
+              </button>
+            ) : <span />}
+            {imgIndex < displayImages.length - 1 ? (
+              <button
+                type="button"
+                aria-label="Next image"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  showNextImage();
+                }}
+                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
+              >
+                <ChevronRight size={14} />
+              </button>
+            ) : <span />}
           </div>
         )}
 
