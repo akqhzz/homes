@@ -32,7 +32,16 @@ export default function BottomNav() {
       className="fixed bottom-0 left-0 right-0 z-40 lg:hidden flex items-center justify-center gap-2.5 px-4 pt-1 pointer-events-none"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
     >
-      {/* Saved searches — map page only */}
+      {isMapPage && (
+        <FloatingActionButton
+          layoutId="cards-map-control"
+          onClick={() => setActivePanel('cards')}
+          aria-label="Cards mode"
+        >
+          <AppImageIcon src="/icons/cards-mode.png" alt="Cards mode" size={19} />
+        </FloatingActionButton>
+      )}
+
       {/* Pill nav */}
       <div className="pointer-events-auto flex items-center bg-white rounded-full px-1.5 py-1.5 gap-0 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
@@ -61,17 +70,6 @@ export default function BottomNav() {
           aria-label="Add collection"
         >
           <Plus size={17} className="text-[#0F1729]" />
-        </FloatingActionButton>
-      )}
-
-      {/* Cards mode — map page only */}
-      {isMapPage && (
-        <FloatingActionButton
-          layoutId="cards-map-control"
-          onClick={() => setActivePanel('cards')}
-          aria-label="Cards mode"
-        >
-          <AppImageIcon src="/icons/cards-mode.png" alt="Cards mode" size={19} />
         </FloatingActionButton>
       )}
 

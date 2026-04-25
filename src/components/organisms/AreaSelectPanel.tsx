@@ -237,7 +237,7 @@ export default function AreaSelectPanel({
             )}
             <button
               onClick={onApply}
-              className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:ml-auto lg:px-6"
+              className="pointer-events-auto ml-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:px-6"
             >
               Done
             </button>

@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Feature, LineString, Polygon } from 'geojson';
 import Map, { Layer, Marker, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -47,6 +47,11 @@ const LISTING_MARKER_OFFSETS = [
   { lat: -0.0030, lng: 0.0004 },
   { lat: 0.0002, lng: 0.0024 },
 ];
+const HOVER_CARD_WIDTH = 288;
+const HOVER_CARD_HEIGHT = 252;
+const HOVER_CARD_EDGE_PADDING = 16;
+const HOVER_CARD_SIDE_GAP = 18;
+const HOVER_CARD_PIN_TOP_OFFSET = 34;
 
 interface MapViewProps {
   listings: Listing[];
@@ -79,11 +84,13 @@ export default function MapView({
   showAmenities = false,
   isAreaMode = false,
 }: MapViewProps) {
-  const { viewState, setViewState, selectedListingId, setSelectedListingId, hoveredListingId } = useMapStore();
+  const { viewState, setViewState, selectedListingId, setSelectedListingId, hoveredListingId, setHoveredListingId } = useMapStore();
   const { setCarouselVisible, isSatelliteMode, isCarouselVisible } = useUIStore();
   const isLiked = useSavedStore((s) => s.isLiked);
   const mapRef = useRef<MapRef | null>(null);
+  const hoverClearTimeoutRef = useRef<number | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapInstance, setMapInstance] = useState<MapRef | null>(null);
   const [neighborhoodDisplayItems, setNeighborhoodDisplayItems] = useState<NeighborhoodDisplayItem[]>([]);
 
   const mapStyle = isSatelliteMode
@@ -92,26 +99,46 @@ export default function MapView({
 
   const handleMarkerClick = useCallback(
     (listingId: string) => {
-      setSelectedListingId(listingId);
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-      setCarouselVisible(!isDesktop);
+      if (isDesktop) {
+        setSelectedListingId(null);
+        setHoveredListingId(listingId);
+        setCarouselVisible(false);
+        return;
+      }
+      setSelectedListingId(listingId);
+      setCarouselVisible(true);
     },
-    [setSelectedListingId, setCarouselVisible]
+    [setSelectedListingId, setHoveredListingId, setCarouselVisible]
   );
 
   const handleMapClick = useCallback(() => {
     if (!showListings) return;
     setSelectedListingId(null);
+    setHoveredListingId(null);
     setCarouselVisible(false);
-  }, [setSelectedListingId, setCarouselVisible, showListings]);
+  }, [setSelectedListingId, setHoveredListingId, setCarouselVisible, showListings]);
 
   const handleMapMoveStart = useCallback(() => {
     if (!showListings) return;
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
     if (!isDesktop) return;
     setSelectedListingId(null);
+    setHoveredListingId(null);
     setCarouselVisible(false);
-  }, [setSelectedListingId, setCarouselVisible, showListings]);
+  }, [setSelectedListingId, setHoveredListingId, setCarouselVisible, showListings]);
+
+  const clearHoveredListingSoon = useCallback(() => {
+    if (hoverClearTimeoutRef.current) window.clearTimeout(hoverClearTimeoutRef.current);
+    hoverClearTimeoutRef.current = window.setTimeout(() => setHoveredListingId(null), 80);
+  }, [setHoveredListingId]);
+
+  const cancelHoveredListingClear = useCallback(() => {
+    if (hoverClearTimeoutRef.current) {
+      window.clearTimeout(hoverClearTimeoutRef.current);
+      hoverClearTimeoutRef.current = null;
+    }
+  }, []);
 
   const handleMapPointer = useCallback((e: { lngLat: { lat: number; lng: number } }) => {
     if (showListings) {
@@ -144,6 +171,25 @@ export default function MapView({
     );
   }, [mapLoaded, renderNeighborhoods, viewState.zoom]);
 
+  useEffect(() => () => {
+    if (hoverClearTimeoutRef.current) window.clearTimeout(hoverClearTimeoutRef.current);
+  }, []);
+
+  const desktopPreviewListing =
+    typeof window !== 'undefined' && window.innerWidth >= 1024
+      ? listings.find((item) => item.id === hoveredListingId) ?? null
+      : null;
+  const desktopPreviewStyle = useMemo(() => {
+    if (!desktopPreviewListing || !mapInstance) return null;
+    return getDesktopHoverCardStyle(
+      mapInstance,
+      getSpreadListingCoordinates(
+        desktopPreviewListing,
+        listings.findIndex((item) => item.id === desktopPreviewListing.id)
+      )
+    );
+  }, [desktopPreviewListing, listings, mapInstance]);
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-[#E8ECEF] p-6 text-center">
@@ -158,12 +204,16 @@ export default function MapView({
   }
 
   return (
+    <div className="relative h-full w-full overflow-hidden">
     <Map
       ref={mapRef}
       {...viewState}
       onMoveStart={handleMapMoveStart}
       onMove={(e) => setViewState(e.viewState)}
-      onLoad={() => setMapLoaded(true)}
+      onLoad={() => {
+        setMapLoaded(true);
+        setMapInstance(mapRef.current);
+      }}
       onClick={handleMapPointer}
       mapStyle={mapStyle}
       mapboxAccessToken={MAPBOX_TOKEN}
@@ -360,36 +410,38 @@ export default function MapView({
           latitude={markerCoordinates.lat}
           anchor="bottom"
         >
-          <PriceMarker
-            price={listing.price}
-            isSelected={listing.id === selectedListingId || listing.id === hoveredListingId}
-            isSaved={isLiked(listing.id)}
-            onClick={() => handleMarkerClick(listing.id)}
-          />
+          <div
+            onMouseEnter={() => {
+              cancelHoveredListingClear();
+              setHoveredListingId(listing.id);
+            }}
+            onMouseLeave={clearHoveredListingSoon}
+          >
+            <PriceMarker
+              price={listing.price}
+              isSelected={listing.id === selectedListingId || listing.id === hoveredListingId}
+              isSaved={isLiked(listing.id)}
+              onClick={() => handleMarkerClick(listing.id)}
+            />
+          </div>
         </Marker>
         );
       })}
-
-      {showListings && selectedListingId && !isCarouselVisible && (() => {
-        const selectedListing = listings.find((item) => item.id === selectedListingId);
-        if (!selectedListing) return null;
-        const markerCoordinates = getSpreadListingCoordinates(selectedListing, listings.findIndex((item) => item.id === selectedListingId));
-        const showRight = markerCoordinates.lng < viewState.longitude;
-        const isUpperHalf = markerCoordinates.lat > viewState.latitude;
-        return (
-          <Marker
-            longitude={markerCoordinates.lng}
-            latitude={markerCoordinates.lat}
-            anchor={showRight ? 'left' : 'right'}
-            offset={showRight ? [44, isUpperHalf ? 124 : -118] : [-50, isUpperHalf ? 124 : -118]}
-          >
-            <div onClick={(event) => event.stopPropagation()} className="hidden w-72 lg:block">
-              <ListingCard listing={selectedListing} variant="carousel" />
-            </div>
-          </Marker>
-        );
-      })()}
     </Map>
+      {showListings && desktopPreviewListing && desktopPreviewStyle && !isCarouselVisible && (
+        <div
+          style={desktopPreviewStyle}
+          className="pointer-events-auto absolute hidden w-72 lg:block"
+          onMouseEnter={() => {
+            cancelHoveredListingClear();
+            setHoveredListingId(desktopPreviewListing.id);
+          }}
+          onMouseLeave={clearHoveredListingSoon}
+        >
+          <ListingCard listing={desktopPreviewListing} variant="carousel" />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -574,4 +626,34 @@ function getSpreadListingCoordinates(listing: Listing, index: number) {
     lat: listing.coordinates.lat + offset.lat,
     lng: listing.coordinates.lng + offset.lng,
   };
+}
+
+function getDesktopHoverCardStyle(
+  map: MapRef | null,
+  coordinates: { lat: number; lng: number }
+): { left: number; top: number } | null {
+  if (!map) return null;
+  const container = map.getContainer();
+  const { clientWidth, clientHeight } = container;
+  if (!clientWidth || !clientHeight) return null;
+
+  const point = map.project([coordinates.lng, coordinates.lat]);
+  const prefersRight = point.x < clientWidth / 2;
+  const prefersBelow = point.y < clientHeight / 2;
+
+  const unclampedLeft = prefersRight
+    ? point.x + HOVER_CARD_SIDE_GAP
+    : point.x - HOVER_CARD_WIDTH - HOVER_CARD_SIDE_GAP;
+  const unclampedTop = prefersBelow
+    ? point.y - HOVER_CARD_PIN_TOP_OFFSET
+    : point.y - HOVER_CARD_HEIGHT + HOVER_CARD_PIN_TOP_OFFSET;
+
+  const left = clamp(unclampedLeft, HOVER_CARD_EDGE_PADDING, clientWidth - HOVER_CARD_WIDTH - HOVER_CARD_EDGE_PADDING);
+  const top = clamp(unclampedTop, HOVER_CARD_EDGE_PADDING, clientHeight - HOVER_CARD_HEIGHT - HOVER_CARD_EDGE_PADDING);
+
+  return { left, top };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
