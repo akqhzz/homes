@@ -209,7 +209,7 @@ export default function AreaSelectPanel({
             <button
               type="button"
               onClick={handleBack}
-              className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-2.5 text-left text-sm text-[#0F1729] backdrop-blur-xl lg:w-[264px] lg:flex-none"
+              className="pointer-events-auto flex h-11 min-w-0 max-w-[212px] flex-1 items-center rounded-full bg-white/70 px-2.5 text-left text-sm text-[#0F1729] backdrop-blur-xl lg:w-[244px] lg:max-w-none lg:flex-none"
               aria-label="Close area selection"
             >
               <div className="flex w-full items-center gap-2.5">
@@ -237,7 +237,7 @@ export default function AreaSelectPanel({
             )}
             <button
               onClick={onApply}
-              className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-4 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:ml-auto"
+              className="pointer-events-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:ml-auto lg:px-6"
             >
               Done
             </button>
@@ -343,7 +343,7 @@ export default function AreaSelectPanel({
                 return (
                   <article
                     key={neighborhood.id}
-                    className="relative flex h-[140px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
+                    className="relative flex h-[134px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
                   >
                     <button
                       onClick={onCloseNeighborhood}

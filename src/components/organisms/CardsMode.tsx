@@ -40,7 +40,16 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-l+0F1729(${lng},${lat})/${lng},${lat},14,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
+  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${lng},${lat},13.2,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
+}
+
+function StaticMapMarker() {
+  return (
+    <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-full">
+      <span className="block h-4 w-4 rounded-full border-2 border-white bg-[#0F1729]" />
+      <span className="mx-auto -mt-0.5 block h-2 w-2 rotate-45 bg-[#0F1729]" />
+    </span>
+  );
 }
 
 interface CardsModeProps {
@@ -327,6 +336,14 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
       >
         <FloatingActionButton
+          layoutId="cards-map-control"
+          onClick={() => handleShowOnMap()}
+          aria-label="Map"
+        >
+          <Map size={17} strokeWidth={2} />
+        </FloatingActionButton>
+
+        <FloatingActionButton
           layoutId="saved-undo-control"
           onClick={() => setShowSortDrawer(true)}
           aria-label="Sort cards"
@@ -355,15 +372,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           />
           Save
         </motion.button>
-
-        {/* Map — back to map */}
-        <FloatingActionButton
-          layoutId="cards-map-control"
-          onClick={() => handleShowOnMap()}
-          aria-label="Map"
-        >
-          <Map size={17} strokeWidth={2} />
-        </FloatingActionButton>
       </div>
 
       {/* Listing detail drawer */}
@@ -449,7 +457,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             )}
           >
             {mapThumb(drawerListing ?? listing) ? (
-                  <Image src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" width={800} height={400} className="w-full flex-1 object-cover" unoptimized />
+              <div className="relative flex flex-1">
+                <Image src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" width={800} height={400} className="w-full flex-1 object-cover" unoptimized />
+                <StaticMapMarker />
+              </div>
             ) : (
               <div className="mx-4 mb-4 flex flex-1 items-center justify-center rounded-2xl bg-[#E8ECEF]">
                 <div className="text-center p-6">
@@ -625,7 +636,10 @@ function CardModeListingCard({
                 aria-label="Open map preview"
               >
                 {mapThumb(listing) ? (
-                  <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
+                  <>
+                    <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
+                    <StaticMapMarker />
+                  </>
                 ) : (
                   <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
                 )}

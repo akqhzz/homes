@@ -8,6 +8,7 @@ import { useSearchStore } from '@/store/searchStore';
 import ListingCard from '@/components/molecules/ListingCard';
 import DesktopSortMenu from '@/components/molecules/DesktopSortMenu';
 import { cn } from '@/lib/utils/cn';
+import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'sqft-desc';
 
@@ -45,8 +46,8 @@ export default function ListingsSidebar({ listings }: ListingsSidebarProps) {
     selectedLocations.length === 0
       ? 'Selected Area'
       : selectedLocations.length === 1
-      ? selectedLocations[0].name
-      : `${selectedLocations[0].name} + ${selectedLocations.length - 1} more`;
+      ? getPrimaryLocationLabel(selectedLocations[0].name)
+      : `${getPrimaryLocationLabel(selectedLocations[0].name)} + ${selectedLocations.length - 1} more`;
 
   useEffect(() => {
     if (!showSort) return;

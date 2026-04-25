@@ -29,6 +29,7 @@ import CreateInlineField from '@/components/molecules/CreateInlineField';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
+import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -76,8 +77,8 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
     selectedLocations.length === 0
       ? 'Where?'
       : selectedLocations.length === 1
-      ? selectedLocations[0].name
-      : `${selectedLocations[0].name}, +${selectedLocations.length - 1}`;
+      ? getPrimaryLocationLabel(selectedLocations[0].name)
+      : `${getPrimaryLocationLabel(selectedLocations[0].name)}, +${selectedLocations.length - 1}`;
 
   const selectLocation = (location: Location) => {
     addLocation(location);

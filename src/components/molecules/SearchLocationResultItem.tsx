@@ -1,15 +1,12 @@
 'use client';
 import { Building2, MapPinned, Navigation } from 'lucide-react';
 import { Location } from '@/lib/types';
+import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 interface SearchLocationResultItemProps {
   location: Location;
   onSelect: () => void;
   highlighted?: boolean;
-}
-
-function getPrimaryLocationLabel(name: string) {
-  return name.split(',')[0]?.trim() || name;
 }
 
 function looksLikeStreetResult(name: string) {

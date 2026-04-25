@@ -33,26 +33,6 @@ export default function BottomNav() {
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
     >
       {/* Saved searches — map page only */}
-      {isMapPage && (
-        <FloatingActionButton
-          layoutId="saved-undo-control"
-          onClick={() => setActivePanel('saved-searches')}
-          aria-label="Saved searches"
-          className="relative"
-        >
-          {activeSearch?.thumbnail ? (
-            <span className="relative block h-[19px] w-[19px] overflow-hidden rounded-[6px]">
-              <Image src={activeSearch.thumbnail} alt="" fill sizes="19px" className="object-cover" />
-            </span>
-          ) : (
-            <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={19} />
-          )}
-          {activeSearchDirty && (
-            <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white" />
-          )}
-        </FloatingActionButton>
-      )}
-
       {/* Pill nav */}
       <div className="pointer-events-auto flex items-center bg-white rounded-full px-1.5 py-1.5 gap-0 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
@@ -92,6 +72,26 @@ export default function BottomNav() {
           aria-label="Cards mode"
         >
           <AppImageIcon src="/icons/cards-mode.png" alt="Cards mode" size={19} />
+        </FloatingActionButton>
+      )}
+
+      {isMapPage && (
+        <FloatingActionButton
+          layoutId="saved-undo-control"
+          onClick={() => setActivePanel('saved-searches')}
+          aria-label="Saved searches"
+          className="relative"
+        >
+          {activeSearch?.thumbnail ? (
+            <span className="relative block h-[19px] w-[19px] overflow-hidden rounded-[6px]">
+              <Image src={activeSearch.thumbnail} alt="" fill sizes="19px" className="object-cover" />
+            </span>
+          ) : (
+            <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={19} />
+          )}
+          {activeSearchDirty && (
+            <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white" />
+          )}
         </FloatingActionButton>
       )}
     </nav>

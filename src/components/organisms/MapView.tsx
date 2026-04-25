@@ -381,7 +381,7 @@ export default function MapView({
             longitude={markerCoordinates.lng}
             latitude={markerCoordinates.lat}
             anchor={showRight ? 'left' : 'right'}
-            offset={showRight ? [34, isUpperHalf ? 68 : -118] : [-60, isUpperHalf ? 68 : -118]}
+            offset={showRight ? [44, isUpperHalf ? 124 : -118] : [-50, isUpperHalf ? 124 : -118]}
           >
             <div onClick={(event) => event.stopPropagation()} className="hidden w-72 lg:block">
               <ListingCard listing={selectedListing} variant="carousel" />

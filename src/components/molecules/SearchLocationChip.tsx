@@ -2,6 +2,7 @@
 import { X } from 'lucide-react';
 import { Location } from '@/lib/types';
 import { cn } from '@/lib/utils/cn';
+import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 interface SearchLocationChipProps {
   location: Location;
@@ -17,7 +18,7 @@ export default function SearchLocationChip({ location, onRemove, className }: Se
         className
       )}
     >
-      {location.name}
+      {getPrimaryLocationLabel(location.name)}
       <button
         onClick={onRemove}
         className="text-[#9CA3AF] hover:text-[#0F1729] transition-colors -mr-0.5"

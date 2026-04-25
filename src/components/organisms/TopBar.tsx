@@ -26,6 +26,8 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
   const locationLabel =
     selectedLocations.length === 0
       ? hasAppliedArea ? areaSummaryLabel ?? '1 area' : 'Where?'
+      : selectedLocations.length === 1
+      ? selectedLocations[0].name.split(',')[0]?.trim() || selectedLocations[0].name
       : `${selectedLocations.length} area${selectedLocations.length === 1 ? '' : 's'}`;
 
   const handleAreaClick = () => {
@@ -62,64 +64,63 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
 
   return (
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
-      <div className="flex w-full max-w-[300px] items-center gap-2.5">
-      {/* Search pill */}
-      <motion.div layoutId="map-search-bar" className="flex flex-1 items-center gap-2.5 rounded-full bg-white px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
-        <button
-          onClick={() => setActivePanel('search')}
-          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+      <div className="flex w-full max-w-[360px] items-center gap-2.5">
+        <div ref={areaMenuRef} className="relative shrink-0">
+          <button
+            onClick={handleAreaClick}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"
+            aria-label="Area selection"
+          >
+            <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
+          </button>
+          {showAreaMenu && (
+            <div className="absolute left-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+              <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#0F1729] hover:bg-[#F5F6F7]">
+                Edit area
+              </button>
+              <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#6B7280] hover:bg-[#F5F6F7]">
+                Clear area
+              </button>
+            </div>
+          )}
+        </div>
+
+        <motion.div layoutId="map-search-bar" className="flex flex-1 items-center gap-2.5 rounded-full bg-white px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
+          <button
+            onClick={() => setActivePanel('search')}
+            className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+          >
+            <Search size={17} className="text-[#9CA3AF] flex-shrink-0" />
+            {selectedLocations.length > 0 || hasAppliedArea ? (
+              <span className="inline-flex items-center rounded-full bg-[#F0F1F2] px-2.5 py-0.5 type-body font-medium text-[#0F1729] truncate max-w-full">
+                {locationLabel}
+              </span>
+            ) : (
+              <span className="type-body font-medium text-[#9CA3AF] flex-1 truncate">
+                {locationLabel}
+              </span>
+            )}
+          </button>
+        </motion.div>
+
+        <motion.button
+          onClick={() => setActivePanel('filter')}
+          animate={{ opacity: activePanel === 'search' ? 0 : 1, scale: activePanel === 'search' ? 0.92 : 1 }}
+          transition={{ duration: 0.12, ease: 'easeOut' }}
+          className={cn(
+            'relative flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select',
+            activePanel === 'search' && 'pointer-events-none',
+            filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
+          )}
         >
-          <Search size={17} className="text-[#9CA3AF] flex-shrink-0" />
-          {selectedLocations.length > 0 || hasAppliedArea ? (
-            <span className="inline-flex items-center rounded-full bg-[#F0F1F2] px-2.5 py-0.5 type-body font-medium text-[#0F1729] truncate max-w-full">
-              {locationLabel}
-            </span>
-          ) : (
-            <span className="type-body font-medium text-[#9CA3AF] flex-1 truncate">
-              {locationLabel}
+          <SlidersHorizontal size={16} className="text-[#0F1729]" />
+          Filter
+          {filterCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
+              {filterCount}
             </span>
           )}
-        </button>
-      </motion.div>
-
-      <div ref={areaMenuRef} className="relative">
-        <button
-          onClick={handleAreaClick}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"
-          aria-label="Area selection"
-        >
-          <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
-        </button>
-        {showAreaMenu && (
-          <div className="absolute right-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
-            <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#0F1729] hover:bg-[#F5F6F7]">
-              Edit area
-            </button>
-            <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#6B7280] hover:bg-[#F5F6F7]">
-              Clear area
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Filter button */}
-      <motion.button
-        onClick={() => setActivePanel('filter')}
-        animate={{ opacity: activePanel === 'search' ? 0 : 1, scale: activePanel === 'search' ? 0.92 : 1 }}
-        transition={{ duration: 0.12, ease: 'easeOut' }}
-        className={cn(
-          'w-11 h-11 rounded-full flex items-center justify-center shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select relative',
-          activePanel === 'search' && 'pointer-events-none',
-          filterCount > 0 ? 'bg-white shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]' : 'bg-white'
-        )}
-      >
-        <SlidersHorizontal size={18} className="text-[#0F1729]" />
-        {filterCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
-            {filterCount}
-          </span>
-        )}
-      </motion.button>
+        </motion.button>
       </div>
     </div>
   );
