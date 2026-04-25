@@ -28,6 +28,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const wheelLockRef = useRef(false);
   const selectedListingId = useMapStore((s) => s.selectedListingId);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
+  const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
   const markVisitedListing = useMapStore((s) => s.markVisitedListing);
 
   useEffect(() => {
@@ -78,9 +79,10 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
 
   useEffect(() => {
     const centeredListing = listings[currentIndex];
-    if (!centeredListing || selectedListingId === centeredListing.id) return;
-    setSelectedListingId(centeredListing.id);
-  }, [currentIndex, listings, selectedListingId, setSelectedListingId]);
+    if (!centeredListing) return;
+    setMobileCarouselListingId(centeredListing.id);
+    if (selectedListingId !== centeredListing.id) setSelectedListingId(centeredListing.id);
+  }, [currentIndex, listings, selectedListingId, setMobileCarouselListingId, setSelectedListingId]);
 
   const goTo = (index: number) => {
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));

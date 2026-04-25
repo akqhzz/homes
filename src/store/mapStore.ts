@@ -17,6 +17,8 @@ interface MapStore {
   setSelectedListingId: (id: string | null) => void;
   hoveredListingId: string | null;
   setHoveredListingId: (id: string | null) => void;
+  mobileCarouselListingId: string | null;
+  setMobileCarouselListingId: (id: string | null) => void;
   visitedListingIds: string[];
   markVisitedListing: (id: string) => void;
 }
@@ -34,6 +36,8 @@ export const useMapStore = create<MapStore>((set) => ({
   setSelectedListingId: (selectedListingId) => set({ selectedListingId }),
   hoveredListingId: null,
   setHoveredListingId: (hoveredListingId) => set({ hoveredListingId }),
+  mobileCarouselListingId: null,
+  setMobileCarouselListingId: (mobileCarouselListingId) => set({ mobileCarouselListingId }),
   visitedListingIds: [],
   markVisitedListing: (id) =>
     set((state) =>

@@ -212,10 +212,10 @@ export default function MobileDrawer({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.16, ease: 'easeOut' }}
-          className="fixed inset-0 z-50 bg-black/25"
-          onClick={onClose}
-        />
+        transition={{ duration: 0.16, ease: 'easeOut' }}
+        className="fixed inset-0 z-50 bg-black/25"
+        onClick={onClose}
+      />
       )}
       <motion.section
         ref={drawerRef}
@@ -248,7 +248,7 @@ export default function MobileDrawer({
         exit={{ y: 36, opacity: 0 }}
         transition={{ type: 'tween', duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          'fixed inset-x-0 bottom-0 z-[60] flex flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_-12px_32px_rgba(15,23,41,0.16)]',
+          'fixed inset-x-0 bottom-0 z-[60] flex h-auto w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_-12px_32px_rgba(15,23,41,0.16)]',
           heightClassName,
           className
         )}

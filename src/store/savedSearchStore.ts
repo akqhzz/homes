@@ -46,6 +46,8 @@ interface SavedSearchStore {
   activeSearchDirty: boolean;
   saveSearch: (input: SaveSearchInput) => string;
   updateSearch: (id: string, input: SaveSearchInput) => void;
+  renameSearch: (id: string, name: string) => void;
+  deleteSearch: (id: string) => void;
   setActiveSearchId: (id: string | null) => void;
   setActiveSearchDirty: (value: boolean) => void;
 }
@@ -89,6 +91,16 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
           : search
       ),
       activeSearchDirty: false,
+    })),
+  renameSearch: (id, name) =>
+    set((state) => ({
+      searches: state.searches.map((search) => (search.id === id ? { ...search, name } : search)),
+    })),
+  deleteSearch: (id) =>
+    set((state) => ({
+      searches: state.searches.filter((search) => search.id !== id),
+      activeSearchId: state.activeSearchId === id ? null : state.activeSearchId,
+      activeSearchDirty: state.activeSearchId === id ? false : state.activeSearchDirty,
     })),
   setActiveSearchId: (activeSearchId) => set({ activeSearchId }),
   setActiveSearchDirty: (activeSearchDirty) => set({ activeSearchDirty }),

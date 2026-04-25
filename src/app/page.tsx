@@ -194,6 +194,7 @@ export default function MapPage() {
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setHoveredListingId = useMapStore((s) => s.setHoveredListingId);
+  const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
   const setViewState = useMapStore((s) => s.setViewState);
   const {
     searches,
@@ -264,9 +265,10 @@ export default function MapPage() {
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
     if (!isCarouselVisible && !isDesktop) {
       setSelectedListingId(null);
+      setMobileCarouselListingId(null);
       setHoveredListingId(null);
     }
-  }, [isCarouselVisible, setHoveredListingId, setSelectedListingId]);
+  }, [isCarouselVisible, setHoveredListingId, setMobileCarouselListingId, setSelectedListingId]);
 
   useEffect(() => {
     let edgeTouch = false;
@@ -526,6 +528,7 @@ export default function MapPage() {
     setIsDrawingArea(false);
     setCarouselVisible(false);
     setSelectedListingId(null);
+    setMobileCarouselListingId(null);
 
     const nextViewState = getSearchViewState(search.locations, nextBoundary, nextNeighborhoods);
     if (nextViewState) setViewState(nextViewState);
@@ -787,6 +790,7 @@ export default function MapPage() {
             listings={cardsModeListings}
             onClose={() => {
               setSelectedListingId(null);
+              setMobileCarouselListingId(null);
               setActivePanel('none');
             }}
           />

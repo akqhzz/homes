@@ -92,6 +92,8 @@ export default function MapView({
     setSelectedListingId,
     hoveredListingId,
     setHoveredListingId,
+    mobileCarouselListingId,
+    setMobileCarouselListingId,
     visitedListingIds,
     markVisitedListing,
   } = useMapStore();
@@ -119,19 +121,21 @@ export default function MapView({
         return;
       }
       setSelectedListingId(listingId);
+      setMobileCarouselListingId(listingId);
       markVisitedListing(listingId);
       setCarouselVisible(true);
     },
-    [markVisitedListing, setCarouselVisible, setPreviewListingId, setSelectedListingId]
+    [markVisitedListing, setCarouselVisible, setMobileCarouselListingId, setPreviewListingId, setSelectedListingId]
   );
 
   const handleMapClick = useCallback(() => {
     if (!showListings) return;
     setSelectedListingId(null);
     setHoveredListingId(null);
+    setMobileCarouselListingId(null);
     setPreviewListingId(null);
     setCarouselVisible(false);
-  }, [setCarouselVisible, setHoveredListingId, setPreviewListingId, setSelectedListingId, showListings]);
+  }, [setCarouselVisible, setHoveredListingId, setMobileCarouselListingId, setPreviewListingId, setSelectedListingId, showListings]);
 
   const handleMapMoveStart = useCallback(() => {
     if (!showListings) return;
@@ -139,9 +143,10 @@ export default function MapView({
     if (!isDesktop) return;
     setSelectedListingId(null);
     setHoveredListingId(null);
+    setMobileCarouselListingId(null);
     setPreviewListingId(null);
     setCarouselVisible(false);
-  }, [setCarouselVisible, setHoveredListingId, setPreviewListingId, setSelectedListingId, showListings]);
+  }, [setCarouselVisible, setHoveredListingId, setMobileCarouselListingId, setPreviewListingId, setSelectedListingId, showListings]);
 
   const clearHoveredListingSoon = useCallback(() => {
     if (hoverClearTimeoutRef.current) window.clearTimeout(hoverClearTimeoutRef.current);
@@ -433,7 +438,7 @@ export default function MapView({
       {showListings && orderedListings.map(({ listing, index: originalIndex }) => {
         const markerCoordinates = getSpreadListingCoordinates(listing, originalIndex);
         const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-        const isActiveMobilePin = !isDesktop && isCarouselVisible && listing.id === selectedListingId;
+        const isActiveMobilePin = !isDesktop && isCarouselVisible && listing.id === mobileCarouselListingId;
         return (
         <Marker
           key={listing.id}
