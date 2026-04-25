@@ -450,8 +450,8 @@ export default function CollectionPage() {
             </div>
           </div>
 
-          <div className="mx-auto hidden h-full w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden lg:flex">
-            <div className="relative min-h-0 min-w-0 flex-1 self-stretch lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
+          <div className="hidden h-full w-full min-w-0 flex-1 overflow-hidden lg:flex">
+            <div className="relative min-h-0 min-w-0 flex-1 self-stretch lg:mr-2 lg:mt-4 lg:overflow-hidden lg:rounded-tr-[28px]">
               <MapView listings={sortedListings} showListings />
             </div>
 

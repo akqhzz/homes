@@ -32,7 +32,7 @@ export default function PriceMarker({ price, isSelected, isSaved, isHovered, isV
           : isSaved
           ? 'bg-white text-[#0F1729] border border-[#E5E7EB] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
           : isVisited
-          ? 'border border-[var(--color-brand-300)] bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]'
+          ? 'bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]'
           : 'border border-[var(--color-brand-500)] bg-[var(--color-marker-default-bg)] text-[var(--color-marker-default-text)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
       )}
     >

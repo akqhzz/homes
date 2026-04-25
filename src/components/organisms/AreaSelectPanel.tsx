@@ -6,7 +6,6 @@ import { Neighborhood } from '@/lib/types';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
 import { useUIStore } from '@/store/uiStore';
-import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import { cn } from '@/lib/utils/cn';
 
 const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
@@ -75,9 +74,9 @@ export default function AreaSelectPanel({
             <div className="pointer-events-auto flex min-w-0 items-center gap-2">
               <button
                 type="button"
-                onClick={isDrawing ? onToggleDrawing : handleBack}
+                onClick={handleBack}
                 className="flex h-11 min-w-0 max-w-[320px] items-center rounded-full bg-white/70 px-2.5 pr-12 text-left text-sm text-[#0F1729] backdrop-blur-xl"
-                aria-label={isDrawing ? 'Back to area selection' : 'Close area selection'}
+                aria-label={isDrawing ? 'Back to map' : 'Close area selection'}
               >
                 <div className="flex w-full items-center gap-2.5">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
@@ -144,9 +143,15 @@ export default function AreaSelectPanel({
             className="absolute bottom-0 right-5 flex flex-col items-end gap-3 lg:hidden"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <FloatingActionButton size="md" onClick={onToggleDrawing} aria-label="Draw boundary">
-              <Pencil size={18} />
-            </FloatingActionButton>
+            <button
+              type="button"
+              onClick={onToggleDrawing}
+              aria-label="Draw boundary"
+              className="pointer-events-auto flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+            >
+              <Pencil size={16} />
+              Draw
+            </button>
           </div>
         ) : null}
 

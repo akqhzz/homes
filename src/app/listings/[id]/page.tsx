@@ -27,10 +27,16 @@ export default async function ListingPage({ params }: ListingPageProps) {
   return (
     <PageShell showBottomNav={false} desktopWide desktopHeaderVariant="listing" desktopHeaderListingId={listing.id}>
       <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
-        <div className="layout-content-wide px-5 py-5 lg:px-8 lg:pb-7 lg:pt-3">
+        <div className="layout-content-wide px-4 py-4 lg:px-8 lg:pb-7 lg:pt-3">
+          <div className="mb-2 flex justify-end lg:hidden">
+            <BackButton
+              iconOnly
+              className="h-8 w-8 rounded-full bg-white/76 shadow-[0_2px_10px_rgba(0,0,0,0.08)] backdrop-blur-sm hover:bg-white/88"
+            />
+          </div>
           <ListingImageGallery images={listing.images} address={listing.address} />
 
-          <section className="grid gap-8 py-8 lg:grid-cols-[1fr_360px]">
+          <section className="grid gap-8 py-6 lg:grid-cols-[1fr_360px]">
             <div>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>

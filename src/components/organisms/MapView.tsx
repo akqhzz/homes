@@ -418,6 +418,8 @@ export default function MapView({
       {/* Listing price markers */}
       {showListings && listings.map((listing, index) => {
         const markerCoordinates = getSpreadListingCoordinates(listing, index);
+        const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+        const isActiveMobilePin = !isDesktop && isCarouselVisible && listing.id === selectedListingId;
         return (
         <Marker
           key={listing.id}
@@ -435,7 +437,7 @@ export default function MapView({
           >
             <PriceMarker
               price={listing.price}
-              isSelected={listing.id === selectedListingId}
+              isSelected={isDesktop ? listing.id === selectedListingId : isActiveMobilePin}
               isHovered={listing.id === hoveredListingId || listing.id === previewListingId}
               isSaved={isLiked(listing.id)}
               isVisited={visitedListingIds.includes(listing.id)}

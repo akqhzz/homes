@@ -613,9 +613,9 @@ export default function MapPage() {
       />
 
       {/* Main content — split on desktop */}
-      <div className="mx-auto flex w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden">
+      <div className="flex w-full min-w-0 flex-1 overflow-hidden">
         {/* Map panel */}
-        <div className="relative min-w-0 flex-1 lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
+        <div className="relative min-w-0 flex-1 lg:mr-2 lg:mt-4 lg:overflow-hidden lg:rounded-tr-[28px]">
           <MapView
             listings={isAreaSelect ? [] : filteredListings}
             showNeighborhoods={isAreaSelect && !isDrawingArea}
