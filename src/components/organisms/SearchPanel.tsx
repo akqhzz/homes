@@ -154,7 +154,7 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
           transition={{ delay: 0.04, duration: 0.16 }}
           className="mt-2 max-h-[62dvh] overflow-y-auto rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
-          {selectedLocations.length > 0 && (
+          {(selectedLocations.length > 0 || (hasAppliedArea && areaSummaryLabel)) && (
             <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
               <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                 {selectedLocations.map((loc) => (
@@ -164,17 +164,16 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
                     onRemove={() => removeLocation(loc.id)}
                   />
                 ))}
+                {hasAppliedArea && areaSummaryLabel && (
+                  <SearchLocationChip
+                    label={areaSummaryLabel}
+                    onRemove={() => onClearArea?.()}
+                  />
+                )}
               </div>
               <button onClick={clearLocations} className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-1 text-sm font-medium text-[#6B7280] hover:text-[#0F1729]">
                 Clear
               </button>
-            </div>
-          )}
-          {selectedLocations.length === 0 && hasAppliedArea && areaSummaryLabel && (
-            <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
-              <span className="inline-flex items-center rounded-full bg-[var(--color-brand-surface)] px-3 py-1 text-sm font-medium text-[var(--color-brand-text)]">
-                {areaSummaryLabel}
-              </span>
             </div>
           )}
         <div className="py-1">

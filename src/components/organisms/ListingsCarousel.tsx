@@ -28,6 +28,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const wheelLockRef = useRef(false);
   const selectedListingId = useMapStore((s) => s.selectedListingId);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
+  const markVisitedListing = useMapStore((s) => s.markVisitedListing);
 
   useEffect(() => {
     const updateWidth = () => setViewportWidth(window.innerWidth);
@@ -69,6 +70,11 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
       document.body.style.overscrollBehaviorX = previousBodyOverscroll;
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedListingId) return;
+    markVisitedListing(selectedListingId);
+  }, [markVisitedListing, selectedListingId]);
 
   const goTo = (index: number) => {
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));

@@ -28,6 +28,7 @@ import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
+import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 import BackButton from '@/components/atoms/BackButton';
@@ -42,9 +43,18 @@ const MENU_ITEMS = [
 interface DesktopHeaderProps {
   variant?: 'default' | 'listing';
   listingId?: string;
+  hasAppliedArea?: boolean;
+  areaSummaryLabel?: string;
+  onClearArea?: () => void;
 }
 
-export default function DesktopHeader({ variant = 'default', listingId }: DesktopHeaderProps) {
+export default function DesktopHeader({
+  variant = 'default',
+  listingId,
+  hasAppliedArea = false,
+  areaSummaryLabel,
+  onClearArea,
+}: DesktopHeaderProps) {
   const [showFilter, setShowFilter] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -164,6 +174,10 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                   placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Where?'}
                   className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
                 />
+              ) : hasAppliedArea && areaSummaryLabel ? (
+                <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-sm font-medium text-[var(--color-brand-text)]">
+                  {areaSummaryLabel}
+                </span>
               ) : selectedLocations.length > 0 ? (
                 <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-sm font-medium text-[var(--color-brand-text)]">
                   {locationLabel}
@@ -174,15 +188,24 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             </div>
             {showSearch && (
               <div className="absolute left-0 right-0 top-[54px] z-40 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                {selectedLocations.length > 0 && (
+                {(selectedLocations.length > 0 || (hasAppliedArea && areaSummaryLabel)) && (
                   <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
                     <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                       {selectedLocations.map((location) => (
-                        <span key={location.id} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 text-xs font-medium text-[var(--color-brand-text)]">
-                          {location.name}
-                          <button onClick={() => removeLocation(location.id)} className="text-[var(--color-brand-text)] hover:text-[var(--color-brand-text)]">×</button>
-                        </span>
+                        <SearchLocationChip
+                          key={location.id}
+                          location={location}
+                          onRemove={() => removeLocation(location.id)}
+                          className="py-1 text-xs"
+                        />
                       ))}
+                      {hasAppliedArea && areaSummaryLabel && (
+                        <SearchLocationChip
+                          label={areaSummaryLabel}
+                          onRemove={() => onClearArea?.()}
+                          className="py-1 text-xs"
+                        />
+                      )}
                     </div>
                     <button onClick={clearLocations} className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-1 text-xs font-semibold text-[#6B7280] hover:text-[#0F1729]">
                       Clear
@@ -215,7 +238,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               }}
               className={cn(
                 'relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select',
-                filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
+                filterCount > 0 && 'border border-[#374151] shadow-[inset_0_0_0_1px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
               aria-label="Filters"
             >

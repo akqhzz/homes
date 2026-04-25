@@ -9,10 +9,11 @@ interface PriceMarkerProps {
   isSelected?: boolean;
   isSaved?: boolean;
   isHovered?: boolean;
+  isVisited?: boolean;
   onClick?: () => void;
 }
 
-export default function PriceMarker({ price, isSelected, isSaved, isHovered, onClick }: PriceMarkerProps) {
+export default function PriceMarker({ price, isSelected, isSaved, isHovered, isVisited, onClick }: PriceMarkerProps) {
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     onClick?.();
@@ -30,6 +31,8 @@ export default function PriceMarker({ price, isSelected, isSaved, isHovered, onC
           ? 'bg-[#0F1729] text-white border border-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
           : isSaved
           ? 'bg-white text-[#0F1729] border border-[#E5E7EB] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
+          : isVisited
+          ? 'border border-[var(--color-brand-300)] bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]'
           : 'border border-[var(--color-brand-500)] bg-[var(--color-marker-default-bg)] text-[var(--color-marker-default-text)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
       )}
     >

@@ -606,7 +606,11 @@ export default function MapPage() {
       <DesktopSidebar />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       {/* Desktop header (hidden on mobile) */}
-      <DesktopHeader />
+      <DesktopHeader
+        hasAppliedArea={hasVisibleBoundary}
+        areaSummaryLabel={areaSummaryLabel}
+        onClearArea={clearVisibleBoundaries}
+      />
 
       {/* Main content — split on desktop */}
       <div className="mx-auto flex w-full max-w-[1872px] min-w-0 flex-1 overflow-hidden">

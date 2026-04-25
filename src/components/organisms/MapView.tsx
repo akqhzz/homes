@@ -85,7 +85,16 @@ export default function MapView({
   showAmenities = false,
   isAreaMode = false,
 }: MapViewProps) {
-  const { viewState, setViewState, selectedListingId, setSelectedListingId, hoveredListingId, setHoveredListingId } = useMapStore();
+  const {
+    viewState,
+    setViewState,
+    selectedListingId,
+    setSelectedListingId,
+    hoveredListingId,
+    setHoveredListingId,
+    visitedListingIds,
+    markVisitedListing,
+  } = useMapStore();
   const { setCarouselVisible, isSatelliteMode, isCarouselVisible } = useUIStore();
   const isLiked = useSavedStore((s) => s.isLiked);
   const mapRef = useRef<MapRef | null>(null);
@@ -105,13 +114,15 @@ export default function MapView({
       if (isDesktop) {
         setSelectedListingId(null);
         setPreviewListingId(listingId);
+        markVisitedListing(listingId);
         setCarouselVisible(false);
         return;
       }
       setSelectedListingId(listingId);
+      markVisitedListing(listingId);
       setCarouselVisible(true);
     },
-    [setCarouselVisible, setPreviewListingId, setSelectedListingId]
+    [markVisitedListing, setCarouselVisible, setPreviewListingId, setSelectedListingId]
   );
 
   const handleMapClick = useCallback(() => {
@@ -418,6 +429,7 @@ export default function MapView({
             onMouseEnter={() => {
               cancelHoveredListingClear();
               setPreviewListingId(listing.id);
+              markVisitedListing(listing.id);
             }}
             onMouseLeave={clearHoveredListingSoon}
           >
@@ -426,6 +438,7 @@ export default function MapView({
               isSelected={listing.id === selectedListingId}
               isHovered={listing.id === hoveredListingId || listing.id === previewListingId}
               isSaved={isLiked(listing.id)}
+              isVisited={visitedListingIds.includes(listing.id)}
               onClick={() => handleMarkerClick(listing.id)}
             />
           </div>

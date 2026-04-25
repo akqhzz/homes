@@ -205,6 +205,17 @@ export default function SavedSearchesPanel({
                 >
                   Update?
                 </button>
+              ) : isSelected ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleLoadSearch(search);
+                  }}
+                  className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-2 type-caption text-[#0F1729]"
+                >
+                  Unselect
+                </button>
               ) : (
                 <ChevronRight size={18} className="text-[#9CA3AF] flex-shrink-0" />
               )}
