@@ -19,6 +19,7 @@ const LISTING_IMAGE_FALLBACKS = [
   'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900&q=80',
   'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80',
 ];
+const MLS_BROKERAGE_FALLBACK = 'URBAN HOMES REALTY INC.';
 
 interface ListingCardProps {
   listing: Listing;
@@ -188,6 +189,7 @@ export default function ListingCard({
   const openListingPage = () => {
     router.push(`/listings/${listing.id}`);
   };
+  const mlsLine = `MLS®#${listing.mlsNumber} ${MLS_BROKERAGE_FALLBACK}`;
 
   if (variant === 'grid') {
     return (
@@ -239,10 +241,11 @@ export default function ListingCard({
           <div className="p-4">
             <p className="type-subtitle text-[#0F1729]">{formatPrice(listing.price)}</p>
             <p className="mt-1 type-body text-[#6B7280]">{listing.beds}bd · {listing.baths}ba · {formatSqftCompact(listing.sqft)} sqft</p>
-            <div className="mt-1.5 flex items-center gap-1 type-caption text-[#9CA3AF]">
+            <div className="mt-1 flex items-center gap-1 type-caption text-[#6B7280]">
               <MapPin size={11} />
               <span>{listing.address}</span>
             </div>
+            <p className="mt-0.5 type-fine uppercase tracking-[0.01em] text-[#9CA3AF]">{mlsLine}</p>
           </div>
         </div>
         {saveSheet}
@@ -349,7 +352,7 @@ export default function ListingCard({
 
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button
-          className="block min-h-[78px] bg-white px-3.5 pb-4.5 pt-2.5 text-left"
+          className="block min-h-[78px] bg-white px-3.5 pb-4.5 pt-2 text-left"
           style={{ touchAction: contentTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'pan-x' }}
           onClick={openListingPage}
         >
@@ -359,8 +362,11 @@ export default function ListingCard({
               <p className="mt-0.5 truncate type-body text-[#6B7280]">
                 {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
               </p>
-              <p className="mt-1 pr-2 type-caption text-[#9CA3AF] line-clamp-2">
+              <p className="mt-0.5 pr-2 type-caption text-[#6B7280] line-clamp-2">
                 {listing.address}
+              </p>
+              <p className="mt-0.5 pr-2 type-fine uppercase tracking-[0.01em] text-[#9CA3AF] line-clamp-1">
+                {mlsLine}
               </p>
             </div>
             <span className="mt-0.5 shrink-0 type-caption text-[#9CA3AF]">

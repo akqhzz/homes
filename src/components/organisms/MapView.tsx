@@ -50,7 +50,7 @@ const LISTING_MARKER_OFFSETS = [
 const HOVER_CARD_WIDTH = 288;
 const HOVER_CARD_HEIGHT = 252;
 const HOVER_CARD_EDGE_PADDING = 16;
-const HOVER_CARD_SIDE_GAP = 18;
+const HOVER_CARD_SIDE_GAP = 28;
 const HOVER_CARD_PIN_TOP_OFFSET = 34;
 
 interface MapViewProps {
@@ -92,6 +92,7 @@ export default function MapView({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<MapRef | null>(null);
   const [neighborhoodDisplayItems, setNeighborhoodDisplayItems] = useState<NeighborhoodDisplayItem[]>([]);
+  const [previewListingId, setPreviewListingId] = useState<string | null>(null);
 
   const mapStyle = isSatelliteMode
     ? 'mapbox://styles/mapbox/satellite-streets-v12'
@@ -102,22 +103,23 @@ export default function MapView({
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
       if (isDesktop) {
         setSelectedListingId(null);
-        setHoveredListingId(listingId);
+        setPreviewListingId(listingId);
         setCarouselVisible(false);
         return;
       }
       setSelectedListingId(listingId);
       setCarouselVisible(true);
     },
-    [setSelectedListingId, setHoveredListingId, setCarouselVisible]
+    [setCarouselVisible, setPreviewListingId, setSelectedListingId]
   );
 
   const handleMapClick = useCallback(() => {
     if (!showListings) return;
     setSelectedListingId(null);
     setHoveredListingId(null);
+    setPreviewListingId(null);
     setCarouselVisible(false);
-  }, [setSelectedListingId, setHoveredListingId, setCarouselVisible, showListings]);
+  }, [setCarouselVisible, setHoveredListingId, setPreviewListingId, setSelectedListingId, showListings]);
 
   const handleMapMoveStart = useCallback(() => {
     if (!showListings) return;
@@ -125,13 +127,14 @@ export default function MapView({
     if (!isDesktop) return;
     setSelectedListingId(null);
     setHoveredListingId(null);
+    setPreviewListingId(null);
     setCarouselVisible(false);
-  }, [setSelectedListingId, setHoveredListingId, setCarouselVisible, showListings]);
+  }, [setCarouselVisible, setHoveredListingId, setPreviewListingId, setSelectedListingId, showListings]);
 
   const clearHoveredListingSoon = useCallback(() => {
     if (hoverClearTimeoutRef.current) window.clearTimeout(hoverClearTimeoutRef.current);
-    hoverClearTimeoutRef.current = window.setTimeout(() => setHoveredListingId(null), 80);
-  }, [setHoveredListingId]);
+    hoverClearTimeoutRef.current = window.setTimeout(() => setPreviewListingId(null), 80);
+  }, [setPreviewListingId]);
 
   const cancelHoveredListingClear = useCallback(() => {
     if (hoverClearTimeoutRef.current) {
@@ -177,7 +180,7 @@ export default function MapView({
 
   const desktopPreviewListing =
     typeof window !== 'undefined' && window.innerWidth >= 1024
-      ? listings.find((item) => item.id === hoveredListingId) ?? null
+      ? listings.find((item) => item.id === previewListingId) ?? null
       : null;
   const desktopPreviewStyle = useMemo(() => {
     if (!desktopPreviewListing || !mapInstance) return null;
@@ -205,29 +208,29 @@ export default function MapView({
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-    <Map
-      ref={mapRef}
-      {...viewState}
-      onMoveStart={handleMapMoveStart}
-      onMove={(e) => setViewState(e.viewState)}
-      onLoad={() => {
-        setMapLoaded(true);
-        setMapInstance(mapRef.current);
-      }}
-      onClick={handleMapPointer}
-      mapStyle={mapStyle}
-      mapboxAccessToken={MAPBOX_TOKEN}
-      config={{
-        basemap: {
-          theme: 'faded',
-          lightPreset: 'day',
-          show3dObjects: false,
-        },
-      }}
-      style={{ width: '100%', height: '100%' }}
-      minZoom={9}
-      maxZoom={18}
-    >
+      <Map
+        ref={mapRef}
+        {...viewState}
+        onMoveStart={handleMapMoveStart}
+        onMove={(e) => setViewState(e.viewState)}
+        onLoad={() => {
+          setMapLoaded(true);
+          setMapInstance(mapRef.current);
+        }}
+        onClick={handleMapPointer}
+        mapStyle={mapStyle}
+        mapboxAccessToken={MAPBOX_TOKEN}
+        config={{
+          basemap: {
+            theme: 'faded',
+            lightPreset: 'day',
+            show3dObjects: false,
+          },
+        }}
+        style={{ width: '100%', height: '100%' }}
+        minZoom={9}
+        maxZoom={18}
+      >
       {boundaryNeighborhoods.map((neighborhood) => (
         <Source key={neighborhood.id} id={`neighborhood-boundary-${neighborhood.id}`} type="geojson" data={getNeighborhoodBoundaryFeature(neighborhood)}>
           <Layer
@@ -413,13 +416,14 @@ export default function MapView({
           <div
             onMouseEnter={() => {
               cancelHoveredListingClear();
-              setHoveredListingId(listing.id);
+              setPreviewListingId(listing.id);
             }}
             onMouseLeave={clearHoveredListingSoon}
           >
             <PriceMarker
               price={listing.price}
-              isSelected={listing.id === selectedListingId || listing.id === hoveredListingId}
+              isSelected={listing.id === selectedListingId}
+              isHovered={listing.id === hoveredListingId || listing.id === previewListingId}
               isSaved={isLiked(listing.id)}
               onClick={() => handleMarkerClick(listing.id)}
             />
@@ -427,14 +431,14 @@ export default function MapView({
         </Marker>
         );
       })}
-    </Map>
+      </Map>
       {showListings && desktopPreviewListing && desktopPreviewStyle && !isCarouselVisible && (
         <div
           style={desktopPreviewStyle}
           className="pointer-events-auto absolute hidden w-72 lg:block"
           onMouseEnter={() => {
             cancelHoveredListingClear();
-            setHoveredListingId(desktopPreviewListing.id);
+            setPreviewListingId(desktopPreviewListing.id);
           }}
           onMouseLeave={clearHoveredListingSoon}
         >

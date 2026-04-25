@@ -101,7 +101,6 @@ export default function CollectionPage() {
   const [tagPanelState, setTagPanelState] = useState<TagPanelState>(null);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
   const [compactMobileHeaderProgress, setCompactMobileHeaderProgress] = useState(0);
-  const [isDesktopViewport, setIsDesktopViewport] = useState(false);
   const [pendingRemovalByCollection, setPendingRemovalByCollection] = useState<Record<string, string[]>>({});
   const pendingRemovalIdsRef = useRef<string[]>([]);
 
@@ -141,13 +140,6 @@ export default function CollectionPage() {
       setSelectedListingId(null);
     }
   }, [mobileView, setCarouselVisible, setSelectedListingId]);
-
-  useEffect(() => {
-    const updateViewport = () => setIsDesktopViewport(window.innerWidth >= 1024);
-    updateViewport();
-    window.addEventListener('resize', updateViewport);
-    return () => window.removeEventListener('resize', updateViewport);
-  }, []);
 
   useEffect(() => {
     pendingRemovalIdsRef.current = pendingRemovalIds;
@@ -220,11 +212,7 @@ export default function CollectionPage() {
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
       <div className="flex h-full flex-col overflow-hidden bg-white">
         <div
-          className="relative bg-white px-4 lg:px-8 lg:pb-5 lg:pt-6"
-          style={isDesktopViewport ? undefined : {
-            paddingTop: `${16 - mobileHeaderProgress * 3}px`,
-            paddingBottom: `${16 - mobileHeaderProgress * 8}px`,
-          }}
+          className="relative bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6"
         >
           <CollectionWorkspaceHeader
             className="lg:min-h-0"
@@ -271,7 +259,8 @@ export default function CollectionPage() {
           <div className="flex h-full flex-col lg:hidden">
             {mobileView === 'list' ? (
               <div
-                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4"
+                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4 [overflow-anchor:none]"
+                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
                 onScroll={(event) => {
                   const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 240));
                   const eased = raw * raw * (3 - 2 * raw);
@@ -364,7 +353,7 @@ export default function CollectionPage() {
                       setMobileView('list');
                     }}
                     className={cn(
-                      'flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors',
+                      'flex h-8 items-center gap-2 rounded-full px-3 text-sm font-medium transition-all duration-200 ease-out',
                       mobileView === 'list' ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
                     )}
                   >
@@ -379,25 +368,13 @@ export default function CollectionPage() {
                       setMobileView('map');
                     }}
                     className={cn(
-                      'flex h-11 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors',
+                      'flex h-8 items-center gap-2 rounded-full px-3 text-sm font-medium transition-all duration-200 ease-out',
                       mobileView === 'map' ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
                     )}
                   >
                     <Map size={16} />
                   </button>
                 </div>
-                {mobileView === 'list' && (
-                  <ControlPillButton
-                    onClick={() => {
-                      setTagPanelState(null);
-                      setShowSortDrawer(true);
-                    }}
-                    className="h-11 w-11 justify-center px-0"
-                    aria-label="Sort"
-                  >
-                    <ArrowDownWideNarrow size={18} />
-                  </ControlPillButton>
-                )}
                 <ControlPillButton
                   onClick={() => {
                     setShowSortDrawer(false);
@@ -410,6 +387,18 @@ export default function CollectionPage() {
                 >
                   <Tag size={18} />
                 </ControlPillButton>
+                {mobileView === 'list' && (
+                  <ControlPillButton
+                    onClick={() => {
+                      setTagPanelState(null);
+                      setShowSortDrawer(true);
+                    }}
+                    className="h-11 w-11 justify-center px-0"
+                    aria-label="Sort"
+                  >
+                    <ArrowDownWideNarrow size={18} />
+                  </ControlPillButton>
+                )}
               </div>
             </div>
           </div>

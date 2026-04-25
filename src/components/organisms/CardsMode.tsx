@@ -343,14 +343,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <Map size={17} strokeWidth={2} />
         </FloatingActionButton>
 
-        <FloatingActionButton
-          layoutId="saved-undo-control"
-          onClick={() => setShowSortDrawer(true)}
-          aria-label="Sort cards"
-        >
-          <ArrowDownWideNarrow size={17} strokeWidth={2} />
-        </FloatingActionButton>
-
         <button
           onClick={passListing}
           className="flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label text-[#4B5563] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
@@ -372,6 +364,14 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           />
           Save
         </motion.button>
+
+        <FloatingActionButton
+          layoutId="saved-undo-control"
+          onClick={() => setShowSortDrawer(true)}
+          aria-label="Sort cards"
+        >
+          <ArrowDownWideNarrow size={17} strokeWidth={2} />
+        </FloatingActionButton>
       </div>
 
       {/* Listing detail drawer */}

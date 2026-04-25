@@ -47,7 +47,7 @@ export default function CollectionWorkspaceHeader({
         <h1
           className={cn(
             'font-medium tracking-[-0.01em] text-[#0F1729] transition-[transform,font-size,line-height] duration-300 ease-out',
-            compact ? 'text-[1.05rem] leading-[1.15] lg:text-[1.25rem]' : 'text-[1.28rem] leading-[1.2] lg:text-[1.55rem]'
+            compact ? 'text-[1.12rem] leading-[1.15] lg:text-[1.25rem]' : 'text-[1.28rem] leading-[1.2] lg:text-[1.55rem]'
           )}
           style={{
             transform: `translateY(${titleTranslate}px) scale(${titleScale})`,

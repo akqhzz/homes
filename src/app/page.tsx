@@ -240,7 +240,7 @@ export default function MapPage() {
     hoveredNeighborhood?.id ??
     (focusedNeighborhood && !selectedNeighborhoods.has(focusedNeighborhood.id) ? focusedNeighborhood.id : null);
   const areaSelectHasVisibleBoundary =
-    Boolean(areaPreviewNeighborhoodId) || selectedNeighborhoods.size > 0 || drawnBoundary.length > 0 || hasSearchBoundary;
+    selectedNeighborhoods.size > 0 || drawnBoundary.length > 0 || hasSearchBoundary;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
