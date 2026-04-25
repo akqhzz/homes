@@ -83,6 +83,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   }, [listings, sortMode]);
   const activeIndex = Math.min(currentIndex, Math.max(0, sortedListings.length - 1));
   const listing = sortedListings[activeIndex];
+  const detailDrawerListing = drawerListing ?? listing;
+  const mapDrawerListing = drawerListing ?? listing;
 
   useEffect(() => {
     const updateWidth = () => {
@@ -404,18 +406,17 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       </AnimatePresence>
 
       <AnimatePresence>
-        {showDetailDrawer && (drawerListing ?? listing) && (
+        {showDetailDrawer && detailDrawerListing && (
           <MobileDrawer
-            title={(drawerListing ?? listing).address.split(',')[0]}
+            title={detailDrawerListing.address.split(',')[0]}
             onClose={() => setShowDetailDrawer(false)}
             heightClassName="max-h-[72dvh]"
             contentClassName="p-4"
             footer={(
               <Button
                 onClick={() => {
-                  const detailListing = drawerListing ?? listing;
                   setShowDetailDrawer(false);
-                  router.push(`/listings/${detailListing.id}`);
+                  router.push(`/listings/${detailDrawerListing.id}`);
                 }}
                 fullWidth
                 size="lg"
@@ -424,19 +425,19 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="type-title text-[#0F1729]">{formatPrice((drawerListing ?? listing).price)}</p>
+            <p className="type-title text-[#0F1729]">{formatPrice(detailDrawerListing.price)}</p>
             <p className="type-body text-[#6B7280] mt-1">
-              {(drawerListing ?? listing).beds}bd · {(drawerListing ?? listing).baths}ba · {formatSqft((drawerListing ?? listing).sqft)} sqft
+              {detailDrawerListing.beds}bd · {detailDrawerListing.baths}ba · {formatSqft(detailDrawerListing.sqft)} sqft
             </p>
             <p className="type-caption text-[#9CA3AF] mt-1 flex items-center gap-1">
               <MapPin size={11} />
-              {(drawerListing ?? listing).address}, {(drawerListing ?? listing).city}
+              {detailDrawerListing.address}, {detailDrawerListing.city}
             </p>
             <div className="h-px bg-[#F5F6F7] my-4" />
-            <p className="type-body text-[#6B7280] leading-relaxed">{(drawerListing ?? listing).description}</p>
+            <p className="type-body text-[#6B7280] leading-relaxed">{detailDrawerListing.description}</p>
             <div className="h-px bg-[#F5F6F7] my-4" />
             <div className="flex flex-wrap gap-2">
-              {(drawerListing ?? listing).features.map((f) => (
+              {detailDrawerListing.features.map((f) => (
                 <span key={f} className="type-caption bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">{f}</span>
               ))}
             </div>
@@ -446,11 +447,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
       {/* Mini-map drawer */}
       <AnimatePresence>
-        {showMapDrawer && (drawerListing ?? listing) && (
+        {showMapDrawer && mapDrawerListing && (
           <MobileDrawer
             title={(
               <div className="pr-6 font-heading text-[1.02rem] font-medium leading-[1.35] text-[#334155]">
-                {(drawerListing ?? listing).address}
+                {mapDrawerListing.address}
               </div>
             )}
             onClose={() => setShowMapDrawer(false)}
@@ -461,8 +462,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-[24px]">
                 <MapGL
                   initialViewState={{
-                    longitude: (drawerListing ?? listing).coordinates.lng,
-                    latitude: (drawerListing ?? listing).coordinates.lat,
+                    longitude: mapDrawerListing.coordinates.lng,
+                    latitude: mapDrawerListing.coordinates.lat,
                     zoom: 13.2,
                   }}
                   mapStyle="mapbox://styles/mapbox/standard"
@@ -478,8 +479,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                   }}
                 >
                   <Marker
-                    longitude={(drawerListing ?? listing).coordinates.lng}
-                    latitude={(drawerListing ?? listing).coordinates.lat}
+                    longitude={mapDrawerListing.coordinates.lng}
+                    latitude={mapDrawerListing.coordinates.lat}
                     anchor="bottom"
                   >
                     <MapListingPin size={22} dotSize={6} className="drop-shadow-[0_4px_12px_rgba(15,23,41,0.18)]" />
@@ -491,9 +492,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               <div className="flex flex-1 items-center justify-center rounded-[24px] bg-[#E8ECEF]">
                 <div className="text-center p-6">
                   <MapPin size={36} className="mx-auto mb-3 text-[#9CA3AF]" />
-                  <p className="type-label text-[#0F1729]">{(drawerListing ?? listing).neighborhood}</p>
-                  <p className="type-body text-[#9CA3AF] mt-1">{(drawerListing ?? listing).address}</p>
-                  <p className="type-caption text-[#9CA3AF] mt-1">{(drawerListing ?? listing).coordinates.lat.toFixed(4)}, {(drawerListing ?? listing).coordinates.lng.toFixed(4)}</p>
+                  <p className="type-label text-[#0F1729]">{mapDrawerListing.neighborhood}</p>
+                  <p className="type-body text-[#9CA3AF] mt-1">{mapDrawerListing.address}</p>
+                  <p className="type-caption text-[#9CA3AF] mt-1">{mapDrawerListing.coordinates.lat.toFixed(4)}, {mapDrawerListing.coordinates.lng.toFixed(4)}</p>
                 </div>
               </div>
             )}

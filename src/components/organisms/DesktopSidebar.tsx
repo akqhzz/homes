@@ -17,6 +17,34 @@ const NAV_ITEMS = [
   { href: '/for-you', icon: Sparkles, label: 'Insights' },
 ] as const;
 
+interface NavButtonProps {
+  active: boolean;
+  icon: typeof Map;
+  label: string;
+  onClick: () => void;
+}
+
+function NavButton({ active, icon: Icon, label, onClick }: NavButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={cn(
+        'flex w-[62px] flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors',
+        active
+          ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
+          : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'
+      )}
+    >
+      <Icon size={24} strokeWidth={active ? 2.25 : 1.9} />
+      <span className={cn('text-[0.68rem] font-medium leading-none', active ? 'text-[var(--color-brand-700)]' : 'text-[#64748B]')}>
+        {label}
+      </span>
+    </button>
+  );
+}
+
 export default function DesktopSidebar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -40,44 +68,24 @@ export default function DesktopSidebar() {
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
-            <button
+            <NavButton
               key={href}
-              type="button"
+              active={active}
+              icon={Icon}
+              label={label}
               onClick={() => router.push(href)}
-              aria-label={label}
-              className={cn(
-                'flex w-[62px] flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors',
-                active
-                  ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
-                  : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'
-              )}
-            >
-              <Icon size={24} strokeWidth={active ? 2.25 : 1.9} />
-              <span className={cn('text-[0.68rem] font-medium leading-none', active ? 'text-[var(--color-brand-700)]' : 'text-[#64748B]')}>
-                {label}
-              </span>
-            </button>
+            />
           );
         })}
       </nav>
 
       <div className="relative mt-auto">
-        <button
-          type="button"
+        <NavButton
+          active={showMenu}
+          icon={Menu}
+          label="Menu"
           onClick={() => setShowMenu((value) => !value)}
-          aria-label="Menu"
-          className={cn(
-            'flex w-[62px] flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors',
-            showMenu
-              ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
-              : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'
-          )}
-        >
-          <Menu size={24} strokeWidth={2} />
-          <span className={cn('text-[0.68rem] font-medium leading-none', showMenu ? 'text-[var(--color-brand-700)]' : 'text-[#64748B]')}>
-            Menu
-          </span>
-        </button>
+        />
         {showMenu && (
           <>
             <button

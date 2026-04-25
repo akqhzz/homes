@@ -264,14 +264,21 @@ export default function MapView({
         minZoom={9}
         maxZoom={18}
       >
-      {boundaryNeighborhoods.map((neighborhood) => (
+      {boundaryNeighborhoods.map((neighborhood) => {
+        const paintState = getBoundaryPaintState(
+          neighborhood.id,
+          includedNeighborhoodIds,
+          previewNeighborhoodId
+        );
+
+        return (
         <Source key={neighborhood.id} id={`neighborhood-boundary-${neighborhood.id}`} type="geojson" data={getNeighborhoodBoundaryFeature(neighborhood)}>
           <Layer
             id={`neighborhood-boundary-fill-${neighborhood.id}`}
             type="fill"
             paint={{
-              'fill-color': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).fillColor,
-              'fill-opacity': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).fillOpacity,
+              'fill-color': paintState.fillColor,
+              'fill-opacity': paintState.fillOpacity,
               'fill-emissive-strength': 0.2,
             }}
           />
@@ -283,15 +290,16 @@ export default function MapView({
               'line-cap': 'round',
             }}
             paint={{
-              'line-color': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineColor,
-              'line-opacity': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineOpacity,
-              'line-width': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineWidth,
-              'line-dasharray': getBoundaryPaintState(neighborhood.id, includedNeighborhoodIds, previewNeighborhoodId).lineDasharray,
+              'line-color': paintState.lineColor,
+              'line-opacity': paintState.lineOpacity,
+              'line-width': paintState.lineWidth,
+              'line-dasharray': paintState.lineDasharray,
               'line-emissive-strength': 0.8,
             }}
           />
         </Source>
-      ))}
+        );
+      })}
 
       {searchedLocations
         .filter((location) => (location.boundary?.length ?? 0) > 2)

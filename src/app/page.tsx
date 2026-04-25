@@ -12,9 +12,7 @@ import {
   getLocationBounds,
   getNeighborhoodBounds,
   getSuggestedZoom,
-  listingMatchesLocation,
   mergeBounds,
-  pointInPolygon,
 } from '@/lib/geo';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -25,14 +23,15 @@ import DesktopSidebar from '@/components/organisms/DesktopSidebar';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
-import { Neighborhood, SavedSearch, SearchFilters } from '@/lib/types';
-
-interface SearchSnapshot {
-  locations: SavedSearch['locations'];
-  filters: SearchFilters;
-  areaBoundary: { lat: number; lng: number }[];
-  neighborhoodIds: string[];
-}
+import { Neighborhood, SavedSearch } from '@/lib/types';
+import { applyFilters, filterListingsBySearchArea } from '@/lib/search-filters';
+import {
+  areSearchSnapshotsEqual,
+  createSearchSnapshot,
+  getCarryoverAreaSelection,
+  SearchSnapshot,
+  searchToSnapshot,
+} from '@/lib/search-utils';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
 const SearchPanel = dynamic(() => import('@/components/organisms/SearchPanel'), { ssr: false });
@@ -42,48 +41,6 @@ const AreaSelectPanel = dynamic(() => import('@/components/organisms/AreaSelectP
 const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingDetailSheet'), { ssr: false });
 const SavedSearchesPanel = dynamic(() => import('@/components/organisms/SavedSearchesPanel'), { ssr: false });
 const ListingsSidebar = dynamic(() => import('@/components/organisms/ListingsSidebar'), { ssr: false });
-
-function applyFilters(listings: typeof MOCK_LISTINGS, filters: SearchFilters) {
-  return listings.filter((l) => {
-    if (filters.minPrice && l.price < filters.minPrice) return false;
-    if (filters.maxPrice && l.price > filters.maxPrice) return false;
-    if (filters.minBeds && l.beds < filters.minBeds) return false;
-    if (filters.minBaths && l.baths < filters.minBaths) return false;
-    if (filters.minSqft && l.sqft < filters.minSqft) return false;
-    if (filters.maxSqft && l.sqft > filters.maxSqft) return false;
-    if (filters.propertyTypes.length > 0 && !filters.propertyTypes.includes(l.propertyType)) return false;
-    if (filters.maxDaysOnMarket && l.daysOnMarket > filters.maxDaysOnMarket) return false;
-    return true;
-  });
-}
-
-function filterListingsBySearchArea(
-  listings: typeof MOCK_LISTINGS,
-  selectedLocations: SavedSearch['locations'],
-  boundary: { lat: number; lng: number }[],
-  neighborhoodIds: Set<string>
-) {
-  if (boundary.length >= 3) {
-    return listings.filter((listing) => pointInPolygon(listing.coordinates, boundary));
-  }
-
-  if (neighborhoodIds.size > 0) {
-    const selectedNeighborhoods = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhoodIds.has(neighborhood.id));
-    return listings.filter((listing) =>
-      selectedNeighborhoods.some((neighborhood) =>
-        pointInPolygon(listing.coordinates, neighborhood.boundary ?? [])
-      )
-    );
-  }
-
-  if (selectedLocations.length > 0) {
-    return listings.filter((listing) =>
-      selectedLocations.some((location) => listingMatchesLocation(listing, location))
-    );
-  }
-
-  return listings;
-}
 
 function getSearchViewState(
   selectedLocations: SavedSearch['locations'],
@@ -108,83 +65,6 @@ function getSearchViewState(
     longitude: center.lng,
     latitude: center.lat,
     zoom: getSuggestedZoom(bounds),
-  };
-}
-
-function createSearchSnapshot(
-  locations: SavedSearch['locations'],
-  filters: SearchFilters,
-  areaBoundary: { lat: number; lng: number }[],
-  neighborhoods: Set<string>
-): SearchSnapshot {
-  return {
-    locations: locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
-    filters: { ...filters, propertyTypes: [...filters.propertyTypes] },
-    areaBoundary: areaBoundary.map((point) => ({ ...point })),
-    neighborhoodIds: [...neighborhoods].sort(),
-  };
-}
-
-function searchToSnapshot(search: SavedSearch): SearchSnapshot {
-  return {
-    locations: search.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
-    filters: { ...search.filters, propertyTypes: [...search.filters.propertyTypes] },
-    areaBoundary: search.areaBoundary?.map((point) => ({ ...point })) ?? [],
-    neighborhoodIds: [...(search.neighborhoodIds ?? [])].sort(),
-  };
-}
-
-function areSearchSnapshotsEqual(a: SearchSnapshot, b: SearchSnapshot) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function normalizeAreaName(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-}
-
-function getCarryoverAliases(neighborhoodId: string) {
-  const aliases: Record<string, string[]> = {
-    'nbh-yorkville': ['Bay-Cloverhill'],
-    'nbh-kensington': ['Kensington Market', 'Kensington-Chinatown'],
-    'nbh-church-st': ['Church Street', 'Church-Wellesley', 'Church Wellesley'],
-    'nbh-cabbagetown': ['Cabbagetown-South St.James Town', 'Cabbagetown South St James Town'],
-    'nbh-queen-west': ['West Queen West'],
-    'nbh-king-west': ['Wellington Place'],
-    'nbh-grange-park': ['Discovery District', 'University'],
-  };
-
-  return aliases[neighborhoodId] ?? [];
-}
-
-function getCarryoverAreaSelection(locations: SavedSearch['locations']) {
-  const matchedNeighborhoodIds = new Set<string>();
-  let fallbackBoundary: { lat: number; lng: number }[] = [];
-
-  for (const location of locations) {
-    if ((location.boundary?.length ?? 0) < 3) continue;
-    const normalizedLocationName = normalizeAreaName(location.name);
-    const matchingNeighborhood = MOCK_NEIGHBORHOODS.find((neighborhood) => {
-      const normalizedNeighborhoodName = normalizeAreaName(neighborhood.name);
-      const normalizedAliases = getCarryoverAliases(neighborhood.id).map(normalizeAreaName);
-      return (
-        normalizedNeighborhoodName === normalizedLocationName ||
-        normalizedNeighborhoodName.includes(normalizedLocationName) ||
-        normalizedLocationName.includes(normalizedNeighborhoodName) ||
-        normalizedAliases.includes(normalizedLocationName)
-      );
-    });
-
-    if (matchingNeighborhood) {
-      matchedNeighborhoodIds.add(matchingNeighborhood.id);
-      continue;
-    }
-
-    if (fallbackBoundary.length === 0) fallbackBoundary = location.boundary ?? [];
-  }
-
-  return {
-    matchedNeighborhoodIds,
-    fallbackBoundary,
   };
 }
 

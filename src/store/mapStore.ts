@@ -1,6 +1,5 @@
 'use client';
 import { create } from 'zustand';
-import { MapMode } from '@/lib/types';
 
 interface ViewState {
   longitude: number;
@@ -11,8 +10,6 @@ interface ViewState {
 interface MapStore {
   viewState: ViewState;
   setViewState: (vs: ViewState) => void;
-  mapMode: MapMode;
-  setMapMode: (mode: MapMode) => void;
   selectedListingId: string | null;
   setSelectedListingId: (id: string | null) => void;
   hoveredListingId: string | null;
@@ -30,8 +27,6 @@ export const useMapStore = create<MapStore>((set) => ({
     zoom: 13,
   },
   setViewState: (viewState) => set({ viewState }),
-  mapMode: 'explore',
-  setMapMode: (mapMode) => set({ mapMode }),
   selectedListingId: null,
   setSelectedListingId: (selectedListingId) => set({ selectedListingId }),
   hoveredListingId: null,
