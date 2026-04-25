@@ -34,21 +34,22 @@ const INSIGHTS = [
 
 export default function ForYouPage() {
   const [index, setIndex] = useState(0);
+  const activeInsight = INSIGHTS[index];
 
   const go = (direction: 1 | -1) => {
     setIndex((value) => (value + direction + INSIGHTS.length) % INSIGHTS.length);
   };
 
   return (
-    <PageShell>
+    <PageShell showDesktopHeader={false} desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-white">
-        <div className="flex-shrink-0 px-4 pt-4 pb-0">
+        <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:hidden">
           <div className="mb-1 flex items-center justify-center">
             <h1 className="type-title text-[#0F1729]">For You</h1>
           </div>
         </div>
 
-        <div className="flex flex-1 items-center overflow-hidden px-4 pb-24">
+        <div className="flex flex-1 items-center overflow-hidden px-4 pb-24 lg:hidden">
           <div className="relative h-[72%] min-h-[420px] w-full">
             {INSIGHTS.map((insight, cardIndex) => {
               const offset = cardIndex - index;
@@ -89,6 +90,56 @@ export default function ForYouPage() {
                 </motion.article>
               );
             })}
+          </div>
+        </div>
+
+        <div className="hidden h-full min-w-0 flex-1 overflow-hidden lg:flex">
+          <div className="relative min-h-0 min-w-0 flex-1 self-stretch lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
+            <div className={cn('flex h-full flex-col justify-between p-10', activeInsight.tone)}>
+              <div>
+                <div className="mb-10 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-sm">
+                  <TrendingUp size={20} />
+                </div>
+                <p className="max-w-xl type-title-lg text-[#0F1729]">{activeInsight.title}</p>
+              </div>
+              <div>
+                <div className="mb-5 flex items-end gap-3">
+                  <span className="type-display text-[#0F1729]">{activeInsight.stat}</span>
+                  <span className="pb-2 type-label text-[#6B7280]">{activeInsight.label}</span>
+                </div>
+                <p className="max-w-xl type-body-lg text-[#4B5563]">{activeInsight.detail}</p>
+              </div>
+            </div>
+          </div>
+          <div className="hidden h-full shrink-0 overflow-hidden lg:block lg:w-[688px] 3xl:w-[1024px]">
+            <div className="h-full overflow-y-auto px-4 py-4">
+              <div className="grid gap-4">
+                {INSIGHTS.map((insight, itemIndex) => (
+                  <button
+                    key={insight.id}
+                    type="button"
+                    onClick={() => setIndex(itemIndex)}
+                    className={cn(
+                      'flex min-h-[164px] flex-col justify-between rounded-[28px] p-6 text-left transition-transform hover:-translate-y-0.5',
+                      insight.tone,
+                      itemIndex === index && 'ring-1 ring-[#0F1729]/10'
+                    )}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-sm">
+                      <TrendingUp size={17} />
+                    </div>
+                    <div>
+                      <p className="type-title text-[#0F1729]">{insight.title}</p>
+                      <div className="mt-4 flex items-end gap-2">
+                        <span className="type-heading text-[#0F1729]">{insight.stat}</span>
+                        <span className="pb-0.5 type-caption text-[#6B7280]">{insight.label}</span>
+                      </div>
+                      <p className="mt-3 type-body text-[#4B5563]">{insight.detail}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

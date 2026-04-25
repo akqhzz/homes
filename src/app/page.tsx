@@ -20,6 +20,7 @@ import { useSearchStore } from '@/store/searchStore';
 import { useMapStore } from '@/store/mapStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import BottomNav from '@/components/organisms/BottomNav';
+import DesktopSidebar from '@/components/organisms/DesktopSidebar';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
@@ -534,7 +535,9 @@ export default function MapPage() {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-white">
+    <div className="flex h-full min-w-0 overflow-hidden bg-white">
+      <DesktopSidebar />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       {/* Desktop header (hidden on mobile) */}
       <DesktopHeader />
 
@@ -709,6 +712,7 @@ export default function MapPage() {
           />
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

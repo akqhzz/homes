@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
-import { ArrowDownWideNarrow, LayoutList, Map, Tag, X } from 'lucide-react';
+import { ArrowDownWideNarrow, LayoutList, Map, Tag } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
@@ -15,6 +15,7 @@ import CollectionListingsCarousel from '@/components/organisms/CollectionListing
 import { Collection } from '@/lib/types';
 import BackButton from '@/components/atoms/BackButton';
 import ControlPillButton from '@/components/atoms/ControlPillButton';
+import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
 import DesktopSortMenu from '@/components/molecules/DesktopSortMenu';
 import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
 import CollectionTagsPanel from '@/components/organisms/CollectionTagsPanel';
@@ -268,20 +269,16 @@ export default function CollectionPage() {
                 <div
                   className="relative bg-white/94 px-4 backdrop-blur-[10px] transition-[padding,min-height] duration-300 ease-out"
                   style={{
-                    paddingTop: `calc(env(safe-area-inset-top, 0px) + ${0.72 - mobileHeaderProgress * 0.12}rem)`,
-                    paddingBottom: `${0.55 - mobileHeaderProgress * 0.24}rem`,
-                    minHeight: `${76 - mobileHeaderProgress * 18}px`,
+                    paddingTop: `calc(env(safe-area-inset-top, 0px) + ${0.68 - mobileHeaderProgress * 0.16}rem)`,
+                    paddingBottom: `${0.48 - mobileHeaderProgress * 0.3}rem`,
+                    minHeight: `${72 - mobileHeaderProgress * 24}px`,
                   }}
                 >
-                  <button
-                    type="button"
+                  <OverlayCloseButton
                     onClick={handleClosePage}
-                    className="pointer-events-auto absolute right-4 flex h-8 w-8 items-center justify-center text-[#0F1729] transition-colors hover:text-[#374151]"
-                    style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.45rem)' }}
-                    aria-label="Close"
-                  >
-                    <X size={14} />
-                  </button>
+                    className="pointer-events-auto absolute right-4"
+                    style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.42rem)' }}
+                  />
                   <div className="px-10">
                     <CollectionWorkspaceHeader
                       showBackButton={false}
@@ -319,15 +316,11 @@ export default function CollectionPage() {
                 <div className="absolute inset-0 overflow-hidden bg-[#EEF2F6]">
                   <MapView listings={sortedListings} showListings />
                 </div>
-                <button
-                  type="button"
+                <OverlayCloseButton
                   onClick={handleClosePage}
-                  className="absolute right-4 z-30 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white/76 text-[#0F1729] backdrop-blur-sm transition-colors hover:bg-white"
+                  className="absolute right-4 z-30"
                   style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
-                  aria-label="Close"
-                >
-                  <X size={14} />
-                </button>
+                />
                 {isCarouselVisible && sortedListings.length > 0 && (
                   <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20">
                     <CollectionListingsCarousel

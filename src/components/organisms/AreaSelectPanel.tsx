@@ -1,5 +1,4 @@
 'use client';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Check, Pencil, Plus, Redo2, RotateCcw, Undo2, X } from 'lucide-react';
@@ -11,9 +10,6 @@ import Button from '@/components/atoms/Button';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import { cn } from '@/lib/utils/cn';
 
-const CARD_WIDTH = 312;
-const CARD_GAP = 10;
-const SWIPE_THRESHOLD = 34;
 const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
 
 interface AreaSelectPanelProps {
@@ -52,7 +48,6 @@ export default function AreaSelectPanel({
   onToggleDrawing,
   onCancelDrawing,
   onToggleNeighborhood,
-  onFocusNeighborhood,
   onCloseNeighborhood,
   onClearDrawing,
   onUndoBoundary,
@@ -60,20 +55,8 @@ export default function AreaSelectPanel({
   onClearSelection,
 }: AreaSelectPanelProps) {
   const setAreaSelectMode = useUIStore((s) => s.setAreaSelectMode);
-  const [viewportWidth, setViewportWidth] = useState(390);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [instantMove, setInstantMove] = useState(true);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const wheelLockRef = useRef(false);
-
   const selectedCount = selectedNeighborhoods.size;
   const hasSelection = selectedCount > 0 || pointCount > 0;
-  const focusedIndex = focusedNeighborhood
-    ? AREA_NEIGHBORHOODS.findIndex((neighborhood) => neighborhood.id === focusedNeighborhood.id)
-    : -1;
-  const carouselIndex = focusedIndex >= 0 ? focusedIndex : currentIndex;
   const title = hasSelection
     ? selectedCount > 0
       ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
@@ -83,122 +66,6 @@ export default function AreaSelectPanel({
   const handleBack = () => {
     setAreaSelectMode(false);
     onBack();
-  };
-
-  useLayoutEffect(() => {
-    const updateWidth = () => setViewportWidth(window.innerWidth);
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!focusedNeighborhood) return;
-    const index = AREA_NEIGHBORHOODS.findIndex((nbh) => nbh.id === focusedNeighborhood.id);
-    if (index >= 0) {
-      const frame = requestAnimationFrame(() => {
-        setInstantMove(true);
-        setCurrentIndex(index);
-        window.setTimeout(() => setInstantMove(false), 180);
-      });
-      return () => cancelAnimationFrame(frame);
-    }
-  }, [focusedNeighborhood, focusToken]);
-
-  useEffect(() => {
-    const node = carouselRef.current;
-    if (!node || !focusedNeighborhood) return;
-    const handleTouchStart = () => {
-      wheelLockRef.current = false;
-    };
-    const handleTouchMove = (event: TouchEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
-    node.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
-    node.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-    node.addEventListener('wheel', handleWheel, { passive: false, capture: true });
-    const previousHtmlOverscrollX = document.documentElement.style.overscrollBehaviorX;
-    const previousBodyOverscrollX = document.body.style.overscrollBehaviorX;
-    const previousHtmlTouchAction = document.documentElement.style.touchAction;
-    const previousBodyTouchAction = document.body.style.touchAction;
-    document.documentElement.style.overscrollBehaviorX = 'none';
-    document.body.style.overscrollBehaviorX = 'none';
-    document.documentElement.style.touchAction = 'pan-y';
-    document.body.style.touchAction = 'pan-y';
-
-    const handleDocumentTouchMove = (event: TouchEvent) => {
-      const target = event.target as Node | null;
-      if (target && node.contains(target)) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-    document.addEventListener('touchmove', handleDocumentTouchMove, { passive: false, capture: true });
-    return () => {
-      node.removeEventListener('touchstart', handleTouchStart, { capture: true });
-      node.removeEventListener('touchmove', handleTouchMove, { capture: true });
-      node.removeEventListener('wheel', handleWheel, { capture: true });
-      document.removeEventListener('touchmove', handleDocumentTouchMove, { capture: true });
-      document.documentElement.style.overscrollBehaviorX = previousHtmlOverscrollX;
-      document.body.style.overscrollBehaviorX = previousBodyOverscrollX;
-      document.documentElement.style.touchAction = previousHtmlTouchAction;
-      document.body.style.touchAction = previousBodyTouchAction;
-    };
-  }, [focusedNeighborhood]);
-
-  const goToNeighborhood = (index: number) => {
-    const nextIndex = Math.max(0, Math.min(AREA_NEIGHBORHOODS.length - 1, index));
-    setInstantMove(false);
-    setCurrentIndex(nextIndex);
-    onFocusNeighborhood(AREA_NEIGHBORHOODS[nextIndex]);
-  };
-
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    dragStartRef.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
-  };
-
-  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    const start = dragStartRef.current;
-    if (!start || start.id !== event.pointerId) return;
-    dragStartRef.current = null;
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    if (dy > 36 && Math.abs(dy) > Math.abs(dx) * 1.15) {
-      setInstantMove(true);
-      onCloseNeighborhood();
-      return;
-    }
-    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return;
-    goToNeighborhood(currentIndex + (dx < 0 ? 1 : -1));
-  };
-
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    touchStartRef.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-  };
-
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    const start = touchStartRef.current;
-    if (!start) return;
-    const touch = event.touches[0];
-    const dx = touch.clientX - start.x;
-    const dy = touch.clientY - start.y;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) event.preventDefault();
-  };
-
-  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
-    if (wheelLockRef.current) return;
-    wheelLockRef.current = true;
-    goToNeighborhood(currentIndex + (event.deltaX > 0 ? 1 : -1));
-    window.setTimeout(() => {
-      wheelLockRef.current = false;
-    }, 320);
   };
 
   return (
@@ -314,72 +181,48 @@ export default function AreaSelectPanel({
         {focusedNeighborhood && (
           <>
           <motion.div
-            ref={carouselRef}
-            key="neighborhood-carousel"
+            key={`neighborhood-card-${focusedNeighborhood.id}-${focusToken}`}
             initial={{ y: 26, opacity: 0, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 26, opacity: 0, scale: 0.98 }}
             transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
             className="pointer-events-none absolute inset-x-0 bottom-0 z-40 overflow-visible pt-3 lg:hidden"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)', touchAction: 'none', overscrollBehavior: 'none' }}
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <motion.div
-              key={`area-track-${focusToken}`}
-              className="pointer-events-auto flex overflow-visible"
-              initial={false}
-              animate={{ x: Math.max(0, (viewportWidth - CARD_WIDTH) / 2) - carouselIndex * (CARD_WIDTH + CARD_GAP) }}
-              transition={instantMove || carouselIndex !== currentIndex ? { duration: 0 } : { type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              style={{ gap: CARD_GAP, touchAction: 'none', willChange: 'transform' }}
-              onPointerDownCapture={handlePointerDown}
-              onPointerUpCapture={handlePointerUp}
-              onPointerCancelCapture={() => { dragStartRef.current = null; }}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={() => { touchStartRef.current = null; }}
-              onWheel={handleWheel}
-            >
-              {AREA_NEIGHBORHOODS.map((neighborhood) => {
-                const included = selectedNeighborhoods.has(neighborhood.id);
-                return (
-                  <article
-                    key={neighborhood.id}
-                    className="relative flex h-[134px] w-[312px] shrink-0 gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]"
-                  >
-                    <button
-                      onClick={onCloseNeighborhood}
-                      className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
-                      aria-label="Close neighborhood card"
-                    >
-                      <X size={14} />
-                    </button>
-                    <Image src={neighborhood.thumbnail} alt="" width={100} height={124} className="h-full w-[100px] shrink-0 rounded-xl object-cover" draggable={false} />
-                    <div className="flex min-w-0 flex-1 flex-col py-0.5 pr-8">
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate type-heading text-[#0F1729]">{neighborhood.name}</p>
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{neighborhood.listingCount} listings</span>
-                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{formatAvgPrice(neighborhood.avgPrice)}</span>
-                          <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">Walk {neighborhood.walkScore}</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          onToggleNeighborhood(neighborhood.id);
-                          if (included) onCloseNeighborhood();
-                        }}
-                        className={cn(
-                          'absolute bottom-2 right-2 flex h-9 w-[92px] items-center justify-center gap-1.5 rounded-full px-3 type-caption font-semibold transition-colors',
-                          included ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
-                        )}
-                      >
-                        {included ? <Check size={13} /> : <Plus size={13} />}
-                        {included ? 'Included' : 'Include'}
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </motion.div>
+            <article className="pointer-events-auto relative mx-auto flex h-[134px] w-[312px] gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]">
+              <button
+                onClick={onCloseNeighborhood}
+                className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                aria-label="Close neighborhood card"
+              >
+                <X size={14} />
+              </button>
+              <Image src={focusedNeighborhood.thumbnail} alt="" width={100} height={124} className="h-full w-[100px] shrink-0 rounded-xl object-cover" draggable={false} />
+              <div className="flex min-w-0 flex-1 flex-col py-0.5 pr-8">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate type-heading text-[#0F1729]">{focusedNeighborhood.name}</p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>
+                    <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
+                    <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">Walk {focusedNeighborhood.walkScore}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const included = selectedNeighborhoods.has(focusedNeighborhood.id);
+                  onToggleNeighborhood(focusedNeighborhood.id);
+                  if (included) onCloseNeighborhood();
+                  }}
+                  className={cn(
+                    'absolute bottom-2 right-2 flex h-9 w-[92px] items-center justify-center gap-1.5 rounded-full px-3 type-caption font-semibold transition-colors',
+                    selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
+                  )}
+                >
+                  {selectedNeighborhoods.has(focusedNeighborhood.id) ? <Check size={13} /> : <Plus size={13} />}
+                  {selectedNeighborhoods.has(focusedNeighborhood.id) ? 'Included' : 'Include'}
+                </button>
+              </div>
+            </article>
           </motion.div>
           <motion.div
             key="desktop-neighborhood-card"

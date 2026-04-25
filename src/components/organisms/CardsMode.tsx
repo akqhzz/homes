@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, Map, MapPin, ArrowDownWideNarrow } from 'lucide-react';
+import { Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
+import MapGL, { Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -12,6 +13,7 @@ import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
 import { getMapboxToken } from '@/lib/mapbox-token';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
+import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
@@ -40,15 +42,13 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},12.5,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},12.1,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
 }
 
 function StaticMapMarker() {
   return (
     <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-full">
-      <span className="absolute left-1/2 top-[88%] block h-2.5 w-5 -translate-x-1/2 rounded-full bg-black/18 blur-[2px]" />
-      <span className="relative block h-4.5 w-4.5 rounded-full border-2 border-white bg-[#0F1729]" />
-      <span className="mx-auto -mt-1 block h-2.5 w-2.5 rotate-45 rounded-[1px] bg-[#0F1729]" />
+      <span className="relative block h-5 w-5 rotate-45 rounded-[38%_38%_58%_58%] bg-[#0F1729]" />
     </span>
   );
 }
@@ -282,15 +282,12 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
       style={{ overscrollBehaviorX: 'none', overscrollBehaviorY: 'none', touchAction: 'pan-y' }}
     >
-      <button
-        type="button"
+      <OverlayCloseButton
         onClick={onClose}
-        className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white/76 text-[#0F1729] backdrop-blur-sm transition-colors hover:bg-white"
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.65rem)' }}
-        aria-label="Close cards view"
-      >
-        <X size={14} />
-      </button>
+        label="Close cards view"
+        className="absolute z-20"
+        style={{ right: '1.25rem', top: 'calc(env(safe-area-inset-top, 0px) + 0.95rem)' }}
+      />
 
       {/* Card stack */}
       <div
@@ -457,23 +454,45 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <AnimatePresence>
         {showMapDrawer && (drawerListing ?? listing) && (
           <MobileDrawer
-            title={(drawerListing ?? listing).neighborhood}
-            onClose={() => setShowMapDrawer(false)}
-            heightClassName="h-[55dvh]"
-            contentClassName="flex flex-col"
-            footer={(
-              <Button onClick={() => handleShowOnMap(drawerListing ?? listing)} variant="secondary" fullWidth size="md">
-                View on Map
-              </Button>
+            title={(
+              <div className="pr-6 text-[0.76rem] font-medium leading-[1.25] text-[#6B7280]">
+                {(drawerListing ?? listing).address}
+              </div>
             )}
+            onClose={() => setShowMapDrawer(false)}
+            heightClassName="h-[58dvh]"
+            contentClassName="flex flex-1 flex-col px-4 pb-4 pt-0"
           >
-            {mapThumb(drawerListing ?? listing) ? (
-              <div className="relative flex flex-1">
-                <Image src={mapThumb(drawerListing ?? listing)!.replace('140x112', '800x400')} alt="map" width={800} height={400} className="w-full flex-1 object-cover" unoptimized />
-                <StaticMapMarker />
+            {MAPBOX_TOKEN ? (
+              <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-[24px]">
+                <MapGL
+                  initialViewState={{
+                    longitude: (drawerListing ?? listing).coordinates.lng,
+                    latitude: (drawerListing ?? listing).coordinates.lat,
+                    zoom: 13.2,
+                  }}
+                  mapStyle="mapbox://styles/mapbox/standard"
+                  mapboxAccessToken={MAPBOX_TOKEN}
+                  style={{ width: '100%', height: '100%' }}
+                  config={{
+                    basemap: {
+                      theme: 'faded',
+                      lightPreset: 'day',
+                      show3dObjects: false,
+                    },
+                  }}
+                >
+                  <Marker
+                    longitude={(drawerListing ?? listing).coordinates.lng}
+                    latitude={(drawerListing ?? listing).coordinates.lat}
+                    anchor="bottom"
+                  >
+                    <StaticMapMarker />
+                  </Marker>
+                </MapGL>
               </div>
             ) : (
-              <div className="mx-4 mb-4 flex flex-1 items-center justify-center rounded-2xl bg-[#E8ECEF]">
+              <div className="flex flex-1 items-center justify-center rounded-[24px] bg-[#E8ECEF]">
                 <div className="text-center p-6">
                   <MapPin size={36} className="mx-auto mb-3 text-[#9CA3AF]" />
                   <p className="type-label text-[#0F1729]">{(drawerListing ?? listing).neighborhood}</p>

@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
 import BottomNav from '@/components/organisms/BottomNav';
+import DesktopSidebar from '@/components/organisms/DesktopSidebar';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 
@@ -32,13 +33,18 @@ export default function PageShell({
   const activePanel = useUIStore((s) => s.activePanel);
 
   return (
-    <div className={cn('h-full flex flex-col overflow-hidden bg-white', className)}>
-      {showDesktopHeader && <DesktopHeader variant={desktopHeaderVariant} listingId={desktopHeaderListingId} />}
-      <div className={cn(
-        'flex-1 overflow-hidden',
-        desktopWide ? 'lg:mx-auto lg:w-full lg:max-w-[1872px]' : 'lg:max-w-2xl lg:mx-auto lg:w-full lg:border-x lg:border-[#F0F0F0]'
-      )}>
-        {children}
+    <div className={cn('h-full overflow-hidden bg-white', className)}>
+      <div className="flex h-full min-w-0">
+        <DesktopSidebar />
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {showDesktopHeader && <DesktopHeader variant={desktopHeaderVariant} listingId={desktopHeaderListingId} />}
+          <div className={cn(
+            'flex-1 overflow-hidden',
+            desktopWide ? 'lg:mx-auto lg:w-full lg:max-w-[1872px]' : 'lg:mx-auto lg:w-full lg:max-w-2xl lg:border-x lg:border-[#F0F0F0]'
+          )}>
+            {children}
+          </div>
+        </div>
       </div>
       {showBottomNav && <BottomNav />}
 
