@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Ellipsis } from 'lucide-react';
+import { Check, Ellipsis } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
@@ -234,9 +234,9 @@ export default function SavedSearchesPanel({
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                 />
               )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  {renamingId === search.id ? (
+              <div className="relative flex-1 min-w-0 pr-9">
+                {renamingId === search.id ? (
+                  <div className="flex h-8 items-center rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-1.5">
                     <input
                       value={renameName}
                       onChange={(event) => setRenameName(event.target.value)}
@@ -250,22 +250,37 @@ export default function SavedSearchesPanel({
                         }
                       }}
                       onBlur={finishRename}
-                      className="h-8 min-w-0 flex-1 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-semibold text-[#0F1729] outline-none focus:border-[#0F1729]"
+                      className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[#0F1729] outline-none"
                       autoFocus
                     />
-                  ) : (
-                    <p className="min-w-0 flex-1 truncate font-heading text-sm text-[#0F1729]">{search.name}</p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={(event) => openMenu(event, search.id)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-white hover:text-[#0F1729]"
-                    aria-label="Saved search options"
-                  >
-                    <Ellipsis size={16} />
-                  </button>
-                </div>
-                <p className="type-caption text-[#9CA3AF] mt-px">
+                    <button
+                      type="button"
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                      }}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        finishRename();
+                      }}
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                      aria-label="Finish rename"
+                    >
+                      <Check size={13} />
+                    </button>
+                  </div>
+                ) : (
+                  <p className="min-w-0 truncate font-heading text-sm text-[#0F1729]">{search.name}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={(event) => openMenu(event, search.id)}
+                  className="absolute right-0 top-0 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-white hover:text-[#0F1729]"
+                  aria-label="Saved search options"
+                >
+                  <Ellipsis size={16} />
+                </button>
+                <p className="type-caption text-[#9CA3AF] -mt-0.5">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
                 <div className="mt-1.5 flex items-end justify-between gap-3">

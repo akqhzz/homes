@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Ellipsis } from 'lucide-react';
+import { Check, Ellipsis } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSavedStore } from '@/store/savedStore';
@@ -190,19 +190,39 @@ export default function SavedPage() {
                     <div className="px-4 pb-3.5 pt-2 pr-12 flex items-start gap-2">
                       <div className="flex-1 min-w-0">
                         {renamingId === col.id ? (
-                          <input
-                            value={renameName}
-                            onChange={(event) => setRenameName(event.target.value)}
-                            onClick={(event) => event.stopPropagation()}
-                            onKeyDown={(event) => {
-                              event.stopPropagation();
-                              if (event.key === 'Enter') finishRename();
-                              if (event.key === 'Escape') setRenamingId(null);
-                            }}
-                            onBlur={finishRename}
-                            className="h-9 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-semibold text-[#0F1729] outline-none focus:border-[#0F1729]"
-                            autoFocus
-                          />
+                          <div className="flex h-9 items-center rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-1.5">
+                            <input
+                              value={renameName}
+                              onChange={(event) => setRenameName(event.target.value)}
+                              onClick={(event) => event.stopPropagation()}
+                              onKeyDown={(event) => {
+                                event.stopPropagation();
+                                if (event.key === 'Enter') finishRename();
+                                if (event.key === 'Escape') {
+                                  setRenamingId(null);
+                                  setRenameName('');
+                                }
+                              }}
+                              onBlur={finishRename}
+                              className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[#0F1729] outline-none"
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              onMouseDown={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                              }}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                finishRename();
+                              }}
+                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                              aria-label="Finish rename"
+                            >
+                              <Check size={13} />
+                            </button>
+                          </div>
                         ) : (
                           <p className="truncate type-heading text-[#0F1729]">{col.name}</p>
                         )}

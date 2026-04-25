@@ -120,7 +120,7 @@ export default function MapView({
         setCarouselVisible(false);
         return;
       }
-      setSelectedListingId(listingId);
+      setSelectedListingId(null);
       setMobileCarouselListingId(listingId);
       markVisitedListing(listingId);
       setCarouselVisible(true);
@@ -210,18 +210,21 @@ export default function MapView({
     );
   }, [desktopPreviewListing, listings, mapInstance]);
   const orderedListings = useMemo(
-    () =>
-      listings
+    () => {
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+      return listings
         .map((listing, index) => ({
           listing,
           index,
-          isActive:
-            listing.id === selectedListingId ||
-            listing.id === hoveredListingId ||
-            listing.id === previewListingId,
+          isActive: isDesktop
+            ? listing.id === selectedListingId ||
+              listing.id === hoveredListingId ||
+              listing.id === previewListingId
+            : listing.id === mobileCarouselListingId,
         }))
-        .sort((a, b) => Number(a.isActive) - Number(b.isActive)),
-    [hoveredListingId, listings, previewListingId, selectedListingId]
+        .sort((a, b) => Number(a.isActive) - Number(b.isActive));
+    },
+    [hoveredListingId, listings, mobileCarouselListingId, previewListingId, selectedListingId]
   );
 
   if (!MAPBOX_TOKEN) {

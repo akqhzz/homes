@@ -27,9 +27,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
-  const selectedListingId = useMapStore((s) => s.selectedListingId);
   const mobileCarouselListingId = useMapStore((s) => s.mobileCarouselListingId);
-  const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
   const markVisitedListing = useMapStore((s) => s.markVisitedListing);
 
@@ -51,7 +49,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   }, []);
 
   useLayoutEffect(() => {
-    const activeId = mobileCarouselListingId ?? selectedListingId;
+    const activeId = mobileCarouselListingId;
     if (!activeId) return;
     const index = listings.findIndex((listing) => listing.id === activeId);
     if (index >= 0) {
@@ -62,7 +60,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
       });
       return () => cancelAnimationFrame(frame);
     }
-  }, [listings, mobileCarouselListingId, selectedListingId]);
+  }, [listings, mobileCarouselListingId]);
 
   useEffect(() => {
     const previousHtmlOverscroll = document.documentElement.style.overscrollBehaviorX;
@@ -76,17 +74,15 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   }, []);
 
   useEffect(() => {
-    const activeId = mobileCarouselListingId ?? selectedListingId;
-    if (!activeId) return;
-    markVisitedListing(activeId);
-  }, [markVisitedListing, mobileCarouselListingId, selectedListingId]);
+    if (!mobileCarouselListingId) return;
+    markVisitedListing(mobileCarouselListingId);
+  }, [markVisitedListing, mobileCarouselListingId]);
 
   useEffect(() => {
     const centeredListing = listings[currentIndex];
     if (!centeredListing) return;
     setMobileCarouselListingId(centeredListing.id);
-    if (selectedListingId !== centeredListing.id) setSelectedListingId(centeredListing.id);
-  }, [currentIndex, listings, selectedListingId, setMobileCarouselListingId, setSelectedListingId]);
+  }, [currentIndex, listings, setMobileCarouselListingId]);
 
   const goTo = (index: number) => {
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));
