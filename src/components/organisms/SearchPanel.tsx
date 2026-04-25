@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft, MapPinned, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Location } from '@/lib/types';
 import { useLocationSearch } from '@/hooks/useLocationSearch';
@@ -8,7 +8,6 @@ import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
-import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 interface SearchPanelProps {
   hasAppliedArea?: boolean;
@@ -121,7 +120,7 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
               className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"
               aria-label="Area select"
             >
-              <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
+              <MapPinned size={18} className="text-[#0F1729]" />
             </button>
             {showAreaMenu && (
               <div className="absolute right-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">

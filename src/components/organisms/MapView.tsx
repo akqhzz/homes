@@ -439,10 +439,10 @@ export default function MapView({
             key={desktopPreviewListing.id}
             style={desktopPreviewStyle}
             className="pointer-events-auto absolute hidden w-72 lg:block"
-            initial={{ opacity: 0, x: getHoverCardEntryOffset(desktopPreviewStyle.left, mapInstance), y: 6 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: getHoverCardEntryOffset(desktopPreviewStyle.left, mapInstance) * 0.35, y: 4 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             onMouseEnter={() => {
               cancelHoveredListingClear();
               setPreviewListingId(desktopPreviewListing.id);
@@ -666,10 +666,6 @@ function getDesktopHoverCardStyle(
   return { left, top };
 }
 
-function getHoverCardEntryOffset(left: number, map: MapRef | null) {
-  const containerWidth = map?.getContainer().clientWidth ?? 0;
-  return left < containerWidth / 2 ? 12 : -12;
-}
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);

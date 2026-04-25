@@ -1,11 +1,10 @@
 'use client';
 import Image from 'next/image';
-import { Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
+import { Bookmark, LayoutGrid, Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
-import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 const NAV_ITEMS = [
   { href: '/', icon: Map, label: 'Map' },
@@ -38,7 +37,7 @@ export default function BottomNav() {
           onClick={() => setActivePanel('cards')}
           aria-label="Cards mode"
         >
-          <AppImageIcon src="/icons/cards-mode.png" alt="Cards mode" size={19} />
+          <LayoutGrid size={18} className="text-[#0F1729]" />
         </FloatingActionButton>
       )}
 
@@ -85,7 +84,7 @@ export default function BottomNav() {
               <Image src={activeSearch.thumbnail} alt="" fill sizes="19px" className="object-cover" />
             </span>
           ) : (
-            <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={19} />
+            <Bookmark size={18} className="text-[#0F1729]" />
           )}
           {activeSearchDirty && (
             <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white" />

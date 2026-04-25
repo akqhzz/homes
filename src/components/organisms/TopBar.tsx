@@ -1,11 +1,10 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { MapPinned, Search, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
-import AppImageIcon from '@/components/atoms/AppImageIcon';
 
 interface TopBarProps {
   hasAppliedArea?: boolean;
@@ -71,7 +70,7 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"
             aria-label="Area selection"
           >
-            <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
+            <MapPinned size={18} className="text-[#0F1729]" />
           </button>
           {showAreaMenu && (
             <div className="absolute left-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">

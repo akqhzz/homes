@@ -4,6 +4,7 @@ import Image from 'next/image';
 import {
   ArrowLeft,
   Bell,
+  Bookmark,
   ChevronRight,
   LogOut,
   Menu,
@@ -260,7 +261,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                 <Image src={activeSearch.thumbnail} alt="" fill sizes="20px" className="object-cover" />
               </span>
             ) : (
-              <AppImageIcon src="/icons/saved-search.png" alt="Saved searches" size={20} />
+              <Bookmark size={18} className="text-[#0F1729]" />
             )}
             {activeSearchDirty && (
               <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white" />

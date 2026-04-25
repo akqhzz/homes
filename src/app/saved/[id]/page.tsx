@@ -259,31 +259,37 @@ export default function CollectionPage() {
             {mobileView === 'list' && (
               <div className="pointer-events-none absolute inset-x-0 top-0 z-20">
                 <div
-                  className="relative bg-white/96 px-4 pb-2 pt-3 backdrop-blur-[10px]"
-                  style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+                  className="relative bg-white/94 px-4 backdrop-blur-[10px] transition-[padding,min-height] duration-300 ease-out"
+                  style={{
+                    paddingTop: `calc(env(safe-area-inset-top, 0px) + ${0.72 - mobileHeaderProgress * 0.12}rem)`,
+                    paddingBottom: `${0.55 - mobileHeaderProgress * 0.24}rem`,
+                    minHeight: `${76 - mobileHeaderProgress * 18}px`,
+                  }}
                 >
                   <button
                     type="button"
                     onClick={() => router.back()}
-                    className="pointer-events-auto absolute right-4 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/92 text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]"
-                    style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
+                    className="pointer-events-auto absolute right-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white/76 text-[#0F1729] backdrop-blur-sm transition-colors hover:bg-white"
+                    style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.45rem)' }}
                     aria-label="Close"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
-                  <CollectionWorkspaceHeader
-                    showBackButton={false}
-                    title={collection.name}
-                    subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
-                    compactProgress={mobileHeaderProgress}
-                    className="min-h-[2.75rem] pr-12"
-                  />
+                  <div className="px-10">
+                    <CollectionWorkspaceHeader
+                      showBackButton={false}
+                      title={collection.name}
+                      subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
+                      compactProgress={mobileHeaderProgress}
+                      className="min-h-[2.5rem]"
+                    />
+                  </div>
                 </div>
               </div>
             )}
             {mobileView === 'list' ? (
               <div
-                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-[5.9rem] [overflow-anchor:none]"
+                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-[5.35rem] [overflow-anchor:none]"
                 style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', scrollBehavior: 'smooth' }}
                 onScroll={(event) => {
                   const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 240));
@@ -309,11 +315,11 @@ export default function CollectionPage() {
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="absolute right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/92 text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]"
+                  className="absolute right-4 z-30 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white/76 text-[#0F1729] backdrop-blur-sm transition-colors hover:bg-white"
                   style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
                   aria-label="Close"
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
                 {isCarouselVisible && sortedListings.length > 0 && (
                   <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20">

@@ -239,13 +239,13 @@ export default function ListingCard({
           </div>
           <div className="p-4">
             <p className="type-subtitle text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <div className="mt-1.5 flex flex-col gap-0.5">
+            <div className="mt-1 flex flex-col gap-[1px]">
               <p className="type-body text-[#6B7280]">{listing.beds}bd · {listing.baths}ba · {formatSqftCompact(listing.sqft)} sqft</p>
               <div className="flex items-center gap-1 type-caption text-[#6B7280]">
                 <MapPin size={11} />
                 <span>{listing.address}</span>
               </div>
-              <p className="text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8]">{mlsLine}</p>
+              <p className="mt-1 text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8]">{mlsLine}</p>
             </div>
           </div>
         </div>
@@ -360,14 +360,14 @@ export default function ListingCard({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="type-heading text-[#0F1729]">{formatPrice(listing.price)}</p>
-              <div className="mt-1 flex flex-col gap-0.5">
+              <div className="mt-0.5 flex flex-col gap-[1px]">
                 <p className="truncate type-body text-[#6B7280]">
                   {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
                 </p>
                 <p className="pr-2 type-caption text-[#6B7280] line-clamp-2">
                   {listing.address}
                 </p>
-                <p className="pr-2 text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8] line-clamp-1">
+                <p className="mt-1 pr-2 text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8] line-clamp-1">
                   {mlsLine}
                 </p>
               </div>

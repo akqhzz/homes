@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
+import { MapPinned } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
 import {
@@ -22,7 +23,6 @@ import BottomNav from '@/components/organisms/BottomNav';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
-import AppImageIcon from '@/components/atoms/AppImageIcon';
 import { Neighborhood, SavedSearch, SearchFilters } from '@/lib/types';
 
 interface SearchSnapshot {
@@ -504,7 +504,13 @@ export default function MapPage() {
     setAreaFocusToken((token) => token + 1);
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
     if (!isDesktop) {
+      const isIncluded = selectedNeighborhoods.has(neighborhood.id);
       toggleNeighborhood(neighborhood.id);
+      if (isIncluded) {
+        setFocusedNeighborhood(null);
+        setHoveredNeighborhood(null);
+        return;
+      }
       setFocusedNeighborhood(neighborhood);
       return;
     }
@@ -563,7 +569,7 @@ export default function MapPage() {
                 }}
                 className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
               >
-                <AppImageIcon src="/icons/area-selection.png" alt="Area selection" size={18} />
+                <MapPinned size={18} className="text-[#0F1729]" />
                 Area
               </button>
               {hasVisibleBoundary && (
