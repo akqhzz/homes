@@ -215,9 +215,17 @@ export default function SavedSearchesPanel({
             const isSelected = activeSearchId === search.id;
             const showUpdatedState = updatedSearchId === search.id;
             return (
-            <button
+            <div
               key={search.id}
+              role="button"
+              tabIndex={0}
               onClick={() => handleLoadSearch(search)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  handleLoadSearch(search);
+                }
+              }}
               className={cn(
                 'flex items-start gap-3 rounded-2xl border p-3 text-left transition-colors',
                 isSelected
@@ -327,7 +335,7 @@ export default function SavedSearchesPanel({
                   ) : null}
                 </div>
               </div>
-            </button>
+            </div>
             );
           })}
         </div>

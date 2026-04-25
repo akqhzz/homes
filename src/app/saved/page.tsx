@@ -156,7 +156,7 @@ export default function SavedPage() {
 
         {/* Collections */}
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6 lg:pt-8">
-          <div className="layout-content-wide grid w-full grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6">
+          <div className="layout-content-wide grid w-full grid-cols-1 justify-center gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(280px,320px))] lg:justify-start">
             {collections.map((col) => {
               const firstListing = col.listings.length > 0
                 ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
