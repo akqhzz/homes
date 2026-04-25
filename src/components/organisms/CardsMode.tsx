@@ -647,22 +647,24 @@ function CardModeListingCard({
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>
                 </div>
-                <p className="mt-0.5 type-body text-[#6B7280]">
-                  {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{String(listing.sqft)}sqft
-                </p>
-                <button
-                  type="button"
-                  onPointerDown={(event) => event.stopPropagation()}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onOpenDetail();
-                  }}
-                  className="pointer-events-auto absolute bottom-2.5 right-3 inline-flex items-center gap-0.5 text-[11px] font-medium text-[#6B7280] transition-colors hover:text-[#0F1729]"
-                  aria-label="View details"
-                >
-                  Details
-                  <ChevronRight size={11} />
-                </button>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <p className="type-body text-[#6B7280]">
+                    {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{String(listing.sqft)}sqft
+                  </p>
+                  <button
+                    type="button"
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpenDetail();
+                    }}
+                    className="pointer-events-auto inline-flex h-6 items-center gap-0.5 rounded-full bg-[#F3F4F6] px-2.5 text-[11px] font-medium text-[#6B7280] transition-colors hover:bg-[#E9EDF1] hover:text-[#0F1729]"
+                    aria-label="View details"
+                  >
+                    Details
+                    <ChevronRight size={11} />
+                  </button>
+                </div>
               </div>
               <button
                 type="button"

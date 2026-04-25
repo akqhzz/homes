@@ -21,7 +21,7 @@ export default function SearchLocationChip({ location, onRemove, className }: Se
       {getPrimaryLocationLabel(location.name)}
       <button
         onClick={onRemove}
-        className="text-[var(--color-brand-400)] hover:text-[var(--color-brand-700)] transition-colors -mr-0.5"
+        className="text-[var(--color-brand-text)] hover:text-[var(--color-brand-text)] transition-colors -mr-0.5"
         aria-label="Remove"
       >
         <X size={13} />

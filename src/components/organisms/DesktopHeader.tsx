@@ -180,7 +180,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
                       {selectedLocations.map((location) => (
                         <span key={location.id} className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 text-xs font-medium text-[var(--color-brand-text)]">
                           {location.name}
-                          <button onClick={() => removeLocation(location.id)} className="text-[var(--color-brand-400)] hover:text-[var(--color-brand-700)]">×</button>
+                          <button onClick={() => removeLocation(location.id)} className="text-[var(--color-brand-text)] hover:text-[var(--color-brand-text)]">×</button>
                         </span>
                       ))}
                     </div>

@@ -46,12 +46,12 @@ export default function DesktopSidebar() {
               onClick={() => router.push(href)}
               aria-label={label}
               className={cn(
-                'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-1 transition-colors',
-                active ? 'text-[#0F1729]' : 'text-[#C9CDD2] hover:text-[#6B7280]'
+                'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-2 transition-colors',
+                active ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]' : 'text-[#64748B] hover:text-[#334155]'
               )}
             >
               <Icon size={24} strokeWidth={active ? 2.25 : 1.9} />
-              <span className={cn('text-[0.68rem] font-medium leading-none', active ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
+              <span className={cn('text-[0.68rem] font-medium leading-none', active ? 'text-[var(--color-brand-700)]' : 'text-[#64748B]')}>
                 {label}
               </span>
             </button>
@@ -65,12 +65,12 @@ export default function DesktopSidebar() {
           onClick={() => setShowMenu((value) => !value)}
           aria-label="Menu"
           className={cn(
-            'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-1 transition-colors',
-            showMenu ? 'text-[#0F1729]' : 'text-[#C9CDD2] hover:text-[#6B7280]'
+            'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-2 transition-colors',
+            showMenu ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]' : 'text-[#64748B] hover:text-[#334155]'
           )}
         >
           <Menu size={24} strokeWidth={2} />
-          <span className={cn('text-[0.68rem] font-medium leading-none', showMenu ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
+          <span className={cn('text-[0.68rem] font-medium leading-none', showMenu ? 'text-[var(--color-brand-700)]' : 'text-[#64748B]')}>
             Menu
           </span>
         </button>

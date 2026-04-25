@@ -202,9 +202,9 @@ export default function AreaSelectPanel({
                 <div className="min-w-0 flex-1">
                   <p className="truncate type-heading text-[#0F1729]">{focusedNeighborhood.name}</p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>
-                    <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
-                    <span className="rounded-full bg-[#F5F6F7] px-2 py-0.5 type-micro text-[#6B7280]">Walk {focusedNeighborhood.walkScore}</span>
+                    <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 type-micro text-[var(--color-brand-text)]">{focusedNeighborhood.listingCount} listings</span>
+                    <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 type-micro text-[var(--color-brand-text)]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
+                    <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 type-micro text-[var(--color-brand-text)]">Walk {focusedNeighborhood.walkScore}</span>
                   </div>
                 </div>
                 <button
@@ -243,9 +243,9 @@ export default function AreaSelectPanel({
               </button>
               <p className="truncate type-heading text-[#0F1729]">{focusedNeighborhood.name}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">{focusedNeighborhood.listingCount} listings</span>
-                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
-                <span className="rounded-full bg-[#F5F6F7] px-2 py-1 type-fine text-[#6B7280]">Walk {focusedNeighborhood.walkScore}</span>
+                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 type-fine text-[var(--color-brand-text)]">{focusedNeighborhood.listingCount} listings</span>
+                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 type-fine text-[var(--color-brand-text)]">{formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
+                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 type-fine text-[var(--color-brand-text)]">Walk {focusedNeighborhood.walkScore}</span>
               </div>
               <button
                 onClick={() => {
