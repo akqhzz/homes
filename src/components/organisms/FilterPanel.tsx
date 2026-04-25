@@ -1,6 +1,6 @@
 'use client';
 import * as Slider from '@radix-ui/react-slider';
-import { Building2, Home, Hotel, Rows3, Warehouse } from 'lucide-react';
+import { Building2, ChevronDown, Home, Hotel, Rows3, Warehouse } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/atoms/Button';
@@ -81,8 +81,8 @@ export function FilterPanelBody() {
               const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
               return (
                 <div
-                  key={index}
-                  className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[#0F1729]' : 'bg-[#E5E7EB]')}
+              key={index}
+                  className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[var(--color-brand-500)]' : 'bg-[#E5E7EB]')}
                   style={{ height: `${Math.max(6, count * 3)}px` }}
                 />
               );
@@ -100,14 +100,14 @@ export function FilterPanelBody() {
             aria-label="Price range"
           >
             <Slider.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-[#E5E7EB]">
-              <Slider.Range className="absolute h-full rounded-full bg-[#0F1729]" />
+              <Slider.Range className="absolute h-full rounded-full bg-[var(--color-brand-500)]" />
             </Slider.Track>
             <Slider.Thumb
-              className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10"
+              className="block h-6 w-6 cursor-grab rounded-full border-2 border-[var(--color-brand-500)] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[color:var(--color-brand-500)]/10"
               aria-label="Minimum price"
             />
             <Slider.Thumb
-              className="block h-6 w-6 cursor-grab rounded-full border-2 border-[#0F1729] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[#0F1729]/10"
+              className="block h-6 w-6 cursor-grab rounded-full border-2 border-[var(--color-brand-500)] bg-white shadow-[0_2px_8px_rgba(15,23,41,0.18)] outline-none transition-transform hover:scale-105 active:cursor-grabbing focus:ring-4 focus:ring-[color:var(--color-brand-500)]/10"
               aria-label="Maximum price"
             />
           </Slider.Root>
@@ -141,8 +141,8 @@ export function FilterPanelBody() {
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-4 py-2 type-btn transition-all',
                 filters.propertyTypes.includes(value)
-                  ? 'border-[#0F1729] bg-[#0F1729] text-white'
-                  : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
+                  ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)] text-white'
+                  : 'border-[#E5E7EB] text-[#0F1729] hover:border-[var(--color-brand-500)]'
               )}
             >
               <Icon size={14} />
@@ -162,10 +162,10 @@ export function FilterPanelBody() {
                 key={opt}
                 onClick={() => setFilters({ minBeds: val })}
                 className={cn(
-                  'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
-                  active
-                    ? 'border-[#0F1729] bg-[#0F1729] text-white'
-                    : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
+                'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
+                active
+                    ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)] text-white'
+                    : 'border-[#E5E7EB] text-[#0F1729] hover:border-[var(--color-brand-500)]'
                 )}
               >
                 {opt}
@@ -185,10 +185,10 @@ export function FilterPanelBody() {
                 key={opt}
                 onClick={() => setFilters({ minBaths: val })}
                 className={cn(
-                  'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
-                  active
-                    ? 'border-[#0F1729] bg-[#0F1729] text-white'
-                    : 'border-[#E5E7EB] text-[#0F1729] hover:border-[#0F1729]'
+                'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
+                active
+                    ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)] text-white'
+                    : 'border-[#E5E7EB] text-[#0F1729] hover:border-[var(--color-brand-500)]'
                 )}
               >
                 {opt}
@@ -199,16 +199,19 @@ export function FilterPanelBody() {
       </Section>
 
       <Section title="Listed Within">
-        <select
-          value={selectedListedWithin}
-          onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
-          className="h-11 w-full cursor-pointer rounded-full border border-[#E5E7EB] bg-white px-4 type-btn text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
-        >
-          <option value="">Any Time</option>
-          {DAYS_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={selectedListedWithin}
+            onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
+            className="h-11 w-full cursor-pointer appearance-none rounded-full border border-[#E5E7EB] bg-white px-4 pr-11 type-btn text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
+          >
+            <option value="">Any Time</option>
+            {DAYS_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <ChevronDown size={16} className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+        </div>
       </Section>
 
       <Section title="Square Footage">
@@ -247,17 +250,68 @@ export function FilterPanelFooter({
   onDone: () => void;
 }) {
   const resetFilters = useSearchStore((s) => s.resetFilters);
+  const filters = useSearchStore((s) => s.filters);
+  const selectedFilterChips = getSelectedFilterChips(filters);
 
   return (
-    <div className="flex gap-2">
-      <Button variant="secondary" size="lg" onClick={resetFilters} className="shrink-0">
-        Reset
-      </Button>
-      <Button fullWidth size="lg" onClick={onDone}>
-        Show {totalListings} Results
-      </Button>
+    <div className="space-y-3">
+      {selectedFilterChips.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {selectedFilterChips.map((chip) => (
+            <SelectedFilterChip key={chip} label={chip} />
+          ))}
+        </div>
+      )}
+      <div className="flex gap-2">
+        <Button variant="secondary" size="lg" onClick={resetFilters} className="shrink-0">
+          Reset
+        </Button>
+        <Button fullWidth size="lg" onClick={onDone}>
+          Show {totalListings} Results
+        </Button>
+      </div>
     </div>
   );
+}
+
+// Shared applied-filter chip language mirrors the search-dropdown chip treatment for consistency.
+function SelectedFilterChip({ label }: { label: string }) {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1 text-xs font-medium text-[var(--color-brand-text)]">
+      {label}
+    </span>
+  );
+}
+
+function getSelectedFilterChips(filters: ReturnType<typeof useSearchStore.getState>['filters']) {
+  const chips: string[] = [];
+  if (filters.minPrice || filters.maxPrice) {
+    chips.push(
+      filters.minPrice && filters.maxPrice
+        ? `$${Math.round(filters.minPrice / 1000)}k-$${Math.round(filters.maxPrice / 1000)}k`
+        : filters.minPrice
+        ? `Min $${Math.round(filters.minPrice / 1000)}k`
+        : `Max $${Math.round((filters.maxPrice ?? 0) / 1000)}k`
+    );
+  }
+  if (filters.propertyTypes.length > 0) {
+    chips.push(...filters.propertyTypes.map((value) => PROPERTY_TYPES.find((item) => item.value === value)?.label ?? value));
+  }
+  if (filters.minBeds) chips.push(`${filters.minBeds}+ bd`);
+  if (filters.minBaths) chips.push(`${filters.minBaths}+ ba`);
+  if (filters.maxDaysOnMarket) {
+    chips.push(DAYS_OPTIONS.find((option) => option.value === filters.maxDaysOnMarket)?.label ?? `${filters.maxDaysOnMarket} days`);
+  }
+  if (filters.minSqft || filters.maxSqft) {
+    chips.push(
+      filters.minSqft && filters.maxSqft
+        ? `${filters.minSqft}-${filters.maxSqft} sqft`
+        : filters.minSqft
+        ? `Min ${filters.minSqft} sqft`
+        : `Max ${filters.maxSqft} sqft`
+    );
+  }
+  return chips;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
