@@ -531,24 +531,24 @@ export default function MapPage() {
             <div className="pointer-events-auto absolute left-5 top-5 z-20 hidden items-center gap-2 lg:flex">
               <button
                 onClick={openDrawAreaSelect}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
                 aria-label="Draw"
               >
-                <Pencil size={18} className="text-[#0F1729]" />
+                <Pencil size={18} className="text-[var(--color-text-primary)]" />
               </button>
               <button
                 onClick={() => {
                   openAreaSelect();
                 }}
-                className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
               >
-                <SquareDashedMousePointer size={18} className="text-[#0F1729]" />
+                <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
                 Select Areas
               </button>
               {hasVisibleBoundary && (
                 <button
                   onClick={clearVisibleBoundaries}
-                  className="h-11 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                  className="h-11 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
                 >
                   Clear Areas
                 </button>

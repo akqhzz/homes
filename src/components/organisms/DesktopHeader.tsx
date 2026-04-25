@@ -135,7 +135,7 @@ export default function DesktopHeader({
             onClick={() => router.push('/')}
             className="flex items-center gap-2 flex-shrink-0"
           >
-            <span className="type-heading text-[#0F1729]">homes</span>
+            <span className="type-heading text-[var(--color-text-primary)]">homes</span>
           </button>
         ) : null}
 
@@ -162,7 +162,7 @@ export default function DesktopHeader({
                 showSearch && 'shadow-[inset_0_0_0_1.5px_#0F1729,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
             >
-              <Search size={15} className="text-[#9CA3AF] flex-shrink-0" />
+              <Search size={15} className="text-[var(--color-text-tertiary)] flex-shrink-0" />
               {showSearch ? (
                 <input
                   ref={searchInputRef}
@@ -172,7 +172,7 @@ export default function DesktopHeader({
                     if (event.key === 'Enter' && filteredLocations[0]) selectLocation(filteredLocations[0]);
                   }}
                   placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Where?'}
-                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#0F1729] outline-none placeholder:text-[#9CA3AF]"
+                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)]"
                 />
               ) : hasAppliedArea && areaSummaryLabel ? (
                 <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-sm font-medium text-[var(--color-brand-text)]">
@@ -183,13 +183,13 @@ export default function DesktopHeader({
                   {locationLabel}
                 </span>
               ) : (
-                <span className="flex-1 truncate text-sm font-medium text-[#9CA3AF]">{locationLabel}</span>
+                <span className="flex-1 truncate text-sm font-medium text-[var(--color-text-tertiary)]">{locationLabel}</span>
               )}
             </div>
             {showSearch && (
               <div className="absolute left-0 right-0 top-[54px] z-40 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 {(selectedLocations.length > 0 || (hasAppliedArea && areaSummaryLabel)) && (
-                  <div className="flex items-center gap-2 border-b border-[#F5F6F7] px-2 py-2">
+                  <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
                     <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                       {selectedLocations.map((location) => (
                         <SearchLocationChip
@@ -207,7 +207,7 @@ export default function DesktopHeader({
                         />
                       )}
                     </div>
-                    <button onClick={clearLocations} className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-1 text-xs font-semibold text-[#6B7280] hover:text-[#0F1729]">
+                    <button onClick={clearLocations} className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
                       Clear
                     </button>
                   </div>
@@ -222,7 +222,7 @@ export default function DesktopHeader({
                     />
                   ))}
                   {isSearchLoading && (
-                    <div className="px-3 py-3 type-caption text-[#9CA3AF]">Searching locations…</div>
+                    <div className="px-3 py-3 type-caption text-[var(--color-text-tertiary)]">Searching locations…</div>
                   )}
                 </div>
               </div>
@@ -237,12 +237,12 @@ export default function DesktopHeader({
                 setShowMenu(false);
               }}
               className={cn(
-                'relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select',
+                'relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] no-select',
                 filterCount > 0 && 'border border-[#374151] shadow-[inset_0_0_0_1px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
               )}
               aria-label="Filters"
             >
-              <SlidersHorizontal size={16} className="text-[#0F1729]" />
+              <SlidersHorizontal size={16} className="text-[var(--color-text-primary)]" />
               Filter
               {filterCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
@@ -255,7 +255,7 @@ export default function DesktopHeader({
                 <div className="flex-1 overflow-y-auto">
                   <FilterPanelBody />
                 </div>
-                <div className="sticky bottom-0 border-t border-[#F5F6F7] bg-white p-4">
+                <div className="sticky bottom-0 border-t border-[var(--color-surface)] bg-white p-4">
                   <FilterPanelFooter onDone={() => setShowFilter(false)} />
                 </div>
               </div>
@@ -272,7 +272,7 @@ export default function DesktopHeader({
               setShowCollections(false);
               setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches');
             }}
-            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
             aria-label="Saved searches"
           >
             {activeSearch?.thumbnail ? (
@@ -280,10 +280,10 @@ export default function DesktopHeader({
                 <Image src={activeSearch.thumbnail} alt="" fill sizes="20px" className="object-cover" />
               </span>
             ) : (
-              <Bookmark size={18} className="text-[#0F1729]" />
+              <Bookmark size={18} className="text-[var(--color-text-primary)]" />
             )}
             {activeSearchDirty && (
-              <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white" />
+              <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[var(--color-text-primary)] ring-1 ring-white" />
             )}
           </button>
         </div>
@@ -295,7 +295,7 @@ export default function DesktopHeader({
               {listingId && <ListingSaveButton listingId={listingId} className="bg-[#0F1729] text-white hover:bg-[#1F2937]" />}
               <button
                 type="button"
-                className="flex h-10 items-center gap-2 rounded-full bg-[#F5F6F7] px-4 text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
+                className="flex h-10 items-center gap-2 rounded-full bg-[var(--color-surface)] px-4 text-sm font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
               >
                 <Share2 size={15} />
                 Share
@@ -317,7 +317,7 @@ export default function DesktopHeader({
                   setShowSearch(false);
                   setShowMenu(false);
                 }}
-                className="h-11 rounded-full bg-[#F5F6F7] px-4 type-btn text-[#0F1729] transition-all hover:bg-[#EBEBEB]"
+                className="h-11 rounded-full bg-[var(--color-surface)] px-4 type-btn text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-surface-hover)]"
               >
                 <span className="inline-flex items-center gap-2">
                   <AppImageIcon src="/icons/collection.png" alt="Collections" size={18} className="rounded-[5px]" />
@@ -347,7 +347,7 @@ export default function DesktopHeader({
                         <button
                           key={collection.id}
                           onClick={() => router.push(`/saved/${collection.id}`)}
-                          className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left transition-colors hover:bg-[#EBEBEB]"
+                          className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
                         >
                           <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
                             {listing?.images[0] && (
@@ -355,15 +355,15 @@ export default function DesktopHeader({
                             )}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate font-heading text-sm text-[#0F1729]">{collection.name}</span>
-                            <span className="block type-caption text-[#9CA3AF]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
+                            <span className="block truncate font-heading text-sm text-[var(--color-text-primary)]">{collection.name}</span>
+                            <span className="block type-caption text-[var(--color-text-tertiary)]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                           </span>
                         </button>
                       );
                     })}
                     <button
                       onClick={() => router.push('/saved')}
-                      className="flex min-h-[84px] items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-left transition-colors hover:border-[#D1D5DB] hover:bg-[#F9FAFB]"
+                      className="flex min-h-[84px] items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-left transition-colors hover:border-[var(--color-border-strong)] hover:bg-[#F9FAFB]"
                     >
                       <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
                         {MOCK_LISTINGS[0]?.images[0] && (
@@ -371,10 +371,10 @@ export default function DesktopHeader({
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-heading text-sm text-[#0F1729]">All Collections</span>
-                        <span className="block type-caption text-[#9CA3AF]">View Your Saved Homes</span>
+                        <span className="block truncate font-heading text-sm text-[var(--color-text-primary)]">All Collections</span>
+                        <span className="block type-caption text-[var(--color-text-tertiary)]">View Your Saved Homes</span>
                       </span>
-                      <ChevronRight size={15} className="shrink-0 text-[#9CA3AF]" />
+                      <ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />
                     </button>
                   </div>
                 </div>
@@ -389,7 +389,7 @@ export default function DesktopHeader({
                   setShowFilter(false);
                   setShowSearch(false);
                 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
                 aria-label="Menu"
               >
                 <Menu size={19} />
@@ -410,18 +410,18 @@ function DesktopMenu() {
   return (
     <div className="absolute right-0 top-12 z-40 w-72 overflow-hidden rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
       {MENU_ITEMS.map((item) => (
-        <button key={item.label} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
-            <item.icon size={15} className="text-[#0F1729]" />
+        <button key={item.label} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[var(--color-surface)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface)]">
+            <item.icon size={15} className="text-[var(--color-text-primary)]" />
           </div>
-          <span className="flex-1 type-body font-medium text-[#0F1729]">{item.label}</span>
+          <span className="flex-1 type-body font-medium text-[var(--color-text-primary)]">{item.label}</span>
         </button>
       ))}
       <button className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-red-50">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
-          <LogOut size={15} className="text-[#EF4444]" />
+          <LogOut size={15} className="text-[var(--color-accent)]" />
         </div>
-        <span className="flex-1 type-body font-medium text-[#EF4444]">Sign Out</span>
+        <span className="flex-1 type-body font-medium text-[var(--color-accent)]">Sign Out</span>
       </button>
     </div>
   );

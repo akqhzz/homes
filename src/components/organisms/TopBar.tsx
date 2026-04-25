@@ -67,17 +67,17 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
         <div ref={areaMenuRef} className="relative shrink-0">
           <button
             onClick={handleAreaClick}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[var(--color-surface)]"
             aria-label="Area selection"
           >
-            <SquareDashedMousePointer size={18} className="text-[#0F1729]" />
+            <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
           </button>
           {showAreaMenu && (
             <div className="absolute left-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
-              <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#0F1729] hover:bg-[#F5F6F7]">
+              <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]">
                 Edit area
               </button>
-              <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[#6B7280] hover:bg-[#F5F6F7]">
+              <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]">
                 Clear area
               </button>
             </div>
@@ -89,13 +89,13 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
             onClick={() => setActivePanel('search')}
             className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
           >
-            <Search size={17} className="text-[#9CA3AF] flex-shrink-0" />
+            <Search size={17} className="text-[var(--color-text-tertiary)] flex-shrink-0" />
             {selectedLocations.length > 0 || hasAppliedArea ? (
               <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 type-body font-medium text-[var(--color-brand-text)]">
                 {locationLabel}
               </span>
             ) : (
-              <span className="type-body font-medium text-[#9CA3AF] flex-1 truncate">
+              <span className="type-body font-medium text-[var(--color-text-tertiary)] flex-1 truncate">
                 {locationLabel}
               </span>
             )}
@@ -107,12 +107,12 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
           animate={{ opacity: activePanel === 'search' ? 0 : 1, scale: activePanel === 'search' ? 0.92 : 1 }}
           transition={{ duration: 0.12, ease: 'easeOut' }}
           className={cn(
-            'relative flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select',
+            'relative flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select',
             activePanel === 'search' && 'pointer-events-none',
             filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
           )}
         >
-          <SlidersHorizontal size={16} className="text-[#0F1729]" />
+          <SlidersHorizontal size={16} className="text-[var(--color-text-primary)]" />
           Filter
           {filterCount > 0 && (
             <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">

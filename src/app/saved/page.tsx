@@ -124,7 +124,7 @@ export default function SavedPage() {
                     setCreatingCollection(false);
                     setNewName('');
                   }}
-                  className="relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select"
+                  className="relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] no-select"
                 >
                   Add
                 </button>
@@ -178,7 +178,7 @@ export default function SavedPage() {
                     }}
                   >
                     {/* Cover — first listing image, full fill */}
-                    <div className="relative aspect-[16/11] overflow-hidden bg-[#E5E7EB] sm:aspect-[4/3]">
+                    <div className="relative aspect-[16/11] overflow-hidden bg-[var(--color-border)] sm:aspect-[4/3]">
                       {firstListing ? (
                         <Image src={firstListing.images[0]} alt="" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
                       ) : (
@@ -190,7 +190,7 @@ export default function SavedPage() {
                     <div className="px-4 pb-3.5 pt-2 pr-12 flex items-start gap-2">
                       <div className="flex-1 min-w-0">
                         {renamingId === col.id ? (
-                          <div className="flex h-9 items-center rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-1.5">
+                          <div className="flex h-9 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
                             <input
                               value={renameName}
                               onChange={(event) => setRenameName(event.target.value)}
@@ -204,7 +204,7 @@ export default function SavedPage() {
                                 }
                               }}
                               onBlur={finishRename}
-                              className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[#0F1729] outline-none"
+                              className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[var(--color-text-primary)] outline-none"
                               autoFocus
                             />
                             <button
@@ -217,23 +217,23 @@ export default function SavedPage() {
                                 event.stopPropagation();
                                 finishRename();
                               }}
-                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
                               aria-label="Finish rename"
                             >
                               <Check size={13} />
                             </button>
                           </div>
                         ) : (
-                          <p className="truncate type-heading text-[#0F1729]">{col.name}</p>
+                          <p className="truncate type-heading text-[var(--color-text-primary)]">{col.name}</p>
                         )}
-                        <p className="type-caption text-[#9CA3AF] mt-0.5">
+                        <p className="type-caption text-[var(--color-text-tertiary)] mt-0.5">
                           {col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}
                         </p>
                       </div>
                       {col.collaborators && col.collaborators.length > 0 && (
                         <div className="flex -space-x-1.5">
                           {col.collaborators.slice(0, 3).map((c) => (
-                            <Avatar key={c.id} src={c.avatar} name={c.name} size="sm" className="border-2 border-[#F5F6F7]" />
+                            <Avatar key={c.id} src={c.avatar} name={c.name} size="sm" className="border-2 border-[var(--color-surface)]" />
                           ))}
                         </div>
                       )}
@@ -243,7 +243,7 @@ export default function SavedPage() {
                   {/* ... button — outside overflow-hidden, positioned at article level */}
                   <button
                     onClick={(event) => openMenu(event, col.id)}
-                    className="absolute bottom-3 right-1 flex h-12 w-12 items-center justify-center rounded-full text-[#6B7280]"
+                    className="absolute bottom-3 right-1 flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-text-secondary)]"
                     aria-label="Collection options"
                   >
                     <Ellipsis size={17} />
@@ -255,8 +255,8 @@ export default function SavedPage() {
             {collections.length === 0 && (
               <div className="text-center py-20">
                 <div className="text-5xl mb-4">🏠</div>
-                <p className="type-label text-[#0F1729]">No collections yet</p>
-                <p className="type-body text-[#9CA3AF] mt-1">Save listings to create your first collection</p>
+                <p className="type-label text-[var(--color-text-primary)]">No collections yet</p>
+                <p className="type-body text-[var(--color-text-tertiary)] mt-1">Save listings to create your first collection</p>
               </div>
             )}
           </div>

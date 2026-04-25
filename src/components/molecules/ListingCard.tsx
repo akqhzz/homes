@@ -251,7 +251,7 @@ export default function ListingCard({
             if (e.key === 'Enter' || e.key === ' ') openListingPage();
           }}
         >
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#F5F6F7]">
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--color-surface)]">
           <ListingImage src={displayImages[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
             <button
               className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
@@ -259,13 +259,13 @@ export default function ListingCard({
             >
               <Heart
                 size={13}
-                className={cn(resolvedLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#6B7280]')}
+                className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)]')}
               />
             </button>
           </div>
           <div className="px-0.5 pb-1">
-            <p className="type-heading leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
-            <p className="mt-0.5 type-body text-[#6B7280]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
+            <p className="type-heading leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
+            <p className="mt-0.5 type-body text-[var(--color-text-secondary)]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
           </div>
         </div>
         {saveSheet}
@@ -277,20 +277,20 @@ export default function ListingCard({
     return (
       <>
         <div className={cn('flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
-          <div className="relative aspect-video overflow-hidden bg-[#F5F6F7]">
+          <div className="relative aspect-video overflow-hidden bg-[var(--color-surface)]">
             <ListingImage src={displayImages[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
             <button
               className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/85 flex items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
               onClick={handleSaveClick}
             >
-              <Heart size={14} className={cn(resolvedLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')} />
+              <Heart size={14} className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')} />
             </button>
           </div>
           <div className="p-4">
-            <p className="type-subtitle text-[#0F1729]">{formatPrice(listing.price)}</p>
+            <p className="type-subtitle text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
             <div className="mt-1 flex flex-col gap-[1px]">
-              <p className="type-body text-[#6B7280]">{listing.beds}bd · {listing.baths}ba · {formatSqftCompact(listing.sqft)} sqft</p>
-              <div className="flex items-center gap-1 type-caption text-[#6B7280]">
+              <p className="type-body text-[var(--color-text-secondary)]">{listing.beds}bd · {listing.baths}ba · {formatSqftCompact(listing.sqft)} sqft</p>
+              <div className="flex items-center gap-1 type-caption text-[var(--color-text-secondary)]">
                 <MapPin size={11} />
                 <span>{listing.address}</span>
               </div>
@@ -318,7 +318,7 @@ export default function ListingCard({
         <div
           ref={imageAreaRef}
           data-card-image="true"
-          className="relative overflow-hidden bg-[#F5F6F7]"
+          className="relative overflow-hidden bg-[var(--color-surface)]"
           style={{
             height: carouselImageHeight,
             touchAction: imageTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'none',
@@ -388,7 +388,7 @@ export default function ListingCard({
                   event.stopPropagation();
                   showPreviousImage();
                 }}
-                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
+                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[var(--color-text-primary)] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -401,7 +401,7 @@ export default function ListingCard({
                   event.stopPropagation();
                   showNextImage();
                 }}
-                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
+                className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-[var(--color-text-primary)] shadow-[0_1px_4px_rgba(0,0,0,0.12)] transition-colors hover:bg-white"
               >
                 <ChevronRight size={14} />
               </button>
@@ -417,7 +417,7 @@ export default function ListingCard({
           >
             <Heart
               size={14}
-              className={cn(resolvedLiked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
+              className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')}
             />
           </button>
         </div>
@@ -430,12 +430,12 @@ export default function ListingCard({
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="type-heading text-[#0F1729]">{formatPrice(listing.price)}</p>
+              <p className="type-heading text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
               <div className="mt-0.5 flex flex-col gap-[1px]">
-                <p className="truncate type-body text-[#6B7280]">
+                <p className="truncate type-body text-[var(--color-text-secondary)]">
                   {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
                 </p>
-                <p className="pr-2 type-caption text-[#6B7280] line-clamp-2">
+                <p className="pr-2 type-caption text-[var(--color-text-secondary)] line-clamp-2">
                   {listing.address}
                 </p>
                 <p className="mt-1 pr-2 text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8] line-clamp-1">
@@ -443,7 +443,7 @@ export default function ListingCard({
                 </p>
               </div>
             </div>
-            <span className="mt-0.5 shrink-0 type-caption text-[#9CA3AF]">
+            <span className="mt-0.5 shrink-0 type-caption text-[var(--color-text-tertiary)]">
               {formatDaysOnMarket(listing.daysOnMarket)}
             </span>
           </div>
