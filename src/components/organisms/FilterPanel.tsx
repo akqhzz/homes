@@ -40,7 +40,7 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
     <MobileDrawer
       title="Filters"
       onClose={() => setActivePanel('none')}
-      heightClassName="h-[82dvh]"
+      heightClassName="h-[88dvh]"
       contentClassName="pb-4"
       footer={<FilterPanelFooter totalListings={totalListings} onDone={() => setActivePanel('none')} />}
     >

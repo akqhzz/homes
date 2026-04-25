@@ -204,6 +204,20 @@ export default function MapView({
       )
     );
   }, [desktopPreviewListing, listings, mapInstance]);
+  const orderedListings = useMemo(
+    () =>
+      listings
+        .map((listing, index) => ({
+          listing,
+          index,
+          isActive:
+            listing.id === selectedListingId ||
+            listing.id === hoveredListingId ||
+            listing.id === previewListingId,
+        }))
+        .sort((a, b) => Number(a.isActive) - Number(b.isActive)),
+    [hoveredListingId, listings, previewListingId, selectedListingId]
+  );
 
   if (!MAPBOX_TOKEN) {
     return (
@@ -416,8 +430,8 @@ export default function MapView({
         ))}
 
       {/* Listing price markers */}
-      {showListings && listings.map((listing, index) => {
-        const markerCoordinates = getSpreadListingCoordinates(listing, index);
+      {showListings && orderedListings.map(({ listing, index: originalIndex }) => {
+        const markerCoordinates = getSpreadListingCoordinates(listing, originalIndex);
         const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
         const isActiveMobilePin = !isDesktop && isCarouselVisible && listing.id === selectedListingId;
         return (

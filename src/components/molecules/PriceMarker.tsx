@@ -23,7 +23,7 @@ export default function PriceMarker({ price, isSelected, isSaved, isHovered, isV
     <button
       onClick={handleClick}
       className={cn(
-        'inline-flex cursor-pointer items-center gap-1 rounded-full py-[0.3125rem] text-[11px] font-semibold leading-none transition-all duration-150 no-select',
+        'inline-flex cursor-pointer items-center gap-1 rounded-full py-[0.3125rem] text-[11px] font-semibold leading-none transition-colors duration-150 no-select',
         isSaved ? 'px-1.5' : 'px-2',
         isSelected
           ? 'bg-[#0F1729] text-white shadow-[0_3px_10px_rgba(0,0,0,0.22)]'
@@ -32,7 +32,7 @@ export default function PriceMarker({ price, isSelected, isSaved, isHovered, isV
           : isSaved
           ? 'bg-white text-[#0F1729] border border-[#E5E7EB] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
           : isVisited
-          ? 'bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]'
+          ? 'border border-[var(--color-brand-200)] bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]'
           : 'border border-[var(--color-brand-500)] bg-[var(--color-marker-default-bg)] text-[var(--color-marker-default-text)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
       )}
     >

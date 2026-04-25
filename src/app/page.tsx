@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Pencil, SquareDashedMousePointer } from 'lucide-react';
@@ -354,6 +355,11 @@ export default function MapPage() {
   };
 
   const openDrawAreaSelect = () => {
+    flushSync(() => {
+      setIsDrawingArea(true);
+      setAreaSelectMode(true);
+      setActivePanel('area-select');
+    });
     if (hasAppliedArea) {
       setSelectedNeighborhoods(new Set(appliedNeighborhoods));
       setDrawnBoundary(appliedBoundary);
@@ -369,9 +375,6 @@ export default function MapPage() {
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
-    setIsDrawingArea(true);
-    setAreaSelectMode(true);
-    setActivePanel('area-select');
   };
 
   const clearAppliedArea = () => {

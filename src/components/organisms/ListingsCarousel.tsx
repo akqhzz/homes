@@ -76,6 +76,12 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     markVisitedListing(selectedListingId);
   }, [markVisitedListing, selectedListingId]);
 
+  useEffect(() => {
+    const centeredListing = listings[currentIndex];
+    if (!centeredListing || selectedListingId === centeredListing.id) return;
+    setSelectedListingId(centeredListing.id);
+  }, [currentIndex, listings, selectedListingId, setSelectedListingId]);
+
   const goTo = (index: number) => {
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));
     setInstantMove(false);

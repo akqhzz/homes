@@ -4,6 +4,7 @@ import { Bath, BedDouble, Calendar, Car, DollarSign, Home, MapPin, Ruler, Share2
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatDaysOnMarket, formatPriceFull, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import BackButton from '@/components/atoms/BackButton';
+import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
 import PageShell from '@/components/templates/PageShell';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import ListingImageGallery from '@/components/organisms/ListingImageGallery';
@@ -28,13 +29,17 @@ export default async function ListingPage({ params }: ListingPageProps) {
     <PageShell showBottomNav={false} desktopWide desktopHeaderVariant="listing" desktopHeaderListingId={listing.id}>
       <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
         <div className="layout-content-wide px-4 py-4 lg:px-8 lg:pb-7 lg:pt-3">
-          <div className="mb-2 flex justify-end lg:hidden">
-            <BackButton
-              iconOnly
-              className="h-8 w-8 rounded-full bg-white/76 shadow-[0_2px_10px_rgba(0,0,0,0.08)] backdrop-blur-sm hover:bg-white/88"
-            />
+          <div className="relative">
+            <div className="pointer-events-none absolute right-4 top-4 z-10 lg:hidden">
+              <OverlayCloseButton
+                label="Close listing detail"
+                variant="glass"
+                fallbackHref="/"
+                className="pointer-events-auto"
+              />
+            </div>
+            <ListingImageGallery images={listing.images} address={listing.address} />
           </div>
-          <ListingImageGallery images={listing.images} address={listing.address} />
 
           <section className="grid gap-8 py-6 lg:grid-cols-[1fr_360px]">
             <div>

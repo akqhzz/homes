@@ -233,7 +233,7 @@ export default function SavedSearchesPanel({
         <MobileDrawer
           title="Saved Searches"
           onClose={() => setActivePanel('none')}
-          heightClassName="h-[74dvh]"
+          heightClassName="h-[86dvh]"
         >
           {content}
         </MobileDrawer>
