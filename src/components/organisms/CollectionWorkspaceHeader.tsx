@@ -33,7 +33,7 @@ export default function CollectionWorkspaceHeader({
       {showBackButton && (
         <BackButton
           iconOnly
-          className="absolute left-0 hidden h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7] lg:flex"
+          className="absolute left-0 hidden shrink-0 lg:flex"
         />
       )}
 

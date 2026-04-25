@@ -278,6 +278,7 @@ export default function CollectionPage() {
                     onClick={handleClosePage}
                     className="pointer-events-auto absolute right-4"
                     style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.42rem)' }}
+                    variant="glass"
                   />
                   <div className="px-10">
                     <CollectionWorkspaceHeader
@@ -320,6 +321,7 @@ export default function CollectionPage() {
                   onClick={handleClosePage}
                   className="absolute right-4 z-30"
                   style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+                  variant="glass"
                 />
                 {isCarouselVisible && sortedListings.length > 0 && (
                   <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20">

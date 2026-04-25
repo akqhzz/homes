@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
-  ArrowLeft,
   Bell,
   Bookmark,
   ChevronRight,
@@ -31,6 +30,7 @@ import AppImageIcon from '@/components/atoms/AppImageIcon';
 import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
+import BackButton from '@/components/atoms/BackButton';
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -119,14 +119,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
     <>
       <header className="relative hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 flex-shrink-0 z-30">
         {isListingVariant ? (
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex h-10 items-center gap-2 rounded-full bg-[#F5F6F7] px-4 text-sm font-semibold text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
-          >
-            <ArrowLeft size={16} />
-            Back
-          </button>
+          <BackButton />
         ) : !isMapPage ? (
           <button
             onClick={() => router.push('/')}

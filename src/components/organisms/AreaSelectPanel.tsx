@@ -92,7 +92,7 @@ export default function AreaSelectPanel({
                   onClick={onClearSelection}
                   className="h-11 rounded-full bg-white px-4 type-btn text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
                 >
-                  Clear
+                  Clear Areas
                 </button>
                 <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
                   <Undo2 size={15} />
@@ -104,7 +104,7 @@ export default function AreaSelectPanel({
             )}
             <button
               onClick={onApply}
-              className="pointer-events-auto ml-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:px-6"
+              className="pointer-events-auto ml-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:px-9"
             >
               Done
             </button>

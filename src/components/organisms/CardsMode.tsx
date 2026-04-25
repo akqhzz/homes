@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, House, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
+import { Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
@@ -18,6 +18,7 @@ import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
+import MapListingPin from '@/components/atoms/MapListingPin';
 
 const MAPBOX_TOKEN = getMapboxToken();
 const SWIPE_THRESHOLD = 38;
@@ -42,7 +43,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${lng},${lat},11.6,0/192x192@2x?access_token=${MAPBOX_TOKEN}`;
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},11.6,0/192x192@2x?access_token=${MAPBOX_TOKEN}`;
 }
 
 interface CardsModeProps {
@@ -481,7 +482,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                     latitude={(drawerListing ?? listing).coordinates.lat}
                     anchor="bottom"
                   >
-                    <MapPin size={22} strokeWidth={2.25} className="fill-[#0F1729] text-[#0F1729]" />
+                    <MapListingPin size={22} dotSize={6} className="drop-shadow-[0_4px_12px_rgba(15,23,41,0.18)]" />
                   </Marker>
                   <AttributionControl compact position="bottom-right" />
                 </MapGL>
@@ -663,13 +664,8 @@ function CardModeListingCard({
                 {mapThumb(listing) ? (
                   <>
                     <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
-                    <div className="pointer-events-none absolute inset-0">
-                      <div className="absolute left-1/2 top-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-[82%] items-center justify-center rounded-full bg-[#0F1729] shadow-[0_4px_14px_rgba(15,23,41,0.22)]">
-                        <House size={12} strokeWidth={2.2} className="text-white" />
-                      </div>
-                      <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/88 px-2 py-0.5 text-[9px] font-medium leading-none text-[#475569] shadow-[0_1px_3px_rgba(15,23,41,0.08)] backdrop-blur-sm">
-                        © Mapbox © OSM
-                      </div>
+                    <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[82%]">
+                      <MapListingPin size={18} dotSize={5} className="drop-shadow-[0_4px_12px_rgba(15,23,41,0.2)]" />
                     </div>
                   </>
                 ) : (

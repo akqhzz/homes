@@ -577,14 +577,14 @@ export default function MapPage() {
                 className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
               >
                 <SquareDashedMousePointer size={18} className="text-[#0F1729]" />
-                Area
+                Select Areas
               </button>
               {hasVisibleBoundary && (
                 <button
                   onClick={clearVisibleBoundaries}
                   className="h-11 rounded-full bg-white px-4 type-btn text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
                 >
-                  Clear
+                  Clear Areas
                 </button>
               )}
             </div>

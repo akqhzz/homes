@@ -100,6 +100,24 @@ export default function SavedPage() {
             subtitle={`${collections.length} collection${collections.length === 1 ? '' : 's'}`}
             showBackButton
             hideSubtitleOnMobile
+            rightSlot={(
+              <div className="w-[220px]">
+                <CreateInlineField
+                  open={creatingCollection}
+                  onOpenChange={setCreatingCollection}
+                  value={newName}
+                  onValueChange={setNewName}
+                  placeholder="Collection name..."
+                  collapsedLabel="Add Collection"
+                  onSubmit={handleCreate}
+                  autoFocus
+                  className="justify-end"
+                  collapsedClassName="h-11 justify-center rounded-full border-[#E5E7EB] bg-[#F5F6F7] px-4 py-0 font-medium text-[#0F1729] hover:border-[#D1D5DB] hover:bg-[#EBEBEB]"
+                  inputClassName="h-11 rounded-full"
+                  submitClassName="h-11 w-11"
+                />
+              </div>
+            )}
           />
         </div>
 

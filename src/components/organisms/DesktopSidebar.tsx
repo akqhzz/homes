@@ -30,13 +30,13 @@ export default function DesktopSidebar() {
       <button
         type="button"
         onClick={() => router.push('/')}
-        className="mt-3 flex h-11 w-11 items-center justify-center text-[2.1rem] font-heading font-semibold leading-none tracking-[-0.06em] text-[#0F1729]"
+        className="mt-1 flex h-11 w-11 items-center justify-center text-[2.1rem] font-heading font-semibold leading-none tracking-[-0.06em] text-[#0F1729]"
         aria-label="Homes"
       >
         h.
       </button>
 
-      <nav className="mt-28 flex flex-col items-center gap-7">
+      <nav className="mt-40 flex flex-col items-center gap-7">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
