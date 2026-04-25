@@ -72,6 +72,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
 
   const isCollectionsPage = pathname.startsWith('/saved');
   const isListingVariant = variant === 'listing';
+  const isMapPage = pathname === '/' || pathname === '/map';
   const filterCount = activeFilterCount();
   const activeSearch = searches.find((search) => search.id === activeSearchId);
   const locationLabel =
@@ -116,7 +117,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
 
   return (
     <>
-      <header className="relative hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 gap-6 flex-shrink-0 z-30">
+      <header className="relative hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 flex-shrink-0 z-30">
         {isListingVariant ? (
           <button
             type="button"
@@ -126,14 +127,14 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             <ArrowLeft size={16} />
             Back
           </button>
-        ) : (
+        ) : !isMapPage ? (
           <button
             onClick={() => router.push('/')}
             className="flex items-center gap-2 flex-shrink-0"
           >
             <span className="type-heading text-[#0F1729]">homes</span>
           </button>
-        )}
+        ) : null}
 
         {/* Centered search */}
         <div className={cn(
@@ -142,6 +143,8 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             ? 'hidden'
             : isListingVariant
             ? 'absolute left-1/2 top-1/2 flex w-[540px] -translate-x-1/2 -translate-y-1/2'
+            : isMapPage
+            ? 'mx-auto flex'
             : 'mx-auto flex flex-1'
         )}>
           <div ref={searchRef} className="relative w-[316px] flex-none">
@@ -270,7 +273,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
         </div>
 
         {/* Right nav */}
-        <nav className={cn('flex items-center gap-1 flex-shrink-0', (isCollectionsPage || isListingVariant) && 'ml-auto')}>
+        <nav className={cn('flex items-center gap-1 flex-shrink-0', (isCollectionsPage || isListingVariant || isMapPage) && 'ml-auto')}>
           {isListingVariant ? (
             <>
               {listingId && <ListingSaveButton listingId={listingId} className="bg-[#0F1729] text-white hover:bg-[#1F2937]" />}
@@ -289,7 +292,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             >
               Map
             </button>
-          ) : (
+          ) : isMapPage ? null : (
             <div ref={collectionsRef} className="relative">
               <button
                 onClick={() => {
@@ -362,7 +365,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
               )}
             </div>
           )}
-          {!isListingVariant && (
+          {!isListingVariant && !isMapPage && (
             <div ref={menuRef} className="relative">
               <button
                 onClick={() => {

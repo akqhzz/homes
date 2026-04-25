@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
-import MapGL, { Marker } from 'react-map-gl/mapbox';
+import MapGL, { AttributionControl } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -42,15 +42,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},12.1,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
-}
-
-function StaticMapMarker() {
-  return (
-    <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-full">
-      <span className="relative block h-5 w-5 rotate-45 rounded-[38%_38%_58%_58%] bg-[#0F1729]" />
-    </span>
-  );
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},11.7,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
 }
 
 interface CardsModeProps {
@@ -287,6 +279,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         label="Close cards view"
         className="absolute z-20"
         style={{ right: '1.25rem', top: 'calc(env(safe-area-inset-top, 0px) + 0.95rem)' }}
+        variant="glass"
       />
 
       {/* Card stack */}
@@ -455,7 +448,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         {showMapDrawer && (drawerListing ?? listing) && (
           <MobileDrawer
             title={(
-              <div className="pr-6 text-[0.76rem] font-medium leading-[1.25] text-[#6B7280]">
+              <div className="pr-6 type-caption font-medium leading-[1.3] text-[#475569]">
                 {(drawerListing ?? listing).address}
               </div>
             )}
@@ -473,6 +466,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                   }}
                   mapStyle="mapbox://styles/mapbox/standard"
                   mapboxAccessToken={MAPBOX_TOKEN}
+                  attributionControl={false}
                   style={{ width: '100%', height: '100%' }}
                   config={{
                     basemap: {
@@ -482,13 +476,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                     },
                   }}
                 >
-                  <Marker
-                    longitude={(drawerListing ?? listing).coordinates.lng}
-                    latitude={(drawerListing ?? listing).coordinates.lat}
-                    anchor="bottom"
-                  >
-                    <StaticMapMarker />
-                  </Marker>
+                  <AttributionControl compact position="bottom-right" />
                 </MapGL>
               </div>
             ) : (
@@ -666,10 +654,7 @@ function CardModeListingCard({
                 aria-label="Open map preview"
               >
                 {mapThumb(listing) ? (
-                  <>
-                <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
-                <StaticMapMarker />
-              </>
+                  <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
                 ) : (
                   <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
                 )}

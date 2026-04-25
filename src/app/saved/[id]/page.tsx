@@ -269,9 +269,9 @@ export default function CollectionPage() {
                 <div
                   className="relative bg-white/94 px-4 backdrop-blur-[10px] transition-[padding,min-height] duration-300 ease-out"
                   style={{
-                    paddingTop: `calc(env(safe-area-inset-top, 0px) + ${0.68 - mobileHeaderProgress * 0.16}rem)`,
-                    paddingBottom: `${0.48 - mobileHeaderProgress * 0.3}rem`,
-                    minHeight: `${72 - mobileHeaderProgress * 24}px`,
+                    paddingTop: `calc(env(safe-area-inset-top, 0px) + ${0.66 - mobileHeaderProgress * 0.2}rem)`,
+                    paddingBottom: `${0.4 - mobileHeaderProgress * 0.32}rem`,
+                    minHeight: `${68 - mobileHeaderProgress * 28}px`,
                   }}
                 >
                   <OverlayCloseButton

@@ -36,7 +36,7 @@ export default function DesktopSidebar() {
         h.
       </button>
 
-      <nav className="flex flex-col items-center gap-5">
+      <nav className="flex flex-col items-center gap-6">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
@@ -46,11 +46,14 @@ export default function DesktopSidebar() {
               onClick={() => router.push(href)}
               aria-label={label}
               className={cn(
-                'flex h-11 w-11 items-center justify-center rounded-full transition-colors',
+                'flex w-14 flex-col items-center gap-1 rounded-2xl py-1 transition-colors',
                 active ? 'text-[#0F1729]' : 'text-[#C9CDD2] hover:text-[#6B7280]'
               )}
             >
-              <Icon size={20} strokeWidth={active ? 2.25 : 1.9} />
+              <Icon size={23} strokeWidth={active ? 2.25 : 1.9} />
+              <span className={cn('text-[0.6rem] font-medium leading-none', active ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
+                {label}
+              </span>
             </button>
           );
         })}
@@ -62,11 +65,14 @@ export default function DesktopSidebar() {
           onClick={() => setShowMenu((value) => !value)}
           aria-label="Menu"
           className={cn(
-            'flex h-11 w-11 items-center justify-center rounded-full transition-colors',
+            'flex w-14 flex-col items-center gap-1 rounded-2xl py-1 transition-colors',
             showMenu ? 'text-[#0F1729]' : 'text-[#C9CDD2] hover:text-[#6B7280]'
           )}
         >
-          <Menu size={20} strokeWidth={2} />
+          <Menu size={23} strokeWidth={2} />
+          <span className={cn('text-[0.6rem] font-medium leading-none', showMenu ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
+            Menu
+          </span>
         </button>
         {showMenu && (
           <>

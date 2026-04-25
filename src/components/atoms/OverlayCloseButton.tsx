@@ -8,6 +8,7 @@ interface OverlayCloseButtonProps {
   className?: string;
   label?: string;
   style?: CSSProperties;
+  variant?: 'plain' | 'glass';
 }
 
 // Shared mobile overlay close affordance: intentionally light, borderless, and easy to layer over media.
@@ -16,6 +17,7 @@ export default function OverlayCloseButton({
   className,
   label = 'Close',
   style,
+  variant = 'plain',
 }: OverlayCloseButtonProps) {
   return (
     <button
@@ -25,6 +27,7 @@ export default function OverlayCloseButton({
       style={style}
       className={cn(
         'flex h-8 w-8 items-center justify-center text-[#0F1729] transition-colors hover:text-[#374151]',
+        variant === 'glass' && 'rounded-full bg-white/76 shadow-[0_2px_10px_rgba(0,0,0,0.08)] backdrop-blur-sm hover:bg-white/88',
         className
       )}
     >
