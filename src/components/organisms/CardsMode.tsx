@@ -40,14 +40,15 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${lng},${lat},13.2,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},12.5,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
 }
 
 function StaticMapMarker() {
   return (
     <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-full">
-      <span className="block h-4 w-4 rounded-full border-2 border-white bg-[#0F1729]" />
-      <span className="mx-auto -mt-0.5 block h-2 w-2 rotate-45 bg-[#0F1729]" />
+      <span className="absolute left-1/2 top-[88%] block h-2.5 w-5 -translate-x-1/2 rounded-full bg-black/18 blur-[2px]" />
+      <span className="relative block h-4.5 w-4.5 rounded-full border-2 border-white bg-[#0F1729]" />
+      <span className="mx-auto -mt-1 block h-2.5 w-2.5 rotate-45 rounded-[1px] bg-[#0F1729]" />
     </span>
   );
 }
@@ -281,6 +282,16 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
       style={{ overscrollBehaviorX: 'none', overscrollBehaviorY: 'none', touchAction: 'pan-y' }}
     >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white/76 text-[#0F1729] backdrop-blur-sm transition-colors hover:bg-white"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.65rem)' }}
+        aria-label="Close cards view"
+      >
+        <X size={14} />
+      </button>
+
       {/* Card stack */}
       <div
         ref={trackRef}
@@ -637,9 +648,9 @@ function CardModeListingCard({
               >
                 {mapThumb(listing) ? (
                   <>
-                    <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
-                    <StaticMapMarker />
-                  </>
+                <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
+                <StaticMapMarker />
+              </>
                 ) : (
                   <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
                 )}

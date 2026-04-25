@@ -80,6 +80,13 @@ function getCollectionViewport(
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const handleClosePage = () => {
+    if (typeof window !== 'undefined' && window.history.length <= 1) {
+      router.push('/');
+      return;
+    }
+    router.back();
+  };
   const {
     collections,
     addCollectionTag,
@@ -268,8 +275,8 @@ export default function CollectionPage() {
                 >
                   <button
                     type="button"
-                    onClick={() => router.back()}
-                    className="pointer-events-auto absolute right-4 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white/76 text-[#0F1729] backdrop-blur-sm transition-colors hover:bg-white"
+                    onClick={handleClosePage}
+                    className="pointer-events-auto absolute right-4 flex h-8 w-8 items-center justify-center text-[#0F1729] transition-colors hover:text-[#374151]"
                     style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.45rem)' }}
                     aria-label="Close"
                   >
@@ -314,7 +321,7 @@ export default function CollectionPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => router.back()}
+                  onClick={handleClosePage}
                   className="absolute right-4 z-30 flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] bg-white/76 text-[#0F1729] backdrop-blur-sm transition-colors hover:bg-white"
                   style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
                   aria-label="Close"

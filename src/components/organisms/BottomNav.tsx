@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { Bookmark, LayoutGrid, Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
+import { Bookmark, GalleryHorizontalEnd, Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
@@ -37,7 +37,7 @@ export default function BottomNav() {
           onClick={() => setActivePanel('cards')}
           aria-label="Cards mode"
         >
-          <LayoutGrid size={18} className="text-[#0F1729]" />
+          <GalleryHorizontalEnd size={18} className="text-[#0F1729]" />
         </FloatingActionButton>
       )}
 

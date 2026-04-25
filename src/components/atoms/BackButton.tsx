@@ -5,16 +5,27 @@ import { cn } from '@/lib/utils/cn';
 
 export default function BackButton({
   iconOnly = false,
+  fallbackHref = '/',
   className,
 }: {
   iconOnly?: boolean;
+  fallbackHref?: string;
   className?: string;
 }) {
   const router = useRouter();
+
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length <= 1) {
+      router.push(fallbackHref);
+      return;
+    }
+    router.back();
+  };
+
   return (
     <button
       type="button"
-      onClick={() => router.back()}
+      onClick={handleBack}
       className={cn(
         'inline-flex items-center rounded-full bg-[#F5F6F7] text-[#0F1729] transition-colors hover:bg-[#EBEBEB]',
         !iconOnly && 'type-btn',

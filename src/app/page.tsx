@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { MapPinned } from 'lucide-react';
+import { SquareDashedMousePointer } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
 import {
@@ -191,6 +191,7 @@ export default function MapPage() {
   const { filters, selectedLocations, setLocations, replaceFilters, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
+  const setHoveredListingId = useMapStore((s) => s.setHoveredListingId);
   const setViewState = useMapStore((s) => s.setViewState);
   const {
     searches,
@@ -257,8 +258,11 @@ export default function MapPage() {
 
   useEffect(() => {
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-    if (!isCarouselVisible && !isDesktop) setSelectedListingId(null);
-  }, [isCarouselVisible, setSelectedListingId]);
+    if (!isCarouselVisible && !isDesktop) {
+      setSelectedListingId(null);
+      setHoveredListingId(null);
+    }
+  }, [isCarouselVisible, setHoveredListingId, setSelectedListingId]);
 
   useEffect(() => {
     let edgeTouch = false;
@@ -569,7 +573,7 @@ export default function MapPage() {
                 }}
                 className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
               >
-                <MapPinned size={18} className="text-[#0F1729]" />
+                <SquareDashedMousePointer size={18} className="text-[#0F1729]" />
                 Area
               </button>
               {hasVisibleBoundary && (
