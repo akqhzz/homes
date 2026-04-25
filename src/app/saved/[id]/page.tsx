@@ -166,7 +166,7 @@ export default function CollectionPage() {
     return (
       <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
         <div className="flex h-full items-center justify-center">
-          <p className="text-[#9CA3AF]">Collection not found</p>
+          <p className="text-[var(--color-text-tertiary)]">Collection not found</p>
         </div>
       </PageShell>
     );
@@ -382,12 +382,12 @@ export default function CollectionPage() {
               <div className="pointer-events-auto flex items-center gap-2">
                 <BackButton
                   iconOnly
-                  className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
+                  className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[var(--color-surface)]"
                 />
                 <div className="relative flex h-11 items-center rounded-full bg-white p-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
                   <div
                     className={cn(
-                      'absolute bottom-1.5 top-1.5 w-[calc(50%-6px)] rounded-full bg-[#0F1729] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                      'absolute bottom-1.5 top-1.5 w-[calc(50%-6px)] rounded-full bg-[var(--color-text-primary)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
                       mobileView === 'map' && 'translate-x-full'
                     )}
                   />
@@ -401,7 +401,7 @@ export default function CollectionPage() {
                     }}
                     className={cn(
                       'relative z-10 flex h-full items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-                      mobileView === 'list' ? 'text-white' : 'text-[#0F1729]'
+                      mobileView === 'list' ? 'text-white' : 'text-[var(--color-text-primary)]'
                     )}
                   >
                     <LayoutList size={16} />
@@ -416,7 +416,7 @@ export default function CollectionPage() {
                     }}
                     className={cn(
                       'relative z-10 flex h-full items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-                      mobileView === 'map' ? 'text-white' : 'text-[#0F1729]'
+                      mobileView === 'map' ? 'text-white' : 'text-[var(--color-text-primary)]'
                     )}
                   >
                     <Map size={16} />

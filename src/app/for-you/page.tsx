@@ -12,7 +12,7 @@ const INSIGHTS = [
     stat: '+18%',
     label: 'days on market',
     detail: 'Buyers have more room to compare similar units, especially above $900k.',
-    tone: 'bg-[#F5F6F7]',
+    tone: 'bg-[var(--color-surface)]',
   },
   {
     id: 'west-end',
@@ -45,7 +45,7 @@ export default function ForYouPage() {
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:hidden">
           <div className="mb-1 flex items-center justify-center">
-            <h1 className="type-title text-[#0F1729]">For You</h1>
+            <h1 className="type-title text-[var(--color-text-primary)]">For You</h1>
           </div>
         </div>
 
@@ -75,15 +75,15 @@ export default function ForYouPage() {
                   className={cn('absolute inset-0 flex flex-col justify-between rounded-[28px] p-6 shadow-[0_12px_32px_rgba(15,23,41,0.10)]', insight.tone)}
                 >
                   <div>
-                    <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-sm">
+                    <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-sm">
                       <TrendingUp size={18} />
                     </div>
-                    <p className="type-title-lg text-[#0F1729]">{insight.title}</p>
+                    <p className="type-title-lg text-[var(--color-text-primary)]">{insight.title}</p>
                   </div>
                   <div>
                     <div className="mb-5 flex items-end gap-3">
-                      <span className="type-display text-[#0F1729]">{insight.stat}</span>
-                      <span className="pb-2 type-label text-[#6B7280]">{insight.label}</span>
+                      <span className="type-display text-[var(--color-text-primary)]">{insight.stat}</span>
+                      <span className="pb-2 type-label text-[var(--color-text-secondary)]">{insight.label}</span>
                     </div>
                     <p className="type-body-lg text-[#4B5563]">{insight.detail}</p>
                   </div>
@@ -97,15 +97,15 @@ export default function ForYouPage() {
           <div className="relative min-h-0 min-w-0 flex-1 self-stretch lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
             <div className={cn('flex h-full flex-col justify-between p-10', activeInsight.tone)}>
               <div>
-                <div className="mb-10 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-sm">
+                <div className="mb-10 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-sm">
                   <TrendingUp size={20} />
                 </div>
-                <p className="max-w-xl type-title-lg text-[#0F1729]">{activeInsight.title}</p>
+                <p className="max-w-xl type-title-lg text-[var(--color-text-primary)]">{activeInsight.title}</p>
               </div>
               <div>
                 <div className="mb-5 flex items-end gap-3">
-                  <span className="type-display text-[#0F1729]">{activeInsight.stat}</span>
-                  <span className="pb-2 type-label text-[#6B7280]">{activeInsight.label}</span>
+                  <span className="type-display text-[var(--color-text-primary)]">{activeInsight.stat}</span>
+                  <span className="pb-2 type-label text-[var(--color-text-secondary)]">{activeInsight.label}</span>
                 </div>
                 <p className="max-w-xl type-body-lg text-[#4B5563]">{activeInsight.detail}</p>
               </div>
@@ -122,17 +122,17 @@ export default function ForYouPage() {
                     className={cn(
                       'flex min-h-[164px] flex-col justify-between rounded-[28px] p-6 text-left transition-transform hover:-translate-y-0.5',
                       insight.tone,
-                      itemIndex === index && 'ring-1 ring-[#0F1729]/10'
+                      itemIndex === index && 'ring-1 ring-[var(--color-text-primary)]/10'
                     )}
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-sm">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-sm">
                       <TrendingUp size={17} />
                     </div>
                     <div>
-                      <p className="type-title text-[#0F1729]">{insight.title}</p>
+                      <p className="type-title text-[var(--color-text-primary)]">{insight.title}</p>
                       <div className="mt-4 flex items-end gap-2">
-                        <span className="type-heading text-[#0F1729]">{insight.stat}</span>
-                        <span className="pb-0.5 type-caption text-[#6B7280]">{insight.label}</span>
+                        <span className="type-heading text-[var(--color-text-primary)]">{insight.stat}</span>
+                        <span className="pb-0.5 type-caption text-[var(--color-text-secondary)]">{insight.label}</span>
                       </div>
                       <p className="mt-3 type-body text-[#4B5563]">{insight.detail}</p>
                     </div>

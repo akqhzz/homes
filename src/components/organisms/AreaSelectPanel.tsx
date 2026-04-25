@@ -75,11 +75,11 @@ export default function AreaSelectPanel({
               <button
                 type="button"
                 onClick={handleBack}
-                className="flex h-11 min-w-0 max-w-[320px] items-center rounded-full bg-white/70 px-2.5 pr-12 text-left text-sm text-[#0F1729] backdrop-blur-xl"
+                className="flex h-11 min-w-0 max-w-[320px] items-center rounded-full bg-white/70 px-2.5 pr-12 text-left text-sm text-[var(--color-text-primary)] backdrop-blur-xl"
                 aria-label={isDrawing ? 'Back to map' : 'Close area selection'}
               >
                 <div className="flex w-full items-center gap-2.5">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)]">
                     <ArrowLeft size={16} strokeWidth={2.4} />
                   </span>
                   <p className="min-w-0 flex-1 truncate type-body leading-tight">{desktopTopLabel}</p>
@@ -88,22 +88,22 @@ export default function AreaSelectPanel({
               {showDesktopClear && (
                 <button
                   onClick={isDrawing ? onClearDrawing : onClearSelection}
-                  className="h-11 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                  className="h-11 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
                 >
                   {isDrawing ? 'Clear' : 'Clear Areas'}
                 </button>
               )}
             </div>
             <div className="pointer-events-auto flex shrink-0 items-center gap-2">
-              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
                 <Undo2 size={15} />
               </button>
-              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
                 <Redo2 size={15} />
               </button>
               <button
                 onClick={onApply}
-                className="h-11 shrink-0 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:px-9"
+                className="h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] lg:px-9"
               >
                 Done
               </button>
@@ -115,13 +115,13 @@ export default function AreaSelectPanel({
               type="button"
               onClick={isDrawing ? onToggleDrawing : handleBack}
               className={cn(
-                'pointer-events-auto flex h-11 min-w-0 items-center rounded-full bg-white/70 px-2.5 pr-10 text-left text-sm text-[#0F1729] backdrop-blur-xl',
+                'pointer-events-auto flex h-11 min-w-0 items-center rounded-full bg-white/70 px-2.5 pr-10 text-left text-sm text-[var(--color-text-primary)] backdrop-blur-xl',
                 isDrawing ? 'max-w-none flex-1' : 'max-w-[212px] flex-1'
               )}
               aria-label={isDrawing ? 'Back to area selection' : 'Close area selection'}
             >
               <div className="flex w-full items-center gap-2.5">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)]">
                   <ArrowLeft size={16} strokeWidth={2.4} />
                 </span>
                 <p className="min-w-0 flex-1 truncate type-body leading-tight">{mobileTopLabel}</p>
@@ -130,7 +130,7 @@ export default function AreaSelectPanel({
             {!isDrawing && (
               <button
                 onClick={onApply}
-                className="pointer-events-auto ml-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:px-9"
+                className="pointer-events-auto ml-auto h-11 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] lg:px-9"
               >
                 Done
               </button>
@@ -147,7 +147,7 @@ export default function AreaSelectPanel({
               type="button"
               onClick={onToggleDrawing}
               aria-label="Draw boundary"
-              className="pointer-events-auto flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+              className="pointer-events-auto flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
             >
               <Pencil size={16} />
               Draw
@@ -160,13 +160,13 @@ export default function AreaSelectPanel({
             className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+            <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
               <Undo2 size={15} />
             </button>
-            <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+            <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
               <Redo2 size={15} />
             </button>
-            <button onClick={onClearSelection} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[#0F1729] shadow-[var(--shadow-control)]">
+            <button onClick={onClearSelection} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[var(--color-text-primary)] shadow-[var(--shadow-control)]">
               Clear
             </button>
           </div>
@@ -178,13 +178,13 @@ export default function AreaSelectPanel({
               className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
               style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
             >
-              <button onClick={onClearDrawing} disabled={pointCount === 0} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <button onClick={onClearDrawing} disabled={pointCount === 0} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
                 Clear
               </button>
-              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
                 <Undo2 size={15} />
               </button>
-              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
                 <Redo2 size={15} />
               </button>
             </div>
@@ -195,7 +195,7 @@ export default function AreaSelectPanel({
             >
               <button
                 onClick={onApply}
-                className="h-11 rounded-full bg-[#0F1729]/92 px-6 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729]"
+                className="h-11 rounded-full bg-[var(--color-text-primary)]/92 px-6 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)]"
               >
                 Done
               </button>
@@ -219,7 +219,7 @@ export default function AreaSelectPanel({
             <article className="pointer-events-auto relative mx-auto flex h-[138px] w-[336px] gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]">
               <button
                 onClick={onCloseNeighborhood}
-                className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
                 aria-label="Close neighborhood card"
               >
                 <X size={14} />
@@ -227,7 +227,7 @@ export default function AreaSelectPanel({
               <Image src={focusedNeighborhood.thumbnail} alt="" width={100} height={124} className="h-full w-[100px] shrink-0 rounded-xl object-cover" draggable={false} />
               <div className="flex min-w-0 flex-1 flex-col py-0.5 pr-8">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate type-heading text-[#0F1729]">{focusedNeighborhood.name}</p>
+                  <p className="truncate type-heading text-[var(--color-text-primary)]">{focusedNeighborhood.name}</p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
                     <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-micro text-[var(--color-brand-text)]">🏠 {focusedNeighborhood.listingCount} listings</span>
                     <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-micro text-[var(--color-brand-text)]">💵 Avg {formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
@@ -242,7 +242,7 @@ export default function AreaSelectPanel({
                   }}
                   className={cn(
                     'absolute bottom-2 right-2 flex h-9 w-[92px] items-center justify-center gap-1.5 rounded-full px-3 type-caption font-semibold transition-colors',
-                    selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
+                    selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[var(--color-text-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-primary)]'
                   )}
                 >
                   {selectedNeighborhoods.has(focusedNeighborhood.id) ? <Check size={13} /> : <Plus size={13} />}
@@ -263,12 +263,12 @@ export default function AreaSelectPanel({
             <div className="flex min-w-0 flex-1 flex-col">
               <button
                 onClick={onCloseNeighborhood}
-                className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
+                className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
                 aria-label="Close neighborhood card"
               >
                 <X size={14} />
               </button>
-              <p className="truncate type-heading text-[#0F1729]">{focusedNeighborhood.name}</p>
+              <p className="truncate type-heading text-[var(--color-text-primary)]">{focusedNeighborhood.name}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-fine text-[var(--color-brand-text)]">🏠 {focusedNeighborhood.listingCount} listings</span>
                 <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-fine text-[var(--color-brand-text)]">💵 Avg {formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
@@ -282,7 +282,7 @@ export default function AreaSelectPanel({
                 }}
                 className={cn(
                   'mt-auto mr-0 flex h-10 w-fit items-center justify-center gap-1.5 self-end rounded-full px-4 type-label transition-colors',
-                  selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[#0F1729] text-white' : 'bg-[#F5F6F7] text-[#0F1729]'
+                  selectedNeighborhoods.has(focusedNeighborhood.id) ? 'bg-[var(--color-text-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-primary)]'
                 )}
               >
                 {selectedNeighborhoods.has(focusedNeighborhood.id) ? <Check size={14} /> : <Plus size={14} />}

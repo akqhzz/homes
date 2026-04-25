@@ -257,10 +257,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center gap-5">
         <span className="text-5xl">🏠</span>
         <div className="text-center">
-          <p className="type-subtitle text-[#0F1729]">All caught up!</p>
-          <p className="type-body text-[#9CA3AF] mt-1">You&apos;ve seen all {listings.length} listings</p>
+          <p className="type-subtitle text-[var(--color-text-primary)]">All caught up!</p>
+          <p className="mt-1 type-body text-[var(--color-text-tertiary)]">You&apos;ve seen all {listings.length} listings</p>
         </div>
-        <button onClick={onClose} className="type-label text-[#0F1729] underline underline-offset-2">
+        <button onClick={onClose} className="type-label text-[var(--color-text-primary)] underline underline-offset-2">
           Back to map
         </button>
       </div>
@@ -357,14 +357,14 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
         <motion.button
           onClick={() => setSavePickerListing(listing)}
-          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
+          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label text-[var(--color-text-primary)] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
           animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
           transition={{ duration: 0.24, ease: 'easeOut' }}
         >
           <Heart
             size={16}
             strokeWidth={2.4}
-            className={cn(liked || likePulse ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#EF4444]')}
+            className={cn(liked || likePulse ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
           />
           Save
         </motion.button>
@@ -425,20 +425,20 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="type-title text-[#0F1729]">{formatPrice(detailDrawerListing.price)}</p>
-            <p className="type-body text-[#6B7280] mt-1">
+            <p className="type-title text-[var(--color-text-primary)]">{formatPrice(detailDrawerListing.price)}</p>
+            <p className="mt-1 type-body text-[var(--color-text-secondary)]">
               {detailDrawerListing.beds}bd · {detailDrawerListing.baths}ba · {formatSqft(detailDrawerListing.sqft)} sqft
             </p>
-            <p className="type-caption text-[#9CA3AF] mt-1 flex items-center gap-1">
+            <p className="mt-1 flex items-center gap-1 type-caption text-[var(--color-text-tertiary)]">
               <MapPin size={11} />
               {detailDrawerListing.address}, {detailDrawerListing.city}
             </p>
-            <div className="h-px bg-[#F5F6F7] my-4" />
-            <p className="type-body text-[#6B7280] leading-relaxed">{detailDrawerListing.description}</p>
-            <div className="h-px bg-[#F5F6F7] my-4" />
+            <div className="my-4 h-px bg-[var(--color-surface)]" />
+            <p className="type-body leading-relaxed text-[var(--color-text-secondary)]">{detailDrawerListing.description}</p>
+            <div className="my-4 h-px bg-[var(--color-surface)]" />
             <div className="flex flex-wrap gap-2">
               {detailDrawerListing.features.map((f) => (
-                <span key={f} className="type-caption bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">{f}</span>
+                <span key={f} className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-caption text-[var(--color-text-secondary)]">{f}</span>
               ))}
             </div>
           </MobileDrawer>
@@ -491,10 +491,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             ) : (
               <div className="flex flex-1 items-center justify-center rounded-[24px] bg-[#E8ECEF]">
                 <div className="text-center p-6">
-                  <MapPin size={36} className="mx-auto mb-3 text-[#9CA3AF]" />
-                  <p className="type-label text-[#0F1729]">{mapDrawerListing.neighborhood}</p>
-                  <p className="type-body text-[#9CA3AF] mt-1">{mapDrawerListing.address}</p>
-                  <p className="type-caption text-[#9CA3AF] mt-1">{mapDrawerListing.coordinates.lat.toFixed(4)}, {mapDrawerListing.coordinates.lng.toFixed(4)}</p>
+                  <MapPin size={36} className="mx-auto mb-3 text-[var(--color-text-tertiary)]" />
+                  <p className="type-label text-[var(--color-text-primary)]">{mapDrawerListing.neighborhood}</p>
+                  <p className="mt-1 type-body text-[var(--color-text-tertiary)]">{mapDrawerListing.address}</p>
+                  <p className="mt-1 type-caption text-[var(--color-text-tertiary)]">{mapDrawerListing.coordinates.lat.toFixed(4)}, {mapDrawerListing.coordinates.lng.toFixed(4)}</p>
                 </div>
               </div>
             )}
@@ -631,7 +631,7 @@ function CardModeListingCard({
             {images.map((src, index) => (
               <div
                 key={`${listing.id}-${src}-${index}`}
-                className="overflow-hidden bg-[#F5F6F7] first:rounded-t-[22px] last:rounded-b-[22px]"
+                className="overflow-hidden bg-[var(--color-surface)] first:rounded-t-[22px] last:rounded-b-[22px]"
                 style={{ height: CARD_MODE_IMAGE_HEIGHT }}
               >
                 <ListingImage src={src} fallbackIndex={index} alt={index === 0 ? listing.address : ''} eager={active || index < 2} />
@@ -643,13 +643,13 @@ function CardModeListingCard({
             <div className="flex items-end gap-2">
               <div className="relative flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-4 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
                 <div className="flex w-full min-w-0 items-start justify-between gap-2">
-                  <p className="type-price min-w-0 truncate leading-tight text-[#0F1729]">{formatPrice(listing.price)}</p>
-                  <span className="shrink-0 pt-0.5 type-caption font-medium text-[#6B7280]">
+                  <p className="type-price min-w-0 truncate leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
+                  <span className="shrink-0 pt-0.5 type-caption font-medium text-[var(--color-text-secondary)]">
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-between gap-2">
-                  <p className="type-body text-[#6B7280]">
+                  <p className="type-body text-[var(--color-text-secondary)]">
                     {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{String(listing.sqft)}sqft
                   </p>
                   <button
@@ -659,7 +659,7 @@ function CardModeListingCard({
                       event.stopPropagation();
                       onOpenDetail();
                     }}
-                    className="pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[#F3F4F6] px-2.5 text-[11px] font-medium text-[#6B7280] transition-colors hover:bg-[#E9EDF1] hover:text-[#0F1729]"
+                    className="pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[#F3F4F6] px-2.5 text-[11px] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[#E9EDF1] hover:text-[var(--color-text-primary)]"
                     aria-label="View details"
                   >
                     Details

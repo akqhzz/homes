@@ -37,7 +37,7 @@ export default function BottomNav() {
           onClick={() => setActivePanel('cards')}
           aria-label="Cards mode"
         >
-          <GalleryHorizontalEnd size={18} className="text-[#0F1729]" />
+          <GalleryHorizontalEnd size={18} className="text-[var(--color-text-primary)]" />
         </FloatingActionButton>
       )}
 
@@ -50,12 +50,12 @@ export default function BottomNav() {
               key={href}
               onClick={() => router.push(href)}
               aria-label={label}
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-colors duration-150 no-select hover:bg-[#F5F6F7]"
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-colors duration-150 no-select hover:bg-[var(--color-surface)]"
             >
               <Icon
                 size={19}
                 strokeWidth={active ? 2.3 : 1.7}
-                className={active ? 'text-[#0F1729]' : 'text-[#C4C4C4]'}
+                className={active ? 'text-[var(--color-text-primary)]' : 'text-[#C4C4C4]'}
               />
             </button>
           );
@@ -68,7 +68,7 @@ export default function BottomNav() {
           onClick={() => window.dispatchEvent(new CustomEvent('homes:create-collection'))}
           aria-label="Add collection"
         >
-          <Plus size={17} className="text-[#0F1729]" />
+          <Plus size={17} className="text-[var(--color-text-primary)]" />
         </FloatingActionButton>
       )}
 
@@ -84,10 +84,10 @@ export default function BottomNav() {
               <Image src={activeSearch.thumbnail} alt="" fill sizes="19px" className="object-cover" />
             </span>
           ) : (
-            <Bookmark size={18} className="text-[#0F1729]" />
+            <Bookmark size={18} className="text-[var(--color-text-primary)]" />
           )}
           {activeSearchDirty && (
-            <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white" />
+            <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[var(--color-text-primary)] ring-1 ring-white" />
           )}
         </FloatingActionButton>
       )}
