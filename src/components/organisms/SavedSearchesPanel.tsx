@@ -280,7 +280,7 @@ export default function SavedSearchesPanel({
                 >
                   <Ellipsis size={16} />
                 </button>
-                <p className="type-caption text-[#9CA3AF] -mt-0.5">
+                <p className="mt-0.5 type-caption text-[#9CA3AF]">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
                 <div className="mt-1.5 flex items-end justify-between gap-3">

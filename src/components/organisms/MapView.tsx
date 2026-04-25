@@ -109,11 +109,11 @@ export default function MapView({
   const mapStyle = isSatelliteMode
     ? 'mapbox://styles/mapbox/satellite-streets-v12'
     : 'mapbox://styles/mapbox/standard';
+  const isDesktopViewport = typeof window !== 'undefined' && window.innerWidth >= 1024;
 
   const handleMarkerClick = useCallback(
     (listingId: string) => {
-      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-      if (isDesktop) {
+      if (isDesktopViewport) {
         setSelectedListingId(null);
         setPreviewListingId(listingId);
         markVisitedListing(listingId);
@@ -125,7 +125,7 @@ export default function MapView({
       markVisitedListing(listingId);
       setCarouselVisible(true);
     },
-    [markVisitedListing, setCarouselVisible, setMobileCarouselListingId, setPreviewListingId, setSelectedListingId]
+    [isDesktopViewport, markVisitedListing, setCarouselVisible, setMobileCarouselListingId, setPreviewListingId, setSelectedListingId]
   );
 
   const handleMapClick = useCallback(() => {
@@ -211,12 +211,11 @@ export default function MapView({
   }, [desktopPreviewListing, listings, mapInstance]);
   const orderedListings = useMemo(
     () => {
-      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
       return listings
         .map((listing, index) => ({
           listing,
           index,
-          isActive: isDesktop
+          isActive: isDesktopViewport
             ? listing.id === selectedListingId ||
               listing.id === hoveredListingId ||
               listing.id === previewListingId
@@ -224,7 +223,7 @@ export default function MapView({
         }))
         .sort((a, b) => Number(a.isActive) - Number(b.isActive));
     },
-    [hoveredListingId, listings, mobileCarouselListingId, previewListingId, selectedListingId]
+    [hoveredListingId, isDesktopViewport, listings, mobileCarouselListingId, previewListingId, selectedListingId]
   );
 
   if (!MAPBOX_TOKEN) {
@@ -440,8 +439,7 @@ export default function MapView({
       {/* Listing price markers */}
       {showListings && orderedListings.map(({ listing, index: originalIndex }) => {
         const markerCoordinates = getSpreadListingCoordinates(listing, originalIndex);
-        const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
-        const isActiveMobilePin = !isDesktop && isCarouselVisible && listing.id === mobileCarouselListingId;
+        const isActiveMobilePin = !isDesktopViewport && isCarouselVisible && listing.id === mobileCarouselListingId;
         return (
         <Marker
           key={listing.id}
@@ -450,17 +448,21 @@ export default function MapView({
           anchor="bottom"
         >
           <div
-            onMouseEnter={() => {
-              cancelHoveredListingClear();
-              setPreviewListingId(listing.id);
-              markVisitedListing(listing.id);
-            }}
-            onMouseLeave={clearHoveredListingSoon}
+            onMouseEnter={
+              isDesktopViewport
+                ? () => {
+                    cancelHoveredListingClear();
+                    setPreviewListingId(listing.id);
+                    markVisitedListing(listing.id);
+                  }
+                : undefined
+            }
+            onMouseLeave={isDesktopViewport ? clearHoveredListingSoon : undefined}
           >
             <PriceMarker
               price={listing.price}
-              isSelected={isDesktop ? listing.id === selectedListingId : isActiveMobilePin}
-              isHovered={listing.id === hoveredListingId || listing.id === previewListingId}
+              isSelected={isDesktopViewport ? listing.id === selectedListingId : isActiveMobilePin}
+              isHovered={isDesktopViewport && (listing.id === hoveredListingId || listing.id === previewListingId)}
               isSaved={isLiked(listing.id)}
               isVisited={visitedListingIds.includes(listing.id)}
               onClick={() => handleMarkerClick(listing.id)}
