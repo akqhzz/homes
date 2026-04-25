@@ -1,12 +1,11 @@
 'use client';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, Pencil, Plus, Redo2, RotateCcw, Undo2, X } from 'lucide-react';
+import { ArrowLeft, Check, Pencil, Plus, Redo2, Undo2, X } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
 import { useUIStore } from '@/store/uiStore';
-import Button from '@/components/atoms/Button';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import { cn } from '@/lib/utils/cn';
 
@@ -24,7 +23,6 @@ interface AreaSelectPanelProps {
   onBack: () => void;
   onApply: () => void;
   onToggleDrawing: () => void;
-  onCancelDrawing: () => void;
   onToggleNeighborhood: (id: string) => void;
   onFocusNeighborhood: (neighborhood: Neighborhood) => void;
   onCloseNeighborhood: () => void;
@@ -46,7 +44,6 @@ export default function AreaSelectPanel({
   onBack,
   onApply,
   onToggleDrawing,
-  onCancelDrawing,
   onToggleNeighborhood,
   onCloseNeighborhood,
   onClearDrawing,
@@ -68,6 +65,7 @@ export default function AreaSelectPanel({
     onBack();
   };
   const desktopTopLabel = isDrawing ? 'Tap map to draw' : title;
+  const mobileTopLabel = isDrawing ? 'Tap map to draw' : title;
 
   return (
     <>
@@ -78,7 +76,7 @@ export default function AreaSelectPanel({
               <button
                 type="button"
                 onClick={handleBack}
-                className="flex h-11 min-w-0 max-w-[320px] items-center rounded-full bg-white/70 px-2.5 pr-8 text-left text-sm text-[#0F1729] backdrop-blur-xl"
+                className="flex h-11 min-w-0 max-w-[320px] items-center rounded-full bg-white/70 px-2.5 pr-12 text-left text-sm text-[#0F1729] backdrop-blur-xl"
                 aria-label={isDrawing ? 'Close drawing mode' : 'Close area selection'}
               >
                 <div className="flex w-full items-center gap-2.5">
@@ -90,6 +88,14 @@ export default function AreaSelectPanel({
               </button>
               {(hasVisibleBoundary || canUndoBoundary || canRedoBoundary) && (
                 <div className="flex items-center gap-2">
+                  {isDrawing && pointCount > 0 && (
+                    <button
+                      onClick={onClearDrawing}
+                      className="h-11 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                    >
+                      Clear
+                    </button>
+                  )}
                   {hasVisibleBoundary && !isDrawing && (
                     <button
                       onClick={onClearSelection}
@@ -115,37 +121,23 @@ export default function AreaSelectPanel({
             </button>
           </div>
 
-          {!isDrawing ? (
-          <div className="flex items-center gap-2 lg:hidden lg:items-center">
+          <div className="flex w-full items-center gap-2 lg:hidden">
             <button
               type="button"
               onClick={handleBack}
-              className="pointer-events-auto flex h-11 min-w-0 max-w-[212px] flex-1 items-center rounded-full bg-white/70 px-2.5 text-left text-sm text-[#0F1729] backdrop-blur-xl lg:w-[244px] lg:max-w-none lg:flex-none"
-              aria-label="Close area selection"
+              className={cn(
+                'pointer-events-auto flex h-11 min-w-0 items-center rounded-full bg-white/70 px-2.5 pr-10 text-left text-sm text-[#0F1729] backdrop-blur-xl',
+                isDrawing ? 'max-w-none flex-1' : 'max-w-[212px] flex-1'
+              )}
+              aria-label={isDrawing ? 'Close drawing mode' : 'Close area selection'}
             >
               <div className="flex w-full items-center gap-2.5">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
                   <ArrowLeft size={16} strokeWidth={2.4} />
                 </span>
-                <p className="min-w-0 flex-1 truncate type-body leading-tight">{title}</p>
+                <p className="min-w-0 flex-1 truncate type-body leading-tight">{mobileTopLabel}</p>
               </div>
             </button>
-            {(hasVisibleBoundary || canUndoBoundary || canRedoBoundary) && (
-              <div className="pointer-events-auto hidden items-center gap-2 lg:flex">
-                <button
-                  onClick={onClearSelection}
-                  className="h-11 rounded-full bg-white px-4 type-btn text-[#6B7280] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"
-                >
-                  Clear Areas
-                </button>
-                <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
-                  <Undo2 size={15} />
-                </button>
-                <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] disabled:opacity-35">
-                  <Redo2 size={15} />
-                </button>
-              </div>
-            )}
             <button
               onClick={onApply}
               className="pointer-events-auto ml-auto h-11 rounded-full bg-[#0F1729]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[#0F1729] lg:px-9"
@@ -153,29 +145,6 @@ export default function AreaSelectPanel({
               Done
             </button>
           </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="absolute left-4 right-4 top-4 rounded-full bg-white px-4 py-2.5 text-sm text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] pointer-events-auto lg:hidden"
-          >
-            <div className="flex items-center gap-3">
-              <button type="button" onClick={handleBack} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
-                <ArrowLeft size={15} strokeWidth={2.3} />
-              </button>
-              <div className="min-w-0 flex-1">
-                <p className="type-label leading-tight">Tap map to draw</p>
-                <p className="type-caption text-[#6B7280]">{pointCount} point{pointCount === 1 ? '' : 's'} placed</p>
-              </div>
-              {pointCount > 0 && (
-                <button onClick={onClearDrawing} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729]">
-                  <RotateCcw size={14} />
-                </button>
-              )}
-            </div>
-          </motion.div>
-        )}
         </div>
 
         {!isDrawing && !focusedNeighborhood ? (
@@ -185,23 +154,6 @@ export default function AreaSelectPanel({
           >
             <FloatingActionButton size="md" onClick={onToggleDrawing} aria-label="Draw boundary">
               <Pencil size={18} />
-            </FloatingActionButton>
-          </div>
-        ) : isDrawing ? (
-          <div
-            className="absolute inset-x-0 bottom-0 flex items-center justify-between px-5 pointer-events-auto"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
-          >
-            <Button variant="secondary" size="md" onClick={onCancelDrawing}>
-              Cancel
-            </Button>
-            <FloatingActionButton
-              size="md"
-              onClick={onToggleDrawing}
-              aria-label="Done drawing"
-              className="bg-[#0F1729] text-white hover:bg-[#0F1729]"
-            >
-              <Check size={18} />
             </FloatingActionButton>
           </div>
         ) : null}
@@ -236,7 +188,7 @@ export default function AreaSelectPanel({
             className="pointer-events-none absolute inset-x-0 bottom-0 z-40 overflow-visible pt-3 lg:hidden"
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <article className="pointer-events-auto relative mx-auto flex h-[134px] w-[312px] gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]">
+            <article className="pointer-events-auto relative mx-auto flex h-[138px] w-[336px] gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]">
               <button
                 onClick={onCloseNeighborhood}
                 className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#6B7280] transition-colors hover:bg-[#F5F6F7] hover:text-[#0F1729]"

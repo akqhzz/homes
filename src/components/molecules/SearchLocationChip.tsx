@@ -5,12 +5,16 @@ import { cn } from '@/lib/utils/cn';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 interface SearchLocationChipProps {
-  location: Location;
+  location?: Location;
+  label?: string;
   onRemove: () => void;
   className?: string;
 }
 
-export default function SearchLocationChip({ location, onRemove, className }: SearchLocationChipProps) {
+// Shared removable chip used by search and filter summaries so chip language stays consistent.
+export default function SearchLocationChip({ location, label, onRemove, className }: SearchLocationChipProps) {
+  const chipLabel = label ?? (location ? getPrimaryLocationLabel(location.name) : '');
+
   return (
     <span
       className={cn(
@@ -18,7 +22,7 @@ export default function SearchLocationChip({ location, onRemove, className }: Se
         className
       )}
     >
-      {getPrimaryLocationLabel(location.name)}
+      {chipLabel}
       <button
         onClick={onRemove}
         className="text-[var(--color-brand-text)] hover:text-[var(--color-brand-text)] transition-colors -mr-0.5"

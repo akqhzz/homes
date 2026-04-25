@@ -566,7 +566,7 @@ export default function MapPage() {
         <div className="relative min-w-0 flex-1 lg:m-4 lg:mr-2 lg:overflow-hidden lg:rounded-[28px]">
           <MapView
             listings={isAreaSelect ? [] : filteredListings}
-            showNeighborhoods={isAreaSelect}
+            showNeighborhoods={isAreaSelect && !isDrawingArea}
             showListings={!isAreaSelect}
             searchedLocations={selectedLocations}
             selectedNeighborhoodId={isAreaSelect ? focusedNeighborhood?.id ?? null : null}
@@ -591,10 +591,10 @@ export default function MapPage() {
             <div className="pointer-events-auto absolute left-5 top-5 z-20 hidden items-center gap-2 lg:flex">
               <button
                 onClick={openDrawAreaSelect}
-                className="flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7]"
+                aria-label="Draw"
               >
                 <Pencil size={18} className="text-[#0F1729]" />
-                Draw
               </button>
               <button
                 onClick={() => {
@@ -665,11 +665,6 @@ export default function MapPage() {
                 onBack={closeAreaSelect}
                 onApply={applyAreaSelect}
                 onToggleDrawing={() => setIsDrawingArea((value) => !value)}
-                onCancelDrawing={() => {
-                  setIsDrawingArea(false);
-                  setDrawnBoundary([]);
-                  setRedoBoundary([]);
-                }}
                 onToggleNeighborhood={toggleNeighborhood}
                 onFocusNeighborhood={setFocusedNeighborhood}
                 onCloseNeighborhood={() => setFocusedNeighborhood(null)}

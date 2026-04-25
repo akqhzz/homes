@@ -121,7 +121,7 @@ export default function SavedPage() {
                   type="button"
                   onClick={() => {
                     setShowDesktopCreate((value) => !value);
-                    setCreatingCollection(true);
+                    setCreatingCollection(false);
                     setNewName('');
                   }}
                   className="relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[#0F1729] shadow-[var(--shadow-control)] transition-colors hover:bg-[#F5F6F7] no-select"
@@ -131,17 +131,21 @@ export default function SavedPage() {
                 {showDesktopCreate && (
                   <div className="absolute right-0 top-[3.25rem] z-20 w-80 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                     <CreateInlineField
-                      open={creatingCollection}
-                      onOpenChange={setCreatingCollection}
+                      open
+                      onOpenChange={(open) => {
+                        if (!open) {
+                          setShowDesktopCreate(false);
+                          setNewName('');
+                        }
+                      }}
                       value={newName}
                       onValueChange={setNewName}
                       placeholder="Collection name..."
-                      collapsedLabel="New collection"
+                      collapsedLabel="New Collection"
                       onSubmit={handleCreate}
                       autoFocus
-                      inputClassName="h-11 rounded-full border-[#0F1729] shadow-[inset_0_0_0_1.5px_#0F1729,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]"
-                      collapsedClassName="h-11 justify-center rounded-full border-[#E5E7EB] bg-[#F5F6F7] px-4 py-0 font-medium text-[#0F1729] hover:border-[#D1D5DB] hover:bg-[#EBEBEB]"
-                      submitClassName="h-11 w-11"
+                      submitLabel="Create"
+                      className="mb-0"
                     />
                   </div>
                 )}
