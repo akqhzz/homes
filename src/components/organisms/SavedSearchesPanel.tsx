@@ -1,15 +1,14 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
+import { Ellipsis } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import { Coordinates, SavedSearch } from '@/lib/types';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
+import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import { cn } from '@/lib/utils/cn';
 
 interface SavedSearchesPanelProps {
@@ -96,6 +95,7 @@ export default function SavedSearchesPanel({
       if (!isDesktop) return;
       const target = event.target as HTMLElement;
       if (target.closest('[data-saved-search-trigger="true"]')) return;
+      if (target.closest('[data-rename-delete-popover="true"]')) return;
       if (!desktopPanelRef.current?.contains(target)) setActivePanel('none');
     };
     document.addEventListener('pointerdown', handlePointerDown);
@@ -265,7 +265,7 @@ export default function SavedSearchesPanel({
                     <Ellipsis size={16} />
                   </button>
                 </div>
-                <p className="type-caption text-[#9CA3AF] mt-0.5">
+                <p className="type-caption text-[#9CA3AF] mt-px">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
                 <div className="mt-1.5 flex items-end justify-between gap-3">
@@ -344,81 +344,25 @@ export default function SavedSearchesPanel({
           {content}
         </div>
       )}
-      {typeof document !== 'undefined' && menuState && createPortal(
-        <>
-          <div className="fixed inset-0 z-[65]" onClick={closeMenu} />
-          <AnimatePresence>
-            {!confirmDeleteId && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
-                className="fixed z-[70] w-56 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
-                style={{ right: menuState.right, bottom: menuState.bottom }}
-              >
-                {(() => {
-                  const active = searches.find((search) => search.id === menuState.searchId);
-                  if (!active) return null;
-                  return (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => startRename(active.id, active.name)}
-                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7]"
-                      >
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
-                          <Pencil size={15} className="text-[#0F1729]" />
-                        </div>
-                        <span className="type-body font-medium text-[#0F1729]">Rename Search</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => requestDelete(active.id)}
-                        className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-red-50"
-                      >
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
-                          <Trash2 size={15} className="text-[#EF4444]" />
-                        </div>
-                        <span className="type-body font-medium text-[#EF4444]">Delete Search</span>
-                      </button>
-                    </>
-                  );
-                })()}
-              </motion.div>
-            )}
-            {confirmDeleteId && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
-                className="fixed z-[70] w-72 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
-                style={{ right: menuState.right, bottom: menuState.bottom }}
-              >
-                <p className="type-heading text-[#0F1729]">Delete saved search?</p>
-                <p className="mt-2 type-body text-[#6B7280]">This will remove it from your saved searches.</p>
-                <div className="mt-4 flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={closeMenu}
-                    className="rounded-full bg-[#F5F6F7] px-4 py-2 type-label text-[#0F1729]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={confirmDelete}
-                    className="rounded-full bg-[#EF4444] px-4 py-2 type-label text-white"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>,
-        document.body
+      {menuState && (
+        <RenameDeletePopover
+          open
+          confirmOpen={!!confirmDeleteId}
+          right={menuState.right}
+          bottom={menuState.bottom}
+          renameLabel="Rename"
+          deleteLabel="Delete"
+          deleteTitle="Delete saved search?"
+          deleteDescription="This will remove it from your saved searches."
+          onClose={closeMenu}
+          onRename={() => {
+            const active = searches.find((search) => search.id === menuState.searchId);
+            if (active) startRename(active.id, active.name);
+          }}
+          onRequestDelete={() => requestDelete(menuState.searchId)}
+          onCancelDelete={() => setConfirmDeleteId(null)}
+          onConfirmDelete={confirmDelete}
+        />
       )}
     </>
   );

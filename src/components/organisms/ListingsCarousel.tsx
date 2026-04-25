@@ -18,7 +18,8 @@ interface ListingsCarouselProps {
 export default function ListingsCarousel({ listings, className }: ListingsCarouselProps) {
   const [viewportWidth, setViewportWidth] = useState(390);
   const [currentIndex, setCurrentIndex] = useState(() => {
-    const index = listings.findIndex((listing) => listing.id === useMapStore.getState().selectedListingId);
+    const activeId = useMapStore.getState().mobileCarouselListingId ?? useMapStore.getState().selectedListingId;
+    const index = listings.findIndex((listing) => listing.id === activeId);
     return index >= 0 ? index : 0;
   });
   const [instantMove, setInstantMove] = useState(true);
@@ -27,6 +28,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
   const selectedListingId = useMapStore((s) => s.selectedListingId);
+  const mobileCarouselListingId = useMapStore((s) => s.mobileCarouselListingId);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
   const markVisitedListing = useMapStore((s) => s.markVisitedListing);
@@ -49,8 +51,9 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   }, []);
 
   useLayoutEffect(() => {
-    if (!selectedListingId) return;
-    const index = listings.findIndex((listing) => listing.id === selectedListingId);
+    const activeId = mobileCarouselListingId ?? selectedListingId;
+    if (!activeId) return;
+    const index = listings.findIndex((listing) => listing.id === activeId);
     if (index >= 0) {
       const frame = requestAnimationFrame(() => {
         setInstantMove(true);
@@ -59,7 +62,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
       });
       return () => cancelAnimationFrame(frame);
     }
-  }, [listings, selectedListingId]);
+  }, [listings, mobileCarouselListingId, selectedListingId]);
 
   useEffect(() => {
     const previousHtmlOverscroll = document.documentElement.style.overscrollBehaviorX;
@@ -73,9 +76,10 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   }, []);
 
   useEffect(() => {
-    if (!selectedListingId) return;
-    markVisitedListing(selectedListingId);
-  }, [markVisitedListing, selectedListingId]);
+    const activeId = mobileCarouselListingId ?? selectedListingId;
+    if (!activeId) return;
+    markVisitedListing(activeId);
+  }, [markVisitedListing, mobileCarouselListingId, selectedListingId]);
 
   useEffect(() => {
     const centeredListing = listings[currentIndex];
@@ -88,7 +92,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));
     setInstantMove(false);
     setCurrentIndex(nextIndex);
-    if (listings[nextIndex]) setSelectedListingId(listings[nextIndex].id);
+    if (listings[nextIndex]) setMobileCarouselListingId(listings[nextIndex].id);
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {

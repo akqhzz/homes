@@ -1,8 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
+import { Ellipsis } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSavedStore } from '@/store/savedStore';
@@ -11,6 +10,7 @@ import PageShell from '@/components/templates/PageShell';
 import Avatar from '@/components/atoms/Avatar';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
+import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspaceHeader';
 
 interface MenuState {
@@ -243,72 +243,20 @@ export default function SavedPage() {
         </div>
       </div>
 
-      {/* Portal: dropdown menus rendered in <body> so they're never clipped by scroll
-          containers or hidden behind toolbars. Backdrop stops clicks from reaching cards. */}
-      {typeof document !== 'undefined' && (isMenuOpen || isConfirmOpen) && createPortal(
-        <>
-          <div
-            className="fixed inset-0 z-[45]"
-            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-          />
-          <AnimatePresence>
-            {isMenuOpen && menuState && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
-                className="fixed z-[50] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-                style={{ bottom: menuState.bottom, right: menuState.right }}
-              >
-                <button
-                  onClick={() => startRename(menuState.colId, collections.find(c => c.id === menuState.colId)?.name ?? '')}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
-                >
-                  <Pencil size={14} />
-                  Rename
-                </button>
-                <button
-                  onClick={() => requestDelete(menuState.colId)}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
-                >
-                  <Trash2 size={14} />
-                  Delete
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <AnimatePresence>
-            {isConfirmOpen && menuState && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
-                className="fixed z-[50] w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-                style={{ bottom: menuState.bottom, right: menuState.right }}
-              >
-                <p className="type-label text-[#0F1729]">Delete collection?</p>
-                <p className="mt-1 type-caption text-[#6B7280]">This removes the collection, not the listings.</p>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => setConfirmDeleteId(null)}
-                    className="h-9 flex-1 rounded-full bg-[#F5F6F7] type-caption font-semibold text-[#0F1729]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmDelete}
-                    className="h-9 flex-1 rounded-full bg-[#EF4444] type-caption font-semibold text-white"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>,
-        document.body
+      {menuState && (
+        <RenameDeletePopover
+          open={isMenuOpen || isConfirmOpen}
+          confirmOpen={isConfirmOpen}
+          right={menuState.right}
+          bottom={menuState.bottom}
+          deleteTitle="Delete collection?"
+          deleteDescription="This removes the collection, not the listings."
+          onClose={closeMenu}
+          onRename={() => startRename(menuState.colId, collections.find((c) => c.id === menuState.colId)?.name ?? '')}
+          onRequestDelete={() => requestDelete(menuState.colId)}
+          onCancelDelete={() => setConfirmDeleteId(null)}
+          onConfirmDelete={confirmDelete}
+        />
       )}
 
       <AnimatePresence>
