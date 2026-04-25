@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
+import { Heart, House, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
@@ -38,6 +38,12 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'price-desc', label: 'Price high to low' },
   { value: 'newest', label: 'Newest first' },
 ];
+
+function mapThumb(listing: Listing) {
+  if (!MAPBOX_TOKEN) return null;
+  const { lng, lat } = listing.coordinates;
+  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${lng},${lat},11.6,0/192x192@2x?access_token=${MAPBOX_TOKEN}`;
+}
 
 interface CardsModeProps {
   listings: Listing[];
@@ -654,38 +660,18 @@ function CardModeListingCard({
                 className="pointer-events-auto relative h-24 w-24 shrink-0 overflow-hidden rounded-[24px] bg-white/90 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl"
                 aria-label="Open map preview"
               >
-                {MAPBOX_TOKEN ? (
-                  <div className="pointer-events-none absolute inset-0">
-                    <MapGL
-                      initialViewState={{
-                        longitude: listing.coordinates.lng,
-                        latitude: listing.coordinates.lat,
-                        zoom: 12.3,
-                      }}
-                      mapStyle="mapbox://styles/mapbox/standard"
-                      mapboxAccessToken={MAPBOX_TOKEN}
-                      attributionControl={false}
-                      dragPan={false}
-                      dragRotate={false}
-                      doubleClickZoom={false}
-                      scrollZoom={false}
-                      touchZoomRotate={false}
-                      keyboard={false}
-                      style={{ width: '100%', height: '100%' }}
-                      config={{
-                        basemap: {
-                          theme: 'faded',
-                          lightPreset: 'day',
-                          show3dObjects: false,
-                        },
-                      }}
-                    >
-                      <Marker longitude={listing.coordinates.lng} latitude={listing.coordinates.lat} anchor="bottom">
-                        <MapPin size={18} strokeWidth={2.25} className="fill-[#0F1729] text-[#0F1729]" />
-                      </Marker>
-                      <AttributionControl compact position="bottom-right" />
-                    </MapGL>
-                  </div>
+                {mapThumb(listing) ? (
+                  <>
+                    <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
+                    <div className="pointer-events-none absolute inset-0">
+                      <div className="absolute left-1/2 top-1/2 flex h-7 w-7 -translate-x-1/2 -translate-y-[82%] items-center justify-center rounded-full bg-[#0F1729] shadow-[0_4px_14px_rgba(15,23,41,0.22)]">
+                        <House size={12} strokeWidth={2.2} className="text-white" />
+                      </div>
+                      <div className="absolute bottom-1.5 left-1.5 rounded-full bg-white/88 px-2 py-0.5 text-[9px] font-medium leading-none text-[#475569] shadow-[0_1px_3px_rgba(15,23,41,0.08)] backdrop-blur-sm">
+                        © Mapbox © OSM
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
                 )}
