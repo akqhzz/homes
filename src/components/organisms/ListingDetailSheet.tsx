@@ -89,7 +89,7 @@ export default function ListingDetailSheet() {
             >
               <Heart
                 size={16}
-                className={cn(liked ? 'fill-[#EF4444] text-[#EF4444]' : 'text-[#0F1729]')}
+                className={cn(liked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')}
               />
             </IconButton>
           </div>
@@ -116,23 +116,23 @@ export default function ListingDetailSheet() {
           {/* Price & basics */}
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="type-title text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
-              <p className="type-body text-[#6B7280] mt-1">
+              <h1 className="type-title text-[var(--color-text-primary)]">{formatPriceFull(listing.price)}</h1>
+              <p className="type-body mt-1 text-[var(--color-text-secondary)]">
                 {listing.beds} bed · {listing.baths} bath · {formatSqft(listing.sqft)} sqft
               </p>
             </div>
-            <span className="type-caption text-[#9CA3AF] bg-[#F5F6F7] px-2.5 py-1 rounded-full mt-1">
+            <span className="mt-1 rounded-full bg-[var(--color-surface)] px-2.5 py-1 type-caption text-[var(--color-text-tertiary)]">
               {formatDaysOnMarket(listing.daysOnMarket)}
             </span>
           </div>
 
           {/* Address */}
-          <div className="flex items-center gap-1.5 mt-3 text-sm text-[#6B7280]">
-            <MapPin size={14} className="text-[#9CA3AF]" />
+          <div className="mt-3 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)]">
+            <MapPin size={14} className="text-[var(--color-text-tertiary)]" />
             <span>{listing.address}, {listing.city}, {listing.province} {listing.postalCode}</span>
           </div>
 
-          <div className="h-px bg-[#F5F6F7] my-5" />
+          <div className="my-5 h-px bg-[var(--color-surface)]" />
 
           {/* Property details grid */}
           <div className="grid grid-cols-2 gap-3">
@@ -146,23 +146,23 @@ export default function ListingDetailSheet() {
             <DetailItem icon={<Home size={16} />} label="MLS#" value={listing.mlsNumber} />
           </div>
 
-          <div className="h-px bg-[#F5F6F7] my-5" />
+          <div className="my-5 h-px bg-[var(--color-surface)]" />
 
           {/* Description */}
           <div>
-            <h3 className="type-heading text-[#0F1729] mb-2">About This Home</h3>
-            <p className="text-sm text-[#6B7280] leading-relaxed">{listing.description}</p>
+            <h3 className="mb-2 type-heading text-[var(--color-text-primary)]">About This Home</h3>
+            <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">{listing.description}</p>
           </div>
 
           {/* Features */}
           {listing.features.length > 0 && (
             <>
-              <div className="h-px bg-[#F5F6F7] my-5" />
+              <div className="my-5 h-px bg-[var(--color-surface)]" />
               <div>
-                <h3 className="type-heading text-[#0F1729] mb-3">Features & Amenities</h3>
+                <h3 className="mb-3 type-heading text-[var(--color-text-primary)]">Features & Amenities</h3>
                 <div className="flex flex-wrap gap-2">
                   {listing.features.map((f) => (
-                    <span key={f} className="text-xs bg-[#F5F6F7] text-[#6B7280] px-3 py-1.5 rounded-full">
+                    <span key={f} className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)]">
                       {f}
                     </span>
                   ))}
@@ -174,9 +174,9 @@ export default function ListingDetailSheet() {
           {/* Add to collection */}
           {showAddToCollection && (
             <>
-              <div className="h-px bg-[#F5F6F7] my-5" />
+              <div className="my-5 h-px bg-[var(--color-surface)]" />
               <div>
-                <h3 className="type-heading text-[#0F1729] mb-3">Add to collection</h3>
+                <h3 className="mb-3 type-heading text-[var(--color-text-primary)]">Add to collection</h3>
                 <div className="flex flex-col gap-2">
                   {collections.map((col) => {
                     const thumbnail = MOCK_LISTINGS.find(l => l.id === col.listings[0]?.listingId)?.images[0];
@@ -188,9 +188,9 @@ export default function ListingDetailSheet() {
                           addToCollection(col.id, listing.id);
                           setShowAddToCollection(false);
                         }}
-                        className="flex items-center gap-3 py-3 px-4 rounded-xl bg-[#F5F6F7] hover:bg-[#EBEBEB] text-left transition-colors"
+                        className="flex items-center gap-3 rounded-xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
                       >
-                        <div className="w-10 h-10 rounded-lg bg-[#E5E7EB] overflow-hidden flex-shrink-0">
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[var(--color-border)]">
                           {thumbnail && (
                             <Image
                               src={thumbnail}
@@ -202,8 +202,8 @@ export default function ListingDetailSheet() {
                           )}
                         </div>
                         <div>
-                          <p className="type-label text-[#0F1729]">{col.name}</p>
-                          <p className="type-caption text-[#9CA3AF]">{col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}</p>
+                          <p className="type-label text-[var(--color-text-primary)]">{col.name}</p>
+                          <p className="type-caption text-[var(--color-text-tertiary)]">{col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}</p>
                         </div>
                       </button>
                     );
@@ -246,11 +246,11 @@ export default function ListingDetailSheet() {
           onClick={(event) => event.stopPropagation()}
         >
           <div className="flex items-center justify-between gap-3 px-4 py-3">
-            <p className="min-w-0 truncate type-heading text-[#0F1729]">{listing.address.split(',')[0]}</p>
+            <p className="min-w-0 truncate type-heading text-[var(--color-text-primary)]">{listing.address.split(',')[0]}</p>
             <button
               type="button"
               onClick={closeListingDetail}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
               aria-label="Close listing detail"
             >
               <X size={18} />
@@ -259,7 +259,7 @@ export default function ListingDetailSheet() {
           <div className="min-h-0 flex-1 overflow-y-auto">
             {content}
           </div>
-          <footer className="border-t border-[#F5F6F7] p-4">{footer}</footer>
+          <footer className="border-t border-[var(--color-surface)] p-4">{footer}</footer>
         </section>
       </div>
     </>
@@ -268,11 +268,11 @@ export default function ListingDetailSheet() {
 
 function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 p-3 bg-[#F5F6F7] rounded-xl">
-      <span className="text-[#9CA3AF]">{icon}</span>
+    <div className="flex items-center gap-3 rounded-xl bg-[var(--color-surface)] p-3">
+      <span className="text-[var(--color-text-tertiary)]">{icon}</span>
       <div>
-        <p className="type-caption text-[#9CA3AF]">{label}</p>
-        <p className="type-label text-[#0F1729]">{value}</p>
+        <p className="type-caption text-[var(--color-text-tertiary)]">{label}</p>
+        <p className="type-label text-[var(--color-text-primary)]">{value}</p>
       </div>
     </div>
   );

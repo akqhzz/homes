@@ -45,13 +45,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
             <div>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 className="type-hero text-[#0F1729]">{formatPriceFull(listing.price)}</h1>
-                  <p className="mt-2 flex items-center gap-1.5 type-body text-[#6B7280]">
-                    <MapPin size={15} className="text-[#9CA3AF]" />
+                  <h1 className="type-hero text-[var(--color-text-primary)]">{formatPriceFull(listing.price)}</h1>
+                  <p className="mt-2 flex items-center gap-1.5 type-body text-[var(--color-text-secondary)]">
+                    <MapPin size={15} className="text-[var(--color-text-tertiary)]" />
                     {listing.address}, {listing.city}, {listing.province}
                   </p>
                 </div>
-                <span className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-label text-[#6B7280]">
+                <span className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-label text-[var(--color-text-secondary)]">
                   {formatDaysOnMarket(listing.daysOnMarket)}
                 </span>
               </div>
@@ -63,14 +63,14 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 <Fact icon={<Home size={17} />} label="Type" value={formatPropertyType(listing.propertyType)} />
               </div>
 
-              <div className="my-8 h-px bg-[#F5F6F7]" />
+              <div className="my-8 h-px bg-[var(--color-surface)]" />
 
-              <h2 className="type-title text-[#0F1729]">About This Home</h2>
-              <p className="mt-3 max-w-4xl type-body leading-7 text-[#6B7280]">{extendedDescription}</p>
+              <h2 className="type-title text-[var(--color-text-primary)]">About This Home</h2>
+              <p className="mt-3 max-w-4xl type-body leading-7 text-[var(--color-text-secondary)]">{extendedDescription}</p>
 
-              <div className="my-8 h-px bg-[#F5F6F7]" />
+              <div className="my-8 h-px bg-[var(--color-surface)]" />
 
-              <h2 className="type-title text-[#0F1729]">Home Facts</h2>
+              <h2 className="type-title text-[var(--color-text-primary)]">Home Facts</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <SideFact icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} />
                 <SideFact icon={<Car size={16} />} label="Parking" value={`${listing.parkingSpaces} space${listing.parkingSpaces === 1 ? '' : 's'}`} />
@@ -83,40 +83,40 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 <SideFact icon={<ShieldCheck size={16} />} label="Status" value="For Sale" />
               </div>
 
-              <div className="my-8 h-px bg-[#F5F6F7]" />
+              <div className="my-8 h-px bg-[var(--color-surface)]" />
 
-              <h2 className="type-title text-[#0F1729]">Features & Amenities</h2>
+              <h2 className="type-title text-[var(--color-text-primary)]">Features & Amenities</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {listing.features.map((feature) => (
-                  <span key={feature} className="rounded-full bg-[#F5F6F7] px-3 py-1.5 type-body font-medium text-[#6B7280]">
+                  <span key={feature} className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-body font-medium text-[var(--color-text-secondary)]">
                     {feature}
                   </span>
                 ))}
               </div>
 
-              <div className="my-8 h-px bg-[#F5F6F7]" />
+              <div className="my-8 h-px bg-[var(--color-surface)]" />
 
-              <h2 className="type-title text-[#0F1729]">Neighborhood Notes</h2>
-              <p className="mt-3 max-w-4xl type-body leading-7 text-[#6B7280]">
+              <h2 className="type-title text-[var(--color-text-primary)]">Neighborhood Notes</h2>
+              <p className="mt-3 max-w-4xl type-body leading-7 text-[var(--color-text-secondary)]">
                 Set in {listing.neighborhood}, this address is close to local cafes, grocery options, parks, and frequent transit. The surrounding blocks offer a balanced mix of residential calm and city access, making it practical for commuting, hosting, and daily routines.
               </p>
             </div>
 
             <aside className="hidden h-fit rounded-3xl border border-[#F0F0F0] p-6 lg:sticky lg:top-6 lg:block">
-              <h2 className="type-title text-[#0F1729]">Contact Agent</h2>
-              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#F5F6F7] p-3">
+              <h2 className="type-title text-[var(--color-text-primary)]">Contact Agent</h2>
+              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[var(--color-surface)] p-3">
                 <Image src={agentImage} alt="Maya Chen" width={56} height={56} className="h-14 w-14 rounded-xl object-cover" />
                 <div className="min-w-0">
-                  <p className="type-label text-[#0F1729]">Maya Chen</p>
-                  <p className="mt-0.5 type-caption text-[#9CA3AF]">Homes Realty Advisor</p>
-                  <p className="mt-1 type-caption text-[#6B7280]">Response in 10 minutes</p>
+                  <p className="type-label text-[var(--color-text-primary)]">Maya Chen</p>
+                  <p className="mt-0.5 type-caption text-[var(--color-text-tertiary)]">Homes Realty Advisor</p>
+                  <p className="mt-1 type-caption text-[var(--color-text-secondary)]">Response in 10 minutes</p>
                 </div>
               </div>
               <div className="mt-4 grid gap-2">
                 <button className="h-12 rounded-full bg-[#0F1729] type-label text-white transition-colors hover:bg-[#1F2937]">
                   Book A Tour
                 </button>
-                <button className="h-12 rounded-full bg-[#F5F6F7] type-label text-[#0F1729] transition-colors hover:bg-[#EBEBEB]">
+                <button className="h-12 rounded-full bg-[var(--color-surface)] type-label text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]">
                   Contact Agent
                 </button>
               </div>
@@ -133,7 +133,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             <button
               type="button"
               aria-label="Share listing"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7] text-[#0F1729] transition-colors hover:bg-[#EBEBEB]"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
             >
               <Share2 size={16} />
             </button>
@@ -150,21 +150,21 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
 function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-[#F5F6F7] p-4">
-      <div className="mb-2 text-[#9CA3AF]">{icon}</div>
-      <p className="type-caption text-[#9CA3AF]">{label}</p>
-      <p className="mt-0.5 type-label text-[#0F1729]">{value}</p>
+    <div className="rounded-2xl bg-[var(--color-surface)] p-4">
+      <div className="mb-2 text-[var(--color-text-tertiary)]">{icon}</div>
+      <p className="type-caption text-[var(--color-text-tertiary)]">{label}</p>
+      <p className="mt-0.5 type-label text-[var(--color-text-primary)]">{value}</p>
     </div>
   );
 }
 
 function SideFact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-[#F5F6F7] p-3">
-      <span className="text-[#9CA3AF]">{icon}</span>
+    <div className="flex items-center gap-3 rounded-2xl bg-[var(--color-surface)] p-3">
+      <span className="text-[var(--color-text-tertiary)]">{icon}</span>
       <div>
-        <p className="type-caption text-[#9CA3AF]">{label}</p>
-        <p className="type-label text-[#0F1729]">{value}</p>
+        <p className="type-caption text-[var(--color-text-tertiary)]">{label}</p>
+        <p className="type-label text-[var(--color-text-primary)]">{value}</p>
       </div>
     </div>
   );

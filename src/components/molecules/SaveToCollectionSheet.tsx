@@ -71,9 +71,9 @@ export default function SaveToCollectionSheet({
             <button
               key={collection.id}
               onClick={() => finishSave(collection.id)}
-              className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[#F5F6F7] px-4 py-3 text-left transition-colors hover:bg-[#EBEBEB]"
+              className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
             >
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[#0F1729]">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[var(--color-text-primary)]">
                 {thumbnailListing?.images[0] ? (
                   <Image src={thumbnailListing.images[0]} alt="" width={56} height={56} className="h-full w-full object-cover" draggable={false} />
                 ) : alreadySaved ? (
@@ -83,8 +83,8 @@ export default function SaveToCollectionSheet({
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-heading text-sm text-[#0F1729]">{collection.name}</span>
-                <span className="block type-caption text-[#9CA3AF]">
+                <span className="block truncate font-heading text-sm text-[var(--color-text-primary)]">{collection.name}</span>
+                <span className="block type-caption text-[var(--color-text-tertiary)]">
                   {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
                 </span>
               </span>
@@ -132,7 +132,7 @@ export default function SaveToCollectionSheet({
           style={{ left, top }}
           onClick={(event) => event.stopPropagation()}
         >
-          <p className="mb-3 type-heading text-[#0F1729]">Save To Collection</p>
+          <p className="mb-3 type-heading text-[var(--color-text-primary)]">Save To Collection</p>
           {content}
         </div>
       </div>

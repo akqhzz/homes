@@ -192,7 +192,7 @@ export default function SavedSearchesPanel({
     <>
       {/* Save current search */}
       <div className="px-4 py-4">
-        <p className="type-heading text-[#0F1729] mb-3">Save Current Search</p>
+        <p className="mb-3 type-heading text-[var(--color-text-primary)]">Save Current Search</p>
         <CreateInlineField
           open={saving}
           onOpenChange={setSaving}
@@ -209,7 +209,7 @@ export default function SavedSearchesPanel({
 
       {/* Saved searches list */}
       <div className="px-4 py-4">
-        <p className="type-heading text-[#0F1729] mb-3">My Searches</p>
+        <p className="mb-3 type-heading text-[var(--color-text-primary)]">My Searches</p>
         <div className="flex flex-col gap-3">
           {searches.map((search) => {
             const isSelected = activeSearchId === search.id;
@@ -229,8 +229,8 @@ export default function SavedSearchesPanel({
               className={cn(
                 'flex items-start gap-3 rounded-2xl border p-3 text-left transition-colors',
                 isSelected
-                  ? 'border-[#6B7280] bg-white shadow-[inset_0_0_0_1px_#6B7280]'
-                  : 'border-transparent bg-[#F5F6F7] hover:bg-[#EBEBEB]'
+                  ? 'border-[var(--color-text-secondary)] bg-white shadow-[inset_0_0_0_1px_var(--color-text-secondary)]'
+                  : 'border-transparent bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)]'
               )}
             >
               {search.thumbnail && (
@@ -244,7 +244,7 @@ export default function SavedSearchesPanel({
               )}
               <div className="relative flex-1 min-w-0 pr-9">
                 {renamingId === search.id ? (
-                  <div className="flex h-8 items-center rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-1.5">
+                  <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
                     <input
                       value={renameName}
                       onChange={(event) => setRenameName(event.target.value)}
@@ -258,7 +258,7 @@ export default function SavedSearchesPanel({
                         }
                       }}
                       onBlur={finishRename}
-                      className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[#0F1729] outline-none"
+                      className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[var(--color-text-primary)] outline-none"
                       autoFocus
                     />
                     <button
@@ -271,30 +271,30 @@ export default function SavedSearchesPanel({
                         event.stopPropagation();
                         finishRename();
                       }}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[#0F1729] transition-colors hover:bg-[#F5F6F7]"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
                       aria-label="Finish rename"
                     >
                       <Check size={13} />
                     </button>
                   </div>
                 ) : (
-                  <p className="min-w-0 truncate font-heading text-sm text-[#0F1729]">{search.name}</p>
+                  <p className="min-w-0 truncate font-heading text-sm text-[var(--color-text-primary)]">{search.name}</p>
                 )}
                 <button
                   type="button"
                   onClick={(event) => openMenu(event, search.id)}
-                  className="absolute right-0 top-0 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition-colors hover:bg-white hover:text-[#0F1729]"
+                  className="absolute right-0 top-0 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
                   aria-label="Saved search options"
                 >
                   <Ellipsis size={16} />
                 </button>
-                <p className="mt-0.5 type-caption text-[#9CA3AF]">
+                <p className="mt-0.5 type-caption text-[var(--color-text-tertiary)]">
                   {search.locations.map(l => l.name).join(', ')}
                 </p>
                 <div className="mt-1.5 flex items-end justify-between gap-3">
                   <div className="min-h-[30px]">
                     {search.newListingsCount && search.newListingsCount > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 bg-[#0F1729] text-white type-caption font-medium rounded-full">
+                      <span className="inline-flex items-center rounded-full bg-[var(--color-text-primary)] px-2 py-0.5 type-caption font-medium text-white">
                         {search.newListingsCount} new
                       </span>
                     )}
@@ -317,7 +317,7 @@ export default function SavedSearchesPanel({
                           setUpdatedSearchId((current) => (current === search.id ? null : current));
                         }, 1400);
                       }}
-                      className="shrink-0 rounded-full bg-[#0F1729] px-3 py-2 type-caption text-white"
+                      className="shrink-0 rounded-full bg-[var(--color-text-primary)] px-3 py-2 type-caption text-white"
                     >
                       Update?
                     </button>
@@ -328,7 +328,7 @@ export default function SavedSearchesPanel({
                         event.stopPropagation();
                         handleLoadSearch(search);
                       }}
-                      className="shrink-0 rounded-full bg-[#F5F6F7] px-3 py-2 type-caption text-[#0F1729]"
+                      className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-2 type-caption text-[var(--color-text-primary)]"
                     >
                       Unselect
                     </button>
