@@ -22,6 +22,7 @@ export interface Listing {
   description: string;
   features: string[];
   mlsNumber: string;
+  brokerage: string;
   parkingSpaces: number;
   yearBuilt: number;
   taxes: number;

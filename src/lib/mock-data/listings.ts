@@ -1,5 +1,7 @@
 import { Listing } from '@/lib/types';
 
+const DEFAULT_BROKERAGE = 'URBAN HOMES REALTY INC.';
+
 export const MOCK_LISTINGS: Listing[] = [
   {
     id: 'lst-001',
@@ -25,6 +27,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Stunning corner unit with floor-to-ceiling windows and panoramic city views. Freshly renovated with premium finishes throughout.',
     features: ['Floor-to-ceiling windows', 'Rooftop terrace access', 'Concierge', 'Gym', 'Party room', 'Visitor parking'],
     mlsNumber: 'C8123456',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 1,
     yearBuilt: 2018,
     taxes: 4200,
@@ -53,6 +56,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Beautiful semi-detached home in the heart of the Annex. Walking distance to Bloor Street shops and subway.',
     features: ['Exposed brick', 'Updated kitchen', 'Backyard patio', 'Finished basement', 'Laneway parking'],
     mlsNumber: 'C8123457',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 1,
     yearBuilt: 1925,
     taxes: 7800,
@@ -80,6 +84,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Luxurious high-rise condo in prestigious Yorkville. Steps from world-class dining and boutique shopping.',
     features: ['Hotel-style amenities', 'Indoor pool', 'Spa', '24hr concierge', 'Wine storage'],
     mlsNumber: 'C8123458',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 1,
     yearBuilt: 2020,
     taxes: 5100,
@@ -108,6 +113,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Modern townhouse steps from Trinity Bellwoods Park. Open concept main floor with chef\'s kitchen.',
     features: ['Rooftop deck', 'Chef\'s kitchen', 'Smart home system', 'EV charging', 'Dog wash station'],
     mlsNumber: 'C8123459',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 1,
     yearBuilt: 2019,
     taxes: 8200,
@@ -136,6 +142,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Charming Victorian home in vibrant Kensington Market. Incredible potential with large lot.',
     features: ['Original hardwood', 'Vintage details', 'Large backyard', 'Detached garage', 'Lane access'],
     mlsNumber: 'C8123460',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 2,
     yearBuilt: 1905,
     taxes: 7200,
@@ -163,6 +170,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Stunning loft-style condo in the entertainment district. Industrial chic with exposed concrete and high ceilings.',
     features: ['14ft ceilings', 'Exposed concrete', 'Floor-to-ceiling windows', 'Outdoor terrace', 'Fitness center'],
     mlsNumber: 'C8123461',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 1,
     yearBuilt: 2016,
     taxes: 4800,
@@ -191,6 +199,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Grand Rosedale estate with ravine views. Meticulously maintained with exceptional craftsmanship throughout.',
     features: ['Ravine lot', 'Wine cellar', 'Home theater', 'Nanny suite', 'Heated floors', 'Smart home'],
     mlsNumber: 'C8123462',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 3,
     yearBuilt: 1965,
     taxes: 18500,
@@ -218,6 +227,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Bright and modern 1-bed in sought-after Bay/Bloor corridor. Perfect for young professionals.',
     features: ['City views', 'Modern finishes', 'Juliet balcony', 'Party room', 'Guest suites'],
     mlsNumber: 'C8123463',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 0,
     yearBuilt: 2015,
     taxes: 2800,
@@ -246,6 +256,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Beautifully restored Victorian in historic Cabbagetown. One of Toronto\'s most charming neighbourhoods.',
     features: ['Original Victorian details', 'Renovated kitchen', 'Private garden', 'Basement suite', 'Mutual drive'],
     mlsNumber: 'C8123464',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 1,
     yearBuilt: 1898,
     taxes: 6900,
@@ -273,6 +284,7 @@ export const MOCK_LISTINGS: Listing[] = [
     description: 'Impressive detached home near the Art Gallery of Ontario. Recently renovated with designer finishes.',
     features: ['Double car garage', 'Open concept', 'Master ensuite', 'Skylights', 'Smart home'],
     mlsNumber: 'C8123465',
+    brokerage: DEFAULT_BROKERAGE,
     parkingSpaces: 2,
     yearBuilt: 1989,
     taxes: 9800,

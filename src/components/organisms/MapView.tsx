@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { Feature, LineString, Polygon } from 'geojson';
 import Map, { Layer, Marker, Source, type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -50,7 +51,7 @@ const LISTING_MARKER_OFFSETS = [
 const HOVER_CARD_WIDTH = 288;
 const HOVER_CARD_HEIGHT = 252;
 const HOVER_CARD_EDGE_PADDING = 16;
-const HOVER_CARD_SIDE_GAP = 28;
+const HOVER_CARD_SIDE_GAP = 44;
 const HOVER_CARD_PIN_TOP_OFFSET = 34;
 
 interface MapViewProps {
@@ -133,7 +134,7 @@ export default function MapView({
 
   const clearHoveredListingSoon = useCallback(() => {
     if (hoverClearTimeoutRef.current) window.clearTimeout(hoverClearTimeoutRef.current);
-    hoverClearTimeoutRef.current = window.setTimeout(() => setPreviewListingId(null), 80);
+    hoverClearTimeoutRef.current = window.setTimeout(() => setPreviewListingId(null), 145);
   }, [setPreviewListingId]);
 
   const cancelHoveredListingClear = useCallback(() => {
@@ -432,19 +433,26 @@ export default function MapView({
         );
       })}
       </Map>
-      {showListings && desktopPreviewListing && desktopPreviewStyle && !isCarouselVisible && (
-        <div
-          style={desktopPreviewStyle}
-          className="pointer-events-auto absolute hidden w-72 lg:block"
-          onMouseEnter={() => {
-            cancelHoveredListingClear();
-            setPreviewListingId(desktopPreviewListing.id);
-          }}
-          onMouseLeave={clearHoveredListingSoon}
-        >
-          <ListingCard listing={desktopPreviewListing} variant="carousel" />
-        </div>
-      )}
+      <AnimatePresence>
+        {showListings && desktopPreviewListing && desktopPreviewStyle && !isCarouselVisible && (
+          <motion.div
+            key={desktopPreviewListing.id}
+            style={desktopPreviewStyle}
+            className="pointer-events-auto absolute hidden w-72 lg:block"
+            initial={{ opacity: 0, x: getHoverCardEntryOffset(desktopPreviewStyle.left, mapInstance), y: 6 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, x: getHoverCardEntryOffset(desktopPreviewStyle.left, mapInstance) * 0.35, y: 4 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            onMouseEnter={() => {
+              cancelHoveredListingClear();
+              setPreviewListingId(desktopPreviewListing.id);
+            }}
+            onMouseLeave={clearHoveredListingSoon}
+          >
+            <ListingCard listing={desktopPreviewListing} variant="carousel" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -656,6 +664,11 @@ function getDesktopHoverCardStyle(
   const top = clamp(unclampedTop, HOVER_CARD_EDGE_PADDING, clientHeight - HOVER_CARD_HEIGHT - HOVER_CARD_EDGE_PADDING);
 
   return { left, top };
+}
+
+function getHoverCardEntryOffset(left: number, map: MapRef | null) {
+  const containerWidth = map?.getContainer().clientWidth ?? 0;
+  return left < containerWidth / 2 ? 12 : -12;
 }
 
 function clamp(value: number, min: number, max: number) {

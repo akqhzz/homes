@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { AnimatePresence } from 'framer-motion';
-import { ArrowDownWideNarrow, LayoutList, Map, Tag } from 'lucide-react';
+import { ArrowDownWideNarrow, LayoutList, Map, Tag, X } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
@@ -79,6 +79,7 @@ function getCollectionViewport(
 
 export default function CollectionPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const {
     collections,
     addCollectionTag,
@@ -211,9 +212,7 @@ export default function CollectionPage() {
   return (
     <PageShell showBottomNav={false} showDesktopHeader={false} desktopWide>
       <div className="flex h-full flex-col overflow-hidden bg-white">
-        <div
-          className="relative bg-white px-4 pb-4 pt-4 lg:px-8 lg:pb-5 lg:pt-6"
-        >
+        <div className="relative hidden bg-white px-4 pb-4 pt-4 lg:block lg:px-8 lg:pb-5 lg:pt-6">
           <CollectionWorkspaceHeader
             className="lg:min-h-0"
             title={collection.name}
@@ -256,11 +255,36 @@ export default function CollectionPage() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-hidden">
-          <div className="flex h-full flex-col lg:hidden">
+          <div className="relative flex h-full flex-col lg:hidden">
+            {mobileView === 'list' && (
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-20">
+                <div
+                  className="relative bg-white/96 px-4 pb-2 pt-3 backdrop-blur-[10px]"
+                  style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => router.back()}
+                    className="pointer-events-auto absolute right-4 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/92 text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]"
+                    style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
+                    aria-label="Close"
+                  >
+                    <X size={16} />
+                  </button>
+                  <CollectionWorkspaceHeader
+                    showBackButton={false}
+                    title={collection.name}
+                    subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
+                    compactProgress={mobileHeaderProgress}
+                    className="min-h-[2.75rem] pr-12"
+                  />
+                </div>
+              </div>
+            )}
             {mobileView === 'list' ? (
               <div
-                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-4 [overflow-anchor:none]"
-                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-[5.9rem] [overflow-anchor:none]"
+                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', scrollBehavior: 'smooth' }}
                 onScroll={(event) => {
                   const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 240));
                   const eased = raw * raw * (3 - 2 * raw);
@@ -282,6 +306,15 @@ export default function CollectionPage() {
                 <div className="absolute inset-0 overflow-hidden bg-[#EEF2F6]">
                   <MapView listings={sortedListings} showListings />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="absolute right-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/92 text-[#0F1729] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)]"
+                  style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
                 {isCarouselVisible && sortedListings.length > 0 && (
                   <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20">
                     <CollectionListingsCarousel
@@ -343,7 +376,13 @@ export default function CollectionPage() {
                   iconOnly
                   className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
                 />
-                <div className="flex items-center rounded-full bg-white px-1.5 py-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
+                <div className="relative flex h-11 items-center rounded-full bg-white p-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.10),0_1px_4px_rgba(0,0,0,0.05)]">
+                  <div
+                    className={cn(
+                      'absolute bottom-1.5 top-1.5 w-[calc(50%-6px)] rounded-full bg-[#0F1729] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                      mobileView === 'map' && 'translate-x-full'
+                    )}
+                  />
                   <button
                     type="button"
                     aria-label="List view"
@@ -353,8 +392,8 @@ export default function CollectionPage() {
                       setMobileView('list');
                     }}
                     className={cn(
-                      'flex h-8 items-center gap-2 rounded-full px-3 text-sm font-medium transition-all duration-200 ease-out',
-                      mobileView === 'list' ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
+                      'relative z-10 flex h-full items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                      mobileView === 'list' ? 'text-white' : 'text-[#0F1729]'
                     )}
                   >
                     <LayoutList size={16} />
@@ -368,8 +407,8 @@ export default function CollectionPage() {
                       setMobileView('map');
                     }}
                     className={cn(
-                      'flex h-8 items-center gap-2 rounded-full px-3 text-sm font-medium transition-all duration-200 ease-out',
-                      mobileView === 'map' ? 'bg-[#0F1729] text-white' : 'text-[#0F1729] hover:bg-[#F5F6F7]'
+                      'relative z-10 flex h-full items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                      mobileView === 'map' ? 'text-white' : 'text-[#0F1729]'
                     )}
                   >
                     <Map size={16} />
