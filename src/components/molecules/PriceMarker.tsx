@@ -30,7 +30,13 @@ export default function PriceMarker({ price, isSelected, isSaved, onClick }: Pri
           : 'bg-white text-[#0F1729] border border-[#E5E7EB] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
       )}
     >
-      {isSaved && !isSelected && <Heart size={11} className="fill-[#EC4899] text-[#EC4899]" strokeWidth={2.2} />}
+      {isSaved && (
+        <Heart
+          size={11}
+          className={cn(isSelected ? 'fill-[#EF4444] text-[#EF4444]' : 'fill-[#EF4444] text-[#EF4444]')}
+          strokeWidth={2.2}
+        />
+      )}
       {formatPrice(price)}
     </button>
   );

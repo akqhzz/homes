@@ -239,6 +239,8 @@ export default function MapPage() {
   const areaPreviewNeighborhoodId =
     hoveredNeighborhood?.id ??
     (focusedNeighborhood && !selectedNeighborhoods.has(focusedNeighborhood.id) ? focusedNeighborhood.id : null);
+  const areaSelectHasVisibleBoundary =
+    Boolean(areaPreviewNeighborhoodId) || selectedNeighborhoods.size > 0 || drawnBoundary.length > 0 || hasSearchBoundary;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -406,6 +408,11 @@ export default function MapPage() {
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
+    const remainingLocations = selectedLocations.filter((location) => (location.boundary?.length ?? 0) < 3);
+    if (remainingLocations.length !== selectedLocations.length) {
+      if (remainingLocations.length === 0) clearLocations();
+      else setLocations(remainingLocations);
+    }
   };
 
   const closeAreaSelect = () => {
@@ -611,6 +618,7 @@ export default function MapPage() {
                 focusedNeighborhood={focusedNeighborhood}
                 focusToken={areaFocusToken}
                 selectedNeighborhoods={selectedNeighborhoods}
+                hasVisibleBoundary={areaSelectHasVisibleBoundary}
                 isDrawing={isDrawingArea}
                 pointCount={drawnBoundary.length}
                 canUndoBoundary={drawnBoundary.length > 0 || areaUndoStack.length > 0}

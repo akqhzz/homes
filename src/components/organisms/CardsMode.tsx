@@ -40,7 +40,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 function mapThumb(listing: Listing) {
   if (!MAPBOX_TOKEN) return null;
   const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/light-v11/static/${lng},${lat},14,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
+  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-l+0F1729(${lng},${lat})/${lng},${lat},14,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
 }
 
 interface CardsModeProps {

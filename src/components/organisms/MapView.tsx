@@ -105,6 +105,14 @@ export default function MapView({
     setCarouselVisible(false);
   }, [setSelectedListingId, setCarouselVisible, showListings]);
 
+  const handleMapMoveStart = useCallback(() => {
+    if (!showListings) return;
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+    if (!isDesktop) return;
+    setSelectedListingId(null);
+    setCarouselVisible(false);
+  }, [setSelectedListingId, setCarouselVisible, showListings]);
+
   const handleMapPointer = useCallback((e: { lngLat: { lat: number; lng: number } }) => {
     if (showListings) {
       handleMapClick();
@@ -153,6 +161,7 @@ export default function MapView({
     <Map
       ref={mapRef}
       {...viewState}
+      onMoveStart={handleMapMoveStart}
       onMove={(e) => setViewState(e.viewState)}
       onLoad={() => setMapLoaded(true)}
       onClick={handleMapPointer}
@@ -372,7 +381,7 @@ export default function MapView({
             longitude={markerCoordinates.lng}
             latitude={markerCoordinates.lat}
             anchor={showRight ? 'left' : 'right'}
-            offset={showRight ? [34, isUpperHalf ? 14 : -118] : [-60, isUpperHalf ? 14 : -118]}
+            offset={showRight ? [34, isUpperHalf ? 68 : -118] : [-60, isUpperHalf ? 68 : -118]}
           >
             <div onClick={(event) => event.stopPropagation()} className="hidden w-72 lg:block">
               <ListingCard listing={selectedListing} variant="carousel" />
