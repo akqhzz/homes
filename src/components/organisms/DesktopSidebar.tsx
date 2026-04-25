@@ -36,7 +36,7 @@ export default function DesktopSidebar() {
         h.
       </button>
 
-      <nav className="mt-[18.5rem] flex flex-col items-center gap-7">
+      <nav className="mt-[18.5rem] flex flex-col items-center gap-6">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (

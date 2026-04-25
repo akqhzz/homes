@@ -38,6 +38,7 @@ export default function SavedSearchesPanel({
   const [saving, setSaving] = useState(canSaveCurrent && !activeSearchId);
   const [updatedSearchId, setUpdatedSearchId] = useState<string | null>(null);
   const [isDesktop, setIsDesktop] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 1024));
+  const [desktopPosition, setDesktopPosition] = useState<{ top: number; left: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const desktopPanelRef = useRef<HTMLDivElement>(null);
   const updateFeedbackTimeoutRef = useRef<number | null>(null);
@@ -54,6 +55,29 @@ export default function SavedSearchesPanel({
     window.addEventListener('resize', updateViewport);
     return () => window.removeEventListener('resize', updateViewport);
   }, []);
+
+  useEffect(() => {
+    if (!isDesktop) return;
+    const updateDesktopPosition = () => {
+      const trigger = document.querySelector('[data-saved-search-trigger="true"]') as HTMLElement | null;
+      if (!trigger) return;
+      const rect = trigger.getBoundingClientRect();
+      const panelWidth = 420;
+      const viewportPadding = 24;
+      setDesktopPosition({
+        top: rect.bottom + 14,
+        left: Math.min(Math.max(rect.right - panelWidth, viewportPadding), window.innerWidth - panelWidth - viewportPadding),
+      });
+    };
+
+    updateDesktopPosition();
+    window.addEventListener('resize', updateDesktopPosition);
+    window.addEventListener('scroll', updateDesktopPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateDesktopPosition);
+      window.removeEventListener('scroll', updateDesktopPosition, true);
+    };
+  }, [isDesktop]);
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -206,7 +230,12 @@ export default function SavedSearchesPanel({
       {isDesktop && (
         <div
           ref={desktopPanelRef}
-          className="fixed left-1/2 top-[70px] z-[60] -ml-[232px] max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+          className="fixed z-[60] max-h-[calc(100vh-9rem)] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+          style={
+            desktopPosition
+              ? { top: desktopPosition.top, left: desktopPosition.left }
+              : { top: 70, left: '50%', marginLeft: -210 }
+          }
         >
           {content}
         </div>

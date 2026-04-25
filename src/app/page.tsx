@@ -208,6 +208,8 @@ export default function MapPage() {
   const [isDrawingArea, setIsDrawingArea] = useState(false);
   const [drawnBoundary, setDrawnBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const [redoBoundary, setRedoBoundary] = useState<{ lat: number; lng: number }[]>([]);
+  const [clearedBoundarySnapshot, setClearedBoundarySnapshot] = useState<{ lat: number; lng: number }[] | null>(null);
+  const [clearedBoundaryRedoSnapshot, setClearedBoundaryRedoSnapshot] = useState<{ lat: number; lng: number }[] | null>(null);
   const [areaUndoStack, setAreaUndoStack] = useState<Set<string>[]>([]);
   const [areaRedoStack, setAreaRedoStack] = useState<Set<string>[]>([]);
   const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
@@ -317,6 +319,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set(appliedNeighborhoods));
     setDrawnBoundary(appliedBoundary);
     setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
@@ -334,6 +338,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set(matchedNeighborhoodIds));
     setDrawnBoundary(fallbackBoundary);
     setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setHoveredNeighborhood(null);
@@ -357,6 +363,8 @@ export default function MapPage() {
       setDrawnBoundary(fallbackBoundary);
     }
     setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
@@ -372,6 +380,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
     setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
@@ -388,6 +398,12 @@ export default function MapPage() {
   };
 
   const undoBoundary = () => {
+    if (drawnBoundary.length === 0 && clearedBoundarySnapshot && redoBoundary.length === 0) {
+      setDrawnBoundary(clearedBoundarySnapshot);
+      setClearedBoundaryRedoSnapshot(clearedBoundarySnapshot);
+      setClearedBoundarySnapshot(null);
+      return;
+    }
     if (drawnBoundary.length === 0) {
       setAreaUndoStack((stack) => {
         if (stack.length === 0) return stack;
@@ -402,11 +418,28 @@ export default function MapPage() {
       if (points.length === 0) return points;
       const next = points.slice(0, -1);
       setRedoBoundary((redo) => [points[points.length - 1], ...redo]);
+      setClearedBoundarySnapshot(null);
+      setClearedBoundaryRedoSnapshot(null);
       return next;
     });
   };
 
   const redoBoundaryPoint = () => {
+    if (drawnBoundary.length > 0 && clearedBoundaryRedoSnapshot && redoBoundary.length === 0) {
+      setDrawnBoundary([]);
+      setClearedBoundarySnapshot(clearedBoundaryRedoSnapshot);
+      setClearedBoundaryRedoSnapshot(null);
+      return;
+    }
+    if (drawnBoundary.length === 0 && clearedBoundarySnapshot === null && redoBoundary.length > 0) {
+      setRedoBoundary((redo) => {
+        if (redo.length === 0) return redo;
+        const [point, ...rest] = redo;
+        setDrawnBoundary([point]);
+        return rest;
+      });
+      return;
+    }
     if (redoBoundary.length === 0) {
       setAreaRedoStack((redo) => {
         if (redo.length === 0) return redo;
@@ -426,11 +459,20 @@ export default function MapPage() {
   };
 
   const clearAreaSelection = () => {
+    if (selectedNeighborhoods.size > 0) {
+      setAreaUndoStack((stack) => [...stack, new Set(selectedNeighborhoods)]);
+      setAreaRedoStack([]);
+    }
+    if (drawnBoundary.length > 0) {
+      setClearedBoundarySnapshot(drawnBoundary);
+      setClearedBoundaryRedoSnapshot(null);
+    } else {
+      setClearedBoundarySnapshot(null);
+      setClearedBoundaryRedoSnapshot(null);
+    }
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
     setRedoBoundary([]);
-    setAreaUndoStack([]);
-    setAreaRedoStack([]);
     setFocusedNeighborhood(null);
     const remainingLocations = selectedLocations.filter((location) => (location.boundary?.length ?? 0) < 3);
     if (remainingLocations.length !== selectedLocations.length) {
@@ -449,6 +491,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
     setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
     setAreaUndoStack([]);
     setAreaRedoStack([]);
   };
@@ -470,6 +514,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set(nextNeighborhoods));
     setDrawnBoundary(nextBoundary);
     setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
@@ -501,6 +547,8 @@ export default function MapPage() {
     setSelectedNeighborhoods(new Set(fallback.neighborhoodIds));
     setDrawnBoundary(fallback.areaBoundary);
     setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
     setAreaUndoStack([]);
     setAreaRedoStack([]);
     setFocusedNeighborhood(null);
@@ -578,6 +626,8 @@ export default function MapPage() {
               if (isDrawingArea) {
                 setDrawnBoundary((points) => [...points, coordinates]);
                 setRedoBoundary([]);
+                setClearedBoundarySnapshot(null);
+                setClearedBoundaryRedoSnapshot(null);
               } else {
                 setFocusedNeighborhood(null);
                 setHoveredNeighborhood(null);
@@ -660,15 +710,17 @@ export default function MapPage() {
                 hasVisibleBoundary={areaSelectHasVisibleBoundary}
                 isDrawing={isDrawingArea}
                 pointCount={drawnBoundary.length}
-                canUndoBoundary={drawnBoundary.length > 0 || areaUndoStack.length > 0}
-                canRedoBoundary={redoBoundary.length > 0 || areaRedoStack.length > 0}
+                canUndoBoundary={drawnBoundary.length > 0 || areaUndoStack.length > 0 || clearedBoundarySnapshot !== null}
+                canRedoBoundary={redoBoundary.length > 0 || areaRedoStack.length > 0 || clearedBoundaryRedoSnapshot !== null}
                 onBack={closeAreaSelect}
                 onApply={applyAreaSelect}
                 onToggleDrawing={() => setIsDrawingArea((value) => !value)}
                 onToggleNeighborhood={toggleNeighborhood}
-                onFocusNeighborhood={setFocusedNeighborhood}
                 onCloseNeighborhood={() => setFocusedNeighborhood(null)}
                 onClearDrawing={() => {
+                  if (drawnBoundary.length === 0) return;
+                  setClearedBoundarySnapshot(drawnBoundary);
+                  setClearedBoundaryRedoSnapshot(null);
                   setDrawnBoundary([]);
                   setRedoBoundary([]);
                 }}
