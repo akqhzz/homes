@@ -13,7 +13,7 @@ const MENU_ITEMS = [
 
 const NAV_ITEMS = [
   { href: '/', icon: Map, label: 'Map' },
-  { href: '/saved', icon: Heart, label: 'Collections' },
+  { href: '/saved', icon: Heart, label: 'Mine' },
   { href: '/for-you', icon: Sparkles, label: 'Insights' },
 ] as const;
 
@@ -26,7 +26,7 @@ export default function DesktopSidebar() {
     href === '/' ? pathname === '/' || pathname === '/map' : pathname.startsWith(href);
 
   return (
-    <aside className="hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:justify-between lg:py-5">
+    <aside className="hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:py-5">
       <button
         type="button"
         onClick={() => router.push('/')}
@@ -36,7 +36,7 @@ export default function DesktopSidebar() {
         h.
       </button>
 
-      <nav className="flex flex-col items-center gap-6">
+      <nav className="mt-24 flex flex-col items-center gap-7">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
@@ -46,12 +46,12 @@ export default function DesktopSidebar() {
               onClick={() => router.push(href)}
               aria-label={label}
               className={cn(
-                'flex w-14 flex-col items-center gap-1 rounded-2xl py-1 transition-colors',
+                'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-1 transition-colors',
                 active ? 'text-[#0F1729]' : 'text-[#C9CDD2] hover:text-[#6B7280]'
               )}
             >
-              <Icon size={23} strokeWidth={active ? 2.25 : 1.9} />
-              <span className={cn('text-[0.6rem] font-medium leading-none', active ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
+              <Icon size={24} strokeWidth={active ? 2.25 : 1.9} />
+              <span className={cn('text-[0.68rem] font-medium leading-none', active ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
                 {label}
               </span>
             </button>
@@ -59,18 +59,18 @@ export default function DesktopSidebar() {
         })}
       </nav>
 
-      <div className="relative">
+      <div className="relative mt-auto">
         <button
           type="button"
           onClick={() => setShowMenu((value) => !value)}
           aria-label="Menu"
           className={cn(
-            'flex w-14 flex-col items-center gap-1 rounded-2xl py-1 transition-colors',
+            'flex w-[58px] flex-col items-center gap-1.5 rounded-2xl py-1 transition-colors',
             showMenu ? 'text-[#0F1729]' : 'text-[#C9CDD2] hover:text-[#6B7280]'
           )}
         >
-          <Menu size={23} strokeWidth={2} />
-          <span className={cn('text-[0.6rem] font-medium leading-none', showMenu ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
+          <Menu size={24} strokeWidth={2} />
+          <span className={cn('text-[0.68rem] font-medium leading-none', showMenu ? 'text-[#0F1729]' : 'text-[#C9CDD2]')}>
             Menu
           </span>
         </button>

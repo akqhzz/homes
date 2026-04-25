@@ -78,7 +78,7 @@ export const MOCK_LISTINGS: Listing[] = [
     images: [
       'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&q=80',
       'https://images.unsplash.com/photo-1501183638710-841dd1904471?w=800&q=80',
-      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80',
+      'https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?w=800&q=80',
     ],
     coordinates: { lat: 43.6707, lng: -79.3930 },
     description: 'Luxurious high-rise condo in prestigious Yorkville. Steps from world-class dining and boutique shopping.',
@@ -250,7 +250,7 @@ export const MOCK_LISTINGS: Listing[] = [
     images: [
       'https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=800&q=80',
       'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800&q=80',
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+      'https://images.unsplash.com/photo-1593696140826-c58b021acf8b?w=800&q=80',
     ],
     coordinates: { lat: 43.6607, lng: -79.3656 },
     description: 'Beautifully restored Victorian in historic Cabbagetown. One of Toronto\'s most charming neighbourhoods.',

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
-import MapGL, { AttributionControl } from 'react-map-gl/mapbox';
+import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -38,12 +38,6 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'price-desc', label: 'Price high to low' },
   { value: 'newest', label: 'Newest first' },
 ];
-
-function mapThumb(listing: Listing) {
-  if (!MAPBOX_TOKEN) return null;
-  const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},11.7,0/140x112@2x?access_token=${MAPBOX_TOKEN}`;
-}
 
 interface CardsModeProps {
   listings: Listing[];
@@ -448,7 +442,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         {showMapDrawer && (drawerListing ?? listing) && (
           <MobileDrawer
             title={(
-              <div className="pr-6 type-caption font-medium leading-[1.3] text-[#475569]">
+              <div className="pr-6 font-heading text-[1.02rem] font-medium leading-[1.35] text-[#334155]">
                 {(drawerListing ?? listing).address}
               </div>
             )}
@@ -476,6 +470,13 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                     },
                   }}
                 >
+                  <Marker
+                    longitude={(drawerListing ?? listing).coordinates.lng}
+                    latitude={(drawerListing ?? listing).coordinates.lat}
+                    anchor="bottom"
+                  >
+                    <MapPin size={22} strokeWidth={2.25} className="fill-[#0F1729] text-[#0F1729]" />
+                  </Marker>
                   <AttributionControl compact position="bottom-right" />
                 </MapGL>
               </div>
@@ -653,8 +654,38 @@ function CardModeListingCard({
                 className="pointer-events-auto relative h-24 w-24 shrink-0 overflow-hidden rounded-[24px] bg-white/90 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl"
                 aria-label="Open map preview"
               >
-                {mapThumb(listing) ? (
-                  <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
+                {MAPBOX_TOKEN ? (
+                  <div className="pointer-events-none absolute inset-0">
+                    <MapGL
+                      initialViewState={{
+                        longitude: listing.coordinates.lng,
+                        latitude: listing.coordinates.lat,
+                        zoom: 12.3,
+                      }}
+                      mapStyle="mapbox://styles/mapbox/standard"
+                      mapboxAccessToken={MAPBOX_TOKEN}
+                      attributionControl={false}
+                      dragPan={false}
+                      dragRotate={false}
+                      doubleClickZoom={false}
+                      scrollZoom={false}
+                      touchZoomRotate={false}
+                      keyboard={false}
+                      style={{ width: '100%', height: '100%' }}
+                      config={{
+                        basemap: {
+                          theme: 'faded',
+                          lightPreset: 'day',
+                          show3dObjects: false,
+                        },
+                      }}
+                    >
+                      <Marker longitude={listing.coordinates.lng} latitude={listing.coordinates.lat} anchor="bottom">
+                        <MapPin size={18} strokeWidth={2.25} className="fill-[#0F1729] text-[#0F1729]" />
+                      </Marker>
+                      <AttributionControl compact position="bottom-right" />
+                    </MapGL>
+                  </div>
                 ) : (
                   <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
                 )}

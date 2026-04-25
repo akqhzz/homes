@@ -144,7 +144,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             : isListingVariant
             ? 'absolute left-1/2 top-1/2 flex w-[540px] -translate-x-1/2 -translate-y-1/2'
             : isMapPage
-            ? 'mx-auto flex'
+            ? 'absolute left-1/2 top-1/2 flex w-[540px] -translate-x-1/2 -translate-y-1/2'
             : 'mx-auto flex flex-1'
         )}>
           <div ref={searchRef} className="relative w-[316px] flex-none">
@@ -292,7 +292,7 @@ export default function DesktopHeader({ variant = 'default', listingId }: Deskto
             >
               Map
             </button>
-          ) : isMapPage ? null : (
+          ) : (
             <div ref={collectionsRef} className="relative">
               <button
                 onClick={() => {
