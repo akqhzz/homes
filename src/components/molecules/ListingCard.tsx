@@ -1,5 +1,5 @@
 'use client';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Heart, MapPin } from 'lucide-react';
@@ -59,10 +59,22 @@ export default function ListingCard({
   const imagePointerMoved = useRef(false);
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
   const imageAreaRef = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
   const wheelLockRef = useRef(false);
   const carouselImageHeight = desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT;
   const carouselTotalHeight = desktopTall ? 264 : CAROUSEL_TOTAL_HEIGHT;
   const resolvedLiked = likedOverride ?? isLiked;
+
+  const getContainerWidth = useCallback(() => imageAreaRef.current?.offsetWidth ?? 288, []);
+
+  // Animate the strip to the committed index. Runs after every index change (including initial mount
+  // where from=to=0, so no visible animation occurs).
+  useEffect(() => {
+    if (!stripRef.current) return;
+    const w = getContainerWidth();
+    stripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    stripRef.current.style.transform = `translateX(${-imgIndex * w}px)`;
+  }, [imgIndex, getContainerWidth]);
 
   useEffect(() => {
     const node = imageAreaRef.current;
@@ -116,6 +128,12 @@ export default function ListingCard({
     e.stopPropagation();
     imagePointerStart.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
     imagePointerMoved.current = false;
+    // Freeze strip at current animated position so mid-animation grabs feel natural
+    if (stripRef.current) {
+      const computed = getComputedStyle(stripRef.current).transform;
+      stripRef.current.style.transition = 'none';
+      stripRef.current.style.transform = computed !== 'none' ? computed : `translateX(${-imgIndex * getContainerWidth()}px)`;
+    }
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
@@ -138,9 +156,24 @@ export default function ListingCard({
     e.stopPropagation();
     const start = imagePointerStart.current;
     if (!start || start.id !== e.pointerId) return;
-    if (Math.abs(e.clientX - start.x) > 6 || Math.abs(e.clientY - start.y) > 6) {
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
       imagePointerMoved.current = true;
     }
+    // Real-time strip drag — only track dominant horizontal movement
+    if (!stripRef.current || displayImages.length <= 1) return;
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 6) return;
+    const w = getContainerWidth();
+    // Rubber-band resistance at first/last image edges
+    let constrainedDx = dx;
+    if (imgIndex === 0 && dx > 0) {
+      constrainedDx = Math.pow(Math.abs(dx), 0.65) * Math.sign(dx);
+    } else if (imgIndex === displayImages.length - 1 && dx < 0) {
+      constrainedDx = -Math.pow(Math.abs(dx), 0.65);
+    }
+    stripRef.current.style.transition = 'none';
+    stripRef.current.style.transform = `translateX(${-imgIndex * w + constrainedDx}px)`;
   };
 
   const handleImagePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -150,11 +183,29 @@ export default function ListingCard({
     imagePointerStart.current = null;
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < IMAGE_SWIPE_THRESHOLD) return;
-    if (Math.abs(dx) >= Math.abs(dy)) {
-      if (dx < 0) showNextImage();
-      else showPreviousImage();
+    const w = getContainerWidth();
+    const isHorizontal = Math.abs(dx) >= Math.abs(dy);
+    const pastThreshold = Math.abs(dx) >= IMAGE_SWIPE_THRESHOLD;
+
+    if (!isHorizontal || !pastThreshold) {
+      // Spring back to current index with ease-out
+      if (stripRef.current) {
+        stripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        stripRef.current.style.transform = `translateX(${-imgIndex * w}px)`;
+      }
       return;
+    }
+
+    if (dx < 0 && imgIndex < displayImages.length - 1) {
+      setImgIndex(imgIndex + 1); // useEffect drives the snap animation from drag position
+    } else if (dx > 0 && imgIndex > 0) {
+      setImgIndex(imgIndex - 1);
+    } else {
+      // At first/last boundary — spring back
+      if (stripRef.current) {
+        stripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        stripRef.current.style.transform = `translateX(${-imgIndex * w}px)`;
+      }
     }
   };
 
@@ -287,10 +338,28 @@ export default function ListingCard({
           onPointerDown={handleImagePointerDown}
           onPointerMove={handleImagePointerMove}
           onPointerUp={handleImagePointerUp}
-          onPointerCancel={() => { imagePointerStart.current = null; }}
+          onPointerCancel={() => {
+            imagePointerStart.current = null;
+            if (stripRef.current) {
+              const w = getContainerWidth();
+              stripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+              stripRef.current.style.transform = `translateX(${-imgIndex * w}px)`;
+            }
+          }}
           onWheel={handleImageWheel}
         >
-          <ListingImage src={displayImages[imgIndex]} alt="" fallbackIndex={imgIndex} className="h-full w-full object-cover" />
+          {/* Horizontal strip — all images laid out side-by-side; translateX drives the slide */}
+          <div
+            ref={stripRef}
+            className="flex h-full"
+            style={{ width: `${displayImages.length * 100}%`, willChange: 'transform' }}
+          >
+            {displayImages.map((src, i) => (
+              <div key={i} className="h-full flex-shrink-0" style={{ width: `${100 / displayImages.length}%` }}>
+                <ListingImage src={src} alt="" fallbackIndex={i} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Image dots */}
