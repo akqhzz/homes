@@ -249,53 +249,47 @@ export default function SavedSearchesPanel({
               )}
               <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                {renamingId === search.id ? (
-                  <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
-                    <input
-                      value={renameName}
-                      onChange={(event) => setRenameName(event.target.value)}
-                      onClick={(event) => event.stopPropagation()}
-                      onKeyDown={(event) => {
-                        event.stopPropagation();
-                        if (event.key === 'Enter') finishRename();
-                        if (event.key === 'Escape') {
-                          setRenamingId(null);
-                          setRenameName('');
-                        }
-                      }}
-                      onBlur={finishRename}
-                      className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[var(--color-text-primary)] outline-none"
-                      autoFocus
-                    />
-                    <button
-                      type="button"
-                      onMouseDown={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                      }}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        finishRename();
-                      }}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
-                      aria-label="Finish rename"
-                    >
-                      <Check size={13} />
-                    </button>
-                  </div>
-                ) : (
-                  <p className="min-w-0 truncate font-heading text-sm text-[var(--color-text-primary)]">{search.name}</p>
-                )}
-                  <div className="mt-0.5 flex items-center gap-2">
+                  {renamingId === search.id ? (
+                    <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
+                      <input
+                        value={renameName}
+                        onChange={(event) => setRenameName(event.target.value)}
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => {
+                          event.stopPropagation();
+                          if (event.key === 'Enter') finishRename();
+                          if (event.key === 'Escape') {
+                            setRenamingId(null);
+                            setRenameName('');
+                          }
+                        }}
+                        onBlur={finishRename}
+                        className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[var(--color-text-primary)] outline-none"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                        }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          finishRename();
+                        }}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                        aria-label="Finish rename"
+                      >
+                        <Check size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="min-w-0 truncate font-heading text-sm text-[var(--color-text-primary)]">{search.name}</p>
+                  )}
+                  <div className="mt-0.5">
                     <p className="min-w-0 flex-1 truncate type-caption text-[var(--color-text-tertiary)]">
                       {criteriaSummary}
                     </p>
-                    {hasNewListings && (
-                      <SearchLocationChip
-                        label={`${search.newListingsCount} new`}
-                        className="shrink-0 py-1 text-xs"
-                      />
-                    )}
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
@@ -307,42 +301,50 @@ export default function SavedSearchesPanel({
                   >
                     <Ellipsis size={16} />
                   </button>
-                  {showUpdatedState ? (
-                    <span className="shrink-0 rounded-full border border-[var(--color-success)] bg-[var(--color-brand-50)] px-3 py-2 type-caption text-[var(--color-success)]">
-                      Updated
-                    </span>
-                  ) : isSelected && activeSearchDirty ? (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onUpdateSearch?.(search.id);
-                        setUpdatedSearchId(search.id);
-                        if (updateFeedbackTimeoutRef.current) {
-                          window.clearTimeout(updateFeedbackTimeoutRef.current);
-                        }
-                        updateFeedbackTimeoutRef.current = window.setTimeout(() => {
-                          setUpdatedSearchId((current) => (current === search.id ? null : current));
-                        }, 1400);
-                      }}
-                      className="shrink-0 rounded-full bg-[var(--color-text-primary)] px-3 py-2 type-caption text-white"
-                    >
-                      Update?
-                    </button>
-                  ) : isSelected ? (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleLoadSearch(search);
-                      }}
-                      className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-2 type-caption text-[var(--color-text-primary)]"
-                    >
-                      Unselect
-                    </button>
-                  ) : (
-                    <span className="h-8" aria-hidden="true" />
-                  )}
+                  <div className="flex items-center justify-end gap-2">
+                    {hasNewListings && (
+                      <SearchLocationChip
+                        label={`${search.newListingsCount} new`}
+                        className="shrink-0 bg-[var(--color-brand-600)] text-[var(--color-text-inverse)]"
+                      />
+                    )}
+                    {showUpdatedState ? (
+                      <span className="shrink-0 rounded-full border border-[var(--color-success)] bg-[var(--color-brand-50)] px-3 py-2 type-caption text-[var(--color-success)]">
+                        Updated
+                      </span>
+                    ) : isSelected && activeSearchDirty ? (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onUpdateSearch?.(search.id);
+                          setUpdatedSearchId(search.id);
+                          if (updateFeedbackTimeoutRef.current) {
+                            window.clearTimeout(updateFeedbackTimeoutRef.current);
+                          }
+                          updateFeedbackTimeoutRef.current = window.setTimeout(() => {
+                            setUpdatedSearchId((current) => (current === search.id ? null : current));
+                          }, 1400);
+                        }}
+                        className="shrink-0 rounded-full bg-[var(--color-text-primary)] px-3 py-2 type-caption text-[var(--color-text-inverse)]"
+                      >
+                        Update?
+                      </button>
+                    ) : isSelected ? (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleLoadSearch(search);
+                        }}
+                        className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-2 type-caption text-[var(--color-text-primary)]"
+                      >
+                        Unselect
+                      </button>
+                    ) : (
+                      <span className="h-8" aria-hidden="true" />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

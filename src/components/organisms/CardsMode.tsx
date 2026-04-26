@@ -26,9 +26,9 @@ const CARD_MODE_IMAGE_HEIGHT = 305;
 const CARD_MODE_IMAGE_COUNT = 8;
 const CARD_GAP = 12;
 const ACTION_BUTTON_CLASS =
-  'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select';
+  'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
 const DETAIL_CHIP_CLASS =
-  'pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[#F3F4F6] px-2.5 text-[11px] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[#E9EDF1] hover:text-[var(--color-text-primary)]';
+  'pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[11px] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
 const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
   'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
@@ -344,7 +344,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
       >
         <FloatingActionButton
-          layoutId="cards-map-control"
           onClick={() => handleShowOnMap()}
           aria-label="Map"
         >
@@ -353,7 +352,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
         <button
           onClick={passListing}
-          className={cn(ACTION_BUTTON_CLASS, 'text-[#4B5563]')}
+          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-secondary)]')}
         >
           <X size={16} strokeWidth={2.4} />
           Pass
@@ -374,7 +373,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         </motion.button>
 
         <FloatingActionButton
-          layoutId="saved-undo-control"
           onClick={() => setShowSortDrawer(true)}
           aria-label="Sort cards"
         >
@@ -454,7 +452,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         {showMapDrawer && mapDrawerListing && (
           <MobileDrawer
             title={(
-              <div className="pr-6 font-heading text-[1.02rem] font-medium leading-[1.35] text-[#334155]">
+              <div className="pr-6 font-heading text-[1.02rem] font-medium leading-[1.35] text-[var(--color-text-secondary)]">
                 {mapDrawerListing.address}
               </div>
             )}
@@ -493,7 +491,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 </MapGL>
               </div>
             ) : (
-              <div className="flex flex-1 items-center justify-center rounded-[24px] bg-[#E8ECEF]">
+              <div className="flex flex-1 items-center justify-center rounded-[24px] bg-[var(--color-surface-hover)]">
                 <div className="text-center p-6">
                   <MapPin size={36} className="mx-auto mb-3 text-[var(--color-text-tertiary)]" />
                   <p className="type-label text-[var(--color-text-primary)]">{mapDrawerListing.neighborhood}</p>
@@ -540,7 +538,7 @@ function ListingImage({
       alt={alt}
       width={900}
       height={675}
-      className={cn('h-full w-full object-cover bg-[#E8ECEF]', className)}
+      className={cn('h-full w-full object-cover bg-[var(--color-surface-hover)]', className)}
       draggable={false}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
@@ -690,7 +688,7 @@ function CardModeListingCard({
                     </div>
                   </>
                 ) : (
-                  <div className="absolute inset-0 bg-[linear-gradient(160deg,#edf2f7,#dbe4ee)]" />
+                  <div className="absolute inset-0 bg-[var(--color-surface-hover)]" />
                 )}
               </button>
             </div>

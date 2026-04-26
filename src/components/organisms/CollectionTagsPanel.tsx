@@ -86,7 +86,7 @@ function CollectionTagsPanelContent({
                 editingTag === tag
                   ? 'border-[var(--color-border-strong)] bg-transparent text-[var(--color-text-primary)]'
                   : selected
-                  ? 'border-[var(--color-brand-600)] bg-transparent text-[var(--color-brand-600)] shadow-[inset_0_0_0_1px_var(--color-brand-600)]'
+                  ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-[var(--color-text-inverse)]'
                   : 'border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-brand-600)] hover:text-[var(--color-brand-600)]'
               )}
               style={{ WebkitTouchCallout: 'none' }}
@@ -181,7 +181,7 @@ function CollectionTagsPanelContent({
           setMenuTag(null);
           setMenuAnchor(null);
         }}
-        className="fixed z-[70] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+              className="fixed z-[70] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
       >
         <div>
           {onRenameTag && menuTag && (
@@ -193,7 +193,7 @@ function CollectionTagsPanelContent({
                 setMenuTag(null);
                 setMenuAnchor(null);
               }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
             >
               <Pencil size={14} />
               Rename
@@ -207,7 +207,7 @@ function CollectionTagsPanelContent({
                 setMenuTag(null);
                 setMenuAnchor(null);
               }}
-              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[var(--color-accent)] hover:bg-[var(--color-brand-50)]"
             >
               <Trash2 size={14} />
               Delete

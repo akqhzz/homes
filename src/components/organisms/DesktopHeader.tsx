@@ -32,6 +32,7 @@ import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 import BackButton from '@/components/atoms/BackButton';
+import { shouldShowAreaSummaryChip } from '@/lib/utils/search-display';
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -89,6 +90,10 @@ export default function DesktopHeader({
   const isMapPage = pathname === '/' || pathname === '/map';
   const filterCount = activeFilterCount();
   const activeSearch = searches.find((search) => search.id === activeSearchId);
+  const showAreaSummaryChip = shouldShowAreaSummaryChip(
+    selectedLocations.map((location) => location.name),
+    areaSummaryLabel
+  );
   const locationLabel =
     selectedLocations.length === 0
       ? 'Where?'
@@ -162,8 +167,8 @@ export default function DesktopHeader({
                 setShowMenu(false);
               }}
               className={cn(
-                'flex min-h-[44px] w-full min-w-0 cursor-text items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[#F9FAFB]',
-                showSearch && 'shadow-[inset_0_0_0_1.5px_#0F1729,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
+                'flex min-h-[44px] w-full min-w-0 cursor-text items-center gap-2.5 rounded-full bg-white px-3.5 text-left shadow-[var(--shadow-control)] transition-all hover:bg-[var(--color-surface)]',
+                showSearch && 'border border-[var(--color-text-primary)]'
               )}
             >
               <Search size={15} className="text-[var(--color-text-tertiary)] flex-shrink-0" />
@@ -192,7 +197,7 @@ export default function DesktopHeader({
             </div>
             {showSearch && (
               <div className="absolute left-0 right-0 top-[54px] z-[80] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                {(selectedLocations.length > 0 || (hasAppliedArea && areaSummaryLabel)) && (
+                {(selectedLocations.length > 0 || (hasAppliedArea && showAreaSummaryChip)) && (
                   <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
                     <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                       {selectedLocations.map((location) => (
@@ -203,7 +208,7 @@ export default function DesktopHeader({
                           className="py-1 text-xs"
                         />
                       ))}
-                      {hasAppliedArea && areaSummaryLabel && (
+                      {hasAppliedArea && showAreaSummaryChip && areaSummaryLabel && (
                         <SearchLocationChip
                           label={areaSummaryLabel}
                           onRemove={() => onClearArea?.()}
@@ -242,14 +247,14 @@ export default function DesktopHeader({
               }}
               className={cn(
                 'relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] no-select',
-                filterCount > 0 && 'border border-[#374151] shadow-[inset_0_0_0_1px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
+                filterCount > 0 && 'border border-[var(--color-text-primary)] shadow-[inset_0_0_0_1px_var(--color-text-primary)]'
               )}
               aria-label="Filters"
             >
               <SlidersHorizontal size={16} className="text-[var(--color-text-primary)]" />
               Filter
               {filterCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-1 type-nano leading-none text-[var(--color-text-inverse)]">
                   {filterCount}
                 </span>
               )}
@@ -296,7 +301,12 @@ export default function DesktopHeader({
         <nav className={cn('flex items-center gap-1 flex-shrink-0', (isCollectionsPage || isListingVariant || isMapPage) && 'ml-auto')}>
           {isListingVariant ? (
             <>
-              {listingId && <ListingSaveButton listingId={listingId} className="bg-[#0F1729] text-white hover:bg-[#1F2937]" />}
+              {listingId && (
+                <ListingSaveButton
+                  listingId={listingId}
+                  className="bg-[var(--color-text-primary)] text-[var(--color-text-inverse)] hover:bg-[var(--color-primary-hover)]"
+                />
+              )}
               <button
                 type="button"
                 className="flex h-10 items-center gap-2 rounded-full bg-[var(--color-surface)] px-4 text-sm font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
@@ -308,7 +318,7 @@ export default function DesktopHeader({
           ) : isCollectionsPage ? (
             <button
               onClick={() => router.push('/')}
-              className="h-10 rounded-full bg-[#0F1729] px-4 text-sm font-semibold text-white transition-all hover:bg-[#1F2937]"
+              className="h-10 rounded-full bg-[var(--color-text-primary)] px-4 text-sm font-semibold text-[var(--color-text-inverse)] transition-all hover:bg-[var(--color-primary-hover)]"
             >
               Map
             </button>
@@ -367,7 +377,7 @@ export default function DesktopHeader({
                     })}
                     <button
                       onClick={() => router.push('/saved')}
-                      className="flex min-h-[84px] items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-left transition-colors hover:border-[var(--color-border-strong)] hover:bg-[#F9FAFB]"
+                      className="flex min-h-[84px] items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-left transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface)]"
                     >
                       <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
                         {MOCK_LISTINGS[0]?.images[0] && (

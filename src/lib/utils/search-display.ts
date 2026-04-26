@@ -11,6 +11,10 @@ function getCompactSummaryLabel(labels: string[]) {
   return `${labels[0]} + ${labels.length - 1} more`;
 }
 
+function normalizeChipLabel(label: string) {
+  return label.trim().toLowerCase();
+}
+
 export function formatCompactPriceValue(value: number) {
   return formatPrice(value).replace('K', 'k');
 }
@@ -102,4 +106,13 @@ export function getSavedSearchCriteriaSummary(search: SavedSearch) {
 
 export function getSearchSummaryPlaceholder() {
   return SEARCH_SUMMARY_PLACEHOLDER;
+}
+
+export function shouldShowAreaSummaryChip(locationNames: string[], areaSummaryLabel?: string) {
+  if (!areaSummaryLabel) return false;
+
+  const normalizedAreaLabel = normalizeChipLabel(areaSummaryLabel);
+  return !locationNames
+    .map(getPrimaryLocationLabel)
+    .some((locationLabel) => normalizeChipLabel(locationLabel) === normalizedAreaLabel);
 }
