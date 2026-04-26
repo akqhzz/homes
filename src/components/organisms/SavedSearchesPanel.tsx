@@ -291,6 +291,12 @@ export default function SavedSearchesPanel({
                       {criteriaSummary}
                     </p>
                   </div>
+                  {hasNewListings && (
+                    <SearchLocationChip
+                      label={`${search.newListingsCount} new`}
+                      className="type-micro mt-2 shrink-0 self-start bg-[var(--color-brand-600)] px-2 py-0.5 text-[var(--color-text-inverse)]"
+                    />
+                  )}
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <button
@@ -302,15 +308,6 @@ export default function SavedSearchesPanel({
                     <Ellipsis size={16} />
                   </button>
                   <div className="flex items-center justify-end gap-2">
-                    {hasNewListings && (
-                      <SearchLocationChip
-                        label={`${search.newListingsCount} new`}
-                        className={cn(
-                          'type-micro shrink-0 self-start bg-[var(--color-brand-600)] px-2 py-1 text-[var(--color-text-inverse)]',
-                          isDesktop ? 'mr-auto' : ''
-                        )}
-                      />
-                    )}
                     {showUpdatedState ? (
                       <span className="shrink-0 rounded-full border border-[var(--color-success)] bg-[var(--color-brand-50)] px-3 py-2 type-caption text-[var(--color-success)]">
                         Updated
