@@ -645,7 +645,7 @@ function CardModeListingCard({
             <div className="flex items-end gap-2">
               <div className="relative flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-4 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
                 <div className="flex w-full min-w-0 items-start justify-between gap-2">
-                  <p className="type-price min-w-0 truncate leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
+                  <p className="type-title min-w-0 truncate leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
                   <span className="shrink-0 pt-0.5 type-caption font-medium text-[var(--color-text-secondary)]">
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>

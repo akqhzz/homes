@@ -273,9 +273,9 @@ export default function AreaSelectPanel({
               </button>
               <p className="truncate type-heading text-[var(--color-text-primary)]">{focusedNeighborhood.name}</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-fine text-[var(--color-brand-text)]">🏠 {focusedNeighborhood.listingCount} listings</span>
-                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-fine text-[var(--color-brand-text)]">💵 Avg {formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
-                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-fine text-[var(--color-brand-text)]">🚶 Walk {focusedNeighborhood.walkScore}</span>
+                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-caption text-[var(--color-brand-text)]">🏠 {focusedNeighborhood.listingCount} listings</span>
+                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-caption text-[var(--color-brand-text)]">💵 Avg {formatAvgPrice(focusedNeighborhood.avgPrice)}</span>
+                <span className="rounded-full bg-[var(--color-brand-surface)] px-2.5 py-1.5 type-caption text-[var(--color-brand-text)]">🚶 Walk {focusedNeighborhood.walkScore}</span>
               </div>
               <button
                 onClick={() => {

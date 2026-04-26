@@ -162,8 +162,8 @@ export const MOCK_LISTINGS: Listing[] = [
     listingDate: '2026-04-16',
     daysOnMarket: 5,
     images: [
-      'https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&q=80',
-      'https://images.unsplash.com/photo-1600566752734-6c584b3e3ac0?w=800&q=80',
+      'https://images.unsplash.com/photo-1616137422495-1e9e46e2aa77?w=800&q=80',
+      'https://images.unsplash.com/photo-1618221469555-7f3ad97540d6?w=800&q=80',
       'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800&q=80',
     ],
     coordinates: { lat: 43.6448, lng: -79.3963 },
