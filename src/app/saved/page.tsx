@@ -19,11 +19,13 @@ interface MenuState {
   bottom: number;
 }
 
+type DesktopCreateAnchor = 'header' | 'empty' | null;
+
 export default function SavedPage() {
   const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
   const [showNewCollection, setShowNewCollection] = useState(false);
   const [creatingCollection, setCreatingCollection] = useState(false);
-  const [showDesktopCreate, setShowDesktopCreate] = useState(false);
+  const [desktopCreateAnchor, setDesktopCreateAnchor] = useState<DesktopCreateAnchor>(null);
   const [newName, setNewName] = useState('');
   const [menuState, setMenuState] = useState<MenuState | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -44,19 +46,19 @@ export default function SavedPage() {
   }, []);
 
   useEffect(() => {
-    if (!showDesktopCreate) return;
+    if (!desktopCreateAnchor) return;
     const handlePointerDown = (event: PointerEvent) => {
       if (
         !desktopCreateRef.current?.contains(event.target as Node) &&
         !emptyStateCreateRef.current?.contains(event.target as Node)
       ) {
-        setShowDesktopCreate(false);
+        setDesktopCreateAnchor(null);
         setCreatingCollection(false);
       }
     };
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [showDesktopCreate]);
+  }, [desktopCreateAnchor]);
 
   const closeMenu = () => {
     setMenuState(null);
@@ -77,7 +79,7 @@ export default function SavedPage() {
     setNewName('');
     setCreatingCollection(false);
     setShowNewCollection(false);
-    setShowDesktopCreate(false);
+    setDesktopCreateAnchor(null);
   };
 
   const startRename = (id: string, name: string) => {
@@ -106,6 +108,12 @@ export default function SavedPage() {
     closeMenu();
   };
 
+  const toggleDesktopCreate = (anchor: Exclude<DesktopCreateAnchor, null>) => {
+    setDesktopCreateAnchor((current) => (current === anchor ? null : anchor));
+    setCreatingCollection(false);
+    setNewName('');
+  };
+
   const isMenuOpen = !!menuState && !confirmDeleteId;
   const isConfirmOpen = !!menuState && !!confirmDeleteId;
 
@@ -125,22 +133,18 @@ export default function SavedPage() {
               <div ref={desktopCreateRef} className="relative">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowDesktopCreate((value) => !value);
-                    setCreatingCollection(false);
-                    setNewName('');
-                  }}
+                  onClick={() => toggleDesktopCreate('header')}
                   className="relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] no-select"
                 >
                   + New
                 </button>
-                {showDesktopCreate && (
+                {desktopCreateAnchor === 'header' && (
                   <div className="absolute right-0 top-[3.25rem] z-20 w-80 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                     <CreateInlineField
                       open
                       onOpenChange={(open) => {
                         if (!open) {
-                          setShowDesktopCreate(false);
+                          setDesktopCreateAnchor(null);
                           setNewName('');
                         }
                       }}
@@ -162,7 +166,7 @@ export default function SavedPage() {
 
         {/* Collections */}
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:w-full lg:px-6 lg:pt-8">
-          <div className="layout-content-wide grid w-full grid-cols-1 justify-center gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(280px,320px))] lg:justify-start">
+          <div className="layout-content-wide grid w-full grid-cols-1 justify-center gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(280px,320px))] lg:justify-start lg:content-start">
             {collections.map((col) => {
               const firstListing = col.listings.length > 0
                 ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
@@ -259,45 +263,41 @@ export default function SavedPage() {
             })}
 
             {collections.length === 0 && (
-              <div className="col-span-full flex justify-center py-20">
+              <div className="col-span-full flex min-h-[min(52vh,32rem)] items-center justify-center lg:min-h-[calc(100vh-16rem)]">
                 <div className="text-center">
-                <div className="text-5xl mb-4">🏠</div>
-                <p className="type-heading text-[var(--color-text-primary)]">No collections yet</p>
-                <p className="type-body text-[var(--color-text-tertiary)] mt-1">Create a collection to organize homes you want to revisit, compare, or share.</p>
-                <div ref={emptyStateCreateRef} className="relative mt-4 inline-flex">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowDesktopCreate((value) => !value);
-                      setCreatingCollection(false);
-                      setNewName('');
-                    }}
-                    className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-4 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]"
-                  >
-                    + New
-                  </button>
-                  {showDesktopCreate && (
-                    <div className="absolute left-1/2 top-[3.25rem] z-20 w-80 -translate-x-1/2 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                      <CreateInlineField
-                        open
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setShowDesktopCreate(false);
-                            setNewName('');
-                          }
-                        }}
-                        value={newName}
-                        onValueChange={setNewName}
-                        placeholder="Collection name..."
-                        collapsedLabel="New Collection"
-                        onSubmit={handleCreate}
-                        autoFocus
-                        submitLabel="Create"
-                        className="mb-0"
-                      />
-                    </div>
-                  )}
-                </div>
+                  <div className="mb-4 text-5xl">🏠</div>
+                  <p className="type-heading text-[var(--color-text-primary)]">No collections yet</p>
+                  <p className="mt-1 type-body text-[var(--color-text-tertiary)]">Create a collection to organize homes you want to revisit, compare, or share.</p>
+                  <div ref={emptyStateCreateRef} className="relative mt-4 inline-flex">
+                    <button
+                      type="button"
+                      onClick={() => toggleDesktopCreate('empty')}
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-4 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]"
+                    >
+                      + New
+                    </button>
+                    {desktopCreateAnchor === 'empty' && (
+                      <div className="absolute left-1/2 top-[3.25rem] z-20 w-80 -translate-x-1/2 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                        <CreateInlineField
+                          open
+                          onOpenChange={(open) => {
+                            if (!open) {
+                              setDesktopCreateAnchor(null);
+                              setNewName('');
+                            }
+                          }}
+                          value={newName}
+                          onValueChange={setNewName}
+                          placeholder="Collection name..."
+                          collapsedLabel="New Collection"
+                          onSubmit={handleCreate}
+                          autoFocus
+                          submitLabel="Create"
+                          className="mb-0"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

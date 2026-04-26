@@ -54,18 +54,23 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     if (!activeId) return;
     const index = listings.findIndex((listing) => listing.id === activeId);
     if (index >= 0) {
-      syncingExternalSelectionRef.current = true;
       const frame = requestAnimationFrame(() => {
+        syncingExternalSelectionRef.current = true;
         setInstantMove(true);
         setCurrentIndex(index);
-        requestAnimationFrame(() => {
-          setInstantMove(false);
-          syncingExternalSelectionRef.current = false;
-        });
       });
       return () => cancelAnimationFrame(frame);
     }
   }, [listings, mobileCarouselListingId]);
+
+  useEffect(() => {
+    if (!instantMove || !syncingExternalSelectionRef.current) return;
+    const frame = requestAnimationFrame(() => {
+      syncingExternalSelectionRef.current = false;
+      setInstantMove(false);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentIndex, instantMove]);
 
   useEffect(() => {
     const previousHtmlOverscroll = document.documentElement.style.overscrollBehaviorX;

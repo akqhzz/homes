@@ -438,11 +438,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <MobileDrawer
             onClose={dismissOnboarding}
             heightClassName="h-auto max-h-[58dvh]"
-            contentClassName="px-6 pb-6 pt-1"
+            contentClassName="px-6 pb-6 pt-0"
             showBackdrop={false}
           >
             <div className="mx-auto flex max-w-[320px] flex-col items-center text-center">
-              <div className="relative mt-2 flex h-28 w-full items-center justify-center">
+              <div className="relative flex h-24 w-full items-center justify-center">
                 <motion.div
                   className="absolute h-[4.5rem] w-[8.5rem] rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-control)]"
                   animate={{ x: [-18, 18, -18] }}
@@ -458,11 +458,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                   <span className="type-micro text-[var(--color-text-inverse)]">Swipe</span>
                 </motion.div>
               </div>
-              <h3 className="mt-2 type-subtitle text-[var(--color-text-primary)]">Welcome to card mode</h3>
+              <h3 className="mt-1 type-subtitle text-[var(--color-text-primary)]">Welcome to card mode ✨</h3>
               <p className="mt-2 type-body text-[var(--color-text-secondary)]">
-                Swipe left or right to move through homes, tap <span className="type-label">Pass</span> or <span className="type-label">Save</span> for quick decisions, and use the mini map or details controls when you want more context.
+                Swipe left or right, or tap <span className="type-label">Pass</span> or <span className="type-label">Save</span> to move through homes.
               </p>
-              <Button onClick={dismissOnboarding} size="md" className="mt-5 min-w-[132px]">
+              <Button onClick={dismissOnboarding} size="md" className="mt-4 min-w-[132px] type-btn">
                 Got it
               </Button>
             </div>
