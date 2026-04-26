@@ -31,7 +31,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
       <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
         <div className="layout-content-wide px-4 py-4 lg:px-8 lg:pb-7 lg:pt-3">
           <div className="relative">
-            <div className="pointer-events-none absolute right-4 top-4 z-10 lg:hidden">
+            <div className="pointer-events-none absolute right-3 top-3 z-10 lg:hidden">
               <OverlayCloseButton
                 label="Close listing detail"
                 variant="glass"

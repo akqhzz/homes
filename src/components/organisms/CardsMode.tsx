@@ -28,7 +28,7 @@ const CARD_GAP = 12;
 const ACTION_BUTTON_CLASS =
   'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
 const DETAIL_CHIP_CLASS =
-  'pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[11px] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
+  'type-caption pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
 const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
   'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
@@ -643,7 +643,7 @@ function CardModeListingCard({
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3">
             <div className="flex items-end gap-2">
-              <div className="relative flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-white/90 px-4 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl">
+              <div className="relative flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-[var(--color-background)] px-4 shadow-[0_8px_28px_rgba(15,23,41,0.16)]">
                 <div className="flex w-full min-w-0 items-start justify-between gap-2">
                   <p className="type-title min-w-0 truncate leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
                   <span className="shrink-0 pt-0.5 type-caption font-medium text-[var(--color-text-secondary)]">

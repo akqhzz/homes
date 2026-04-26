@@ -120,7 +120,7 @@ export default function SearchPanel({
             </div>
             {(query || selectedLocations.length > 0) && (
               <button
-                onClick={() => { setQuery(''); clearLocations(); }}
+                onClick={() => { setQuery(''); }}
                 className="shrink-0 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
               >
                 <X size={16} />
@@ -184,7 +184,13 @@ export default function SearchPanel({
                   />
                 )}
               </div>
-              <button onClick={clearLocations} className="type-label shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+              <button
+                onClick={() => {
+                  clearLocations();
+                  onClearArea?.();
+                }}
+                className="type-label shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+              >
                 Clear
               </button>
             </div>

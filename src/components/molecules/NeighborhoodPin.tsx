@@ -64,8 +64,8 @@ export default function NeighborhoodPin({
       </div>
       {showLabel && (
         <span className={cn(
-          'text-[#0F1729] bg-white/90 rounded-full shadow-sm whitespace-nowrap',
-          size === 'sm' ? 'px-1.5 py-0.5 type-micro' : 'px-2 py-0.5 type-caption'
+          'type-micro whitespace-nowrap rounded-full bg-white/90 text-[var(--color-text-primary)] shadow-sm',
+          size === 'sm' ? 'px-1.5 py-0.5' : 'px-2 py-0.5'
         )}>
           {neighborhood.name}
         </span>
