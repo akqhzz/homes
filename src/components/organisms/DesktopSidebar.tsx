@@ -38,7 +38,7 @@ function NavButton({ active, icon: Icon, label, onClick }: NavButtonProps) {
       )}
     >
       <Icon size={24} strokeWidth={active ? 2.25 : 1.9} />
-      <span className={cn('text-[0.68rem] font-medium leading-none', active ? 'text-[var(--color-brand-700)]' : 'text-[#64748B]')}>
+      <span className={cn('type-micro leading-none', active ? 'text-[var(--color-brand-700)]' : 'text-[#64748B]')}>
         {label}
       </span>
     </button>

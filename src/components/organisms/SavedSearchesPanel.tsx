@@ -10,7 +10,6 @@ import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import { cn } from '@/lib/utils/cn';
-import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import { getSavedSearchCriteriaSummary } from '@/lib/utils/search-display';
 
 interface SavedSearchesPanelProps {
@@ -292,10 +291,9 @@ export default function SavedSearchesPanel({
                     </p>
                   </div>
                   {hasNewListings && (
-                    <SearchLocationChip
-                      label={`${search.newListingsCount} new`}
-                      className="type-caption mt-2 shrink-0 self-start bg-[var(--color-brand-600)] px-2 py-0.5 text-[var(--color-text-inverse)]"
-                    />
+                    <span className="type-caption mt-2 inline-flex self-start rounded-full bg-[var(--color-brand-600)] px-2 py-0.5 text-[var(--color-text-inverse)]">
+                      {search.newListingsCount} new
+                    </span>
                   )}
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">

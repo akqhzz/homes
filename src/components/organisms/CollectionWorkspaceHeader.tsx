@@ -7,6 +7,7 @@ interface CollectionWorkspaceHeaderProps {
   title: string;
   subtitle?: string;
   titleClassName?: string;
+  subtitleClassName?: string;
   showBackButton?: boolean;
   compact?: boolean;
   compactProgress?: number;
@@ -19,6 +20,7 @@ export default function CollectionWorkspaceHeader({
   title,
   subtitle,
   titleClassName,
+  subtitleClassName,
   showBackButton = true,
   compact = false,
   compactProgress,
@@ -63,7 +65,8 @@ export default function CollectionWorkspaceHeader({
         {subtitle && (
           <p
             className={cn(
-              'text-[0.9rem] leading-[1.4] text-[#6B7280] transition-all duration-300 ease-out',
+              'text-[0.9rem] leading-[1.4] text-[var(--color-text-secondary)] transition-all duration-300 ease-out',
+              subtitleClassName,
               hideSubtitleOnMobile && 'hidden lg:block'
             )}
             style={{

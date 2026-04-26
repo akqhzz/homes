@@ -32,7 +32,7 @@ export default function NeighborhoodPin({
     return (
       <button
         onClick={handleClick}
-        className="flex h-11 min-w-11 items-center justify-center rounded-full border border-white/80 bg-[#0F1729]/88 px-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(15,23,41,0.28)] backdrop-blur"
+        className="type-micro flex h-9 min-w-9 items-center justify-center rounded-full border border-white/80 bg-[#0F1729]/88 px-2.5 text-white shadow-[0_10px_24px_rgba(15,23,41,0.28)] backdrop-blur"
       >
         {count}
       </button>

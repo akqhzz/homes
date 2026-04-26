@@ -113,6 +113,7 @@ export default function SavedPage() {
           <CollectionWorkspaceHeader
             title="Collections"
             titleClassName="type-subtitle"
+            subtitleClassName="type-body"
             subtitle={`${collections.length} collection${collections.length === 1 ? '' : 's'}`}
             showBackButton
             hideSubtitleOnMobile

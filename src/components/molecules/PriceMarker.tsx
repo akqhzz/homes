@@ -23,23 +23,23 @@ export default function PriceMarker({ price, isSelected, isSaved, isHovered, isV
     <button
       onClick={handleClick}
       className={cn(
-        'inline-flex cursor-pointer items-center gap-1 rounded-full py-[0.3125rem] text-[11px] font-semibold leading-none transition-colors duration-150 no-select',
+        'type-micro inline-flex cursor-pointer items-center gap-1 rounded-full py-[0.3125rem] leading-none transition-colors duration-150 no-select',
         isSaved ? 'px-1.5' : 'px-2',
         isSelected
-          ? 'bg-[#0F1729] text-white shadow-[0_3px_10px_rgba(0,0,0,0.22)]'
+          ? 'bg-[var(--color-text-primary)] text-[var(--color-text-inverse)] shadow-[0_3px_10px_rgba(0,0,0,0.22)]'
           : isHovered
-          ? 'bg-[#0F1729] text-white border border-[#0F1729] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
+          ? 'border border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-[var(--color-text-inverse)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
           : isSaved
-          ? 'bg-white text-[#0F1729] border border-[#E5E7EB] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
+          ? 'border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
           : isVisited
           ? 'border border-[var(--color-brand-200)] bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]'
-          : 'border border-[var(--color-brand-500)] bg-[var(--color-marker-default-bg)] text-[var(--color-marker-default-text)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
+          : 'border border-[var(--color-brand-600)] bg-[var(--color-marker-default-bg)] text-[var(--color-marker-default-text)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]'
       )}
     >
       {isSaved && (
         <Heart
           size={11}
-          className={cn(isSelected ? 'fill-[#EF4444] text-[#EF4444]' : 'fill-[#EF4444] text-[#EF4444]')}
+          className="fill-[var(--color-accent)] text-[var(--color-accent)]"
           strokeWidth={2.2}
         />
       )}

@@ -295,7 +295,7 @@ export default function ListingCard({
               <ListingAddressRow className="gap-1 type-caption text-[var(--color-text-secondary)]" iconSize={11}>
                 {listing.address}
               </ListingAddressRow>
-              <p className="mt-1 text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8]">{mlsLine}</p>
+              <p className="type-micro mt-1 uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8]">{mlsLine}</p>
             </div>
           </div>
         </div>
@@ -437,7 +437,7 @@ export default function ListingCard({
                 <p className="pr-2 type-caption text-[var(--color-text-secondary)] line-clamp-2">
                   {listing.address}
                 </p>
-                <p className="mt-1 pr-2 text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8] line-clamp-1">
+                <p className="type-micro mt-1 pr-2 uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8] line-clamp-1">
                   {mlsLine}
                 </p>
               </div>

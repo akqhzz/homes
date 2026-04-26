@@ -225,6 +225,7 @@ export default function CollectionPage() {
             className="lg:min-h-0"
             title={collection.name}
             titleClassName="type-subtitle"
+            subtitleClassName="type-body"
             subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
             compact={mobileView === 'map'}
             compactProgress={mobileHeaderProgress}
@@ -286,6 +287,7 @@ export default function CollectionPage() {
                       showBackButton={false}
                       title={collection.name}
                       titleClassName="type-subtitle"
+                      subtitleClassName="type-body"
                       subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
                       compactProgress={mobileHeaderProgress}
                       className="min-h-[2.5rem]"
