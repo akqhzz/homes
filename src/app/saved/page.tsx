@@ -35,7 +35,7 @@ export default function SavedPage() {
   useEffect(() => {
     const handleCreateIntent = () => {
       setNewName('');
-      setCreatingCollection(false);
+      setCreatingCollection(true);
       setShowNewCollection(true);
     };
     window.addEventListener('homes:create-collection', handleCreateIntent);
@@ -128,7 +128,7 @@ export default function SavedPage() {
                   }}
                   className="relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] no-select"
                 >
-                  Add
+                  + New
                 </button>
                 {showDesktopCreate && (
                   <div className="absolute right-0 top-[3.25rem] z-20 w-80 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
@@ -258,7 +258,18 @@ export default function SavedPage() {
               <div className="text-center py-20">
                 <div className="text-5xl mb-4">🏠</div>
                 <p className="type-label text-[var(--color-text-primary)]">No collections yet</p>
-                <p className="type-body text-[var(--color-text-tertiary)] mt-1">Save listings to create your first collection</p>
+                <p className="type-body text-[var(--color-text-tertiary)] mt-1">Create a collection to organize homes you want to revisit, compare, or share.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewName('');
+                    setCreatingCollection(true);
+                    setShowNewCollection(true);
+                  }}
+                  className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-4 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]"
+                >
+                  + New
+                </button>
               </div>
             )}
           </div>
@@ -301,7 +312,7 @@ export default function SavedPage() {
               placeholder="Collection name..."
               collapsedLabel="Create new collection"
               onSubmit={handleCreate}
-              autoFocus
+              autoFocus={creatingCollection}
             />
           </MobileDrawer>
         )}

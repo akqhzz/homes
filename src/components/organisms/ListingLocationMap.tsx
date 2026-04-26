@@ -35,7 +35,7 @@ export default function ListingLocationMap({ listing }: { listing: Listing }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group relative block h-28 w-full overflow-hidden rounded-[24px] bg-[var(--color-surface)] shadow-[var(--shadow-control)] transition-transform hover:scale-[1.01]"
+        className="group relative block h-32 w-full overflow-hidden rounded-[var(--radius-lg)] bg-[var(--color-surface)] transition-transform hover:scale-[1.01] lg:h-36"
       >
         {previewSrc ? (
           <>
@@ -120,7 +120,7 @@ function ListingLocationMapCanvas({ listing }: { listing: Listing }) {
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-[24px]">
+    <div className="relative h-full min-h-0 w-full overflow-hidden rounded-[var(--radius-lg)]">
       <MapGL
         initialViewState={{
           longitude: listing.coordinates.lng,

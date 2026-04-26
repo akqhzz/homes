@@ -27,6 +27,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const wheelLockRef = useRef(false);
+  const syncingExternalSelectionRef = useRef(false);
   const mobileCarouselListingId = useMapStore((s) => s.mobileCarouselListingId);
   const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
   const markVisitedListing = useMapStore((s) => s.markVisitedListing);
@@ -53,10 +54,14 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
     if (!activeId) return;
     const index = listings.findIndex((listing) => listing.id === activeId);
     if (index >= 0) {
+      syncingExternalSelectionRef.current = true;
       const frame = requestAnimationFrame(() => {
         setInstantMove(true);
         setCurrentIndex(index);
-        requestAnimationFrame(() => setInstantMove(false));
+        requestAnimationFrame(() => {
+          setInstantMove(false);
+          syncingExternalSelectionRef.current = false;
+        });
       });
       return () => cancelAnimationFrame(frame);
     }
@@ -79,6 +84,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   }, [markVisitedListing, mobileCarouselListingId]);
 
   useEffect(() => {
+    if (syncingExternalSelectionRef.current) return;
     const centeredListing = listings[currentIndex];
     if (!centeredListing) return;
     setMobileCarouselListingId(centeredListing.id);

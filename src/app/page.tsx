@@ -33,6 +33,7 @@ import {
   searchToSnapshot,
 } from '@/lib/search-utils';
 import { getAreaSummaryLabel } from '@/lib/utils/search-display';
+import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
 const SearchPanel = dynamic(() => import('@/components/organisms/SearchPanel'), { ssr: false });
@@ -281,6 +282,23 @@ export default function MapPage() {
     }
   };
 
+  const removeAppliedAreaChip = (label: string) => {
+    const normalizedLabel = getPrimaryLocationLabel(label).trim().toLowerCase();
+    const matchingNeighborhood = MOCK_NEIGHBORHOODS.find(
+      (neighborhood) => getPrimaryLocationLabel(neighborhood.name).trim().toLowerCase() === normalizedLabel
+    );
+
+    if (matchingNeighborhood && appliedNeighborhoods.has(matchingNeighborhood.id)) {
+      const nextNeighborhoods = new Set(appliedNeighborhoods);
+      nextNeighborhoods.delete(matchingNeighborhood.id);
+      setAppliedNeighborhoods(nextNeighborhoods);
+      setSelectedNeighborhoods(new Set(nextNeighborhoods));
+      return;
+    }
+
+    clearVisibleBoundaries();
+  };
+
   const undoBoundary = () => {
     if (drawnBoundary.length === 0 && clearedBoundarySnapshot && redoBoundary.length === 0) {
       setDrawnBoundary(clearedBoundarySnapshot);
@@ -495,6 +513,7 @@ export default function MapPage() {
         hasAppliedArea={hasVisibleBoundary}
         areaSummaryLabel={areaSummaryLabel}
         currentNeighborhoodIds={[...appliedNeighborhoods]}
+        onRemoveAreaChip={removeAppliedAreaChip}
         onClearArea={clearVisibleBoundaries}
       />
 
@@ -639,6 +658,7 @@ export default function MapPage() {
             hasAppliedArea={hasVisibleBoundary}
             areaSummaryLabel={areaSummaryLabel}
             currentNeighborhoodIds={[...appliedNeighborhoods]}
+            onRemoveAreaChip={removeAppliedAreaChip}
             onOpenAreaSelect={openAreaSelect}
             onEditArea={editAppliedArea}
             onClearArea={clearVisibleBoundaries}

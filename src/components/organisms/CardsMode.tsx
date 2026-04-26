@@ -280,10 +280,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center gap-5">
         <span className="text-5xl">🏠</span>
         <div className="text-center">
-          <p className="type-subtitle text-[var(--color-text-primary)]">All caught up!</p>
-          <p className="mt-1 type-body text-[var(--color-text-tertiary)]">You&apos;ve seen all {listings.length} listings</p>
+          <p className="type-subtitle text-[var(--color-text-primary)]">You&apos;ve seen everything</p>
+          <p className="mt-1 type-body text-[var(--color-text-tertiary)]">You&apos;ve reached the end of this card stack. Jump back to the map to keep exploring.</p>
         </div>
-        <button onClick={onClose} className="type-label text-[var(--color-text-primary)] underline underline-offset-2">
+        <button onClick={onClose} className="rounded-full bg-[var(--color-text-primary)] px-5 py-3 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]">
           Back to map
         </button>
       </div>

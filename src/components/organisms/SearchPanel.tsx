@@ -15,6 +15,7 @@ interface SearchPanelProps {
   hasAppliedArea?: boolean;
   areaSummaryLabel?: string;
   currentNeighborhoodIds?: string[];
+  onRemoveAreaChip?: (label: string) => void;
   onOpenAreaSelect?: () => void;
   onEditArea?: () => void;
   onClearArea?: () => void;
@@ -24,6 +25,7 @@ export default function SearchPanel({
   hasAppliedArea = false,
   areaSummaryLabel,
   currentNeighborhoodIds = [],
+  onRemoveAreaChip,
   onOpenAreaSelect,
   onEditArea,
   onClearArea,
@@ -186,7 +188,10 @@ export default function SearchPanel({
                   <SearchLocationChip
                     key={label}
                     label={label}
-                    onRemove={() => onClearArea?.()}
+                    onRemove={() => {
+                      if (onRemoveAreaChip) onRemoveAreaChip(label);
+                      else onClearArea?.();
+                    }}
                   />
                 ))}
               </div>
