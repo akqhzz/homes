@@ -147,14 +147,10 @@ function ListingLocationMapCanvas({ listing }: { listing: Listing }) {
             show3dObjects: false,
           },
         }}
-        >
-          <Marker
-            longitude={listing.coordinates.lng}
-            latitude={listing.coordinates.lat}
-            anchor="bottom"
-          >
-            <MapListingPin size={22} dotSize={6} />
-          </Marker>
+      >
+        <Marker longitude={listing.coordinates.lng} latitude={listing.coordinates.lat} anchor="bottom">
+          <MapListingPin size={22} dotSize={6} />
+        </Marker>
         <AttributionControl compact position="bottom-right" />
       </MapGL>
     </div>

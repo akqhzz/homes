@@ -29,6 +29,8 @@ const CARD_MODE_IMAGE_COUNT = 8;
 const CARD_GAP = 12;
 const ACTION_BUTTON_CLASS =
   'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
+const ONBOARDING_BUTTON_RING_CLASS =
+  'absolute inset-[-7px] rounded-full border border-[var(--color-brand-300)] bg-[var(--color-brand-50)]/70 shadow-[var(--shadow-control)]';
 const DETAIL_CHIP_CLASS =
   'type-caption pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
 const CARDS_MODE_ONBOARDING_KEY = 'homes.cards-mode-onboarding-seen';
@@ -319,18 +321,18 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         style={{ right: '1rem', top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
         variant="glass"
       />
-
       <AnimatePresence>
         {showOnboarding && (
           <motion.div
-            initial={{ opacity: 0, y: -12 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 flex justify-center"
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="pointer-events-none absolute inset-x-5 bottom-[calc(env(safe-area-inset-bottom,0px)+5.6rem)] z-20"
           >
-            <div className="max-w-[320px] rounded-full bg-[var(--color-text-primary)] px-4 py-2 text-center type-caption text-[var(--color-text-inverse)] shadow-[var(--shadow-control)]">
-              Tap the action buttons or swipe left and right to move between cards.
+            <div className="relative rounded-[28px] bg-[var(--color-text-primary)] px-4 py-3 shadow-[var(--shadow-xl)]">
+              <p className="type-caption text-[var(--color-text-inverse)]">Swipe sideways to move between homes, or use the action buttons below.</p>
+              <div className="pointer-events-none absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-[var(--color-text-primary)]" />
             </div>
           </motion.div>
         )}
@@ -400,30 +402,48 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <Map size={17} strokeWidth={2} />
         </FloatingActionButton>
 
-        <button
-          onClick={passListing}
-          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-secondary)]')}
-        >
-          <X size={16} strokeWidth={2.4} />
-          Pass
-        </button>
+        <div className="relative">
+          {showOnboarding && (
+            <motion.div
+              className={ONBOARDING_BUTTON_RING_CLASS}
+              animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          )}
+          <button
+            onClick={passListing}
+            className={cn(ACTION_BUTTON_CLASS, 'relative z-10 text-[var(--color-text-secondary)]')}
+          >
+            <X size={16} strokeWidth={2.4} />
+            Pass
+          </button>
+        </div>
 
-        <motion.button
-          onClick={() => {
-            dismissOnboarding();
-            setSavePickerListing(listing);
-          }}
-          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-primary)]')}
-          animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
-          transition={{ duration: 0.24, ease: 'easeOut' }}
-        >
-          <Heart
-            size={16}
-            strokeWidth={2.4}
-            className={cn(liked || likePulse ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
-          />
-          Save
-        </motion.button>
+        <div className="relative">
+          {showOnboarding && (
+            <motion.div
+              className={ONBOARDING_BUTTON_RING_CLASS}
+              animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut', delay: 0.18 }}
+            />
+          )}
+          <motion.button
+            onClick={() => {
+              dismissOnboarding();
+              setSavePickerListing(listing);
+            }}
+            className={cn(ACTION_BUTTON_CLASS, 'relative z-10 text-[var(--color-text-primary)]')}
+            animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+          >
+            <Heart
+              size={16}
+              strokeWidth={2.4}
+              className={cn(liked || likePulse ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
+            />
+            Save
+          </motion.button>
+        </div>
 
         <FloatingActionButton
           onClick={() => {

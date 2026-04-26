@@ -72,6 +72,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
               <h2 className="type-title text-[var(--color-text-primary)]">About This Home</h2>
               <p className="mt-3 max-w-4xl type-body leading-7 text-[var(--color-text-secondary)]">{extendedDescription}</p>
+              <ListingLocationMap listing={listing} />
 
               <div className="my-8 h-px bg-[var(--color-surface)]" />
 
@@ -104,11 +105,6 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <p className="mt-3 max-w-4xl type-body leading-7 text-[var(--color-text-secondary)]">
                 Set in {listing.neighborhood}, this address is close to local cafes, grocery options, parks, and frequent transit. The surrounding blocks offer a balanced mix of residential calm and city access, making it practical for commuting, hosting, and daily routines.
               </p>
-
-              <div className="my-8 h-px bg-[var(--color-surface)]" />
-
-              <h2 className="type-title text-[var(--color-text-primary)]">Map Preview</h2>
-              <ListingLocationMap listing={listing} />
             </div>
 
             <aside className="hidden h-fit rounded-3xl border border-[var(--color-border)] p-6 lg:sticky lg:top-6 lg:block">
