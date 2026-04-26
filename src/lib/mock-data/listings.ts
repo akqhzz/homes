@@ -1,8 +1,12 @@
-import { Listing } from '@/lib/types';
+import type { Listing } from '@/lib/types';
+import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
+import { generateTorontoMockListings } from '@/lib/mock-data/listing-generator';
 
 const DEFAULT_BROKERAGE = 'URBAN HOMES REALTY INC.';
 
-export const MOCK_LISTINGS: Listing[] = [
+const GENERATED_LISTING_COUNT = 200;
+
+export const BASE_LISTINGS: Listing[] = [
   {
     id: 'lst-001',
     price: 828000,
@@ -290,3 +294,10 @@ export const MOCK_LISTINGS: Listing[] = [
     taxes: 9800,
   },
 ];
+
+export const GENERATED_MOCK_LISTINGS = generateTorontoMockListings(BASE_LISTINGS, {
+  count: GENERATED_LISTING_COUNT,
+  neighborhoods: MOCK_NEIGHBORHOODS,
+});
+
+export const MOCK_LISTINGS: Listing[] = [...BASE_LISTINGS, ...GENERATED_MOCK_LISTINGS];

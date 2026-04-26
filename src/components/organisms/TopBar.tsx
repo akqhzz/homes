@@ -27,7 +27,7 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
   const filterCount = activeFilterCount();
   const locationLabel =
     selectedLocations.length === 0
-      ? hasAppliedArea ? areaSummaryLabel ?? '1 area' : 'Where?'
+      ? hasAppliedArea ? areaSummaryLabel ?? '1 area' : 'Add an area'
       : selectedLocations.length === 1
       ? selectedLocations[0].name.split(',')[0]?.trim() || selectedLocations[0].name
       : `${selectedLocations.length} area${selectedLocations.length === 1 ? '' : 's'}`;

@@ -13,6 +13,8 @@ interface MobileDrawerProps {
   contentClassName?: string;
   heightClassName?: string;
   showBackdrop?: boolean;
+  showHandle?: boolean;
+  showCloseButton?: boolean;
 }
 
 export default function MobileDrawer({
@@ -24,6 +26,8 @@ export default function MobileDrawer({
   contentClassName,
   heightClassName = 'max-h-[78dvh]',
   showBackdrop = true,
+  showHandle = true,
+  showCloseButton = true,
 }: MobileDrawerProps) {
   const drawerRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -248,7 +252,7 @@ export default function MobileDrawer({
         exit={{ y: 36, opacity: 0 }}
         transition={{ type: 'tween', duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          'fixed inset-x-0 bottom-0 z-[60] flex h-auto w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-[0_-12px_32px_rgba(15,23,41,0.16)]',
+          'fixed inset-x-0 bottom-0 z-[60] flex h-auto w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-[var(--shadow-sheet)]',
           heightClassName,
           className
         )}
@@ -265,18 +269,20 @@ export default function MobileDrawer({
           style={{ touchAction: 'none' }}
           className="cursor-grab active:cursor-grabbing"
         >
-          <div className="mx-auto mt-2.5 h-1 w-7 rounded-full bg-[#D1D5DB]" />
+          {showHandle && <div className="mx-auto mt-2.5 h-1 w-7 rounded-full bg-[var(--color-border-strong)]" />}
           <header className="flex items-center justify-between gap-3 px-4 pb-3 pt-2">
-            {title && <div className="type-subtitle min-w-0 flex-1 truncate text-left text-[#0F1729]">{title}</div>}
-            <button
-              type="button"
-              onClick={onClose}
-              onPointerDown={(e) => e.stopPropagation()}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[#0F1729] hover:bg-[#F5F6F7]"
-              aria-label="Close drawer"
-            >
-              <X size={18} />
-            </button>
+            {title && <div className="type-subtitle min-w-0 flex-1 truncate text-left text-[var(--color-text-primary)]">{title}</div>}
+            {showCloseButton && (
+              <button
+                type="button"
+                onClick={onClose}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                aria-label="Close drawer"
+              >
+                <X size={18} />
+              </button>
+            )}
           </header>
         </div>
         <div

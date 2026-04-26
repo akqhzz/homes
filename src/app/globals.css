@@ -230,3 +230,111 @@ main {
   max-width: var(--layout-content-max);
   margin-inline: auto;
 }
+
+.pagination-shell {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-bottom: 1rem;
+}
+
+.pagination-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.pagination-arrow,
+.pagination-page {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease;
+}
+
+.pagination-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+}
+
+.pagination-page {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  border-radius: 9999px;
+  font-family: var(--font-body-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.pagination-arrow:hover:not(:disabled),
+.pagination-page:hover:not(.is-active) {
+  background: rgba(15, 23, 41, 0.05);
+  color: var(--color-text-primary);
+}
+
+.pagination-page.is-active {
+  color: var(--color-text-primary);
+  background: rgba(15, 23, 41, 0.08);
+}
+
+.pagination-arrow:disabled {
+  color: var(--color-text-tertiary);
+  cursor: default;
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-body-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.map-cluster-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.95rem;
+  height: 1.95rem;
+  padding: 0 0.48rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 9999px;
+  background: rgba(42, 101, 79, 0.96);
+  color: white;
+  font-family: var(--font-body-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 4px 14px rgba(42, 101, 79, 0.22);
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.map-cluster-marker:hover {
+  background: rgba(51, 123, 97, 0.98);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(42, 101, 79, 0.26);
+}
+
+.map-cluster-marker.is-highlighted {
+  background: rgba(15, 23, 41, 0.98);
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(15, 23, 41, 0.24);
+}
+
+.map-pin-marker {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}

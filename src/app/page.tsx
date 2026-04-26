@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -24,6 +24,7 @@ import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
 import { Neighborhood, SavedSearch } from '@/lib/types';
+import { getListingsInViewport, rankCardModeListings } from '@/lib/listing-scope';
 import { applyFilters, filterListingsBySearchArea } from '@/lib/search-filters';
 import {
   areSearchSnapshotsEqual,
@@ -71,13 +72,23 @@ function getSearchViewState(
 }
 
 export default function MapPage() {
-  const { activePanel, setActivePanel, isCarouselVisible, setCarouselVisible, setAreaSelectMode } = useUIStore();
+  const {
+    activePanel,
+    setActivePanel,
+    isCarouselVisible,
+    setCarouselVisible,
+    setAreaSelectMode,
+    isDesktopMapExpanded,
+    setDesktopMapExpanded,
+  } = useUIStore();
   const { filters, selectedLocations, setLocations, replaceFilters, clearLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
   const setHoveredListingId = useMapStore((s) => s.setHoveredListingId);
   const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
   const setViewState = useMapStore((s) => s.setViewState);
+  const viewportBounds = useMapStore((s) => s.viewportBounds);
+  const visitedListingIds = useMapStore((s) => s.visitedListingIds);
   const {
     searches,
     activeSearchId,
@@ -101,17 +112,34 @@ export default function MapPage() {
   const [preSavedSearchState, setPreSavedSearchState] = useState<SearchSnapshot | null>(null);
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
-  const filteredListings = filterListingsBySearchArea(
-    applyFilters(MOCK_LISTINGS, filters),
-    selectedLocations,
-    appliedBoundary,
-    appliedNeighborhoods
-  );
-  const cardsModeListings = filteredListings;
   const isAreaSelect = activePanel === 'area-select';
   const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
   const hasSearchBoundary = selectedLocations.some((location) => (location.boundary?.length ?? 0) > 2);
   const hasVisibleBoundary = hasAppliedArea || hasSearchBoundary;
+  const filteredListings = useMemo(
+    () =>
+      filterListingsBySearchArea(
+        applyFilters(MOCK_LISTINGS, filters),
+        selectedLocations,
+        appliedBoundary,
+        appliedNeighborhoods
+      ),
+    [appliedBoundary, appliedNeighborhoods, filters, selectedLocations]
+  );
+  const scopedListings = useMemo(
+    () => (hasVisibleBoundary ? filteredListings : getListingsInViewport(filteredListings, viewportBounds)),
+    [filteredListings, hasVisibleBoundary, viewportBounds]
+  );
+  const cardsModeListings = useMemo(
+    () =>
+      rankCardModeListings({
+        filteredListings,
+        scopedListings,
+        visitedListingIds,
+        hasBoundaryScope: hasVisibleBoundary,
+      }),
+    [filteredListings, hasVisibleBoundary, scopedListings, visitedListingIds]
+  );
   const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0 || selectedLocations.length > 0;
   const activeSavedSearch = searches.find((search) => search.id === activeSearchId) ?? null;
   const searchAreaNames = selectedLocations
@@ -149,6 +177,16 @@ export default function MapPage() {
       setHoveredListingId(null);
     }
   }, [isCarouselVisible, setHoveredListingId, setMobileCarouselListingId, setSelectedListingId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const syncDesktopExpand = () => {
+      if (window.innerWidth < 1024) setDesktopMapExpanded(false);
+    };
+    syncDesktopExpand();
+    window.addEventListener('resize', syncDesktopExpand);
+    return () => window.removeEventListener('resize', syncDesktopExpand);
+  }, [setDesktopMapExpanded]);
 
   useEffect(() => {
     let edgeTouch = false;
@@ -623,7 +661,7 @@ export default function MapPage() {
                   pointer-events-auto
                 "
               >
-                <ListingsCarousel listings={filteredListings} />
+                <ListingsCarousel listings={scopedListings} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -661,9 +699,11 @@ export default function MapPage() {
         </div>
 
         {/* Desktop listings sidebar */}
-        <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[688px] 3xl:w-[1024px]">
-          <ListingsSidebar listings={filteredListings} />
-        </div>
+        {!isDesktopMapExpanded && (
+          <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[696px] 3xl:w-[1036px]">
+            <ListingsSidebar listings={scopedListings} useMapAreaLabel={!hasVisibleBoundary} />
+          </div>
+        )}
       </div>
 
       {/* Mobile bottom nav (pill + side buttons) */}

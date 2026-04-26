@@ -114,12 +114,12 @@ export default function ListingCard({
   };
 
   const handleImageWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 18) return;
     e.preventDefault();
     e.stopPropagation();
-    if (Math.abs(e.deltaY) < 8 && Math.abs(e.deltaX) < 8) return;
     if (wheelLockRef.current) return;
     wheelLockRef.current = true;
-    if (e.deltaY > 0 || e.deltaX > 0) showNextImage();
+    if (e.deltaX > 0) showNextImage();
     else showPreviousImage();
     window.setTimeout(() => {
       wheelLockRef.current = false;

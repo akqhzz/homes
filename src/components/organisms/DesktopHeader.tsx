@@ -107,7 +107,7 @@ export default function DesktopHeader({
   }).filter((label) => !locationChipLabels.includes(label));
   const locationLabel =
     selectedLocations.length === 0
-      ? 'Where?'
+      ? 'Add an area'
       : selectedLocations.length === 1
       ? getPrimaryLocationLabel(selectedLocations[0].name)
       : `${getPrimaryLocationLabel(selectedLocations[0].name)}, +${selectedLocations.length - 1}`;
@@ -191,7 +191,7 @@ export default function DesktopHeader({
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' && filteredLocations[0]) selectLocation(filteredLocations[0]);
                   }}
-                  placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Where?'}
+                  placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Add an area'}
                   className="type-label min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)]"
                 />
               ) : hasAppliedArea && areaSummaryLabel ? (

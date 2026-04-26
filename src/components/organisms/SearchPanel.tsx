@@ -123,7 +123,7 @@ export default function SearchPanel({
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={selectedLocations.length === 0 ? 'Where?' : 'Add another...'}
+                placeholder={selectedLocations.length === 0 ? 'Add an area' : 'Add another...'}
                 className="min-w-20 flex-1 bg-transparent type-body text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)]"
               />
             </div>

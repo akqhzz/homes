@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,7 @@ import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
 import { getMapboxToken } from '@/lib/mapbox-token';
 import { getStaticMapPreviewUrl } from '@/lib/map-preview';
+import { getWindowRange } from '@/lib/utils/windowing';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import OverlayIconButton from '@/components/atoms/OverlayIconButton';
 import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
@@ -86,6 +87,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const listing = sortedListings[activeIndex];
   const detailDrawerListing = drawerListing ?? listing;
   const mapDrawerListing = drawerListing ?? listing;
+  const { start: windowStart, end: windowEnd } = useMemo(
+    () => getWindowRange(activeIndex, sortedListings.length),
+    [activeIndex, sortedListings.length]
+  );
+  const visibleListings = useMemo(
+    () => sortedListings.slice(windowStart, windowEnd),
+    [sortedListings, windowEnd, windowStart]
+  );
+  const trackWidth = Math.max(0, sortedListings.length * cardWidth + Math.max(0, sortedListings.length - 1) * CARD_GAP);
 
   useEffect(() => {
     const updateWidth = () => {
@@ -321,22 +331,26 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         onTouchEnd={handleTrackTouchEnd}
       >
         <motion.div
-          className="flex h-full"
+          className="relative h-full"
           animate={{ x: -activeIndex * (cardWidth + CARD_GAP) }}
           transition={{ type: 'spring', stiffness: 360, damping: 38, mass: 0.28 }}
           style={{
-            gap: CARD_GAP,
+            width: trackWidth,
             willChange: 'transform',
             paddingLeft: Math.max(0, (viewportWidth - cardWidth) / 2 - 12),
             paddingRight: Math.max(0, (viewportWidth - cardWidth) / 2 - 12),
           }}
         >
-          {sortedListings.map((item, index) => (
+          {visibleListings.map((item, offset) => {
+            const index = windowStart + offset;
+            return (
             <CardModeListingCard
               key={item.id}
               listing={item}
               width={cardWidth}
               active={index === activeIndex}
+              className="absolute top-0"
+              style={{ left: index * (cardWidth + CARD_GAP) }}
               onOpenDetail={() => {
                 if (activeDragRef.current) return;
                 dismissOnboarding();
@@ -354,7 +368,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               onClose={onClose}
               onInteract={dismissOnboarding}
             />
-          ))}
+            );
+          })}
         </motion.div>
       </div>
 
@@ -439,7 +454,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             onClose={dismissOnboarding}
             heightClassName="h-auto max-h-[58dvh]"
             contentClassName="px-6 pb-6 pt-0"
-            showBackdrop={false}
+            showBackdrop
+            showCloseButton={false}
           >
             <div className="mx-auto flex max-w-[320px] flex-col items-center text-center">
               <div className="relative flex h-24 w-full items-center justify-center">
@@ -614,18 +630,22 @@ function CardModeListingCard({
   listing,
   width,
   active,
+  className,
   onOpenDetail,
   onOpenMap,
   onClose,
   onInteract,
+  style,
 }: {
   listing: Listing;
   width: number;
   active: boolean;
+  className?: string;
   onOpenDetail: () => void;
   onOpenMap: () => void;
   onClose: () => void;
   onInteract: () => void;
+  style?: CSSProperties;
 }) {
   const images = getListingImages(listing);
   const mapPreviewSrc = getStaticMapPreviewUrl(listing.coordinates, MAPBOX_TOKEN);
@@ -667,8 +687,8 @@ function CardModeListingCard({
 
   return (
     <motion.article
-      className="h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select"
-      style={{ width }}
+      className={cn('h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select', className)}
+      style={{ width, ...style }}
       animate={{ scale: active ? 1 : 0.965, opacity: active ? 1 : 0.82 }}
       transition={{ type: 'spring', stiffness: 240, damping: 32, mass: 0.3 }}
     >

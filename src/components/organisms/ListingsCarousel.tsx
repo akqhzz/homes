@@ -1,14 +1,16 @@
 'use client';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Listing } from '@/lib/types';
 import ListingCard from '@/components/molecules/ListingCard';
 import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
+import { getWindowRange } from '@/lib/utils/windowing';
 
 const CARD_WIDTH = 320;
 const GAP = 20;
 const SWIPE_THRESHOLD = 34;
+const TRACK_HEIGHT = 268;
 
 interface ListingsCarouselProps {
   listings: Listing[];
@@ -29,8 +31,11 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   const wheelLockRef = useRef(false);
   const syncingExternalSelectionRef = useRef(false);
   const mobileCarouselListingId = useMapStore((s) => s.mobileCarouselListingId);
+  const mobileCarouselSelectionSource = useMapStore((s) => s.mobileCarouselSelectionSource);
+  const mobileCarouselSelectionVersion = useMapStore((s) => s.mobileCarouselSelectionVersion);
   const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
   const markVisitedListing = useMapStore((s) => s.markVisitedListing);
+  const activeIndex = Math.max(0, Math.min(currentIndex, listings.length - 1));
 
   useEffect(() => {
     const updateWidth = () => setViewportWidth(window.innerWidth);
@@ -50,18 +55,18 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   }, []);
 
   useLayoutEffect(() => {
+    if (mobileCarouselSelectionSource !== 'marker') return;
     const activeId = mobileCarouselListingId;
     if (!activeId) return;
     const index = listings.findIndex((listing) => listing.id === activeId);
-    if (index >= 0) {
-      const frame = requestAnimationFrame(() => {
-        syncingExternalSelectionRef.current = true;
-        setInstantMove(true);
-        setCurrentIndex(index);
-      });
-      return () => cancelAnimationFrame(frame);
-    }
-  }, [listings, mobileCarouselListingId]);
+    if (index < 0) return;
+    const frame = requestAnimationFrame(() => {
+      syncingExternalSelectionRef.current = true;
+      setInstantMove(true);
+      setCurrentIndex(index);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [listings, mobileCarouselListingId, mobileCarouselSelectionSource, mobileCarouselSelectionVersion]);
 
   useEffect(() => {
     if (!instantMove || !syncingExternalSelectionRef.current) return;
@@ -89,17 +94,18 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   }, [markVisitedListing, mobileCarouselListingId]);
 
   useEffect(() => {
+    if (mobileCarouselSelectionSource === 'marker') return;
     if (syncingExternalSelectionRef.current) return;
-    const centeredListing = listings[currentIndex];
+    const centeredListing = listings[activeIndex];
     if (!centeredListing) return;
-    setMobileCarouselListingId(centeredListing.id);
-  }, [currentIndex, listings, setMobileCarouselListingId]);
+    setMobileCarouselListingId(centeredListing.id, 'carousel');
+  }, [activeIndex, listings, mobileCarouselSelectionSource, setMobileCarouselListingId]);
 
   const goTo = (index: number) => {
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));
     setInstantMove(false);
     setCurrentIndex(nextIndex);
-    if (listings[nextIndex]) setMobileCarouselListingId(listings[nextIndex].id);
+    if (listings[nextIndex]) setMobileCarouselListingId(listings[nextIndex].id, 'carousel');
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -144,14 +150,20 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
   };
 
   const centeredOffset = Math.max(0, (viewportWidth - CARD_WIDTH) / 2);
+  const { start: windowStart, end: windowEnd } = useMemo(
+    () => getWindowRange(activeIndex, listings.length),
+    [activeIndex, listings.length]
+  );
+  const visibleListings = listings.slice(windowStart, windowEnd);
+  const trackWidth = Math.max(0, listings.length * CARD_WIDTH + Math.max(0, listings.length - 1) * GAP);
 
   return (
-    <div ref={carouselRef} className={cn('w-full overflow-hidden py-3', className)} style={{ touchAction: 'none' }}>
+    <div ref={carouselRef} className={cn('w-full overflow-hidden pt-3 pb-5', className)} style={{ touchAction: 'none' }}>
       <motion.div
-        className="flex"
-        animate={{ x: centeredOffset - currentIndex * (CARD_WIDTH + GAP) }}
+        className="relative"
+        animate={{ x: centeredOffset - activeIndex * (CARD_WIDTH + GAP) }}
         transition={instantMove ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
-        style={{ gap: GAP, touchAction: 'none', willChange: 'transform' }}
+        style={{ width: trackWidth, height: TRACK_HEIGHT, touchAction: 'none', willChange: 'transform' }}
         onPointerDownCapture={handlePointerDown}
         onPointerUpCapture={handlePointerUp}
         onPointerCancelCapture={() => { dragStartRef.current = null; }}
@@ -159,11 +171,18 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
         onTouchMove={handleTouchMove}
         onWheel={handleWheel}
       >
-        {listings.map((listing) => (
-          <div key={listing.id} className="shrink-0">
+        {visibleListings.map((listing, offset) => {
+          const index = windowStart + offset;
+          return (
+          <div
+            key={listing.id}
+            className="absolute top-0"
+            style={{ left: index * (CARD_WIDTH + GAP) }}
+          >
             <ListingCard listing={listing} variant="carousel" carouselWidth={CARD_WIDTH} />
           </div>
-        ))}
+          );
+        })}
       </motion.div>
     </div>
   );

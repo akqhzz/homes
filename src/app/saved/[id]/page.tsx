@@ -224,7 +224,7 @@ export default function CollectionPage() {
           <CollectionWorkspaceHeader
             className="lg:min-h-0"
             title={collection.name}
-            titleClassName="type-subtitle"
+            titleClassName="type-title"
             subtitleClassName="type-body"
             subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
             compact={mobileView === 'map'}
@@ -286,7 +286,7 @@ export default function CollectionPage() {
                     <CollectionWorkspaceHeader
                       showBackButton={false}
                       title={collection.name}
-                      titleClassName="type-subtitle"
+                      titleClassName="type-title"
                       subtitleClassName="type-body"
                       subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
                       compactProgress={mobileHeaderProgress}
