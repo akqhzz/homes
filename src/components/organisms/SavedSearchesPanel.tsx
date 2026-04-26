@@ -264,7 +264,7 @@ export default function SavedSearchesPanel({
                           }
                         }}
                         onBlur={finishRename}
-                        className="min-w-0 flex-1 bg-transparent font-heading text-sm font-normal text-[var(--color-text-primary)] outline-none"
+                        className="type-body min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none"
                         autoFocus
                       />
                       <button
@@ -284,7 +284,7 @@ export default function SavedSearchesPanel({
                       </button>
                     </div>
                   ) : (
-                    <p className="min-w-0 truncate font-heading text-sm text-[var(--color-text-primary)]">{search.name}</p>
+                    <p className="type-body-lg min-w-0 truncate text-[var(--color-text-primary)]">{search.name}</p>
                   )}
                   <div className="mt-0.5">
                     <p className="min-w-0 flex-1 truncate type-caption text-[var(--color-text-tertiary)]">
@@ -305,7 +305,10 @@ export default function SavedSearchesPanel({
                     {hasNewListings && (
                       <SearchLocationChip
                         label={`${search.newListingsCount} new`}
-                        className="shrink-0 bg-[var(--color-brand-600)] text-[var(--color-text-inverse)]"
+                        className={cn(
+                          'type-micro shrink-0 self-start bg-[var(--color-brand-600)] px-2 py-1 text-[var(--color-text-inverse)]',
+                          isDesktop ? 'mr-auto' : ''
+                        )}
                       />
                     )}
                     {showUpdatedState ? (

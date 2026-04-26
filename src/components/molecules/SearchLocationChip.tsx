@@ -18,7 +18,7 @@ export default function SearchLocationChip({ location, label, onRemove, classNam
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full bg-[var(--color-brand-surface)] px-3 py-1 text-sm font-medium text-[var(--color-brand-text)] flex-shrink-0',
+        'type-label inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-[var(--color-brand-surface)] px-3 py-1 text-[var(--color-brand-text)]',
         className
       )}
     >

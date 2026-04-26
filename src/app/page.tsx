@@ -494,6 +494,7 @@ export default function MapPage() {
       <DesktopHeader
         hasAppliedArea={hasVisibleBoundary}
         areaSummaryLabel={areaSummaryLabel}
+        currentNeighborhoodIds={[...appliedNeighborhoods]}
         onClearArea={clearVisibleBoundaries}
       />
 
@@ -637,6 +638,7 @@ export default function MapPage() {
             key="search"
             hasAppliedArea={hasVisibleBoundary}
             areaSummaryLabel={areaSummaryLabel}
+            currentNeighborhoodIds={[...appliedNeighborhoods]}
             onOpenAreaSelect={openAreaSelect}
             onEditArea={editAppliedArea}
             onClearArea={clearVisibleBoundaries}

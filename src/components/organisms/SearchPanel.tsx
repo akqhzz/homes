@@ -13,19 +13,27 @@ import { shouldShowAreaSummaryChip } from '@/lib/utils/search-display';
 interface SearchPanelProps {
   hasAppliedArea?: boolean;
   areaSummaryLabel?: string;
+  currentNeighborhoodIds?: string[];
   onOpenAreaSelect?: () => void;
   onEditArea?: () => void;
   onClearArea?: () => void;
 }
 
-export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, onOpenAreaSelect, onEditArea, onClearArea }: SearchPanelProps) {
+export default function SearchPanel({
+  hasAppliedArea = false,
+  areaSummaryLabel,
+  currentNeighborhoodIds = [],
+  onOpenAreaSelect,
+  onEditArea,
+  onClearArea,
+}: SearchPanelProps) {
   const [query, setQuery] = useState('');
   const [showAreaMenu, setShowAreaMenu] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const areaMenuRef = useRef<HTMLDivElement>(null);
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
-  const { results, isLoading } = useLocationSearch(query, selectedLocations);
+  const { results, isLoading } = useLocationSearch(query, selectedLocations, true, currentNeighborhoodIds);
   const showAreaSummaryChip = shouldShowAreaSummaryChip(
     selectedLocations.map((location) => location.name),
     areaSummaryLabel
@@ -128,7 +136,7 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
               <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
             </button>
             {showAreaMenu && (
-              <div className="absolute right-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+              <div className="absolute right-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 type-body shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
                 <button
                   onClick={() => {
                     setShowAreaMenu(false);
@@ -176,7 +184,7 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
                   />
                 )}
               </div>
-              <button onClick={clearLocations} className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+              <button onClick={clearLocations} className="type-label shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
                 Clear
               </button>
             </div>
@@ -199,10 +207,10 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
             ))}
           </AnimatePresence>
           {isLoading && (
-            <p className="py-8 text-center text-sm text-[var(--color-text-tertiary)]">Searching locations…</p>
+            <p className="type-body py-8 text-center text-[var(--color-text-tertiary)]">Searching locations…</p>
           )}
           {filtered.length === 0 && query && (
-            <p className="py-8 text-center text-sm text-[var(--color-text-tertiary)]">No results for &quot;{query}&quot;</p>
+            <p className="type-body py-8 text-center text-[var(--color-text-tertiary)]">No results for &quot;{query}&quot;</p>
           )}
         </div>
         </motion.div>

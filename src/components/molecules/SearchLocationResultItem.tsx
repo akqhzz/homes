@@ -31,22 +31,22 @@ export default function SearchLocationResultItem({
   return (
     <button
       onClick={onSelect}
-      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[#F5F6F7] ${
-        highlighted ? 'bg-[#F5F6F7]' : ''
+      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[var(--color-surface)] ${
+        highlighted ? 'bg-[var(--color-surface)]' : ''
       }`}
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F5F6F7]">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)]">
         {iconKind === 'city' ? (
-          <Building2 size={14} className="text-[#9CA3AF]" />
+          <Building2 size={14} className="text-[var(--color-text-tertiary)]" />
         ) : iconKind === 'street' ? (
-          <Navigation size={14} className="text-[#9CA3AF]" />
+          <Navigation size={14} className="text-[var(--color-text-tertiary)]" />
         ) : (
-          <MapPinned size={14} className="text-[#9CA3AF]" />
+          <MapPinned size={14} className="text-[var(--color-text-tertiary)]" />
         )}
       </div>
       <div className="min-w-0">
-        <p className="truncate type-label text-[#0F1729]">{getPrimaryLocationLabel(location.name)}</p>
-        <p className="type-caption text-[#9CA3AF]">
+        <p className="type-label truncate text-[var(--color-text-primary)]">{getPrimaryLocationLabel(location.name)}</p>
+        <p className="type-caption text-[var(--color-text-tertiary)]">
           {[location.city, location.province].filter(Boolean).join(', ') || 'Canada'}
         </p>
       </div>

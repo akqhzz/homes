@@ -50,6 +50,7 @@ interface DesktopHeaderProps {
   listingId?: string;
   hasAppliedArea?: boolean;
   areaSummaryLabel?: string;
+  currentNeighborhoodIds?: string[];
   onClearArea?: () => void;
 }
 
@@ -58,6 +59,7 @@ export default function DesktopHeader({
   listingId,
   hasAppliedArea = false,
   areaSummaryLabel,
+  currentNeighborhoodIds = [],
   onClearArea,
 }: DesktopHeaderProps) {
   const [showFilter, setShowFilter] = useState(false);
@@ -78,7 +80,8 @@ export default function DesktopHeader({
   const { results: filteredLocations, isLoading: isSearchLoading } = useLocationSearch(
     searchQuery,
     selectedLocations,
-    showSearch
+    showSearch,
+    currentNeighborhoodIds
   );
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { searches, activeSearchId, activeSearchDirty } = useSavedSearchStore();
@@ -181,18 +184,18 @@ export default function DesktopHeader({
                     if (event.key === 'Enter' && filteredLocations[0]) selectLocation(filteredLocations[0]);
                   }}
                   placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Where?'}
-                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)]"
+                  className="type-label min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)]"
                 />
               ) : hasAppliedArea && areaSummaryLabel ? (
-                <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-sm font-medium text-[var(--color-brand-text)]">
+                <span className="type-label inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-[var(--color-brand-text)]">
                   {areaSummaryLabel}
                 </span>
               ) : selectedLocations.length > 0 ? (
-                <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-sm font-medium text-[var(--color-brand-text)]">
+                <span className="type-label inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-[var(--color-brand-text)]">
                   {locationLabel}
                 </span>
               ) : (
-                <span className="flex-1 truncate text-sm font-medium text-[var(--color-text-tertiary)]">{locationLabel}</span>
+                <span className="type-label flex-1 truncate text-[var(--color-text-tertiary)]">{locationLabel}</span>
               )}
             </div>
             {showSearch && (
@@ -205,18 +208,18 @@ export default function DesktopHeader({
                           key={location.id}
                           location={location}
                           onRemove={() => removeLocation(location.id)}
-                          className="py-1 text-xs"
+                          className="type-caption py-1"
                         />
                       ))}
                       {hasAppliedArea && showAreaSummaryChip && areaSummaryLabel && (
                         <SearchLocationChip
                           label={areaSummaryLabel}
                           onRemove={() => onClearArea?.()}
-                          className="py-1 text-xs"
+                          className="type-caption py-1"
                         />
                       )}
                     </div>
-                    <button onClick={clearLocations} className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                    <button onClick={clearLocations} className="type-caption shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
                       Clear
                     </button>
                   </div>
@@ -309,7 +312,7 @@ export default function DesktopHeader({
               )}
               <button
                 type="button"
-                className="flex h-10 items-center gap-2 rounded-full bg-[var(--color-surface)] px-4 text-sm font-semibold text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+                className="type-label flex h-10 items-center gap-2 rounded-full bg-[var(--color-surface)] px-4 text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
               >
                 <Share2 size={15} />
                 Share
@@ -318,7 +321,7 @@ export default function DesktopHeader({
           ) : isCollectionsPage ? (
             <button
               onClick={() => router.push('/')}
-              className="h-10 rounded-full bg-[var(--color-text-primary)] px-4 text-sm font-semibold text-[var(--color-text-inverse)] transition-all hover:bg-[var(--color-primary-hover)]"
+              className="type-label h-10 rounded-full bg-[var(--color-text-primary)] px-4 text-[var(--color-text-inverse)] transition-all hover:bg-[var(--color-primary-hover)]"
             >
               Map
             </button>
@@ -352,7 +355,7 @@ export default function DesktopHeader({
                     submitStyle="icon"
                     submitIcon={<Plus size={16} />}
                     className="mb-3"
-                    collapsedClassName="mb-3 rounded-2xl font-medium"
+                    collapsedClassName="type-label mb-3 rounded-2xl"
                   />
                   <div className="flex flex-col gap-2.5">
                     {collections.slice(0, 4).map((collection) => {
@@ -369,7 +372,7 @@ export default function DesktopHeader({
                             )}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate font-heading text-sm text-[var(--color-text-primary)]">{collection.name}</span>
+                            <span className="type-body-lg block truncate text-[var(--color-text-primary)]">{collection.name}</span>
                             <span className="block type-caption text-[var(--color-text-tertiary)]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                           </span>
                         </button>
@@ -385,7 +388,7 @@ export default function DesktopHeader({
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-heading text-sm text-[var(--color-text-primary)]">All Collections</span>
+                        <span className="type-body-lg block truncate text-[var(--color-text-primary)]">All Collections</span>
                         <span className="block type-caption text-[var(--color-text-tertiary)]">View Your Saved Homes</span>
                       </span>
                       <ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />
@@ -430,7 +433,7 @@ function DesktopMenu() {
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
           <LogOut size={15} className="text-[var(--color-accent)]" />
         </div>
-        <span className="flex-1 type-body font-medium text-[var(--color-accent)]">Sign Out</span>
+        <span className="type-label flex-1 text-[var(--color-accent)]">Sign Out</span>
       </button>
     </div>
   );
@@ -442,7 +445,7 @@ function DesktopMenuItem({ icon: Icon, label }: { icon: (typeof MENU_ITEMS)[numb
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface)]">
         <Icon size={15} className="text-[var(--color-text-primary)]" />
       </div>
-      <span className="flex-1 type-body font-medium text-[var(--color-text-primary)]">{label}</span>
+      <span className="type-label flex-1 text-[var(--color-text-primary)]">{label}</span>
     </button>
   );
 }

@@ -1,5 +1,5 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
-import { SavedSearch, SearchFilters } from '@/lib/types';
+import { Location, SavedSearch, SearchFilters } from '@/lib/types';
 
 export interface SearchSnapshot {
   locations: SavedSearch['locations'];
@@ -35,11 +35,11 @@ export function areSearchSnapshotsEqual(a: SearchSnapshot, b: SearchSnapshot) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-function normalizeAreaName(value: string) {
+export function normalizeAreaName(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
-function getCarryoverAliases(neighborhoodId: string) {
+export function getCarryoverAliases(neighborhoodId: string) {
   const aliases: Record<string, string[]> = {
     'nbh-yorkville': ['Bay-Cloverhill'],
     'nbh-kensington': ['Kensington Market', 'Kensington-Chinatown'],
@@ -53,26 +53,32 @@ function getCarryoverAliases(neighborhoodId: string) {
   return aliases[neighborhoodId] ?? [];
 }
 
+export function getMatchingNeighborhoodId(location: Pick<Location, 'name' | 'boundary'>) {
+  if ((location.boundary?.length ?? 0) < 3) return null;
+
+  const normalizedLocationName = normalizeAreaName(location.name);
+  const matchingNeighborhood = MOCK_NEIGHBORHOODS.find((neighborhood) => {
+    const normalizedNeighborhoodName = normalizeAreaName(neighborhood.name);
+    const normalizedAliases = getCarryoverAliases(neighborhood.id).map(normalizeAreaName);
+    return (
+      normalizedNeighborhoodName === normalizedLocationName ||
+      normalizedNeighborhoodName.includes(normalizedLocationName) ||
+      normalizedLocationName.includes(normalizedNeighborhoodName) ||
+      normalizedAliases.includes(normalizedLocationName)
+    );
+  });
+
+  return matchingNeighborhood?.id ?? null;
+}
+
 export function getCarryoverAreaSelection(locations: SavedSearch['locations']) {
   const matchedNeighborhoodIds = new Set<string>();
   let fallbackBoundary: { lat: number; lng: number }[] = [];
 
   for (const location of locations) {
-    if ((location.boundary?.length ?? 0) < 3) continue;
-    const normalizedLocationName = normalizeAreaName(location.name);
-    const matchingNeighborhood = MOCK_NEIGHBORHOODS.find((neighborhood) => {
-      const normalizedNeighborhoodName = normalizeAreaName(neighborhood.name);
-      const normalizedAliases = getCarryoverAliases(neighborhood.id).map(normalizeAreaName);
-      return (
-        normalizedNeighborhoodName === normalizedLocationName ||
-        normalizedNeighborhoodName.includes(normalizedLocationName) ||
-        normalizedLocationName.includes(normalizedNeighborhoodName) ||
-        normalizedAliases.includes(normalizedLocationName)
-      );
-    });
-
-    if (matchingNeighborhood) {
-      matchedNeighborhoodIds.add(matchingNeighborhood.id);
+    const matchingNeighborhoodId = getMatchingNeighborhoodId(location);
+    if (matchingNeighborhoodId) {
+      matchedNeighborhoodIds.add(matchingNeighborhoodId);
       continue;
     }
 
