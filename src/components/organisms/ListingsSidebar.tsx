@@ -40,6 +40,7 @@ export default function ListingsSidebar({ listings, useMapAreaLabel = false }: L
   const [showSort, setShowSort] = useState(false);
   const [page, setPage] = useState(1);
   const sortRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { setHoveredListingId } = useMapStore();
   const selectedLocations = useSearchStore((s) => s.selectedLocations);
   const router = useRouter();
@@ -71,11 +72,15 @@ export default function ListingsSidebar({ listings, useMapAreaLabel = false }: L
 
   useEffect(() => () => setHoveredListingId(null), [setHoveredListingId]);
 
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between px-5 py-1.5">
-        <p className="type-heading text-[#0F1729]">
+        <p className="type-subtitle text-[#0F1729]">
           {listings.length} Listings In {locationLabel}
         </p>
 
@@ -104,7 +109,7 @@ export default function ListingsSidebar({ listings, useMapAreaLabel = false }: L
       </div>
 
       {/* Listings grid */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-1.5">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden px-4 pt-4 pb-1.5">
         <div className="mx-auto w-fit max-w-full">
           <div className="grid w-fit max-w-full grid-cols-2 justify-items-center gap-4 3xl:grid-cols-3">
           {visibleListings.map((listing) => (

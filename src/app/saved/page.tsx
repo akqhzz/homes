@@ -124,7 +124,7 @@ export default function SavedPage() {
         <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-6">
           <CollectionWorkspaceHeader
             title="Collections"
-            titleClassName="type-title"
+            titleClassName="type-title lg:text-[1.875rem]"
             subtitleClassName="type-body"
             subtitle={`${collections.length} collection${collections.length === 1 ? '' : 's'}`}
             showBackButton
@@ -205,7 +205,8 @@ export default function SavedPage() {
               </div>
             </div>
           ) : (
-            <div className="layout-content-wide grid w-full grid-cols-1 justify-center gap-6 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(280px,320px))] lg:justify-start lg:content-start">
+            <div className="layout-content-wide">
+              <div className="grid w-full grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5">
               {collections.map((col) => {
               const firstListing = col.listings.length > 0
                 ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
@@ -214,7 +215,7 @@ export default function SavedPage() {
               return (
                 <motion.article
                   key={col.id}
-                  className="relative w-full overflow-visible rounded-2xl bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5"
+                  className="relative w-full min-w-0 overflow-visible rounded-2xl bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5"
                   whileTap={{ scale: 0.98 }}
                 >
                   <div
@@ -300,6 +301,7 @@ export default function SavedPage() {
                 </motion.article>
               );
             })}
+              </div>
             </div>
           )}
         </div>

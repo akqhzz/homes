@@ -81,7 +81,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <div className="my-8 h-px bg-[var(--color-surface)]" />
 
               <h2 className="type-title text-[var(--color-text-primary)]">Home Facts</h2>
-              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-3">
                 <ListingFactRow icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} className="rounded-2xl" />
                 <ListingFactRow icon={<Car size={16} />} label="Parking" value={`${listing.parkingSpaces} space${listing.parkingSpaces === 1 ? '' : 's'}`} className="rounded-2xl" />
                 <ListingFactRow icon={<DollarSign size={16} />} label="Taxes/Yr" value={`$${listing.taxes.toLocaleString()}`} className="rounded-2xl" />

@@ -2,11 +2,18 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Check, Plus } from 'lucide-react';
+import { Check, Ellipsis, Plus } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
+import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
+
+interface MenuState {
+  collectionId: string;
+  right: number;
+  bottom: number;
+}
 
 interface SaveToCollectionSheetProps {
   listingId: string;
@@ -25,9 +32,15 @@ export default function SaveToCollectionSheet({
 }: SaveToCollectionSheetProps) {
   const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [menuState, setMenuState] = useState<MenuState | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameName, setRenameName] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const collections = useSavedStore((s) => s.collections);
   const addToCollection = useSavedStore((s) => s.addToCollection);
   const createCollection = useSavedStore((s) => s.createCollection);
+  const renameCollection = useSavedStore((s) => s.renameCollection);
+  const deleteCollection = useSavedStore((s) => s.deleteCollection);
   const toggleLike = useSavedStore((s) => s.toggleLike);
   const isLiked = useSavedStore((s) => s.isLiked(listingId));
 
@@ -43,6 +56,60 @@ export default function SaveToCollectionSheet({
     if (!name) return;
     const collectionId = createCollection(name);
     finishSave(collectionId);
+  };
+
+  const closeMenu = () => {
+    setMenuState(null);
+    setConfirmDeleteId(null);
+  };
+
+  const openMenu = (event: React.MouseEvent<HTMLButtonElement>, collectionId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (menuState?.collectionId === collectionId) {
+      closeMenu();
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenuState({
+      collectionId,
+      right: window.innerWidth - rect.right,
+      bottom: window.innerHeight - rect.top + 4,
+    });
+    setConfirmDeleteId(null);
+  };
+
+  const startRename = (collectionId: string, name: string) => {
+    closeMenu();
+    setRenamingId(collectionId);
+    setRenameName(name);
+  };
+
+  const finishRename = () => {
+    const name = renameName.trim();
+    if (!renamingId) return;
+    if (!name) {
+      setRenamingId(null);
+      setRenameName('');
+      return;
+    }
+    renameCollection(renamingId, name);
+    setRenamingId(null);
+    setRenameName('');
+  };
+
+  const requestDelete = (collectionId: string) => {
+    setConfirmDeleteId(collectionId);
+  };
+
+  const confirmDelete = () => {
+    if (!confirmDeleteId) return;
+    deleteCollection(confirmDeleteId);
+    if (renamingId === confirmDeleteId) {
+      setRenamingId(null);
+      setRenameName('');
+    }
+    closeMenu();
   };
 
   const content = (
@@ -68,9 +135,8 @@ export default function SaveToCollectionSheet({
             collection.listings.some((item) => item.listingId === listingId);
           const thumbnailListing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
           return (
-            <button
+            <div
               key={collection.id}
-              onClick={() => finishSave(collection.id)}
               className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
             >
               <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[var(--color-text-primary)]">
@@ -82,13 +148,70 @@ export default function SaveToCollectionSheet({
                   <Plus size={16} />
                 )}
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
-                <span className="block type-caption text-[var(--color-text-tertiary)]">
-                  {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => finishSave(collection.id)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    finishSave(collection.id);
+                  }
+                }}
+                className="min-w-0 flex flex-1 items-start gap-3"
+              >
+                <span className="min-w-0 flex-1">
+                  {renamingId === collection.id ? (
+                    <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
+                      <input
+                        value={renameName}
+                        onChange={(event) => setRenameName(event.target.value)}
+                        onClick={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => {
+                          event.stopPropagation();
+                          if (event.key === 'Enter') finishRename();
+                          if (event.key === 'Escape') {
+                            setRenamingId(null);
+                            setRenameName('');
+                          }
+                        }}
+                        onBlur={finishRename}
+                        className="type-body min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                        }}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          finishRename();
+                        }}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                        aria-label="Finish rename"
+                      >
+                        <Check size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
+                  )}
+                  <span className="block type-caption text-[var(--color-text-tertiary)]">
+                    {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
+                  </span>
                 </span>
-              </span>
-            </button>
+                <button
+                  type="button"
+                  onClick={(event) => openMenu(event, collection.id)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
+                  aria-label="Collection options"
+                >
+                  <Ellipsis size={16} />
+                </button>
+              </div>
+            </div>
           );
         })}
       </div>
@@ -140,5 +263,28 @@ export default function SaveToCollectionSheet({
   );
 
   if (typeof document === 'undefined') return null;
-  return createPortal(drawer, document.body);
+  return createPortal(
+    <>
+      {drawer}
+      {menuState && (
+        <RenameDeletePopover
+          open
+          confirmOpen={!!confirmDeleteId}
+          right={menuState.right}
+          bottom={menuState.bottom}
+          deleteTitle="Delete collection?"
+          deleteDescription="This will remove the collection and its saved listing references."
+          onClose={closeMenu}
+          onRename={() => {
+            const active = collections.find((collection) => collection.id === menuState.collectionId);
+            if (active) startRename(active.id, active.name);
+          }}
+          onRequestDelete={() => requestDelete(menuState.collectionId)}
+          onCancelDelete={() => setConfirmDeleteId(null)}
+          onConfirmDelete={confirmDelete}
+        />
+      )}
+    </>,
+    document.body
+  );
 }

@@ -4,7 +4,9 @@ import Image from 'next/image';
 import {
   Bell,
   Bookmark,
+  Check,
   ChevronRight,
+  Ellipsis,
   LogOut,
   Menu,
   MessageSquare,
@@ -29,6 +31,7 @@ import CreateInlineField from '@/components/molecules/CreateInlineField';
 import AppImageIcon from '@/components/atoms/AppImageIcon';
 import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
+import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 import BackButton from '@/components/atoms/BackButton';
@@ -48,6 +51,7 @@ const MENU_TRIGGER_CLASS =
 interface DesktopHeaderProps {
   variant?: 'default' | 'listing';
   listingId?: string;
+  filterResultsCount?: number;
   hasAppliedArea?: boolean;
   areaSummaryLabel?: string;
   currentNeighborhoodIds?: string[];
@@ -59,6 +63,7 @@ interface DesktopHeaderProps {
 export default function DesktopHeader({
   variant = 'default',
   listingId,
+  filterResultsCount,
   hasAppliedArea = false,
   areaSummaryLabel,
   currentNeighborhoodIds = [],
@@ -72,6 +77,10 @@ export default function DesktopHeader({
   const [showCollections, setShowCollections] = useState(false);
   const [creatingCollection, setCreatingCollection] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
+  const [collectionMenuState, setCollectionMenuState] = useState<{ collectionId: string; right: number; bottom: number } | null>(null);
+  const [renamingCollectionId, setRenamingCollectionId] = useState<string | null>(null);
+  const [renameCollectionName, setRenameCollectionName] = useState('');
+  const [confirmDeleteCollectionId, setConfirmDeleteCollectionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const filterRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -90,7 +99,7 @@ export default function DesktopHeader({
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { searches, activeSearchId, activeSearchDirty } = useSavedSearchStore();
   const { activePanel, setActivePanel } = useUIStore();
-  const { collections, createCollection } = useSavedStore();
+  const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
 
   const isCollectionsPage = pathname.startsWith('/saved');
   const isListingVariant = variant === 'listing';
@@ -126,10 +135,61 @@ export default function DesktopHeader({
     setCreatingCollection(false);
   };
 
+  const closeCollectionMenu = () => {
+    setCollectionMenuState(null);
+    setConfirmDeleteCollectionId(null);
+  };
+
+  const openCollectionMenu = (event: React.MouseEvent<HTMLButtonElement>, collectionId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (collectionMenuState?.collectionId === collectionId) {
+      closeCollectionMenu();
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    setCollectionMenuState({
+      collectionId,
+      right: window.innerWidth - rect.right,
+      bottom: window.innerHeight - rect.top + 4,
+    });
+    setConfirmDeleteCollectionId(null);
+  };
+
+  const startCollectionRename = (collectionId: string, name: string) => {
+    closeCollectionMenu();
+    setRenamingCollectionId(collectionId);
+    setRenameCollectionName(name);
+  };
+
+  const finishCollectionRename = () => {
+    const name = renameCollectionName.trim();
+    if (!renamingCollectionId) return;
+    if (!name) {
+      setRenamingCollectionId(null);
+      setRenameCollectionName('');
+      return;
+    }
+    renameCollection(renamingCollectionId, name);
+    setRenamingCollectionId(null);
+    setRenameCollectionName('');
+  };
+
+  const confirmDeleteCollection = () => {
+    if (!confirmDeleteCollectionId) return;
+    deleteCollection(confirmDeleteCollectionId);
+    if (renamingCollectionId === confirmDeleteCollectionId) {
+      setRenamingCollectionId(null);
+      setRenameCollectionName('');
+    }
+    closeCollectionMenu();
+  };
+
   useEffect(() => {
     if (!showFilter && !showSearch && !showMenu && !showCollections) return;
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
+      if (target instanceof HTMLElement && target.closest('[data-rename-delete-popover="true"]')) return;
       if (!filterRef.current?.contains(target)) setShowFilter(false);
       if (!searchRef.current?.contains(target)) setShowSearch(false);
       if (!menuRef.current?.contains(target)) setShowMenu(false);
@@ -289,7 +349,7 @@ export default function DesktopHeader({
                   <FilterPanelBody />
                 </div>
                 <div className="sticky bottom-0 border-t border-[var(--color-surface)] bg-white p-4">
-                  <FilterPanelFooter onDone={() => setShowFilter(false)} />
+                  <FilterPanelFooter totalListings={filterResultsCount} onDone={() => setShowFilter(false)} />
                 </div>
               </div>
             )}
@@ -382,9 +442,8 @@ export default function DesktopHeader({
                     {collections.slice(0, 4).map((collection) => {
                       const listing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
                       return (
-                        <button
+                        <div
                           key={collection.id}
-                          onClick={() => router.push(`/saved/${collection.id}`)}
                           className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
                         >
                           <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
@@ -392,11 +451,68 @@ export default function DesktopHeader({
                               <Image src={listing.images[0]} alt="" fill sizes="56px" className="object-cover" />
                             )}
                           </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
-                            <span className="block type-caption text-[var(--color-text-tertiary)]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
-                          </span>
-                        </button>
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => router.push(`/saved/${collection.id}`)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                router.push(`/saved/${collection.id}`);
+                              }
+                            }}
+                            className="flex min-w-0 flex-1 items-start gap-3"
+                          >
+                            <span className="min-w-0 flex-1">
+                              {renamingCollectionId === collection.id ? (
+                                <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
+                                  <input
+                                    value={renameCollectionName}
+                                    onChange={(event) => setRenameCollectionName(event.target.value)}
+                                    onClick={(event) => event.stopPropagation()}
+                                    onKeyDown={(event) => {
+                                      event.stopPropagation();
+                                      if (event.key === 'Enter') finishCollectionRename();
+                                      if (event.key === 'Escape') {
+                                        setRenamingCollectionId(null);
+                                        setRenameCollectionName('');
+                                      }
+                                    }}
+                                    onBlur={finishCollectionRename}
+                                    className="type-body min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none"
+                                    autoFocus
+                                  />
+                                  <button
+                                    type="button"
+                                    onMouseDown={(event) => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                    }}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      finishCollectionRename();
+                                    }}
+                                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                                    aria-label="Finish rename"
+                                  >
+                                    <Check size={13} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
+                              )}
+                              <span className="block type-caption text-[var(--color-text-tertiary)]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(event) => openCollectionMenu(event, collection.id)}
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
+                              aria-label="Collection options"
+                            >
+                              <Ellipsis size={16} />
+                            </button>
+                          </div>
+                        </div>
                       );
                     })}
                     <button
@@ -439,6 +555,25 @@ export default function DesktopHeader({
           )}
         </nav>
       </header>
+
+      {collectionMenuState && (
+        <RenameDeletePopover
+          open
+          confirmOpen={!!confirmDeleteCollectionId}
+          right={collectionMenuState.right}
+          bottom={collectionMenuState.bottom}
+          deleteTitle="Delete collection?"
+          deleteDescription="This will remove the collection and its saved listing references."
+          onClose={closeCollectionMenu}
+          onRename={() => {
+            const active = collections.find((collection) => collection.id === collectionMenuState.collectionId);
+            if (active) startCollectionRename(active.id, active.name);
+          }}
+          onRequestDelete={() => setConfirmDeleteCollectionId(collectionMenuState.collectionId)}
+          onCancelDelete={() => setConfirmDeleteCollectionId(null)}
+          onConfirmDelete={confirmDeleteCollection}
+        />
+      )}
 
     </>
   );

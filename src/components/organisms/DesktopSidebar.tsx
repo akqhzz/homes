@@ -13,7 +13,7 @@ const MENU_ITEMS = [
 
 const NAV_ITEMS = [
   { href: '/', icon: Map, label: 'Map' },
-  { href: '/saved', icon: Heart, label: 'Mine' },
+  { href: '/saved', icon: Heart, label: 'Collections' },
   { href: '/for-you', icon: Sparkles, label: 'Insights' },
 ] as const;
 
@@ -31,7 +31,7 @@ function NavButton({ active, icon: Icon, label, onClick }: NavButtonProps) {
       onClick={onClick}
       aria-label={label}
       className={cn(
-        'flex w-[62px] flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors',
+        'flex w-[72px] flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors',
         active
           ? 'bg-[var(--color-brand-surface)] text-[var(--color-brand-600)]'
           : 'text-[#64748B] hover:bg-[#F3F4F6] hover:text-[#334155]'

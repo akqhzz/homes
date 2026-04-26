@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import { Building2, ChevronDown, Home, Hotel, Rows3, Warehouse } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
+import { applyFilters } from '@/lib/search-filters';
 import { formatPriceRangeLabel, formatCompactPriceValue, parseCompactPriceValue } from '@/lib/utils/search-display';
 
 const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [
@@ -246,7 +247,7 @@ export function FilterPanelBody() {
 }
 
 export function FilterPanelFooter({
-  totalListings = MOCK_LISTINGS.length,
+  totalListings,
   onDone,
 }: {
   totalListings?: number;
@@ -256,6 +257,10 @@ export function FilterPanelFooter({
   const filters = useSearchStore((s) => s.filters);
   const setFilters = useSearchStore((s) => s.setFilters);
   const selectedFilterChips = getSelectedFilterChips(filters, setFilters);
+  const resultCount = useMemo(
+    () => totalListings ?? applyFilters(MOCK_LISTINGS, filters).length,
+    [filters, totalListings]
+  );
 
   return (
     <div className="space-y-3">
@@ -272,10 +277,10 @@ export function FilterPanelFooter({
       )}
       <div className="flex gap-2">
         <Button variant="secondary" size="lg" onClick={resetFilters} className="shrink-0">
-          Reset
+          Clear
         </Button>
         <Button fullWidth size="lg" onClick={onDone}>
-          Show {totalListings} Results
+          Show {resultCount} Results
         </Button>
       </div>
     </div>

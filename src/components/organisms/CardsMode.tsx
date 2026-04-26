@@ -28,6 +28,7 @@ const SWIPE_THRESHOLD = 38;
 const CARD_MODE_IMAGE_HEIGHT = 305;
 const CARD_MODE_IMAGE_COUNT = 8;
 const CARD_GAP = 12;
+const CARD_MODE_ONBOARDING_STORAGE_KEY = 'homes-card-mode-onboarding-seen';
 const ACTION_BUTTON_CLASS =
   'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
 const DETAIL_CHIP_CLASS =
@@ -63,7 +64,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
   const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
   const [likePulse, setLikePulse] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(CARD_MODE_ONBOARDING_STORAGE_KEY) !== 'true';
+  });
   const wheelLockRef = useRef(false);
   const dragLockRef = useRef(false);
   const activeDragRef = useRef(false);
@@ -161,6 +165,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
   const dismissOnboarding = () => {
     if (!showOnboarding) return;
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CARD_MODE_ONBOARDING_STORAGE_KEY, 'true');
+    }
     setShowOnboarding(false);
   };
 

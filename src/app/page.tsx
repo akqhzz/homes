@@ -566,6 +566,7 @@ export default function MapPage() {
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       {/* Desktop header (hidden on mobile) */}
       <DesktopHeader
+        filterResultsCount={filteredListings.length}
         hasAppliedArea={hasVisibleBoundary}
         areaSummaryLabel={areaSummaryLabel}
         currentNeighborhoodIds={[...appliedNeighborhoods]}
