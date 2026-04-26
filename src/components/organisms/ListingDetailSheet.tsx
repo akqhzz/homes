@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Heart, Share2, MapPin, Calendar, Home, Car, DollarSign, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Heart, Share2, Calendar, Home, Car, DollarSign, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatPriceFull, formatDaysOnMarket, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
@@ -10,6 +10,7 @@ import Button from '@/components/atoms/Button';
 import IconButton from '@/components/atoms/IconButton';
 import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
+import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/listing/ListingDisplay';
 
 export default function ListingDetailSheet() {
   const detailListingId = useUIStore((s) => s.detailListingId);
@@ -127,23 +128,25 @@ export default function ListingDetailSheet() {
           </div>
 
           {/* Address */}
-          <div className="mt-3 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)]">
-            <MapPin size={14} className="text-[var(--color-text-tertiary)]" />
-            <span>{listing.address}, {listing.city}, {listing.province} {listing.postalCode}</span>
-          </div>
+          <ListingAddressRow
+            className="mt-3 text-sm text-[var(--color-text-secondary)]"
+            iconClassName="text-[var(--color-text-tertiary)]"
+          >
+            {listing.address}, {listing.city}, {listing.province} {listing.postalCode}
+          </ListingAddressRow>
 
           <div className="my-5 h-px bg-[var(--color-surface)]" />
 
           {/* Property details grid */}
           <div className="grid grid-cols-2 gap-3">
-            <DetailItem icon={<Home size={16} />} label="Type" value={formatPropertyType(listing.propertyType)} />
-            <DetailItem icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} />
-            <DetailItem icon={<Car size={16} />} label="Parking" value={listing.parkingSpaces === 0 ? 'None' : `${listing.parkingSpaces} space${listing.parkingSpaces > 1 ? 's' : ''}`} />
-            <DetailItem icon={<DollarSign size={16} />} label="Taxes/yr" value={`$${listing.taxes.toLocaleString()}`} />
+            <ListingFactRow icon={<Home size={16} />} label="Type" value={formatPropertyType(listing.propertyType)} />
+            <ListingFactRow icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} />
+            <ListingFactRow icon={<Car size={16} />} label="Parking" value={listing.parkingSpaces === 0 ? 'None' : `${listing.parkingSpaces} space${listing.parkingSpaces > 1 ? 's' : ''}`} />
+            <ListingFactRow icon={<DollarSign size={16} />} label="Taxes/yr" value={`$${listing.taxes.toLocaleString()}`} />
             {listing.maintenanceFee && (
-              <DetailItem icon={<DollarSign size={16} />} label="Maint./mo" value={`$${listing.maintenanceFee.toLocaleString()}`} />
+              <ListingFactRow icon={<DollarSign size={16} />} label="Maint./mo" value={`$${listing.maintenanceFee.toLocaleString()}`} />
             )}
-            <DetailItem icon={<Home size={16} />} label="MLS#" value={listing.mlsNumber} />
+            <ListingFactRow icon={<Home size={16} />} label="MLS#" value={listing.mlsNumber} />
           </div>
 
           <div className="my-5 h-px bg-[var(--color-surface)]" />
@@ -161,11 +164,10 @@ export default function ListingDetailSheet() {
               <div>
                 <h3 className="mb-3 type-heading text-[var(--color-text-primary)]">Features & Amenities</h3>
                 <div className="flex flex-wrap gap-2">
-                  {listing.features.map((f) => (
-                    <span key={f} className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)]">
-                      {f}
-                    </span>
-                  ))}
+                  <ListingFeaturePills
+                    features={listing.features}
+                    itemClassName="rounded-full bg-[var(--color-surface)] px-3 py-1.5 text-xs text-[var(--color-text-secondary)]"
+                  />
                 </div>
               </div>
             </>
@@ -263,17 +265,5 @@ export default function ListingDetailSheet() {
         </section>
       </div>
     </>
-  );
-}
-
-function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl bg-[var(--color-surface)] p-3">
-      <span className="text-[var(--color-text-tertiary)]">{icon}</span>
-      <div>
-        <p className="type-caption text-[var(--color-text-tertiary)]">{label}</p>
-        <p className="type-label text-[var(--color-text-primary)]">{value}</p>
-      </div>
-    </div>
   );
 }

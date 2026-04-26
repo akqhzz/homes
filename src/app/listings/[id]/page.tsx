@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Bath, BedDouble, Calendar, Car, DollarSign, Home, MapPin, Ruler, Share2, ShieldCheck, Snowflake, Sun, TrainFront } from 'lucide-react';
+import { Bath, BedDouble, Calendar, Car, DollarSign, Home, Ruler, Share2, ShieldCheck, Snowflake, Sun, TrainFront } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatDaysOnMarket, formatPriceFull, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import BackButton from '@/components/atoms/BackButton';
@@ -8,6 +8,7 @@ import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
 import PageShell from '@/components/templates/PageShell';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import ListingImageGallery from '@/components/organisms/ListingImageGallery';
+import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/listing/ListingDisplay';
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;
@@ -46,10 +47,13 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h1 className="type-hero text-[var(--color-text-primary)]">{formatPriceFull(listing.price)}</h1>
-                  <p className="mt-2 flex items-center gap-1.5 type-body text-[var(--color-text-secondary)]">
-                    <MapPin size={15} className="text-[var(--color-text-tertiary)]" />
+                  <ListingAddressRow
+                    className="mt-2 type-body text-[var(--color-text-secondary)]"
+                    iconClassName="text-[var(--color-text-tertiary)]"
+                    iconSize={15}
+                  >
                     {listing.address}, {listing.city}, {listing.province}
-                  </p>
+                  </ListingAddressRow>
                 </div>
                 <span className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-label text-[var(--color-text-secondary)]">
                   {formatDaysOnMarket(listing.daysOnMarket)}
@@ -72,26 +76,25 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
               <h2 className="type-title text-[var(--color-text-primary)]">Home Facts</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                <SideFact icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} />
-                <SideFact icon={<Car size={16} />} label="Parking" value={`${listing.parkingSpaces} space${listing.parkingSpaces === 1 ? '' : 's'}`} />
-                <SideFact icon={<DollarSign size={16} />} label="Taxes/Yr" value={`$${listing.taxes.toLocaleString()}`} />
-                <SideFact icon={<DollarSign size={16} />} label="Maint./Mo" value={monthlyCost} />
-                <SideFact icon={<Home size={16} />} label="MLS" value={listing.mlsNumber} />
-                <SideFact icon={<TrainFront size={16} />} label="Transit" value="5 min walk" />
-                <SideFact icon={<Sun size={16} />} label="Exposure" value={listing.propertyType === 'condo' ? 'South West' : 'Tree-lined lot'} />
-                <SideFact icon={<Snowflake size={16} />} label="Cooling" value="Central Air" />
-                <SideFact icon={<ShieldCheck size={16} />} label="Status" value="For Sale" />
+                <ListingFactRow icon={<Calendar size={16} />} label="Year Built" value={listing.yearBuilt.toString()} className="rounded-2xl" />
+                <ListingFactRow icon={<Car size={16} />} label="Parking" value={`${listing.parkingSpaces} space${listing.parkingSpaces === 1 ? '' : 's'}`} className="rounded-2xl" />
+                <ListingFactRow icon={<DollarSign size={16} />} label="Taxes/Yr" value={`$${listing.taxes.toLocaleString()}`} className="rounded-2xl" />
+                <ListingFactRow icon={<DollarSign size={16} />} label="Maint./Mo" value={monthlyCost} className="rounded-2xl" />
+                <ListingFactRow icon={<Home size={16} />} label="MLS" value={listing.mlsNumber} className="rounded-2xl" />
+                <ListingFactRow icon={<TrainFront size={16} />} label="Transit" value="5 min walk" className="rounded-2xl" />
+                <ListingFactRow icon={<Sun size={16} />} label="Exposure" value={listing.propertyType === 'condo' ? 'South West' : 'Tree-lined lot'} className="rounded-2xl" />
+                <ListingFactRow icon={<Snowflake size={16} />} label="Cooling" value="Central Air" className="rounded-2xl" />
+                <ListingFactRow icon={<ShieldCheck size={16} />} label="Status" value="For Sale" className="rounded-2xl" />
               </div>
 
               <div className="my-8 h-px bg-[var(--color-surface)]" />
 
               <h2 className="type-title text-[var(--color-text-primary)]">Features & Amenities</h2>
               <div className="mt-4 flex flex-wrap gap-2">
-                {listing.features.map((feature) => (
-                  <span key={feature} className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-body font-medium text-[var(--color-text-secondary)]">
-                    {feature}
-                  </span>
-                ))}
+                <ListingFeaturePills
+                  features={listing.features}
+                  itemClassName="rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-body font-medium text-[var(--color-text-secondary)]"
+                />
               </div>
 
               <div className="my-8 h-px bg-[var(--color-surface)]" />
@@ -154,18 +157,6 @@ function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; va
       <div className="mb-2 text-[var(--color-text-tertiary)]">{icon}</div>
       <p className="type-caption text-[var(--color-text-tertiary)]">{label}</p>
       <p className="mt-0.5 type-label text-[var(--color-text-primary)]">{value}</p>
-    </div>
-  );
-}
-
-function SideFact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl bg-[var(--color-surface)] p-3">
-      <span className="text-[var(--color-text-tertiary)]">{icon}</span>
-      <div>
-        <p className="type-caption text-[var(--color-text-tertiary)]">{label}</p>
-        <p className="type-label text-[var(--color-text-primary)]">{value}</p>
-      </div>
     </div>
   );
 }

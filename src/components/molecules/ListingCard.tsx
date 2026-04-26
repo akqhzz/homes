@@ -2,12 +2,14 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Heart, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket } from '@/lib/utils/format';
+import { formatBedBathSqftLine, formatMlsLine } from '@/lib/utils/listing-display';
 import { useSavedStore } from '@/store/savedStore';
 import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
+import { ListingAddressRow } from '@/components/listing/ListingDisplay';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 252;
@@ -237,7 +239,7 @@ export default function ListingCard({
   const openListingPage = () => {
     router.push(`/listings/${listing.id}`);
   };
-  const mlsLine = `MLS®#${listing.mlsNumber} ${listing.brokerage}`;
+  const mlsLine = formatMlsLine(listing.mlsNumber, listing.brokerage);
 
   if (variant === 'grid') {
     return (
@@ -265,7 +267,7 @@ export default function ListingCard({
           </div>
           <div className="px-0.5 pb-1">
             <p className="type-heading leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
-            <p className="mt-0.5 type-body text-[var(--color-text-secondary)]">{listing.beds}bd   {listing.baths}ba   {formatSqftCompact(listing.sqft)}sqft</p>
+            <p className="mt-0.5 type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '   ', spacedSqft: false })}</p>
           </div>
         </div>
         {saveSheet}
@@ -289,11 +291,10 @@ export default function ListingCard({
           <div className="p-4">
             <p className="type-subtitle text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
             <div className="mt-1 flex flex-col gap-[1px]">
-              <p className="type-body text-[var(--color-text-secondary)]">{listing.beds}bd · {listing.baths}ba · {formatSqftCompact(listing.sqft)} sqft</p>
-              <div className="flex items-center gap-1 type-caption text-[var(--color-text-secondary)]">
-                <MapPin size={11} />
-                <span>{listing.address}</span>
-              </div>
+              <p className="type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft)}</p>
+              <ListingAddressRow className="gap-1 type-caption text-[var(--color-text-secondary)]" iconSize={11}>
+                {listing.address}
+              </ListingAddressRow>
               <p className="mt-1 text-[0.62rem] font-normal uppercase leading-[1.15] tracking-[0.02em] text-[#A6ADB8]">{mlsLine}</p>
             </div>
           </div>
@@ -432,9 +433,7 @@ export default function ListingCard({
             <div className="min-w-0">
               <p className="type-heading text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
               <div className="mt-0.5 flex flex-col gap-[1px]">
-                <p className="truncate type-body text-[var(--color-text-secondary)]">
-                  {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{formatSqftCompact(listing.sqft)}sqft
-                </p>
+                <p className="truncate type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '\u00a0\u00a0', spacedSqft: false })}</p>
                 <p className="pr-2 type-caption text-[var(--color-text-secondary)] line-clamp-2">
                   {listing.address}
                 </p>
@@ -491,8 +490,4 @@ function getVisibleDotIndexes(total: number, activeIndex: number) {
   if (total <= 4) return Array.from({ length: total }, (_, index) => index);
   const start = Math.min(Math.max(0, activeIndex - 1), total - 4);
   return Array.from({ length: 4 }, (_, index) => start + index);
-}
-
-function formatSqftCompact(value: number) {
-  return String(value);
 }
