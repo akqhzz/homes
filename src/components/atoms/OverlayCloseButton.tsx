@@ -2,7 +2,7 @@
 import type { CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
+import OverlayIconButton from '@/components/atoms/OverlayIconButton';
 
 interface OverlayCloseButtonProps {
   onClick?: () => void;
@@ -37,18 +37,13 @@ export default function OverlayCloseButton({
   };
 
   return (
-    <button
-      type="button"
+    <OverlayIconButton
       onClick={handleClick}
-      aria-label={label}
+      label={label}
       style={style}
-      className={cn(
-        'flex h-8 w-8 items-center justify-center text-[#0F1729] transition-colors',
-        variant === 'glass' && 'rounded-full bg-white/40 text-[#0F1729]/70 backdrop-blur hover:bg-white/70 hover:text-[#0F1729]',
-        className
-      )}
-    >
-      <X size={14} />
-    </button>
+      variant={variant}
+      className={className}
+      icon={<X size={14} />}
+    />
   );
 }

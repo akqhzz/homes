@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Heart, Map, MapPin, ArrowDownWideNarrow, X } from 'lucide-react';
+import { ChevronRight, Heart, Map, MapPin, ArrowDownWideNarrow, Undo2, X } from 'lucide-react';
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
@@ -12,7 +12,9 @@ import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
 import { getMapboxToken } from '@/lib/mapbox-token';
+import { getStaticMapPreviewUrl } from '@/lib/map-preview';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
+import OverlayIconButton from '@/components/atoms/OverlayIconButton';
 import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import Button from '@/components/atoms/Button';
@@ -29,6 +31,7 @@ const ACTION_BUTTON_CLASS =
   'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
 const DETAIL_CHIP_CLASS =
   'type-caption pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
+const CARDS_MODE_ONBOARDING_KEY = 'homes.cards-mode-onboarding-seen';
 const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
   'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
@@ -43,12 +46,6 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'price-desc', label: 'Price high to low' },
   { value: 'newest', label: 'Newest first' },
 ];
-
-function mapThumb(listing: Listing) {
-  if (!MAPBOX_TOKEN) return null;
-  const { lng, lat } = listing.coordinates;
-  return `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${lng},${lat},11.6,0/192x192@2x?access_token=${MAPBOX_TOKEN}`;
-}
 
 interface CardsModeProps {
   listings: Listing[];
@@ -66,6 +63,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
   const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
   const [likePulse, setLikePulse] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => typeof window !== 'undefined' && window.localStorage.getItem(CARDS_MODE_ONBOARDING_KEY) !== 'true'
+  );
   const wheelLockRef = useRef(false);
   const dragLockRef = useRef(false);
   const activeDragRef = useRef(false);
@@ -152,13 +152,30 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     });
   }, [activeIndex, sortedListings]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !showOnboarding) return;
+    const timeout = window.setTimeout(() => {
+      setShowOnboarding(false);
+      window.localStorage.setItem(CARDS_MODE_ONBOARDING_KEY, 'true');
+    }, 3600);
+    return () => window.clearTimeout(timeout);
+  }, [showOnboarding]);
+
+  const dismissOnboarding = () => {
+    if (!showOnboarding || typeof window === 'undefined') return;
+    setShowOnboarding(false);
+    window.localStorage.setItem(CARDS_MODE_ONBOARDING_KEY, 'true');
+  };
+
   const passListing = () => {
     if (!listing) return;
+    dismissOnboarding();
     swipeDislike(listing.id);
     setCurrentIndex((i) => i + 1);
   };
 
   const handleSaved = () => {
+    dismissOnboarding();
     setLikePulse(true);
     window.setTimeout(() => {
       setLikePulse(false);
@@ -168,6 +185,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
   const navigateCard = (direction: 'next' | 'previous') => {
     if (dragLockRef.current) return;
+    dismissOnboarding();
     dragLockRef.current = true;
     setCurrentIndex((index) => {
       if (direction === 'next') return Math.min(sortedListings.length, index + 1);
@@ -250,6 +268,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
   const handleShowOnMap = (targetListing = listing) => {
     if (!targetListing) return;
+    dismissOnboarding();
     setViewState({ longitude: targetListing.coordinates.lng, latitude: targetListing.coordinates.lat, zoom: 15 });
     setSelectedListingId(null);
     setActivePanel('none');
@@ -281,13 +300,41 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
       style={{ overscrollBehaviorX: 'none', overscrollBehaviorY: 'none', touchAction: 'pan-y' }}
     >
+      <OverlayIconButton
+        onClick={() => navigateCard('previous')}
+        label="Undo to previous card"
+        className="absolute left-4 z-20"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
+        variant="glass"
+        icon={<Undo2 size={14} />}
+        disabled={activeIndex === 0}
+      />
       <OverlayCloseButton
-        onClick={onClose}
+        onClick={() => {
+          dismissOnboarding();
+          onClose();
+        }}
         label="Close cards view"
         className="absolute z-20"
         style={{ right: '1rem', top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
         variant="glass"
       />
+
+      <AnimatePresence>
+        {showOnboarding && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top,0px)+4.25rem)] z-20 flex justify-center"
+          >
+            <div className="max-w-[320px] rounded-full bg-[var(--color-text-primary)] px-4 py-2 text-center type-caption text-[var(--color-text-inverse)] shadow-[var(--shadow-control)]">
+              Tap the action buttons or swipe left and right to move between cards.
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Card stack */}
       <div
@@ -322,17 +369,20 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               active={index === activeIndex}
               onOpenDetail={() => {
                 if (activeDragRef.current) return;
+                dismissOnboarding();
                 setCurrentIndex(index);
                 setDrawerListing(item);
                 setShowDetailDrawer(true);
               }}
               onOpenMap={() => {
                 if (activeDragRef.current) return;
+                dismissOnboarding();
                 setCurrentIndex(index);
                 setDrawerListing(item);
                 setShowMapDrawer(true);
               }}
               onClose={onClose}
+              onInteract={dismissOnboarding}
             />
           ))}
         </motion.div>
@@ -359,7 +409,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         </button>
 
         <motion.button
-          onClick={() => setSavePickerListing(listing)}
+          onClick={() => {
+            dismissOnboarding();
+            setSavePickerListing(listing);
+          }}
           className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-primary)]')}
           animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
           transition={{ duration: 0.24, ease: 'easeOut' }}
@@ -373,7 +426,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         </motion.button>
 
         <FloatingActionButton
-          onClick={() => setShowSortDrawer(true)}
+          onClick={() => {
+            dismissOnboarding();
+            setShowSortDrawer(true);
+          }}
           aria-label="Sort cards"
         >
           <ArrowDownWideNarrow size={17} strokeWidth={2} />
@@ -554,6 +610,7 @@ function CardModeListingCard({
   onOpenDetail,
   onOpenMap,
   onClose,
+  onInteract,
 }: {
   listing: Listing;
   width: number;
@@ -561,8 +618,10 @@ function CardModeListingCard({
   onOpenDetail: () => void;
   onOpenMap: () => void;
   onClose: () => void;
+  onInteract: () => void;
 }) {
   const images = getListingImages(listing);
+  const mapPreviewSrc = getStaticMapPreviewUrl(listing.coordinates, MAPBOX_TOKEN);
   const imageScrollRef = useRef<HTMLDivElement>(null);
   const imagePullStartRef = useRef<{ x: number; y: number; atTop: boolean } | null>(null);
 
@@ -659,6 +718,7 @@ function CardModeListingCard({
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={(event) => {
                       event.stopPropagation();
+                      onInteract();
                       onOpenDetail();
                     }}
                     className={DETAIL_CHIP_CLASS}
@@ -674,14 +734,15 @@ function CardModeListingCard({
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation();
+                  onInteract();
                   onOpenMap();
                 }}
                 className="pointer-events-auto relative h-24 w-24 shrink-0 overflow-hidden rounded-[24px] bg-white/90 shadow-[0_8px_28px_rgba(15,23,41,0.16)] backdrop-blur-xl"
                 aria-label="Open map preview"
               >
-                {mapThumb(listing) ? (
+                {mapPreviewSrc ? (
                   <>
-                    <Image src={mapThumb(listing)!} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
+                    <Image src={mapPreviewSrc} alt="" fill sizes="96px" className="object-cover" draggable={false} unoptimized />
                     <div className="pointer-events-none absolute inset-0 bg-white/18" />
                     <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[82%]">
                       <MapListingPin size={18} dotSize={5} className="drop-shadow-[0_4px_12px_rgba(15,23,41,0.2)]" />

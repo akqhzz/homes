@@ -8,6 +8,7 @@ import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
 import PageShell from '@/components/templates/PageShell';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import ListingImageGallery from '@/components/organisms/ListingImageGallery';
+import ListingLocationMap from '@/components/organisms/ListingLocationMap';
 import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/listing/ListingDisplay';
 
 interface ListingPageProps {
@@ -103,9 +104,14 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <p className="mt-3 max-w-4xl type-body leading-7 text-[var(--color-text-secondary)]">
                 Set in {listing.neighborhood}, this address is close to local cafes, grocery options, parks, and frequent transit. The surrounding blocks offer a balanced mix of residential calm and city access, making it practical for commuting, hosting, and daily routines.
               </p>
+
+              <div className="my-8 h-px bg-[var(--color-surface)]" />
+
+              <h2 className="type-title text-[var(--color-text-primary)]">Map Preview</h2>
+              <ListingLocationMap listing={listing} />
             </div>
 
-            <aside className="hidden h-fit rounded-3xl border border-[#F0F0F0] p-6 lg:sticky lg:top-6 lg:block">
+            <aside className="hidden h-fit rounded-3xl border border-[var(--color-border)] p-6 lg:sticky lg:top-6 lg:block">
               <h2 className="type-title text-[var(--color-text-primary)]">Contact Agent</h2>
               <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[var(--color-surface)] p-3">
                 <Image src={agentImage} alt="Maya Chen" width={56} height={56} className="h-14 w-14 rounded-xl object-cover" />
@@ -116,7 +122,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
                 </div>
               </div>
               <div className="mt-4 grid gap-2">
-                <button className="h-12 rounded-full bg-[#0F1729] type-label text-white transition-colors hover:bg-[#1F2937]">
+                <button className="h-12 rounded-full bg-[var(--color-text-primary)] type-label text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]">
                   Book A Tour
                 </button>
                 <button className="h-12 rounded-full bg-[var(--color-surface)] type-label text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]">
@@ -130,7 +136,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
         <div className="fixed inset-x-4 bottom-4 z-40 flex items-center gap-2 lg:hidden">
           <BackButton
             iconOnly
-            className="h-11 w-11 shrink-0 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] hover:bg-[#F5F6F7]"
+            className="h-11 w-11 shrink-0 bg-white shadow-[var(--shadow-control)] hover:bg-[var(--color-surface)]"
           />
           <div className="flex flex-1 items-center gap-2 rounded-[28px] bg-white/95 p-2 shadow-[0_12px_34px_rgba(15,23,41,0.18)] backdrop-blur">
             <button
@@ -141,7 +147,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <Share2 size={16} />
             </button>
             <ListingSaveButton listingId={listing.id} variant="icon" />
-            <button className="h-12 flex-1 rounded-full bg-[#0F1729] type-btn text-white">
+            <button className="h-12 flex-1 rounded-full bg-[var(--color-text-primary)] type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]">
               Contact Agent
             </button>
           </div>

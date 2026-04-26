@@ -59,7 +59,7 @@ export default function AreaSelectPanel({
     ? selectedCount > 0
       ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
       : `${MOCK_LISTINGS.length} listings`
-    : 'Choose your area';
+    : 'Tap areas to select';
 
   const handleBack = () => {
     setAreaSelectMode(false);

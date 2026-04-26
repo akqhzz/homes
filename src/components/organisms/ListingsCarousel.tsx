@@ -6,8 +6,8 @@ import ListingCard from '@/components/molecules/ListingCard';
 import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
 
-const CARD_WIDTH = 288;
-const GAP = 12;
+const CARD_WIDTH = 304;
+const GAP = 16;
 const SWIPE_THRESHOLD = 34;
 
 interface ListingsCarouselProps {
@@ -150,7 +150,7 @@ export default function ListingsCarousel({ listings, className }: ListingsCarous
       >
         {listings.map((listing) => (
           <div key={listing.id} className="shrink-0">
-            <ListingCard listing={listing} variant="carousel" />
+            <ListingCard listing={listing} variant="carousel" carouselWidth={CARD_WIDTH} />
           </div>
         ))}
       </motion.div>
