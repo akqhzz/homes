@@ -31,7 +31,6 @@ const ACTION_BUTTON_CLASS =
   'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
 const DETAIL_CHIP_CLASS =
   'type-caption pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
-const CARDS_MODE_ONBOARDING_KEY = 'homes.cards-mode-onboarding-seen';
 const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
   'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
@@ -63,9 +62,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
   const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
   const [likePulse, setLikePulse] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(
-    () => typeof window !== 'undefined' && window.localStorage.getItem(CARDS_MODE_ONBOARDING_KEY) !== 'true'
-  );
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const wheelLockRef = useRef(false);
   const dragLockRef = useRef(false);
   const activeDragRef = useRef(false);
@@ -152,19 +149,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     });
   }, [activeIndex, sortedListings]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !showOnboarding) return;
-    const timeout = window.setTimeout(() => {
-      setShowOnboarding(false);
-      window.localStorage.setItem(CARDS_MODE_ONBOARDING_KEY, 'true');
-    }, 3600);
-    return () => window.clearTimeout(timeout);
-  }, [showOnboarding]);
-
   const dismissOnboarding = () => {
-    if (!showOnboarding || typeof window === 'undefined') return;
+    if (!showOnboarding) return;
     setShowOnboarding(false);
-    window.localStorage.setItem(CARDS_MODE_ONBOARDING_KEY, 'true');
   };
 
   const passListing = () => {
@@ -457,11 +444,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             <div className="mx-auto flex max-w-[320px] flex-col items-center text-center">
               <div className="relative mt-2 flex h-28 w-full items-center justify-center">
                 <motion.div
-                  className="absolute h-18 w-34 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-control)]"
+                  className="absolute h-[4.5rem] w-[8.5rem] rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-control)]"
                   animate={{ x: [-18, 18, -18] }}
                   transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
                 />
-                <div className="absolute h-18 w-34 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] opacity-75" />
+                <div className="absolute h-[4.5rem] w-[8.5rem] rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] opacity-75" />
                 <motion.div
                   className="absolute flex items-center gap-2 rounded-full bg-[var(--color-text-primary)] px-3 py-1.5 shadow-[var(--shadow-control)]"
                   animate={{ y: [6, -6, 6], opacity: [0.65, 1, 0.65] }}

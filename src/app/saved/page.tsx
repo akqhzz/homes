@@ -30,6 +30,7 @@ export default function SavedPage() {
   const [renameName, setRenameName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const desktopCreateRef = useRef<HTMLDivElement>(null);
+  const emptyStateCreateRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -45,7 +46,10 @@ export default function SavedPage() {
   useEffect(() => {
     if (!showDesktopCreate) return;
     const handlePointerDown = (event: PointerEvent) => {
-      if (!desktopCreateRef.current?.contains(event.target as Node)) {
+      if (
+        !desktopCreateRef.current?.contains(event.target as Node) &&
+        !emptyStateCreateRef.current?.contains(event.target as Node)
+      ) {
         setShowDesktopCreate(false);
         setCreatingCollection(false);
       }
@@ -255,21 +259,46 @@ export default function SavedPage() {
             })}
 
             {collections.length === 0 && (
-              <div className="text-center py-20">
+              <div className="col-span-full flex justify-center py-20">
+                <div className="text-center">
                 <div className="text-5xl mb-4">🏠</div>
-                <p className="type-label text-[var(--color-text-primary)]">No collections yet</p>
+                <p className="type-heading text-[var(--color-text-primary)]">No collections yet</p>
                 <p className="type-body text-[var(--color-text-tertiary)] mt-1">Create a collection to organize homes you want to revisit, compare, or share.</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewName('');
-                    setCreatingCollection(true);
-                    setShowNewCollection(true);
-                  }}
-                  className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-4 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]"
-                >
-                  + New
-                </button>
+                <div ref={emptyStateCreateRef} className="relative mt-4 inline-flex">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDesktopCreate((value) => !value);
+                      setCreatingCollection(false);
+                      setNewName('');
+                    }}
+                    className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-4 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]"
+                  >
+                    + New
+                  </button>
+                  {showDesktopCreate && (
+                    <div className="absolute left-1/2 top-[3.25rem] z-20 w-80 -translate-x-1/2 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+                      <CreateInlineField
+                        open
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            setShowDesktopCreate(false);
+                            setNewName('');
+                          }
+                        }}
+                        value={newName}
+                        onValueChange={setNewName}
+                        placeholder="Collection name..."
+                        collapsedLabel="New Collection"
+                        onSubmit={handleCreate}
+                        autoFocus
+                        submitLabel="Create"
+                        className="mb-0"
+                      />
+                    </div>
+                  )}
+                </div>
+                </div>
               </div>
             )}
           </div>

@@ -299,6 +299,24 @@ export default function MapPage() {
     clearVisibleBoundaries();
   };
 
+  const removeSearchLocationChip = (location: SavedSearch['locations'][number]) => {
+    const normalizedLabel = getPrimaryLocationLabel(location.name).trim().toLowerCase();
+    const matchingNeighborhood = MOCK_NEIGHBORHOODS.find(
+      (neighborhood) => getPrimaryLocationLabel(neighborhood.name).trim().toLowerCase() === normalizedLabel
+    );
+
+    if (matchingNeighborhood && appliedNeighborhoods.has(matchingNeighborhood.id)) {
+      const nextNeighborhoods = new Set(appliedNeighborhoods);
+      nextNeighborhoods.delete(matchingNeighborhood.id);
+      setAppliedNeighborhoods(nextNeighborhoods);
+      setSelectedNeighborhoods(new Set(nextNeighborhoods));
+    }
+
+    const remainingLocations = selectedLocations.filter((item) => item.id !== location.id);
+    if (remainingLocations.length === 0) clearLocations();
+    else setLocations(remainingLocations);
+  };
+
   const undoBoundary = () => {
     if (drawnBoundary.length === 0 && clearedBoundarySnapshot && redoBoundary.length === 0) {
       setDrawnBoundary(clearedBoundarySnapshot);
@@ -513,6 +531,7 @@ export default function MapPage() {
         hasAppliedArea={hasVisibleBoundary}
         areaSummaryLabel={areaSummaryLabel}
         currentNeighborhoodIds={[...appliedNeighborhoods]}
+        onRemoveLocationChip={removeSearchLocationChip}
         onRemoveAreaChip={removeAppliedAreaChip}
         onClearArea={clearVisibleBoundaries}
       />
@@ -658,6 +677,7 @@ export default function MapPage() {
             hasAppliedArea={hasVisibleBoundary}
             areaSummaryLabel={areaSummaryLabel}
             currentNeighborhoodIds={[...appliedNeighborhoods]}
+            onRemoveLocationChip={removeSearchLocationChip}
             onRemoveAreaChip={removeAppliedAreaChip}
             onOpenAreaSelect={openAreaSelect}
             onEditArea={editAppliedArea}

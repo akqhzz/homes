@@ -51,6 +51,7 @@ interface DesktopHeaderProps {
   hasAppliedArea?: boolean;
   areaSummaryLabel?: string;
   currentNeighborhoodIds?: string[];
+  onRemoveLocationChip?: (location: Location) => void;
   onRemoveAreaChip?: (label: string) => void;
   onClearArea?: () => void;
 }
@@ -61,6 +62,7 @@ export default function DesktopHeader({
   hasAppliedArea = false,
   areaSummaryLabel,
   currentNeighborhoodIds = [],
+  onRemoveLocationChip,
   onRemoveAreaChip,
   onClearArea,
 }: DesktopHeaderProps) {
@@ -213,7 +215,10 @@ export default function DesktopHeader({
                         <SearchLocationChip
                           key={location.id}
                           location={location}
-                          onRemove={() => removeLocation(location.id)}
+                          onRemove={() => {
+                            if (onRemoveLocationChip) onRemoveLocationChip(location);
+                            else removeLocation(location.id);
+                          }}
                           className="type-caption py-1"
                         />
                       ))}
