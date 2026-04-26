@@ -372,7 +372,7 @@ export default function DesktopHeader({
                             )}
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="type-body-lg block truncate text-[var(--color-text-primary)]">{collection.name}</span>
+                            <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
                             <span className="block type-caption text-[var(--color-text-tertiary)]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                           </span>
                         </button>
@@ -388,7 +388,7 @@ export default function DesktopHeader({
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="type-body-lg block truncate text-[var(--color-text-primary)]">All Collections</span>
+                        <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">All Collections</span>
                         <span className="block type-caption text-[var(--color-text-tertiary)]">View Your Saved Homes</span>
                       </span>
                       <ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />

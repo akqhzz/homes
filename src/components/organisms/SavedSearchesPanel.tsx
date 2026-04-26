@@ -284,7 +284,7 @@ export default function SavedSearchesPanel({
                       </button>
                     </div>
                   ) : (
-                    <p className="type-body-lg min-w-0 truncate text-[var(--color-text-primary)]">{search.name}</p>
+                    <p className="type-heading-sm min-w-0 truncate text-[var(--color-text-primary)]">{search.name}</p>
                   )}
                   <div className="mt-0.5">
                     <p className="min-w-0 flex-1 truncate type-caption text-[var(--color-text-tertiary)]">
@@ -294,7 +294,7 @@ export default function SavedSearchesPanel({
                   {hasNewListings && (
                     <SearchLocationChip
                       label={`${search.newListingsCount} new`}
-                      className="type-micro mt-2 shrink-0 self-start bg-[var(--color-brand-600)] px-2 py-0.5 text-[var(--color-text-inverse)]"
+                      className="type-caption mt-2 shrink-0 self-start bg-[var(--color-brand-600)] px-2 py-0.5 text-[var(--color-text-inverse)]"
                     />
                   )}
                 </div>

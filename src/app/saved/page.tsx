@@ -112,6 +112,7 @@ export default function SavedPage() {
         <div className="flex-shrink-0 px-4 pt-4 pb-0 lg:w-full lg:px-6 lg:pt-6">
           <CollectionWorkspaceHeader
             title="Collections"
+            titleClassName="type-subtitle"
             subtitle={`${collections.length} collection${collections.length === 1 ? '' : 's'}`}
             showBackButton
             hideSubtitleOnMobile
@@ -224,7 +225,7 @@ export default function SavedPage() {
                             </button>
                           </div>
                         ) : (
-                          <p className="truncate type-heading text-[var(--color-text-primary)]">{col.name}</p>
+                        <p className="truncate type-heading-sm text-[var(--color-text-primary)]">{col.name}</p>
                         )}
                         <p className="type-caption text-[var(--color-text-tertiary)] mt-0.5">
                           {col.listings.length} listing{col.listings.length !== 1 ? 's' : ''}

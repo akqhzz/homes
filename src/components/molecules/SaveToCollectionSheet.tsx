@@ -83,7 +83,7 @@ export default function SaveToCollectionSheet({
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-heading text-sm text-[var(--color-text-primary)]">{collection.name}</span>
+                <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
                 <span className="block type-caption text-[var(--color-text-tertiary)]">
                   {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
                 </span>

@@ -58,7 +58,7 @@ export default function DesktopSidebar() {
       <button
         type="button"
         onClick={() => router.push('/')}
-        className="mt-0 flex h-11 w-11 items-center justify-center text-[2.1rem] font-heading font-semibold leading-none tracking-[-0.06em] text-[#0F1729]"
+        className="type-title-lg mt-0 flex h-11 w-11 items-center justify-center leading-none tracking-[-0.06em] text-[var(--color-text-primary)]"
         aria-label="Homes"
       >
         h.

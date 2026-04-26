@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils/cn';
 interface CollectionWorkspaceHeaderProps {
   title: string;
   subtitle?: string;
+  titleClassName?: string;
   showBackButton?: boolean;
   compact?: boolean;
   compactProgress?: number;
@@ -17,6 +18,7 @@ interface CollectionWorkspaceHeaderProps {
 export default function CollectionWorkspaceHeader({
   title,
   subtitle,
+  titleClassName,
   showBackButton = true,
   compact = false,
   compactProgress,
@@ -46,8 +48,10 @@ export default function CollectionWorkspaceHeader({
       <div className="min-w-0 text-center transition-all duration-300 ease-out">
         <h1
           className={cn(
-            'font-medium tracking-[-0.01em] text-[#0F1729] transition-[transform,font-size,line-height] duration-300 ease-out',
-            compact ? 'text-[1.12rem] leading-[1.15] lg:text-[1.25rem]' : 'text-[1.28rem] leading-[1.2] lg:text-[1.55rem]'
+            'font-medium tracking-[-0.01em] text-[var(--color-text-primary)] transition-[transform,font-size,line-height] duration-300 ease-out',
+            titleClassName ?? (
+              compact ? 'text-[1.12rem] leading-[1.15] lg:text-[1.25rem]' : 'text-[1.28rem] leading-[1.2] lg:text-[1.55rem]'
+            )
           )}
           style={{
             transform: `translateY(${titleTranslate}px) scale(${titleScale})`,
