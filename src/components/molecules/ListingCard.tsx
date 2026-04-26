@@ -311,11 +311,13 @@ export default function ListingCard({
     <>
       <div
         className={cn(
-          'group relative flex w-72 shrink-0 flex-col rounded-2xl bg-white no-select overflow-hidden',
+          carouselWidth
+            ? 'group relative flex shrink-0 flex-col rounded-2xl bg-white no-select overflow-hidden'
+            : 'group relative flex w-72 shrink-0 flex-col rounded-2xl bg-white no-select overflow-hidden',
           'shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]',
           className
         )}
-        style={{ minHeight: carouselTotalHeight, width: carouselWidth ?? 288 }}
+        style={{ minHeight: carouselTotalHeight, width: carouselWidth }}
       >
         {/* Image strip: swiping here changes photos instead of moving the carousel. */}
         <div

@@ -71,8 +71,12 @@ export default async function ListingPage({ params }: ListingPageProps) {
               <div className="my-8 h-px bg-[var(--color-surface)]" />
 
               <h2 className="type-title text-[var(--color-text-primary)]">About This Home</h2>
-              <p className="mt-3 max-w-4xl type-body leading-7 text-[var(--color-text-secondary)]">{extendedDescription}</p>
-              <ListingLocationMap listing={listing} />
+              <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+                <p className="max-w-4xl flex-1 type-body leading-7 text-[var(--color-text-secondary)]">{extendedDescription}</p>
+                <div className="w-full lg:w-[248px] lg:flex-none">
+                  <ListingLocationMap listing={listing} />
+                </div>
+              </div>
 
               <div className="my-8 h-px bg-[var(--color-surface)]" />
 

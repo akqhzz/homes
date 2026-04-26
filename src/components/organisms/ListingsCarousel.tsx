@@ -6,8 +6,8 @@ import ListingCard from '@/components/molecules/ListingCard';
 import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
 
-const CARD_WIDTH = 304;
-const GAP = 16;
+const CARD_WIDTH = 320;
+const GAP = 20;
 const SWIPE_THRESHOLD = 34;
 
 interface ListingsCarouselProps {

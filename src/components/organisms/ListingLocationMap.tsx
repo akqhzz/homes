@@ -35,30 +35,21 @@ export default function ListingLocationMap({ listing }: { listing: Listing }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group mt-4 flex w-full items-center gap-4 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-3 text-left shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
+        className="group relative block h-28 w-full overflow-hidden rounded-[24px] bg-[var(--color-surface)] shadow-[var(--shadow-control)] transition-transform hover:scale-[1.01]"
       >
-        <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-[22px] bg-[var(--color-surface)]">
-          {previewSrc ? (
-            <>
-              <Image src={previewSrc} alt="" fill sizes="112px" className="object-cover" draggable={false} unoptimized />
-              <div className="pointer-events-none absolute inset-0" style={previewWashStyle} />
-              <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[78%]">
-                <MapListingPin size={18} dotSize={5} />
-              </div>
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center bg-[var(--color-surface)]">
-              <MapPin size={20} className="text-[var(--color-text-tertiary)]" />
+        {previewSrc ? (
+          <>
+            <Image src={previewSrc} alt="" fill sizes="(min-width: 1024px) 248px, 100vw" className="object-cover" draggable={false} unoptimized />
+            <div className="pointer-events-none absolute inset-0" style={previewWashStyle} />
+            <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[78%]">
+              <MapListingPin size={22} dotSize={6} />
             </div>
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="type-heading-sm text-[var(--color-text-primary)]">Open interactive map</p>
-          <p className="mt-1 type-body text-[var(--color-text-secondary)]">{listing.neighborhood}</p>
-          <p className="mt-1 line-clamp-2 type-caption text-[var(--color-text-tertiary)]">
-            {listing.address}, {listing.city}, {listing.province}
-          </p>
-        </div>
+          </>
+        ) : (
+          <div className="flex h-full items-center justify-center bg-[var(--color-surface)]">
+            <MapPin size={24} className="text-[var(--color-text-tertiary)]" />
+          </div>
+        )}
       </button>
 
       <AnimatePresence>

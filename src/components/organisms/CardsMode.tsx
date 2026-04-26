@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Heart, Map, MapPin, ArrowDownWideNarrow, Undo2, X } from 'lucide-react';
+import { ArrowLeftRight, ChevronRight, Heart, Map, MapPin, ArrowDownWideNarrow, Undo2, X } from 'lucide-react';
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
@@ -29,8 +29,6 @@ const CARD_MODE_IMAGE_COUNT = 8;
 const CARD_GAP = 12;
 const ACTION_BUTTON_CLASS =
   'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
-const ONBOARDING_BUTTON_RING_CLASS =
-  'absolute inset-[-7px] rounded-full border border-[var(--color-brand-300)] bg-[var(--color-brand-50)]/70 shadow-[var(--shadow-control)]';
 const DETAIL_CHIP_CLASS =
   'type-caption pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
 const CARDS_MODE_ONBOARDING_KEY = 'homes.cards-mode-onboarding-seen';
@@ -321,23 +319,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         style={{ right: '1rem', top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
         variant="glass"
       />
-      <AnimatePresence>
-        {showOnboarding && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none absolute inset-x-5 bottom-[calc(env(safe-area-inset-bottom,0px)+5.6rem)] z-20"
-          >
-            <div className="relative rounded-[28px] bg-[var(--color-text-primary)] px-4 py-3 shadow-[var(--shadow-xl)]">
-              <p className="type-caption text-[var(--color-text-inverse)]">Swipe sideways to move between homes, or use the action buttons below.</p>
-              <div className="pointer-events-none absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-[var(--color-text-primary)]" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Card stack */}
       <div
         ref={trackRef}
@@ -402,48 +383,30 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <Map size={17} strokeWidth={2} />
         </FloatingActionButton>
 
-        <div className="relative">
-          {showOnboarding && (
-            <motion.div
-              className={ONBOARDING_BUTTON_RING_CLASS}
-              animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          )}
-          <button
-            onClick={passListing}
-            className={cn(ACTION_BUTTON_CLASS, 'relative z-10 text-[var(--color-text-secondary)]')}
-          >
-            <X size={16} strokeWidth={2.4} />
-            Pass
-          </button>
-        </div>
+        <button
+          onClick={passListing}
+          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-secondary)]')}
+        >
+          <X size={16} strokeWidth={2.4} />
+          Pass
+        </button>
 
-        <div className="relative">
-          {showOnboarding && (
-            <motion.div
-              className={ONBOARDING_BUTTON_RING_CLASS}
-              animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
-              transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut', delay: 0.18 }}
-            />
-          )}
-          <motion.button
-            onClick={() => {
-              dismissOnboarding();
-              setSavePickerListing(listing);
-            }}
-            className={cn(ACTION_BUTTON_CLASS, 'relative z-10 text-[var(--color-text-primary)]')}
-            animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
-            transition={{ duration: 0.24, ease: 'easeOut' }}
-          >
-            <Heart
-              size={16}
-              strokeWidth={2.4}
-              className={cn(liked || likePulse ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
-            />
-            Save
-          </motion.button>
-        </div>
+        <motion.button
+          onClick={() => {
+            dismissOnboarding();
+            setSavePickerListing(listing);
+          }}
+          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-primary)]')}
+          animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
+          transition={{ duration: 0.24, ease: 'easeOut' }}
+        >
+          <Heart
+            size={16}
+            strokeWidth={2.4}
+            className={cn(liked || likePulse ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
+          />
+          Save
+        </motion.button>
 
         <FloatingActionButton
           onClick={() => {
@@ -480,6 +443,43 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               setCurrentIndex(0);
             }}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showOnboarding && (
+          <MobileDrawer
+            onClose={dismissOnboarding}
+            heightClassName="h-auto max-h-[58dvh]"
+            contentClassName="px-6 pb-6 pt-1"
+            showBackdrop={false}
+          >
+            <div className="mx-auto flex max-w-[320px] flex-col items-center text-center">
+              <div className="relative mt-2 flex h-28 w-full items-center justify-center">
+                <motion.div
+                  className="absolute h-18 w-34 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-control)]"
+                  animate={{ x: [-18, 18, -18] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <div className="absolute h-18 w-34 rounded-[28px] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] opacity-75" />
+                <motion.div
+                  className="absolute flex items-center gap-2 rounded-full bg-[var(--color-text-primary)] px-3 py-1.5 shadow-[var(--shadow-control)]"
+                  animate={{ y: [6, -6, 6], opacity: [0.65, 1, 0.65] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <ArrowLeftRight size={14} className="text-[var(--color-text-inverse)]" />
+                  <span className="type-micro text-[var(--color-text-inverse)]">Swipe</span>
+                </motion.div>
+              </div>
+              <h3 className="mt-2 type-subtitle text-[var(--color-text-primary)]">Welcome to card mode</h3>
+              <p className="mt-2 type-body text-[var(--color-text-secondary)]">
+                Swipe left or right to move through homes, tap <span className="type-label">Pass</span> or <span className="type-label">Save</span> for quick decisions, and use the mini map or details controls when you want more context.
+              </p>
+              <Button onClick={dismissOnboarding} size="md" className="mt-5 min-w-[132px]">
+                Got it
+              </Button>
+            </div>
+          </MobileDrawer>
         )}
       </AnimatePresence>
 
