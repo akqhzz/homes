@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { href: '/for-you', icon: Sparkles, label: 'For You' },
   { href: '/menu', icon: Menu, label: 'Menu' },
 ] as const;
+const NAV_BUTTON_CLASS =
+  'flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-150 no-select hover:bg-[var(--color-surface)]';
 
 export default function BottomNav() {
   const router = useRouter();
@@ -50,7 +52,7 @@ export default function BottomNav() {
               key={href}
               onClick={() => router.push(href)}
               aria-label={label}
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-colors duration-150 no-select hover:bg-[var(--color-surface)]"
+              className={NAV_BUTTON_CLASS}
             >
               <Icon
                 size={19}

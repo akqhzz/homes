@@ -25,6 +25,10 @@ const SWIPE_THRESHOLD = 38;
 const CARD_MODE_IMAGE_HEIGHT = 305;
 const CARD_MODE_IMAGE_COUNT = 8;
 const CARD_GAP = 12;
+const ACTION_BUTTON_CLASS =
+  'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select';
+const DETAIL_CHIP_CLASS =
+  'pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[#F3F4F6] px-2.5 text-[11px] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[#E9EDF1] hover:text-[var(--color-text-primary)]';
 const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
   'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
@@ -349,7 +353,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
         <button
           onClick={passListing}
-          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label text-[#4B5563] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
+          className={cn(ACTION_BUTTON_CLASS, 'text-[#4B5563]')}
         >
           <X size={16} strokeWidth={2.4} />
           Pass
@@ -357,7 +361,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
         <motion.button
           onClick={() => setSavePickerListing(listing)}
-          className="flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label text-[var(--color-text-primary)] shadow-[0_2px_10px_rgba(0,0,0,0.09),0_1px_3px_rgba(0,0,0,0.05)] active:scale-95 transition-transform no-select"
+          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-primary)]')}
           animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
           transition={{ duration: 0.24, ease: 'easeOut' }}
         >
@@ -659,7 +663,7 @@ function CardModeListingCard({
                       event.stopPropagation();
                       onOpenDetail();
                     }}
-                    className="pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[#F3F4F6] px-2.5 text-[11px] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[#E9EDF1] hover:text-[var(--color-text-primary)]"
+                    className={DETAIL_CHIP_CLASS}
                     aria-label="View details"
                   >
                     Details

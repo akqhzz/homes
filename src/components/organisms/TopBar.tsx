@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
+const ROUND_CONTROL_CLASS =
+  'flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[var(--color-surface)]';
+const AREA_MENU_ITEM_CLASS = 'w-full rounded-xl px-3 py-2 text-left font-button hover:bg-[var(--color-surface)]';
 
 interface TopBarProps {
   hasAppliedArea?: boolean;
@@ -67,17 +70,17 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
         <div ref={areaMenuRef} className="relative shrink-0">
           <button
             onClick={handleAreaClick}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[var(--color-surface)]"
+            className={ROUND_CONTROL_CLASS}
             aria-label="Area selection"
           >
             <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
           </button>
           {showAreaMenu && (
             <div className="absolute left-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
-              <button onClick={handleEditArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]">
+              <button onClick={handleEditArea} className={cn(AREA_MENU_ITEM_CLASS, 'text-[var(--color-text-primary)]')}>
                 Edit area
               </button>
-              <button onClick={handleClearArea} className="w-full rounded-xl px-3 py-2 text-left font-button text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]">
+              <button onClick={handleClearArea} className={cn(AREA_MENU_ITEM_CLASS, 'text-[var(--color-text-secondary)]')}>
                 Clear area
               </button>
             </div>

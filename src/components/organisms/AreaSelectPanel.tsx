@@ -9,6 +9,9 @@ import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 
 const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
+const ICON_BUTTON_CLASS =
+  'flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35';
+const MOBILE_FLOATING_BAR_STYLE = { paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' } as const;
 
 interface AreaSelectPanelProps {
   focusedNeighborhood: Neighborhood | null;
@@ -158,12 +161,12 @@ export default function AreaSelectPanel({
         {hasSelection && !isDrawing && !focusedNeighborhood && (
           <div
             className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+            style={MOBILE_FLOATING_BAR_STYLE}
           >
-            <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
+            <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className={ICON_BUTTON_CLASS}>
               <Undo2 size={15} />
             </button>
-            <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
+            <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className={ICON_BUTTON_CLASS}>
               <Redo2 size={15} />
             </button>
             <button onClick={onClearSelection} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[var(--color-text-primary)] shadow-[var(--shadow-control)]">
@@ -176,22 +179,22 @@ export default function AreaSelectPanel({
           <>
             <div
               className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+              style={MOBILE_FLOATING_BAR_STYLE}
             >
               <button onClick={onClearDrawing} disabled={pointCount === 0} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
                 Clear
               </button>
-              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className={ICON_BUTTON_CLASS}>
                 <Undo2 size={15} />
               </button>
-              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className={ICON_BUTTON_CLASS}>
                 <Redo2 size={15} />
               </button>
             </div>
 
             <div
               className="absolute bottom-0 right-5 pointer-events-auto lg:hidden"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+              style={MOBILE_FLOATING_BAR_STYLE}
             >
               <button
                 onClick={onApply}

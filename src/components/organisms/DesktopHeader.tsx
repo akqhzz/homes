@@ -39,6 +39,10 @@ const MENU_ITEMS = [
   { icon: Shield, label: 'Privacy & Security' },
   { icon: MessageSquare, label: 'Send Feedback' },
 ];
+const SURFACE_ICON_BUTTON_CLASS =
+  'relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]';
+const MENU_TRIGGER_CLASS =
+  'flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]';
 
 interface DesktopHeaderProps {
   variant?: 'default' | 'listing';
@@ -272,7 +276,7 @@ export default function DesktopHeader({
               setShowCollections(false);
               setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches');
             }}
-            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
+            className={SURFACE_ICON_BUTTON_CLASS}
             aria-label="Saved searches"
           >
             {activeSearch?.thumbnail ? (
@@ -389,7 +393,7 @@ export default function DesktopHeader({
                   setShowFilter(false);
                   setShowSearch(false);
                 }}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
+                className={MENU_TRIGGER_CLASS}
                 aria-label="Menu"
               >
                 <Menu size={19} />
@@ -410,12 +414,7 @@ function DesktopMenu() {
   return (
     <div className="absolute right-0 top-12 z-40 w-72 overflow-hidden rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
       {MENU_ITEMS.map((item) => (
-        <button key={item.label} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[var(--color-surface)]">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface)]">
-            <item.icon size={15} className="text-[var(--color-text-primary)]" />
-          </div>
-          <span className="flex-1 type-body font-medium text-[var(--color-text-primary)]">{item.label}</span>
-        </button>
+        <DesktopMenuItem key={item.label} icon={item.icon} label={item.label} />
       ))}
       <button className="mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-red-50">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
@@ -424,5 +423,16 @@ function DesktopMenu() {
         <span className="flex-1 type-body font-medium text-[var(--color-accent)]">Sign Out</span>
       </button>
     </div>
+  );
+}
+
+function DesktopMenuItem({ icon: Icon, label }: { icon: (typeof MENU_ITEMS)[number]['icon']; label: string }) {
+  return (
+    <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors hover:bg-[var(--color-surface)]">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface)]">
+        <Icon size={15} className="text-[var(--color-text-primary)]" />
+      </div>
+      <span className="flex-1 type-body font-medium text-[var(--color-text-primary)]">{label}</span>
+    </button>
   );
 }
