@@ -84,10 +84,10 @@ function CollectionTagsPanelContent({
               className={cn(
                 'inline-flex select-none items-center gap-1 rounded-full border px-1.5 py-0.5 transition-colors',
                 editingTag === tag
-                  ? 'border-[#D1D5DB] bg-transparent text-[#0F1729]'
+                  ? 'border-[var(--color-border-strong)] bg-transparent text-[var(--color-text-primary)]'
                   : selected
-                  ? 'border-[#0F1729] bg-[#0F1729] text-white'
-                  : 'border-[#E5E7EB] bg-white text-[#6B7280] hover:border-[#0F1729] hover:text-[#0F1729]'
+                  ? 'border-[var(--color-brand-600)] bg-transparent text-[var(--color-brand-600)] shadow-[inset_0_0_0_1px_var(--color-brand-600)]'
+                  : 'border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-brand-600)] hover:text-[var(--color-brand-600)]'
               )}
               style={{ WebkitTouchCallout: 'none' }}
               onContextMenu={(event) => {
@@ -111,7 +111,7 @@ function CollectionTagsPanelContent({
               onTouchCancel={clearLongPress}
             >
               {editingTag === tag ? (
-                <div className="flex items-center gap-1 bg-white pl-2 pr-1 text-[#0F1729]">
+                <div className="flex items-center gap-1 bg-white pl-2 pr-1 text-[var(--color-text-primary)]">
                   <input
                     value={editingValue}
                     onChange={(event) => setEditingValue(event.target.value)}
@@ -125,14 +125,14 @@ function CollectionTagsPanelContent({
                       }
                     }}
                     onBlur={() => finishRenameTag(tag)}
-                    className="h-8 min-w-0 bg-transparent pr-1 text-sm outline-none"
+                    className="type-btn h-8 min-w-0 bg-transparent pr-1 text-[var(--color-text-primary)] outline-none"
                     autoFocus
                   />
                   <button
                     type="button"
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => finishRenameTag(tag)}
-                    className="flex h-7 w-7 items-center justify-center text-[#6B7280] transition-colors hover:text-[#0F1729]"
+                    className="flex h-7 w-7 items-center justify-center text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
                     aria-label="Confirm tag rename"
                   >
                     <Check size={13} />
@@ -149,7 +149,7 @@ function CollectionTagsPanelContent({
                       }
                       onToggleTag(tag);
                     }}
-                    className="inline-flex min-h-6 items-center gap-1 rounded-full px-2.5 text-[0.74rem] font-medium"
+                    className="type-btn inline-flex min-h-8 items-center gap-1 rounded-full px-2.5"
                   >
                     {tag}
                     {selected && <Check size={12} />}

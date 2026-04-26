@@ -7,7 +7,7 @@ import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 interface SearchLocationChipProps {
   location?: Location;
   label?: string;
-  onRemove: () => void;
+  onRemove?: () => void;
   className?: string;
 }
 
@@ -23,13 +23,15 @@ export default function SearchLocationChip({ location, label, onRemove, classNam
       )}
     >
       {chipLabel}
-      <button
-        onClick={onRemove}
-        className="text-[var(--color-brand-text)] hover:text-[var(--color-brand-text)] transition-colors -mr-0.5"
-        aria-label="Remove"
-      >
-        <X size={13} />
-      </button>
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="text-[var(--color-brand-text)] hover:text-[var(--color-brand-text)] transition-colors -mr-0.5"
+          aria-label="Remove"
+        >
+          <X size={13} />
+        </button>
+      )}
     </span>
   );
 }

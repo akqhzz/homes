@@ -131,7 +131,7 @@ export default function DesktopHeader({
 
   return (
     <>
-      <header className="relative hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 flex-shrink-0 z-30">
+      <header className="relative hidden lg:flex min-h-[76px] bg-white items-center px-6 py-3 flex-shrink-0 z-[70]">
         {isListingVariant ? (
           <BackButton />
         ) : !isMapPage ? (
@@ -191,7 +191,7 @@ export default function DesktopHeader({
               )}
             </div>
             {showSearch && (
-              <div className="absolute left-0 right-0 top-[54px] z-40 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+              <div className="absolute left-0 right-0 top-[54px] z-[80] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 {(selectedLocations.length > 0 || (hasAppliedArea && areaSummaryLabel)) && (
                   <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
                     <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
@@ -255,7 +255,7 @@ export default function DesktopHeader({
               )}
             </button>
             {showFilter && (
-              <div className="absolute right-0 top-[58px] z-40 flex max-h-[min(640px,calc(100vh-12rem))] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+              <div className="absolute right-0 top-[58px] z-[80] flex max-h-[min(640px,calc(100vh-12rem))] w-[390px] flex-col overflow-hidden rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 <div className="flex-1 overflow-y-auto">
                   <FilterPanelBody />
                 </div>

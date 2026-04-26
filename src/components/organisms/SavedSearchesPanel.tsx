@@ -10,6 +10,8 @@ import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import { cn } from '@/lib/utils/cn';
+import SearchLocationChip from '@/components/molecules/SearchLocationChip';
+import { getSavedSearchCriteriaSummary } from '@/lib/utils/search-display';
 
 interface SavedSearchesPanelProps {
   hasActiveCriteria?: boolean;
@@ -214,6 +216,9 @@ export default function SavedSearchesPanel({
           {searches.map((search) => {
             const isSelected = activeSearchId === search.id;
             const showUpdatedState = updatedSearchId === search.id;
+            const criteriaSummary = getSavedSearchCriteriaSummary(search);
+            const hasNewListings = Boolean(search.newListingsCount && search.newListingsCount > 0);
+
             return (
             <div
               key={search.id}
@@ -242,7 +247,8 @@ export default function SavedSearchesPanel({
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                 />
               )}
-              <div className="relative flex-1 min-w-0 pr-9">
+              <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
                 {renamingId === search.id ? (
                   <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
                     <input
@@ -280,27 +286,29 @@ export default function SavedSearchesPanel({
                 ) : (
                   <p className="min-w-0 truncate font-heading text-sm text-[var(--color-text-primary)]">{search.name}</p>
                 )}
-                <button
-                  type="button"
-                  onClick={(event) => openMenu(event, search.id)}
-                  className="absolute right-0 top-0 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
-                  aria-label="Saved search options"
-                >
-                  <Ellipsis size={16} />
-                </button>
-                <p className="mt-0.5 type-caption text-[var(--color-text-tertiary)]">
-                  {search.locations.map(l => l.name).join(', ')}
-                </p>
-                <div className="mt-1.5 flex items-end justify-between gap-3">
-                  <div className="min-h-[30px]">
-                    {search.newListingsCount && search.newListingsCount > 0 && (
-                      <span className="inline-flex items-center rounded-full bg-[var(--color-text-primary)] px-2 py-0.5 type-caption font-medium text-white">
-                        {search.newListingsCount} new
-                      </span>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <p className="min-w-0 flex-1 truncate type-caption text-[var(--color-text-tertiary)]">
+                      {criteriaSummary}
+                    </p>
+                    {hasNewListings && (
+                      <SearchLocationChip
+                        label={`${search.newListingsCount} new`}
+                        className="shrink-0 py-1 text-xs"
+                      />
                     )}
                   </div>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <button
+                    type="button"
+                    onClick={(event) => openMenu(event, search.id)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
+                    aria-label="Saved search options"
+                  >
+                    <Ellipsis size={16} />
+                  </button>
                   {showUpdatedState ? (
-                    <span className="shrink-0 rounded-full bg-[#E8F8F1] px-3 py-2 type-caption text-[#0B8A62]">
+                    <span className="shrink-0 rounded-full border border-[var(--color-success)] bg-[var(--color-brand-50)] px-3 py-2 type-caption text-[var(--color-success)]">
                       Updated
                     </span>
                   ) : isSelected && activeSearchDirty ? (
@@ -332,7 +340,9 @@ export default function SavedSearchesPanel({
                     >
                       Unselect
                     </button>
-                  ) : null}
+                  ) : (
+                    <span className="h-8" aria-hidden="true" />
+                  )}
                 </div>
               </div>
             </div>

@@ -114,7 +114,7 @@ export default function SearchPanel({ hasAppliedArea = false, areaSummaryLabel, 
               </button>
             )}
           </div>
-          <div ref={areaMenuRef} className="relative shrink-0">
+          <div ref={areaMenuRef} className="relative hidden shrink-0 lg:block">
             <button
               onClick={handleAreaClick}
               className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[#F5F6F7]"

@@ -32,6 +32,7 @@ import {
   SearchSnapshot,
   searchToSnapshot,
 } from '@/lib/search-utils';
+import { getAreaSummaryLabel } from '@/lib/utils/search-display';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
 const SearchPanel = dynamic(() => import('@/components/organisms/SearchPanel'), { ssr: false });
@@ -112,16 +113,14 @@ export default function MapPage() {
   const hasVisibleBoundary = hasAppliedArea || hasSearchBoundary;
   const hasActiveSearchCriteria = hasAppliedArea || activeFilterCount() > 0 || selectedLocations.length > 0;
   const activeSavedSearch = searches.find((search) => search.id === activeSearchId) ?? null;
-  const areaSummaryLabel =
-    appliedNeighborhoods.size > 0
-      ? `${appliedNeighborhoods.size} area${appliedNeighborhoods.size === 1 ? '' : 's'}`
-      : appliedBoundary.length >= 3
-      ? 'Custom area'
-      : hasSearchBoundary
-      ? `${selectedLocations.filter((location) => (location.boundary?.length ?? 0) > 2).length} area${
-          selectedLocations.filter((location) => (location.boundary?.length ?? 0) > 2).length === 1 ? '' : 's'
-        }`
-      : undefined;
+  const searchAreaNames = selectedLocations
+    .filter((location) => (location.boundary?.length ?? 0) > 2)
+    .map((location) => location.name);
+  const areaSummaryLabel = getAreaSummaryLabel({
+    neighborhoodIds: [...appliedNeighborhoods],
+    searchAreaNames,
+    hasCustomBoundary: appliedBoundary.length >= 3 || (hasSearchBoundary && searchAreaNames.length === 0),
+  });
   const areaPreviewNeighborhoodId =
     hoveredNeighborhood?.id ??
     (focusedNeighborhood && !selectedNeighborhoods.has(focusedNeighborhood.id) ? focusedNeighborhood.id : null);

@@ -275,8 +275,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   return (
     <motion.div
       className="fixed inset-0 z-50 flex flex-col bg-white overscroll-none"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ y: '100%', opacity: 1, scale: 1 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
       exit={{ y: '100%', opacity: 1, scale: 1 }}
       transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
       style={{ overscrollBehaviorX: 'none', overscrollBehaviorY: 'none', touchAction: 'pan-y' }}

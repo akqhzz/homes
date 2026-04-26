@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import { Building2, ChevronDown, Home, Hotel, Rows3, Warehouse } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
@@ -9,6 +10,7 @@ import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
+import { formatPriceRangeLabel, formatCompactPriceValue, parseCompactPriceValue } from '@/lib/utils/search-display';
 
 const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [
   { value: 'condo', label: 'Condo', icon: Building2 },
@@ -288,12 +290,7 @@ function getSelectedFilterChips(
   if (filters.minPrice || filters.maxPrice) {
     chips.push({
       key: 'price',
-      label:
-        filters.minPrice && filters.maxPrice
-          ? `$${Math.round(filters.minPrice / 1000)}k-$${Math.round(filters.maxPrice / 1000)}k`
-          : filters.minPrice
-          ? `Min $${Math.round(filters.minPrice / 1000)}k`
-          : `Max $${Math.round((filters.maxPrice ?? 0) / 1000)}k`,
+      label: formatPriceRangeLabel(filters.minPrice, filters.maxPrice) ?? '',
       onRemove: () => setFilters({ minPrice: undefined, maxPrice: undefined }),
     });
   }
@@ -360,11 +357,28 @@ function PriceInput({
   placeholder: string;
   onChange: (value: number | undefined) => void;
 }) {
+  const [draftValue, setDraftValue] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const displayValue = isFocused ? draftValue : value ? formatCompactPriceValue(value) : '';
+
   return (
     <input
-      type="number"
-      value={value ?? ''}
-      onChange={(event) => onChange(event.target.value ? parseInt(event.target.value) : undefined)}
+      type="text"
+      inputMode="decimal"
+      value={displayValue}
+      onChange={(event) => {
+        const nextDraftValue = event.target.value;
+        setDraftValue(nextDraftValue);
+        onChange(parseCompactPriceValue(nextDraftValue));
+      }}
+      onFocus={() => {
+        setIsFocused(true);
+        setDraftValue(value ? formatCompactPriceValue(value) : '');
+      }}
+      onBlur={() => {
+        setIsFocused(false);
+        setDraftValue('');
+      }}
       placeholder={placeholder}
       className="w-full rounded-xl border border-[#E5E7EB] px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#0F1729]"
     />
