@@ -38,6 +38,9 @@ export default function SearchPanel({
   const locationChipLabels = selectedLocations.map((location) => getPrimaryLocationLabel(location.name));
   const areaChipLabels = getAreaChipLabels({
     neighborhoodIds: currentNeighborhoodIds,
+    searchAreaNames: selectedLocations
+      .filter((location) => (location.boundary?.length ?? 0) > 2)
+      .map((location) => location.name),
     fallbackLabel: areaSummaryLabel,
   }).filter((label) => !locationChipLabels.includes(label));
 

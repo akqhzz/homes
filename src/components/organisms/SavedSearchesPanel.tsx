@@ -291,7 +291,7 @@ export default function SavedSearchesPanel({
                     </p>
                   </div>
                   {hasNewListings && (
-                    <span className="type-caption mt-2 inline-flex self-start rounded-full bg-[var(--color-brand-600)] px-2 py-0.5 text-[var(--color-text-inverse)]">
+                    <span className="type-micro mt-2 inline-flex self-start rounded-full bg-[var(--color-brand-600)] px-2 py-0.5 text-[var(--color-text-inverse)]">
                       {search.newListingsCount} new
                     </span>
                   )}
