@@ -15,6 +15,17 @@ function normalizeChipLabel(label: string) {
   return label.trim().toLowerCase();
 }
 
+function getUniqueChipLabels(labels: string[]) {
+  const seen = new Set<string>();
+
+  return labels.filter((label) => {
+    const normalized = normalizeChipLabel(label);
+    if (seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
+}
+
 export function formatCompactPriceValue(value: number) {
   return formatPrice(value).replace('K', 'k');
 }
@@ -42,6 +53,28 @@ export function getLocationSummaryLabel(locationNames: string[]) {
   return getCompactSummaryLabel(locationNames.map(getPrimaryLocationLabel));
 }
 
+export function getAreaChipLabels({
+  neighborhoodIds = [],
+  searchAreaNames = [],
+  fallbackLabel,
+}: {
+  neighborhoodIds?: string[];
+  searchAreaNames?: string[];
+  fallbackLabel?: string;
+}) {
+  const neighborhoodLabels = neighborhoodIds
+    .map((id) => MOCK_NEIGHBORHOODS.find((neighborhood) => neighborhood.id === id)?.name)
+    .filter((label): label is string => Boolean(label))
+    .map(getPrimaryLocationLabel);
+
+  if (neighborhoodLabels.length > 0) return getUniqueChipLabels(neighborhoodLabels);
+
+  const namedAreas = searchAreaNames.map(getPrimaryLocationLabel);
+  if (namedAreas.length > 0) return getUniqueChipLabels(namedAreas);
+
+  return fallbackLabel ? [fallbackLabel] : [];
+}
+
 export function getAreaSummaryLabel({
   neighborhoodIds = [],
   searchAreaNames = [],
@@ -51,14 +84,10 @@ export function getAreaSummaryLabel({
   searchAreaNames?: string[];
   hasCustomBoundary?: boolean;
 }) {
-  const neighborhoodLabels = neighborhoodIds
-    .map((id) => MOCK_NEIGHBORHOODS.find((neighborhood) => neighborhood.id === id)?.name)
-    .filter((label): label is string => Boolean(label))
-    .map(getPrimaryLocationLabel);
-
-  const namedAreas = neighborhoodLabels.length > 0
-    ? neighborhoodLabels
-    : searchAreaNames.map(getPrimaryLocationLabel);
+  const namedAreas = getAreaChipLabels({
+    neighborhoodIds,
+    searchAreaNames,
+  });
 
   if (namedAreas.length > 0) return getCompactSummaryLabel(namedAreas);
   if (hasCustomBoundary) return 'Custom area';
@@ -106,13 +135,4 @@ export function getSavedSearchCriteriaSummary(search: SavedSearch) {
 
 export function getSearchSummaryPlaceholder() {
   return SEARCH_SUMMARY_PLACEHOLDER;
-}
-
-export function shouldShowAreaSummaryChip(locationNames: string[], areaSummaryLabel?: string) {
-  if (!areaSummaryLabel) return false;
-
-  const normalizedAreaLabel = normalizeChipLabel(areaSummaryLabel);
-  return !locationNames
-    .map(getPrimaryLocationLabel)
-    .some((locationLabel) => normalizeChipLabel(locationLabel) === normalizedAreaLabel);
 }

@@ -8,7 +8,8 @@ import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
-import { shouldShowAreaSummaryChip } from '@/lib/utils/search-display';
+import { getAreaChipLabels } from '@/lib/utils/search-display';
+import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 interface SearchPanelProps {
   hasAppliedArea?: boolean;
@@ -34,10 +35,11 @@ export default function SearchPanel({
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
   const { setActivePanel, setAreaSelectMode } = useUIStore();
   const { results, isLoading } = useLocationSearch(query, selectedLocations, true, currentNeighborhoodIds);
-  const showAreaSummaryChip = shouldShowAreaSummaryChip(
-    selectedLocations.map((location) => location.name),
-    areaSummaryLabel
-  );
+  const locationChipLabels = selectedLocations.map((location) => getPrimaryLocationLabel(location.name));
+  const areaChipLabels = getAreaChipLabels({
+    neighborhoodIds: currentNeighborhoodIds,
+    fallbackLabel: areaSummaryLabel,
+  }).filter((label) => !locationChipLabels.includes(label));
 
   useLayoutEffect(() => {
     inputRef.current?.focus();
@@ -167,7 +169,7 @@ export default function SearchPanel({
           transition={{ delay: 0.04, duration: 0.16 }}
           className="mt-2 max-h-[62dvh] overflow-y-auto rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
-          {(selectedLocations.length > 0 || (hasAppliedArea && showAreaSummaryChip)) && (
+          {(selectedLocations.length > 0 || areaChipLabels.length > 0) && (
             <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
               <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                 {selectedLocations.map((loc) => (
@@ -177,12 +179,13 @@ export default function SearchPanel({
                     onRemove={() => removeLocation(loc.id)}
                   />
                 ))}
-                {hasAppliedArea && showAreaSummaryChip && areaSummaryLabel && (
+                {areaChipLabels.map((label) => (
                   <SearchLocationChip
-                    label={areaSummaryLabel}
+                    key={label}
+                    label={label}
                     onRemove={() => onClearArea?.()}
                   />
-                )}
+                ))}
               </div>
               <button
                 onClick={() => {

@@ -32,7 +32,7 @@ import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 import BackButton from '@/components/atoms/BackButton';
-import { shouldShowAreaSummaryChip } from '@/lib/utils/search-display';
+import { getAreaChipLabels } from '@/lib/utils/search-display';
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -93,10 +93,11 @@ export default function DesktopHeader({
   const isMapPage = pathname === '/' || pathname === '/map';
   const filterCount = activeFilterCount();
   const activeSearch = searches.find((search) => search.id === activeSearchId);
-  const showAreaSummaryChip = shouldShowAreaSummaryChip(
-    selectedLocations.map((location) => location.name),
-    areaSummaryLabel
-  );
+  const locationChipLabels = selectedLocations.map((location) => getPrimaryLocationLabel(location.name));
+  const areaChipLabels = getAreaChipLabels({
+    neighborhoodIds: currentNeighborhoodIds,
+    fallbackLabel: areaSummaryLabel,
+  }).filter((label) => !locationChipLabels.includes(label));
   const locationLabel =
     selectedLocations.length === 0
       ? 'Where?'
@@ -200,7 +201,7 @@ export default function DesktopHeader({
             </div>
             {showSearch && (
               <div className="absolute left-0 right-0 top-[54px] z-[80] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                {(selectedLocations.length > 0 || (hasAppliedArea && showAreaSummaryChip)) && (
+                {(selectedLocations.length > 0 || areaChipLabels.length > 0) && (
                   <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
                     <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                       {selectedLocations.map((location) => (
@@ -211,15 +212,22 @@ export default function DesktopHeader({
                           className="type-caption py-1"
                         />
                       ))}
-                      {hasAppliedArea && showAreaSummaryChip && areaSummaryLabel && (
+                      {areaChipLabels.map((label) => (
                         <SearchLocationChip
-                          label={areaSummaryLabel}
+                          key={label}
+                          label={label}
                           onRemove={() => onClearArea?.()}
                           className="type-caption py-1"
                         />
-                      )}
+                      ))}
                     </div>
-                    <button onClick={clearLocations} className="type-caption shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">
+                    <button
+                      onClick={() => {
+                        clearLocations();
+                        onClearArea?.();
+                      }}
+                      className="type-caption shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1 font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                    >
                       Clear
                     </button>
                   </div>

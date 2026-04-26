@@ -23,7 +23,7 @@ export default function PriceMarker({ price, isSelected, isSaved, isHovered, isV
     <button
       onClick={handleClick}
       className={cn(
-        'type-micro inline-flex cursor-pointer items-center gap-1 rounded-full py-[0.3125rem] leading-none [font-size:0.6875rem] transition-colors duration-150 no-select',
+        'type-caption inline-flex cursor-pointer items-center gap-1 rounded-full py-[0.3125rem] leading-none transition-colors duration-150 no-select',
         isSaved ? 'px-1.5' : 'px-2',
         isSelected
           ? 'bg-[var(--color-text-primary)] text-[var(--color-text-inverse)] shadow-[0_3px_10px_rgba(0,0,0,0.22)]'
