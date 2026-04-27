@@ -25,7 +25,7 @@ import PriceText from '@/components/atoms/PriceText';
 const MAPBOX_TOKEN = getMapboxToken();
 const SWIPE_COMMIT_DISTANCE = 96;
 const SWIPE_COMMIT_VELOCITY = 520;
-const SWIPE_EXIT_DURATION = 1100;
+const SWIPE_EXIT_DURATION = 480;
 const STACK_VISIBLE_COUNT = 3;
 const CARD_MODE_IMAGE_HEIGHT = 305;
 const CARD_MODE_IMAGE_COUNT = 8;
@@ -296,7 +296,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             const index = activeIndex + offset;
             return (
             <CardModeListingCard
-              key={`${item.id}-${activeIndex}-${offset}`}
+              key={item.id}
               listing={item}
               width={cardWidth}
               active={offset === 0}
@@ -332,7 +332,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 setDrawerListing(item);
                 setShowMapDrawer(true);
               }}
-              onClose={onClose}
               onInteract={dismissOnboarding}
             />
             );
@@ -356,7 +355,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               onSwipePreview={() => undefined}
               onOpenDetail={() => undefined}
               onOpenMap={() => undefined}
-              onClose={onClose}
               onInteract={() => undefined}
             />
           )}
@@ -643,7 +641,6 @@ function CardModeListingCard({
   className,
   onOpenDetail,
   onOpenMap,
-  onClose,
   onInteract,
   onSwipe,
   onDragActivity,
@@ -662,7 +659,6 @@ function CardModeListingCard({
   className?: string;
   onOpenDetail: () => void;
   onOpenMap: () => void;
-  onClose: () => void;
   onInteract: () => void;
   onSwipe: (action: CardSwipeAction, offsetX: number) => void;
   onDragActivity: (dragging: boolean) => void;
@@ -673,7 +669,7 @@ function CardModeListingCard({
   const images = getListingImages(listing);
   const mapPreviewSrc = getStaticMapPreviewUrl(listing.coordinates, MAPBOX_TOKEN);
   const imageScrollRef = useRef<HTMLDivElement>(null);
-  const imagePullStartRef = useRef<{ x: number; y: number; atTop: boolean } | null>(null);
+  const imagePullStartRef = useRef<{ x: number; y: number } | null>(null);
   const suppressClickRef = useRef(false);
 
   const activeSaveStampOpacity = active ? Math.max(previewAction === 'save' ? 1 : 0, Math.min(1, Math.max(0, dragX / 96))) : 0;
@@ -695,7 +691,6 @@ function CardModeListingCard({
     imagePullStartRef.current = {
       x: event.touches[0].clientX,
       y: event.touches[0].clientY,
-      atTop: (imageScrollRef.current?.scrollTop ?? 0) <= 2,
     };
   };
 
@@ -706,21 +701,11 @@ function CardModeListingCard({
     const dy = event.touches[0].clientY - start.y;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) {
       event.preventDefault();
-      return;
-    }
-    if (!start.atTop) return;
-    if (dy > 8) {
-      event.preventDefault();
-      event.stopPropagation();
     }
   };
 
-  const handleImageTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    const start = imagePullStartRef.current;
+  const handleImageTouchEnd = () => {
     imagePullStartRef.current = null;
-    if (!start?.atTop) return;
-    const touch = event.changedTouches[0];
-    if (touch.clientY - start.y > 58) onClose();
   };
 
   return (
