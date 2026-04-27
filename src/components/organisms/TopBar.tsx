@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Search, SlidersHorizontal, SquareDashedMousePointer } from 'lucide-react';
+import { Pencil, Search, SlidersHorizontal, SquareDashedMousePointer, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
@@ -11,13 +11,21 @@ const AREA_MENU_ITEM_CLASS = 'w-full rounded-xl px-3 py-2 text-left font-button 
 
 interface TopBarProps {
   hasAppliedArea?: boolean;
-  areaSummaryLabel?: string;
+  compactAreaChipLabel?: string;
   onOpenAreaSelect?: () => void;
+  onOpenDrawAreaSelect?: () => void;
   onEditArea?: () => void;
   onClearArea?: () => void;
 }
 
-export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpenAreaSelect, onEditArea, onClearArea }: TopBarProps) {
+export default function TopBar({
+  hasAppliedArea = false,
+  compactAreaChipLabel,
+  onOpenAreaSelect,
+  onOpenDrawAreaSelect,
+  onEditArea,
+  onClearArea,
+}: TopBarProps) {
   const [showAreaMenu, setShowAreaMenu] = useState(false);
   const areaMenuRef = useRef<HTMLDivElement>(null);
   const { selectedLocations } = useSearchStore();
@@ -25,16 +33,23 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
   const { activePanel, setActivePanel, setAreaSelectMode } = useUIStore();
 
   const filterCount = activeFilterCount();
-  const locationLabel =
-    selectedLocations.length === 0
-      ? hasAppliedArea ? areaSummaryLabel ?? '1 area' : 'Add an area'
+  const locationLabel = compactAreaChipLabel
+    ?? (selectedLocations.length === 0
+      ? hasAppliedArea
+        ? '1 area'
+        : 'Add an area'
       : selectedLocations.length === 1
       ? selectedLocations[0].name.split(',')[0]?.trim() || selectedLocations[0].name
-      : `${selectedLocations.length} area${selectedLocations.length === 1 ? '' : 's'}`;
+      : `${selectedLocations.length} area${selectedLocations.length === 1 ? '' : 's'}`);
 
   const handleAreaClick = () => {
+    setShowAreaMenu((value) => !value);
+  };
+
+  const handleOpenAreaSelect = () => {
+    setShowAreaMenu(false);
     if (hasAppliedArea) {
-      setShowAreaMenu((value) => !value);
+      onEditArea?.();
       return;
     }
     if (onOpenAreaSelect) {
@@ -45,9 +60,9 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
     setActivePanel('area-select');
   };
 
-  const handleEditArea = () => {
+  const handleOpenDrawArea = () => {
     setShowAreaMenu(false);
-    onEditArea?.();
+    onOpenDrawAreaSelect?.();
   };
 
   const handleClearArea = () => {
@@ -76,13 +91,21 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
             <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
           </button>
           {showAreaMenu && (
-            <div className="absolute left-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
-              <button onClick={handleEditArea} className={cn(AREA_MENU_ITEM_CLASS, 'text-[var(--color-text-primary)]')}>
-                Edit area
+            <div className="absolute left-0 top-12 z-30 w-40 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+              <button onClick={handleOpenAreaSelect} className={cn(AREA_MENU_ITEM_CLASS, 'flex items-center gap-2 text-[var(--color-text-primary)]')}>
+                <SquareDashedMousePointer size={15} />
+                <span>Select area</span>
               </button>
-              <button onClick={handleClearArea} className={cn(AREA_MENU_ITEM_CLASS, 'text-[var(--color-text-secondary)]')}>
-                Clear area
+              <button onClick={handleOpenDrawArea} className={cn(AREA_MENU_ITEM_CLASS, 'flex items-center gap-2 text-[var(--color-text-primary)]')}>
+                <Pencil size={15} />
+                <span>Draw</span>
               </button>
+              {hasAppliedArea && (
+                <button onClick={handleClearArea} className={cn(AREA_MENU_ITEM_CLASS, 'flex items-center gap-2 text-[var(--color-text-primary)]')}>
+                  <Trash2 size={15} />
+                  <span>Clear area</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -105,13 +128,11 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
           </button>
         </motion.div>
 
-        <motion.button
+        <button
           onClick={() => setActivePanel('filter')}
-          animate={{ opacity: activePanel === 'search' ? 0 : 1, scale: activePanel === 'search' ? 0.92 : 1 }}
-          transition={{ duration: 0.12, ease: 'easeOut' }}
           className={cn(
             'relative flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select',
-            activePanel === 'search' && 'pointer-events-none',
+            activePanel === 'search' && 'pointer-events-none opacity-0',
             filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
           )}
         >
@@ -122,7 +143,7 @@ export default function TopBar({ hasAppliedArea = false, areaSummaryLabel, onOpe
               {filterCount}
             </span>
           )}
-        </motion.button>
+        </button>
       </div>
     </div>
   );

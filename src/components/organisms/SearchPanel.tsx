@@ -1,34 +1,36 @@
 'use client';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { ArrowLeft, SquareDashedMousePointer, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Location } from '@/lib/types';
 import { useLocationSearch } from '@/hooks/useLocationSearch';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
 import SearchLocationResultItem from '@/components/molecules/SearchLocationResultItem';
-import { getAreaChipLabels } from '@/lib/utils/search-display';
+import { AreaChip } from '@/lib/utils/search-display';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 
 interface SearchPanelProps {
   hasAppliedArea?: boolean;
-  areaSummaryLabel?: string;
+  areaChips?: AreaChip[];
   currentNeighborhoodIds?: string[];
   onRemoveLocationChip?: (location: Location) => void;
-  onRemoveAreaChip?: (label: string) => void;
+  onRemoveAreaChip?: (chip: AreaChip) => void;
   onOpenAreaSelect?: () => void;
+  onOpenDrawAreaSelect?: () => void;
   onEditArea?: () => void;
   onClearArea?: () => void;
 }
 
 export default function SearchPanel({
   hasAppliedArea = false,
-  areaSummaryLabel,
+  areaChips = [],
   currentNeighborhoodIds = [],
   onRemoveLocationChip,
   onRemoveAreaChip,
   onOpenAreaSelect,
+  onOpenDrawAreaSelect,
   onEditArea,
   onClearArea,
 }: SearchPanelProps) {
@@ -40,13 +42,7 @@ export default function SearchPanel({
   const { setActivePanel, setAreaSelectMode } = useUIStore();
   const { results, isLoading } = useLocationSearch(query, selectedLocations, true, currentNeighborhoodIds);
   const locationChipLabels = selectedLocations.map((location) => getPrimaryLocationLabel(location.name));
-  const areaChipLabels = getAreaChipLabels({
-    neighborhoodIds: currentNeighborhoodIds,
-    searchAreaNames: selectedLocations
-      .filter((location) => (location.boundary?.length ?? 0) > 2)
-      .map((location) => location.name),
-    fallbackLabel: areaSummaryLabel,
-  }).filter((label) => !locationChipLabels.includes(label));
+  const visibleAreaChips = areaChips.filter((chip) => !locationChipLabels.includes(chip.label));
 
   useLayoutEffect(() => {
     inputRef.current?.focus();
@@ -79,8 +75,13 @@ export default function SearchPanel({
   };
 
   const handleAreaClick = () => {
+    setShowAreaMenu((value) => !value);
+  };
+
+  const handleOpenAreaSelect = () => {
+    setShowAreaMenu(false);
     if (hasAppliedArea) {
-      setShowAreaMenu((value) => !value);
+      onEditArea?.();
       return;
     }
     if (onOpenAreaSelect) {
@@ -89,6 +90,11 @@ export default function SearchPanel({
     }
     setAreaSelectMode(true);
     setActivePanel('area-select');
+  };
+
+  const handleOpenDrawArea = () => {
+    setShowAreaMenu(false);
+    onOpenDrawAreaSelect?.();
   };
 
   return (
@@ -145,38 +151,47 @@ export default function SearchPanel({
               <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
             </button>
             {showAreaMenu && (
-              <div className="absolute right-0 top-12 z-30 w-36 rounded-2xl bg-white p-1.5 type-body shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
+              <div className="absolute right-0 top-12 z-30 w-40 rounded-2xl bg-white p-1.5 type-body shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
                 <button
                   onClick={() => {
-                    setShowAreaMenu(false);
-                    onEditArea?.();
+                    handleOpenAreaSelect();
                   }}
-                  className="w-full rounded-xl px-3 py-2 text-left font-button text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
+                className="type-btn w-full rounded-xl px-3 py-2 text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
                 >
-                  Edit area
+                  Select area
                 </button>
                 <button
                   onClick={() => {
-                    setShowAreaMenu(false);
-                    onClearArea?.();
+                    handleOpenDrawArea();
                   }}
-                  className="w-full rounded-xl px-3 py-2 text-left font-button text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]"
+                  className="type-btn w-full rounded-xl px-3 py-2 text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
                 >
-                  Clear area
+                  Draw
                 </button>
+                {hasAppliedArea && (
+                  <button
+                    onClick={() => {
+                      setShowAreaMenu(false);
+                      onClearArea?.();
+                    }}
+                  className="type-btn w-full rounded-xl px-3 py-2 text-left text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
+                  >
+                    Clear area
+                  </button>
+                )}
               </div>
             )}
           </div>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 8 }}
-          transition={{ delay: 0.04, duration: 0.16 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.12 }}
           className="mt-2 max-h-[62dvh] overflow-y-auto rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
         >
-          {(selectedLocations.length > 0 || areaChipLabels.length > 0) && (
+          {(selectedLocations.length > 0 || visibleAreaChips.length > 0) && (
             <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
               <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                 {selectedLocations.map((loc) => (
@@ -189,12 +204,12 @@ export default function SearchPanel({
                     }}
                   />
                 ))}
-                {areaChipLabels.map((label) => (
+                {visibleAreaChips.map((chip) => (
                   <SearchLocationChip
-                    key={label}
-                    label={label}
+                    key={chip.id}
+                    label={chip.label}
                     onRemove={() => {
-                      if (onRemoveAreaChip) onRemoveAreaChip(label);
+                      if (onRemoveAreaChip) onRemoveAreaChip(chip);
                       else onClearArea?.();
                     }}
                   />
@@ -212,22 +227,14 @@ export default function SearchPanel({
             </div>
           )}
         <div className="py-1">
-          <AnimatePresence>
-            {filtered.map((loc, index) => (
-              <motion.div
-                key={loc.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-              >
-                <SearchLocationResultItem
-                  location={loc}
-                  onSelect={() => handleSelect(loc)}
-                  highlighted={index === 0 && Boolean(query.trim())}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          {filtered.map((loc, index) => (
+            <SearchLocationResultItem
+              key={loc.id}
+              location={loc}
+              onSelect={() => handleSelect(loc)}
+              highlighted={index === 0 && Boolean(query.trim())}
+            />
+          ))}
           {isLoading && (
             <p className="type-body py-8 text-center text-[var(--color-text-tertiary)]">Searching locations…</p>
           )}

@@ -18,16 +18,16 @@
   --color-accent: #EF4444;
   --color-accent-orange: #F97316;
   --color-success: #10B981;
-  --color-brand-50: #eff7f4;
-  --color-brand-100: #d9ebe3;
-  --color-brand-200: #b6d8ca;
-  --color-brand-300: #86bea7;
-  --color-brand-400: #589882;
-  --color-brand-500: #337B61;
-  --color-brand-600: #2a654f;
-  --color-brand-700: #21503f;
-  --color-brand-800: #193c30;
-  --color-brand-900: #112b22;
+  --color-brand-50: #f1f8f6;
+  --color-brand-100: #dbeee7;
+  --color-brand-200: #bcddd2;
+  --color-brand-300: #92c3b2;
+  --color-brand-400: #61a08b;
+  --color-brand-500: #337B71;
+  --color-brand-600: #2d6f66;
+  --color-brand-700: #255b53;
+  --color-brand-800: #1d4741;
+  --color-brand-900: #173935;
   --color-brand-surface: var(--color-brand-50);
   --color-brand-surface-strong: var(--color-brand-100);
   --color-brand-text: var(--color-brand-900);
@@ -54,7 +54,7 @@
   --layout-content-max: 100rem;
 
   --font-body-sans: var(--font-body), system-ui, -apple-system, sans-serif;
-  --font-heading: var(--font-lora), Georgia, serif;
+  --font-heading: var(--font-heading-source), var(--font-body-sans);
   --font-button: var(--font-body-sans);
   --font-caption: var(--font-body-sans);
   --font-sans: var(--font-body-sans);
@@ -113,13 +113,13 @@ button,
    3     0.75 rem   12    ×1.2 ✓  DM Sans 400  1.33   —           type-caption
    4     0.875rem   14    ×1.17   DM Sans 400  1.6    —           type-body
    5     1 rem      16    ×1.14   DM Sans 400  1.6    —           type-body-lg
-   6     1 rem      16    serif↑  Lora    500  1.6    —           type-heading-sm
-   7     1.125rem   18    ×1.13   Lora    500  1.35   —           type-heading
-   8     1.25 rem   20    ×1.11   Lora    500  1.3    —           type-subtitle
-   9     1.5 rem    24    ×1.2 ✓  Lora    500  1.2   −0.01em     type-title
-   10    1.875rem   30    ×1.25   Lora    500  1.2   −0.01em     type-title-lg
-   11    2.25 rem   36    ×1.2 ✓  Lora    500  1.15  −0.01em     type-hero
-   12    3.75 rem   60    ×1.67   Lora    500  1.0   −0.02em     type-display
+   6     1 rem      16    serif↑  Newsrdr 500  1.5    —           type-heading-sm
+   7     1.125rem   18    ×1.13   Newsrdr 500  1.28   —           type-heading
+   8     1.25 rem   20    ×1.11   Newsrdr 500  1.24   —           type-subtitle
+   9     1.5 rem    24    ×1.2 ✓  Newsrdr 500  1.14  −0.01em     type-title
+   10    1.875rem   30    ×1.25   Newsrdr 500  1.14  −0.01em     type-title-lg
+   11    2.25 rem   36    ×1.2 ✓  Newsrdr 500  1.1   −0.01em     type-hero
+   12    3.75 rem   60    ×1.67   Newsrdr 500  0.96  −0.02em     type-display
    ──────────────────────────────────────────────────────────────────── */
 
 /* Scale tokens + semantic aliases (comma selectors = zero duplication) */
@@ -128,13 +128,13 @@ button,
 .type-3,  .type-caption     { font-family: var(--font-body-sans); font-size: 0.75rem;   font-weight: 500; line-height: 1.33; }
 .type-4,  .type-body        { font-family: var(--font-body-sans); font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
 .type-5,  .type-body-lg     { font-family: var(--font-body-sans); font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
-.type-6,  .type-heading-sm  { font-family: var(--font-heading);   font-size: 1rem;      font-weight: 500; line-height: 1.6;  }
-.type-7,  .type-heading     { font-family: var(--font-heading);   font-size: 1.125rem;  font-weight: 500; line-height: 1.35; }
-.type-8,  .type-subtitle    { font-family: var(--font-heading);   font-size: 1.25rem;   font-weight: 500; line-height: 1.3;  }
-.type-9,  .type-title       { font-family: var(--font-heading);   font-size: 1.5rem;    font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
-.type-10, .type-title-lg    { font-family: var(--font-heading);   font-size: 1.875rem;  font-weight: 500; line-height: 1.2;  letter-spacing: -0.01em; }
-.type-11, .type-hero        { font-family: var(--font-heading);   font-size: 2.25rem;   font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
-.type-12, .type-display     { font-family: var(--font-heading);   font-size: 3.75rem;   font-weight: 500; line-height: 1;    letter-spacing: -0.02em; }
+.type-6,  .type-heading-sm  { font-family: var(--font-heading);   font-size: 1rem;      font-weight: 500; line-height: 1.5;  }
+.type-7,  .type-heading     { font-family: var(--font-heading);   font-size: 1.125rem;  font-weight: 500; line-height: 1.28; }
+.type-8,  .type-subtitle    { font-family: var(--font-heading);   font-size: 1.25rem;   font-weight: 500; line-height: 1.24; }
+.type-9,  .type-title       { font-family: var(--font-heading);   font-size: 1.5rem;    font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; }
+.type-10, .type-title-lg    { font-family: var(--font-heading);   font-size: 1.875rem;  font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; }
+.type-11, .type-hero        { font-family: var(--font-heading);   font-size: 2.25rem;   font-weight: 500; line-height: 1.1;  letter-spacing: -0.01em; }
+.type-12, .type-display     { font-family: var(--font-heading);   font-size: 3.75rem;   font-weight: 500; line-height: 0.96; letter-spacing: -0.02em; }
 
 /* UI tokens — weight variants for labels and buttons                */
 .type-label   { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1.25; }
@@ -308,20 +308,20 @@ main {
   padding: 0 0.48rem;
   border: 1.5px solid rgba(255, 255, 255, 0.95);
   border-radius: 9999px;
-  background: rgba(42, 101, 79, 0.96);
-  color: white;
+  background: color-mix(in srgb, var(--color-brand-600) 96%, transparent);
+  color: var(--color-text-inverse);
   font-family: var(--font-body-sans);
   font-size: 0.72rem;
   font-weight: 600;
   line-height: 1;
-  box-shadow: 0 4px 14px rgba(42, 101, 79, 0.22);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-brand-700) 22%, transparent);
   transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
 }
 
 .map-cluster-marker:hover {
-  background: rgba(51, 123, 97, 0.98);
+  background: color-mix(in srgb, var(--color-brand-500) 98%, transparent);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(42, 101, 79, 0.26);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-brand-700) 26%, transparent);
 }
 
 .map-cluster-marker.is-highlighted {

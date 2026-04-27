@@ -1,4 +1,5 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
+import { getMatchingNeighborhoodId } from '@/lib/search-utils';
 import { SavedSearch, SearchFilters } from '@/lib/types';
 import { formatPrice, formatPropertyType } from '@/lib/utils/format';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
@@ -57,20 +58,32 @@ export function getAreaChipLabels({
   neighborhoodIds = [],
   searchAreaNames = [],
   fallbackLabel,
+  includeFallbackWithNamedAreas = false,
 }: {
   neighborhoodIds?: string[];
   searchAreaNames?: string[];
   fallbackLabel?: string;
+  includeFallbackWithNamedAreas?: boolean;
 }) {
   const neighborhoodLabels = neighborhoodIds
     .map((id) => MOCK_NEIGHBORHOODS.find((neighborhood) => neighborhood.id === id)?.name)
     .filter((label): label is string => Boolean(label))
     .map(getPrimaryLocationLabel);
 
-  if (neighborhoodLabels.length > 0) return getUniqueChipLabels(neighborhoodLabels);
+  if (neighborhoodLabels.length > 0) {
+    const labels = includeFallbackWithNamedAreas && fallbackLabel
+      ? [...neighborhoodLabels, fallbackLabel]
+      : neighborhoodLabels;
+    return getUniqueChipLabels(labels);
+  }
 
   const namedAreas = searchAreaNames.map(getPrimaryLocationLabel);
-  if (namedAreas.length > 0) return getUniqueChipLabels(namedAreas);
+  if (namedAreas.length > 0) {
+    const labels = includeFallbackWithNamedAreas && fallbackLabel
+      ? [...namedAreas, fallbackLabel]
+      : namedAreas;
+    return getUniqueChipLabels(labels);
+  }
 
   return fallbackLabel ? [fallbackLabel] : [];
 }
@@ -84,14 +97,93 @@ export function getAreaSummaryLabel({
   searchAreaNames?: string[];
   hasCustomBoundary?: boolean;
 }) {
-  const namedAreas = getAreaChipLabels({
+  const chips = getAreaChips({
     neighborhoodIds,
-    searchAreaNames,
+    searchLocations: searchAreaNames.map((name, index) => ({
+      id: `search-area-${index}`,
+      name,
+      boundary: [{ lat: 0, lng: 0 }, { lat: 0, lng: 0 }, { lat: 0, lng: 0 }],
+    })),
+    hasCustomBoundary,
   });
 
-  if (namedAreas.length > 0) return getCompactSummaryLabel(namedAreas);
-  if (hasCustomBoundary) return 'Custom area';
-  return undefined;
+  return getCompactAreaChipLabel(chips);
+}
+
+export interface AreaChip {
+  id: string;
+  label: string;
+  kind: 'neighborhood' | 'search-area' | 'custom-boundary';
+}
+
+export function getAreaChips({
+  neighborhoodIds = [],
+  searchLocations = [],
+  hasCustomBoundary = false,
+}: {
+  neighborhoodIds?: string[];
+  searchLocations?: Array<{ id: string; name: string; boundary?: Array<{ lat: number; lng: number }> }>;
+  hasCustomBoundary?: boolean;
+}) {
+  const selectedNeighborhoodIdSet = new Set(neighborhoodIds);
+  const neighborhoodChips = neighborhoodIds
+    .map((id) => {
+      const neighborhood = MOCK_NEIGHBORHOODS.find((item) => item.id === id);
+      if (!neighborhood) return null;
+      return {
+        id: neighborhood.id,
+        label: getPrimaryLocationLabel(neighborhood.name),
+        kind: 'neighborhood' as const,
+      };
+    })
+    .filter((chip): chip is { id: string; label: string; kind: 'neighborhood' } => Boolean(chip));
+  const searchAreaChips = searchLocations
+    .filter((location) => (location.boundary?.length ?? 0) >= 3)
+    .filter((location) => {
+      const matchingNeighborhoodId = getMatchingNeighborhoodId(location);
+      return !matchingNeighborhoodId || !selectedNeighborhoodIdSet.has(matchingNeighborhoodId);
+    })
+    .map((location) => ({
+      id: location.id,
+      label: getPrimaryLocationLabel(location.name),
+      kind: 'search-area' as const,
+    }));
+
+  const chips: AreaChip[] = [...neighborhoodChips, ...searchAreaChips];
+
+  if (hasCustomBoundary) {
+    chips.push({
+      id: 'custom-boundary',
+      label: 'Custom area',
+      kind: 'custom-boundary',
+    });
+  }
+
+  const seen = new Set<string>();
+  return chips.filter((chip) => {
+    const key = chip.kind === 'custom-boundary'
+      ? `${chip.kind}:${chip.id}`
+      : normalizeChipLabel(chip.label);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function getCompactAreaChipLabel(chips: AreaChip[]) {
+  if (chips.length === 0) return undefined;
+  if (chips.length === 1) return chips[0].label;
+  return `${chips[0].label} +${chips.length - 1}`;
+}
+
+export function getListingsAreaTitleLabel(compactAreaChipLabel?: string, fallbackLabel = 'Selected Area') {
+  if (!compactAreaChipLabel) return fallbackLabel;
+
+  const compactMatch = compactAreaChipLabel.match(/^(.*)\s\+(\d+)$/);
+  if (!compactMatch) return compactAreaChipLabel;
+
+  const [, primaryLabel, extraCount] = compactMatch;
+  return `${primaryLabel} +${extraCount} More`;
 }
 
 export function getSearchFilterLabels(filters: SearchFilters) {

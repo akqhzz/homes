@@ -9,6 +9,7 @@ import ListingCard from '@/components/molecules/ListingCard';
 import DesktopSortMenu from '@/components/molecules/DesktopSortMenu';
 import { cn } from '@/lib/utils/cn';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
+import { getListingsAreaTitleLabel } from '@/lib/utils/search-display';
 
 type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'sqft-desc';
 
@@ -33,9 +34,10 @@ function sortListings(listings: Listing[], sort: SortOption): Listing[] {
 interface ListingsSidebarProps {
   listings: Listing[];
   useMapAreaLabel?: boolean;
+  areaTitleLabel?: string;
 }
 
-export default function ListingsSidebar({ listings, useMapAreaLabel = false }: ListingsSidebarProps) {
+export default function ListingsSidebar({ listings, useMapAreaLabel = false, areaTitleLabel }: ListingsSidebarProps) {
   const [sort, setSort] = useState<SortOption>('newest');
   const [showSort, setShowSort] = useState(false);
   const [page, setPage] = useState(1);
@@ -55,6 +57,8 @@ export default function ListingsSidebar({ listings, useMapAreaLabel = false }: L
   const locationLabel =
     useMapAreaLabel
       ? 'Map Area'
+      : areaTitleLabel
+      ? getListingsAreaTitleLabel(areaTitleLabel)
       : selectedLocations.length === 0
       ? 'Selected Area'
       : selectedLocations.length === 1

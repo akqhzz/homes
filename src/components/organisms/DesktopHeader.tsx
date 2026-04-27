@@ -35,7 +35,7 @@ import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import { FilterPanelBody, FilterPanelFooter } from '@/components/organisms/FilterPanel';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 import BackButton from '@/components/atoms/BackButton';
-import { getAreaChipLabels } from '@/lib/utils/search-display';
+import { AreaChip } from '@/lib/utils/search-display';
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -53,10 +53,11 @@ interface DesktopHeaderProps {
   listingId?: string;
   filterResultsCount?: number;
   hasAppliedArea?: boolean;
-  areaSummaryLabel?: string;
+  areaChips?: AreaChip[];
   currentNeighborhoodIds?: string[];
+  compactAreaChipLabel?: string;
   onRemoveLocationChip?: (location: Location) => void;
-  onRemoveAreaChip?: (label: string) => void;
+  onRemoveAreaChip?: (chip: AreaChip) => void;
   onClearArea?: () => void;
 }
 
@@ -65,8 +66,9 @@ export default function DesktopHeader({
   listingId,
   filterResultsCount,
   hasAppliedArea = false,
-  areaSummaryLabel,
+  areaChips = [],
   currentNeighborhoodIds = [],
+  compactAreaChipLabel,
   onRemoveLocationChip,
   onRemoveAreaChip,
   onClearArea,
@@ -107,13 +109,7 @@ export default function DesktopHeader({
   const filterCount = activeFilterCount();
   const activeSearch = searches.find((search) => search.id === activeSearchId);
   const locationChipLabels = selectedLocations.map((location) => getPrimaryLocationLabel(location.name));
-  const areaChipLabels = getAreaChipLabels({
-    neighborhoodIds: currentNeighborhoodIds,
-    searchAreaNames: selectedLocations
-      .filter((location) => (location.boundary?.length ?? 0) > 2)
-      .map((location) => location.name),
-    fallbackLabel: areaSummaryLabel,
-  }).filter((label) => !locationChipLabels.includes(label));
+  const visibleAreaChips = areaChips.filter((chip) => !locationChipLabels.includes(chip.label));
   const locationLabel =
     selectedLocations.length === 0
       ? 'Add an area'
@@ -254,9 +250,9 @@ export default function DesktopHeader({
                   placeholder={selectedLocations.length > 0 ? 'Add another area...' : 'Add an area'}
                   className="type-label min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)]"
                 />
-              ) : hasAppliedArea && areaSummaryLabel ? (
+              ) : hasAppliedArea && compactAreaChipLabel ? (
                 <span className="type-label inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-[var(--color-brand-text)]">
-                  {areaSummaryLabel}
+                  {compactAreaChipLabel}
                 </span>
               ) : selectedLocations.length > 0 ? (
                 <span className="type-label inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 text-[var(--color-brand-text)]">
@@ -268,7 +264,7 @@ export default function DesktopHeader({
             </div>
             {showSearch && (
               <div className="absolute left-0 right-0 top-[54px] z-[80] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
-                {(selectedLocations.length > 0 || areaChipLabels.length > 0) && (
+                {(selectedLocations.length > 0 || visibleAreaChips.length > 0) && (
                   <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
                     <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
                       {selectedLocations.map((location) => (
@@ -282,12 +278,12 @@ export default function DesktopHeader({
                           className="type-caption py-1"
                         />
                       ))}
-                      {areaChipLabels.map((label) => (
+                      {visibleAreaChips.map((chip) => (
                         <SearchLocationChip
-                          key={label}
-                          label={label}
+                          key={chip.id}
+                          label={chip.label}
                           onRemove={() => {
-                            if (onRemoveAreaChip) onRemoveAreaChip(label);
+                            if (onRemoveAreaChip) onRemoveAreaChip(chip);
                             else onClearArea?.();
                           }}
                           className="type-caption py-1"

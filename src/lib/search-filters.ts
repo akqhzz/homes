@@ -1,5 +1,5 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
-import { listingMatchesLocation, pointInPolygon } from '@/lib/geo';
+import { getBoundsFromPoints, getLocationBounds, getNeighborhoodBounds, listingMatchesLocation, mergeBounds, pointInPolygon } from '@/lib/geo';
 import { Listing, SavedSearch, SearchFilters } from '@/lib/types';
 
 export function applyFilters(listings: Listing[], filters: SearchFilters) {
@@ -22,24 +22,48 @@ export function filterListingsBySearchArea(
   boundary: { lat: number; lng: number }[],
   neighborhoodIds: Set<string>
 ) {
-  if (boundary.length >= 3) {
-    return listings.filter((listing) => pointInPolygon(listing.coordinates, boundary));
-  }
+  if (!hasActiveAreaScope(selectedLocations, boundary, neighborhoodIds)) return listings;
 
-  if (neighborhoodIds.size > 0) {
-    const selectedNeighborhoods = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhoodIds.has(neighborhood.id));
-    return listings.filter((listing) =>
-      selectedNeighborhoods.some((neighborhood) =>
-        pointInPolygon(listing.coordinates, neighborhood.boundary ?? [])
-      )
-    );
-  }
+  const selectedNeighborhoods = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhoodIds.has(neighborhood.id));
+  return listings.filter((listing) =>
+    listingMatchesAnyAreaScope(listing, selectedLocations, boundary, selectedNeighborhoods)
+  );
+}
 
-  if (selectedLocations.length > 0) {
-    return listings.filter((listing) =>
-      selectedLocations.some((location) => listingMatchesLocation(listing, location))
-    );
-  }
+export function getAreaScopeBounds(
+  selectedLocations: SavedSearch['locations'],
+  boundary: { lat: number; lng: number }[],
+  neighborhoodIds: Set<string>
+) {
+  const selectedNeighborhoods = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhoodIds.has(neighborhood.id));
+  const bounds = mergeBounds([
+    boundary.length >= 3 ? getBoundsFromPoints(boundary) : null,
+    ...selectedNeighborhoods.map((neighborhood) => getNeighborhoodBounds(neighborhood)),
+    ...selectedLocations.map((location) => getLocationBounds(location)),
+  ]);
 
-  return listings;
+  return bounds;
+}
+
+function hasActiveAreaScope(
+  selectedLocations: SavedSearch['locations'],
+  boundary: { lat: number; lng: number }[],
+  neighborhoodIds: Set<string>
+) {
+  return boundary.length >= 3 || neighborhoodIds.size > 0 || selectedLocations.length > 0;
+}
+
+function listingMatchesAnyAreaScope(
+  listing: Listing,
+  selectedLocations: SavedSearch['locations'],
+  boundary: { lat: number; lng: number }[],
+  selectedNeighborhoods: typeof MOCK_NEIGHBORHOODS
+) {
+  const matchesCustomBoundary = boundary.length >= 3 && pointInPolygon(listing.coordinates, boundary);
+  const matchesNeighborhood = selectedNeighborhoods.some((neighborhood) =>
+    pointInPolygon(listing.coordinates, neighborhood.boundary ?? [])
+  );
+  const matchesLocation = selectedLocations.some((location) => listingMatchesLocation(listing, location));
+
+  return matchesCustomBoundary || matchesNeighborhood || matchesLocation;
 }

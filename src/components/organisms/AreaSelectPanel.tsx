@@ -1,11 +1,10 @@
 'use client';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Check, Pencil, Plus, Redo2, Undo2, X } from 'lucide-react';
+import { ArrowLeft, Check, Plus, Redo2, Undo2, X } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
-import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 
 const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
@@ -24,141 +23,90 @@ interface AreaSelectPanelProps {
   canRedoBoundary: boolean;
   onBack: () => void;
   onApply: () => void;
-  onToggleDrawing: () => void;
   onToggleNeighborhood: (id: string) => void;
   onCloseNeighborhood: () => void;
-  onClearDrawing: () => void;
   onUndoBoundary: () => void;
   onRedoBoundary: () => void;
-  onClearSelection: () => void;
 }
 
 export default function AreaSelectPanel({
   focusedNeighborhood,
   focusToken = 0,
   selectedNeighborhoods,
-  hasVisibleBoundary = false,
   isDrawing,
   pointCount,
   canUndoBoundary,
   canRedoBoundary,
   onBack,
   onApply,
-  onToggleDrawing,
   onToggleNeighborhood,
   onCloseNeighborhood,
-  onClearDrawing,
   onUndoBoundary,
   onRedoBoundary,
-  onClearSelection,
 }: AreaSelectPanelProps) {
-  const setAreaSelectMode = useUIStore((s) => s.setAreaSelectMode);
   const selectedCount = selectedNeighborhoods.size;
   const hasSelection = selectedCount > 0 || pointCount > 0;
   const title = hasSelection
     ? selectedCount > 0
       ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
       : `${MOCK_LISTINGS.length} listings`
-    : 'Tap areas to select';
+    : 'Tap any area to pick or remove it';
 
-  const handleBack = () => {
-    setAreaSelectMode(false);
-    onBack();
-  };
   const desktopTopLabel = isDrawing ? 'Tap map to draw' : title;
   const mobileTopLabel = isDrawing ? 'Tap map to draw' : title;
-  const showDesktopClear = isDrawing ? pointCount > 0 : hasVisibleBoundary;
 
   return (
     <>
       <div className="pointer-events-none absolute inset-0 z-30">
-        <div className="absolute left-4 right-4 top-4 flex items-center gap-2 lg:flex lg:items-center">
-          <div className="hidden w-full items-center justify-between gap-4 lg:flex">
-            <div className="pointer-events-auto flex min-w-0 items-center gap-2">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex h-11 min-w-0 max-w-[320px] items-center rounded-full bg-white/70 px-2.5 pr-12 text-left text-sm text-[var(--color-text-primary)] backdrop-blur-xl"
-                aria-label={isDrawing ? 'Back to map' : 'Close area selection'}
-              >
-                <div className="flex w-full items-center gap-2.5">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)]">
-                    <ArrowLeft size={16} strokeWidth={2.4} />
-                  </span>
-                  <p className="min-w-0 flex-1 truncate type-body leading-tight">{desktopTopLabel}</p>
-                </div>
-              </button>
-              {showDesktopClear && (
-                <button
-                  onClick={isDrawing ? onClearDrawing : onClearSelection}
-                  className="h-11 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
-                >
-                  {isDrawing ? 'Clear' : 'Clear Areas'}
-                </button>
-              )}
-            </div>
-            <div className="pointer-events-auto flex shrink-0 items-center gap-2">
-              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
-                <Undo2 size={15} />
-              </button>
-              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
-                <Redo2 size={15} />
-              </button>
-              <button
-                onClick={onApply}
-                className="h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] lg:px-9"
-              >
-                Done
-              </button>
-            </div>
+        <div className="absolute left-4 right-4 top-4 hidden items-center justify-between gap-4 lg:flex">
+          <button
+            type="button"
+            onClick={onBack}
+            className="pointer-events-auto flex h-11 items-center justify-center rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
+            aria-label="Cancel area selection"
+          >
+            Cancel
+          </button>
+          <div className="pointer-events-auto absolute left-1/2 top-0 flex min-h-11 min-w-0 w-[min(340px,calc(100%-16rem))] -translate-x-1/2 items-center justify-center rounded-full bg-white/70 px-4 py-2 text-[var(--color-text-primary)] backdrop-blur-xl">
+            <p className="min-w-0 text-center type-body leading-tight whitespace-normal">{desktopTopLabel}</p>
           </div>
-
-          <div className="flex w-full items-center gap-2 lg:hidden">
-            <button
-              type="button"
-              onClick={isDrawing ? onToggleDrawing : handleBack}
-              className={cn(
-                'pointer-events-auto flex h-11 min-w-0 items-center rounded-full bg-white/70 px-2.5 pr-10 text-left text-sm text-[var(--color-text-primary)] backdrop-blur-xl',
-                isDrawing ? 'max-w-none flex-1' : 'max-w-[212px] flex-1'
-              )}
-              aria-label={isDrawing ? 'Back to area selection' : 'Close area selection'}
-            >
-              <div className="flex w-full items-center gap-2.5">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)]">
-                  <ArrowLeft size={16} strokeWidth={2.4} />
-                </span>
-                <p className="min-w-0 flex-1 truncate type-body leading-tight">{mobileTopLabel}</p>
-              </div>
+          <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+            <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
+              <Undo2 size={15} />
             </button>
-            {!isDrawing && (
-              <button
-                onClick={onApply}
-                className="pointer-events-auto ml-auto h-11 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] lg:px-9"
-              >
-                Done
-              </button>
-            )}
+            <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className={ICON_BUTTON_CLASS}>
+              <Redo2 size={15} />
+            </button>
+            <button
+              onClick={onApply}
+              className="h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] lg:px-9"
+            >
+              Done
+            </button>
           </div>
         </div>
 
-        {!isDrawing && !focusedNeighborhood ? (
-          <div
-            className="absolute bottom-0 right-5 flex flex-col items-end gap-3 lg:hidden"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
+        <div className="absolute left-4 right-4 top-4 flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={onBack}
+            className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
+            aria-label="Back to map"
           >
-            <button
-              type="button"
-              onClick={onToggleDrawing}
-              aria-label="Draw boundary"
-              className="pointer-events-auto flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
-            >
-              <Pencil size={16} />
-              Draw
-            </button>
+            <ArrowLeft size={18} strokeWidth={2.2} />
+          </button>
+          <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-4 text-[var(--color-text-primary)] backdrop-blur-xl">
+            <p className="min-w-0 truncate type-body leading-tight">{mobileTopLabel}</p>
           </div>
-        ) : null}
+          <button
+            onClick={onApply}
+            className="pointer-events-auto ml-auto h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)]"
+          >
+            Done
+          </button>
+        </div>
 
-        {hasSelection && !isDrawing && !focusedNeighborhood && (
+        {!focusedNeighborhood && (hasSelection || canUndoBoundary || canRedoBoundary) && (
           <div
             className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
             style={MOBILE_FLOATING_BAR_STYLE}
@@ -169,46 +117,12 @@ export default function AreaSelectPanel({
             <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className={ICON_BUTTON_CLASS}>
               <Redo2 size={15} />
             </button>
-            <button onClick={onClearSelection} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[var(--color-text-primary)] shadow-[var(--shadow-control)]">
-              Clear
-            </button>
           </div>
-        )}
-
-        {isDrawing && (
-          <>
-            <div
-              className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
-              style={MOBILE_FLOATING_BAR_STYLE}
-            >
-              <button onClick={onClearDrawing} disabled={pointCount === 0} className="flex h-9 items-center justify-center rounded-full bg-white px-3 type-label text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
-                Clear
-              </button>
-              <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className={ICON_BUTTON_CLASS}>
-                <Undo2 size={15} />
-              </button>
-              <button onClick={onRedoBoundary} disabled={!canRedoBoundary} className={ICON_BUTTON_CLASS}>
-                <Redo2 size={15} />
-              </button>
-            </div>
-
-            <div
-              className="absolute bottom-0 right-5 pointer-events-auto lg:hidden"
-              style={MOBILE_FLOATING_BAR_STYLE}
-            >
-              <button
-                onClick={onApply}
-                className="h-11 rounded-full bg-[var(--color-text-primary)]/92 px-6 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)]"
-              >
-                Done
-              </button>
-            </div>
-          </>
         )}
       </div>
 
       <AnimatePresence>
-        {focusedNeighborhood && (
+        {focusedNeighborhood && !isDrawing && (
           <>
           <motion.div
             key={`neighborhood-card-${focusedNeighborhood.id}-${focusToken}`}

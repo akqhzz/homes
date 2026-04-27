@@ -73,43 +73,90 @@ function HBarChart({ rows, color }: { rows: { label: string; value: number; sub?
   );
 }
 
-// CSS treemap — each tile sized proportionally to price per sqft
-function PriceTreemap() {
-  const rows = [
-    [
-      { label: 'Downtown Core', price: 1240, color: 'var(--color-brand-700)' },
-      { label: 'West End',      price: 980,  color: 'var(--color-brand-600)' },
-    ],
-    [
-      { label: 'Midtown',       price: 910,  color: 'var(--color-brand-500)' },
-      { label: 'East Village',  price: 820,  color: 'var(--color-brand-400)' },
-      { label: 'South Slope',   price: 760,  color: 'var(--color-brand-300)' },
-    ],
-  ];
-  const row1Total = rows[0].reduce((s, d) => s + d.price, 0);
-  const row2Total = rows[1].reduce((s, d) => s + d.price, 0);
-  const total = row1Total + row2Total;
-
+// SVG pie chart with inline legend
+function PieChart({ slices }: { slices: { label: string; value: number; color: string }[] }) {
+  const cx = 100, cy = 100, r = 86;
+  const total = slices.reduce((s, sl) => s + sl.value, 0);
+  let angle = -Math.PI / 2;
+  const paths = slices.map(sl => {
+    const sweep = (sl.value / total) * 2 * Math.PI;
+    const startA = angle, endA = angle + sweep;
+    angle = endA;
+    const x1 = cx + r * Math.cos(startA), y1 = cy + r * Math.sin(startA);
+    const x2 = cx + r * Math.cos(endA), y2 = cy + r * Math.sin(endA);
+    const mid = startA + sweep / 2;
+    const lr = r * 0.63;
+    const pct = Math.round((sl.value / total) * 100);
+    return {
+      d: `M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${sweep > Math.PI ? 1 : 0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z`,
+      lx: (cx + lr * Math.cos(mid)).toFixed(1),
+      ly: (cy + lr * Math.sin(mid)).toFixed(1),
+      sweep, pct, ...sl,
+    };
+  });
+  const legendY0 = 100 - ((slices.length - 1) * 28) / 2;
   return (
-    <div className="w-full flex flex-col gap-1 rounded-[var(--radius-sm)] overflow-hidden" style={{ height: 160 }}>
-      {rows.map((row, ri) => {
-        const rowTotal = ri === 0 ? row1Total : row2Total;
-        const rowH = (rowTotal / total) * 100;
+    <svg viewBox="0 0 420 200" style={{ width: '100%', height: 'auto' }}>
+      {paths.map((p, i) => (
+        <path key={i} d={p.d} fill={p.color} stroke="white" strokeWidth="2" />
+      ))}
+      {paths.map((p, i) => {
+        const y = legendY0 + i * 28;
         return (
-          <div key={ri} className="flex gap-1" style={{ flex: rowTotal }}>
-            {row.map(d => (
-              <div
-                key={d.label}
-                className="flex flex-col justify-end p-2.5 min-w-0 rounded-[var(--radius-sm)]"
-                style={{ flex: d.price, background: d.color }}
-              >
-                <p className="type-caption font-semibold text-white truncate leading-tight">{d.label}</p>
-                <p className="type-caption text-white/70 leading-tight">${d.price.toLocaleString()}</p>
-              </div>
-            ))}
-          </div>
+          <g key={`l${i}`}>
+            <rect x="215" y={y - 5} width="10" height="10" rx="2" fill={p.color} />
+            <text x="233" y={y + 1} fontSize="11.5" fill="rgba(0,0,0,0.55)" fontFamily="system-ui" dominantBaseline="central">{p.label}</text>
+            <text x="415" y={y + 1} textAnchor="end" fontSize="12" fontWeight="600" fill="rgba(0,0,0,0.8)" fontFamily="system-ui" dominantBaseline="central">{p.pct}%</text>
+          </g>
         );
       })}
+    </svg>
+  );
+}
+
+// 7-day stacked saves bar chart
+function WeekSaves({ color }: { color: string }) {
+  const days = [
+    { d: 'M', under: 65, over: 30 },
+    { d: 'T', under: 72, over: 28 },
+    { d: 'W', under: 78, over: 27 },
+    { d: 'T', under: 85, over: 25 },
+    { d: 'F', under: 98, over: 22 },
+    { d: 'S', under: 110, over: 20 },
+    { d: 'S', under: 120, over: 18 },
+  ];
+  const maxTotal = Math.max(...days.map(d => d.under + d.over));
+  const H = 60;
+  return (
+    <div className="w-full">
+      <p className="type-caption text-[var(--color-text-tertiary)] mb-2.5">Daily saves — under vs over $1.2M</p>
+      <div className="flex items-end gap-1.5 w-full">
+        {days.map((d, i) => {
+          const total = d.under + d.over;
+          const barH = Math.round((total / maxTotal) * H);
+          const overH = Math.round((d.over / total) * barH);
+          const underH = barH - overH;
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+              <div className="w-full flex flex-col rounded-sm overflow-hidden" style={{ height: barH }}>
+                <div style={{ height: overH, background: 'rgba(0,0,0,0.10)' }} />
+                <div style={{ height: underH, background: color }} />
+              </div>
+              <span className="type-nano text-[var(--color-text-tertiary)]">{d.d}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2.5 flex gap-4">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm shrink-0" style={{ background: color }} />
+          <span className="type-caption text-[var(--color-text-secondary)]">Under $1.2M</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm shrink-0 bg-black/10" />
+          <span className="type-caption text-[var(--color-text-secondary)]">Over $1.2M</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -117,13 +164,15 @@ function PriceTreemap() {
 function DonutGauge({ segments, size = 140 }: { segments: { label: string; value: number; color: string }[]; size?: number }) {
   const r = 44, cx = size / 2, cy = size / 2, circ = 2 * Math.PI * r;
   const total = segments.reduce((s, sg) => s + sg.value, 0);
-  let offset = 0;
-  const arcs = segments.map(sg => {
-    const dash = (sg.value / total) * circ;
-    const result = { ...sg, dash: dash - 3, offset };
-    offset += dash;
-    return result;
-  });
+  const arcs = segments.reduce<Array<{ label: string; value: number; color: string; dash: number; offset: number }>>(
+    (all, sg) => {
+      const offset = all.length === 0 ? 0 : all[all.length - 1].offset + all[all.length - 1].dash + 3;
+      const dash = (sg.value / total) * circ;
+      all.push({ ...sg, dash: dash - 3, offset });
+      return all;
+    },
+    []
+  );
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       {arcs.map((a, i) => (
@@ -183,15 +232,6 @@ function StackedBar({ segments }: { segments: { label: string; value: number; co
   );
 }
 
-function DotMatrix({ total, filled, color }: { total: number; filled: number; color: string }) {
-  return (
-    <div className="flex flex-wrap gap-1.5" style={{ width: 10 * 14 + 9 * 6 }}>
-      {Array.from({ length: total }).map((_, i) => (
-        <div key={i} className="h-3 w-3 rounded-full" style={{ background: i < filled ? color : 'rgba(0,0,0,0.08)' }} />
-      ))}
-    </div>
-  );
-}
 
 /* ══════════════════════════════════════════════════════════════════
    BRAND PALETTE
@@ -226,7 +266,7 @@ function makeCards(): InsightCard[] {
         <div className="flex flex-col gap-4 w-full">
           <div className="flex items-center gap-5">
             <div className="relative shrink-0">
-              <DonutGauge size={132} segments={[
+              <DonutGauge size={160} segments={[
                 { label: 'Sellers', value: 58, color: B.b700 },
                 { label: 'Balanced', value: 22, color: B.b300 },
                 { label: 'Buyers', value: 20, color: B.b200 },
@@ -254,14 +294,21 @@ function makeCards(): InsightCard[] {
       ),
     },
 
-    /* 2 — Price per sqft treemap */
+    /* 2 — Listing type pie */
     {
-      id: 'price-sqft',
-      tag: 'Neighbourhood',
-      title: 'Price per sqft by area.',
+      id: 'listing-types',
+      tag: 'Market Trends',
+      title: 'Most available listings are condos.',
       tone: 'bg-[var(--color-surface)]',
       accent: B.b600,
-      visual: <PriceTreemap />,
+      visual: (
+        <PieChart slices={[
+          { label: 'Condos',        value: 40, color: B.b700 },
+          { label: 'Detached',      value: 28, color: B.b500 },
+          { label: 'Semi-detached', value: 20, color: B.b400 },
+          { label: 'Townhouses',    value: 12, color: B.b300 },
+        ]} />
+      ),
     },
 
     /* 3 — Days on market */
@@ -365,13 +412,7 @@ function makeCards(): InsightCard[] {
               { label: 'Over $2M', value: 90, sub: '90' },
             ]} />
           </div>
-          <div>
-            <p className="type-caption text-[var(--color-text-tertiary)] mb-2">Top 50 saved listings this week</p>
-            <DotMatrix total={50} filled={31} color={B.b500} />
-            <p className="type-caption text-[var(--color-text-secondary)] mt-1.5">
-              <strong style={{ color: B.b600 }}>31 of 50</strong> are priced under $1.2M
-            </p>
-          </div>
+          <WeekSaves color={B.b500} />
         </div>
       ),
     },

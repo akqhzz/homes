@@ -71,6 +71,10 @@ export function getMatchingNeighborhoodId(location: Pick<Location, 'name' | 'bou
   return matchingNeighborhood?.id ?? null;
 }
 
+export function getNeighborhoodIdForLocation(location: Pick<Location, 'name' | 'boundary'>) {
+  return getMatchingNeighborhoodId(location);
+}
+
 export function getCarryoverAreaSelection(locations: SavedSearch['locations']) {
   const matchedNeighborhoodIds = new Set<string>();
   let fallbackBoundary: { lat: number; lng: number }[] = [];
@@ -89,4 +93,11 @@ export function getCarryoverAreaSelection(locations: SavedSearch['locations']) {
     matchedNeighborhoodIds,
     fallbackBoundary,
   };
+}
+
+export function removeLocationsMatchingNeighborhood(
+  locations: SavedSearch['locations'],
+  neighborhoodId: string
+) {
+  return locations.filter((location) => getMatchingNeighborhoodId(location) !== neighborhoodId);
 }
