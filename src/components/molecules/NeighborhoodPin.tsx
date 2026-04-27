@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react';
 import Image from 'next/image';
 import { Neighborhood } from '@/lib/types';
 import { cn } from '@/lib/utils/cn';
+import MapClusterMarker from '@/components/molecules/MapClusterMarker';
 
 interface NeighborhoodPinProps {
   neighborhood: Neighborhood;
@@ -30,12 +31,11 @@ export default function NeighborhoodPin({
 
   if (variant === 'cluster') {
     return (
-      <button
+      <MapClusterMarker
+        count={count ?? 0}
         onClick={handleClick}
-        className="type-micro flex h-9 min-w-9 items-center justify-center rounded-full border border-white/80 bg-[#0F1729]/88 px-2.5 text-white shadow-[0_10px_24px_rgba(15,23,41,0.28)] backdrop-blur"
-      >
-        {count}
-      </button>
+        aria-label={`Expand ${count ?? 0} areas`}
+      />
     );
   }
 

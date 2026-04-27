@@ -9,15 +9,15 @@ import { Maximize2, Minimize2 } from 'lucide-react';
 import { Listing, Location, Neighborhood } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { closePolygon, getNeighborhoodBounds, getPolygonCentroid } from '@/lib/geo';
-import { getMapboxToken } from '@/lib/mapbox-token';
+import { getMapboxToken } from '@/lib/mapbox';
 import { formatPrice } from '@/lib/utils/format';
 import PriceMarker from '@/components/molecules/PriceMarker';
 import NeighborhoodPin from '@/components/molecules/NeighborhoodPin';
 import ListingCard from '@/components/molecules/ListingCard';
+import MapClusterMarker from '@/components/molecules/MapClusterMarker';
 import { useMapStore } from '@/store/mapStore';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
-import styles from './MapView.module.css';
 
 const MAPBOX_TOKEN = getMapboxToken();
 
@@ -701,14 +701,12 @@ export default function MapView({
                     latitude={item.coordinates.lat}
                     anchor="center"
                   >
-                    <button
-                      type="button"
-                      className={`${styles.clusterMarker}${item.clusterId === highlightedClusterId ? ` ${styles.highlighted}` : ''}`}
+                    <MapClusterMarker
+                      count={item.count}
+                      highlighted={item.clusterId === highlightedClusterId}
                       onClick={() => handleClusterExpand(item.clusterId, [item.coordinates.lng, item.coordinates.lat])}
                       aria-label={`Expand ${item.count} listings`}
-                    >
-                      {item.count}
-                    </button>
+                    />
                   </Marker>
                 );
               }

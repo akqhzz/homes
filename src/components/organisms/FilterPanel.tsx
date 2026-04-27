@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import SearchLocationChip from '@/components/molecules/SearchLocationChip';
-import { applyFilters } from '@/lib/search-filters';
+import { applyFilters } from '@/lib/search/filters';
 import { formatPriceRangeLabel, formatCompactPriceValue, parseCompactPriceValue } from '@/lib/utils/search-display';
 
 const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [

@@ -1,7 +1,6 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { closePolygon } from '@/lib/geo';
-import { normalizeMapboxFeature } from '@/lib/mapbox';
-import { getMapboxToken } from '@/lib/mapbox-token';
+import { normalizeMapboxFeature, getMapboxToken } from '@/lib/mapbox';
 
 export const dynamic = 'force-dynamic';
 

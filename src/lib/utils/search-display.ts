@@ -1,5 +1,5 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
-import { getMatchingNeighborhoodId } from '@/lib/search-utils';
+import { getMatchingNeighborhoodId } from '@/lib/search/utils';
 import { SavedSearch, SearchFilters } from '@/lib/types';
 import { formatPrice, formatPropertyType } from '@/lib/utils/format';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';

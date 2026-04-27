@@ -3,7 +3,7 @@
 import { useDeferredValue, useEffect, useState } from 'react';
 import { Location } from '@/lib/types';
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
-import { getMatchingNeighborhoodId } from '@/lib/search-utils';
+import { getMatchingNeighborhoodId } from '@/lib/search/utils';
 
 interface UseLocationSearchResult {
   results: Location[];

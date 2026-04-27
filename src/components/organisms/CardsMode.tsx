@@ -11,9 +11,7 @@ import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
-import { getMapboxToken } from '@/lib/mapbox-token';
-import { getStaticMapPreviewUrl } from '@/lib/map-preview';
-import { getWindowRange } from '@/lib/utils/windowing';
+import { getMapboxToken, getStaticMapPreviewUrl } from '@/lib/mapbox';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
 import OverlayIconButton from '@/components/atoms/OverlayIconButton';
 import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
@@ -25,13 +23,15 @@ import MapListingPin from '@/components/atoms/MapListingPin';
 import PriceText from '@/components/atoms/PriceText';
 
 const MAPBOX_TOKEN = getMapboxToken();
-const SWIPE_THRESHOLD = 38;
+const SWIPE_COMMIT_DISTANCE = 96;
+const SWIPE_COMMIT_VELOCITY = 520;
+const SWIPE_EXIT_DURATION = 1100;
+const STACK_VISIBLE_COUNT = 3;
 const CARD_MODE_IMAGE_HEIGHT = 305;
 const CARD_MODE_IMAGE_COUNT = 8;
-const CARD_GAP = 12;
 const CARD_MODE_ONBOARDING_STORAGE_KEY = 'homes-card-mode-onboarding-seen';
 const ACTION_BUTTON_CLASS =
-  'flex h-11 items-center gap-2 rounded-full bg-white px-5 type-label shadow-[var(--shadow-control)] active:scale-95 transition-transform no-select';
+  'flex h-12 items-center gap-2 rounded-full bg-white px-6 type-label shadow-[var(--shadow-control)] active:scale-95 transition-all no-select';
 const DETAIL_CHIP_CLASS =
   'type-caption pointer-events-auto inline-flex h-7 items-center gap-0.5 rounded-full bg-[var(--color-surface)] px-2.5 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]';
 const FALLBACK_LISTING_IMAGES = [
@@ -41,6 +41,7 @@ const FALLBACK_LISTING_IMAGES = [
   'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80',
 ];
 type SortMode = 'recommended' | 'price-asc' | 'price-desc' | 'newest';
+type CardSwipeAction = 'pass' | 'save';
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: 'recommended', label: 'Recommended' },
@@ -57,24 +58,24 @@ interface CardsModeProps {
 export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardWidth, setCardWidth] = useState(360);
-  const [viewportWidth, setViewportWidth] = useState(390);
   const [showMapDrawer, setShowMapDrawer] = useState(false);
   const [showDetailDrawer, setShowDetailDrawer] = useState(false);
   const [showSortDrawer, setShowSortDrawer] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('recommended');
   const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
   const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
-  const [likePulse, setLikePulse] = useState(false);
+  const [exitingCard, setExitingCard] = useState<{ listing: Listing; action: CardSwipeAction; startX: number; token: number } | null>(null);
+  const [enteringListingId, setEnteringListingId] = useState<string | null>(null);
+  const [activeSwipePreview, setActiveSwipePreview] = useState<CardSwipeAction | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(CARD_MODE_ONBOARDING_STORAGE_KEY) !== 'true';
   });
   const wheelLockRef = useRef(false);
-  const dragLockRef = useRef(false);
   const activeDragRef = useRef(false);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const swipeLockRef = useRef(false);
+  const exitTokenRef = useRef(0);
+  const stackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const { isLiked, swipeDislike } = useSavedStore();
@@ -92,19 +93,13 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const listing = sortedListings[activeIndex];
   const detailDrawerListing = drawerListing ?? listing;
   const mapDrawerListing = drawerListing ?? listing;
-  const { start: windowStart, end: windowEnd } = useMemo(
-    () => getWindowRange(activeIndex, sortedListings.length),
-    [activeIndex, sortedListings.length]
-  );
   const visibleListings = useMemo(
-    () => sortedListings.slice(windowStart, windowEnd),
-    [sortedListings, windowEnd, windowStart]
+    () => sortedListings.slice(activeIndex, activeIndex + STACK_VISIBLE_COUNT),
+    [activeIndex, sortedListings]
   );
-  const trackWidth = Math.max(0, sortedListings.length * cardWidth + Math.max(0, sortedListings.length - 1) * CARD_GAP);
 
   useEffect(() => {
     const updateWidth = () => {
-      setViewportWidth(window.innerWidth);
       setCardWidth(Math.max(292, window.innerWidth - 16));
     };
     updateWidth();
@@ -130,7 +125,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   }, []);
 
   useEffect(() => {
-    const node = trackRef.current;
+    const node = stackRef.current;
     if (!node) return;
     let start: { x: number; y: number } | null = null;
     const handleTouchStart = (event: TouchEvent) => {
@@ -173,91 +168,51 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   };
 
   const passListing = () => {
-    if (!listing) return;
-    dismissOnboarding();
-    swipeDislike(listing.id);
-    setCurrentIndex((i) => i + 1);
+    commitCardExit('pass');
   };
 
-  const handleSaved = () => {
+  const openSavePicker = (targetListing = listing) => {
+    if (!targetListing || swipeLockRef.current) return;
     dismissOnboarding();
-    setLikePulse(true);
+    activeDragRef.current = true;
+    setSavePickerListing(targetListing);
     window.setTimeout(() => {
-      setLikePulse(false);
-      setCurrentIndex((i) => i + 1);
-    }, 170);
+      activeDragRef.current = false;
+    }, 120);
+  };
+
+  const commitCardExit = (action: CardSwipeAction, targetListing = listing, startX = 0) => {
+    if (!targetListing || swipeLockRef.current) return;
+    dismissOnboarding();
+    swipeLockRef.current = true;
+    activeDragRef.current = true;
+    setActiveSwipePreview(null);
+    if (action === 'pass') {
+      swipeDislike(targetListing.id);
+    }
+    const nextExitToken = exitTokenRef.current + 1;
+    exitTokenRef.current = nextExitToken;
+    setExitingCard({ listing: targetListing, action, startX, token: nextExitToken });
+    setCurrentIndex((i) => i + 1);
+    window.setTimeout(() => {
+      setExitingCard(null);
+      swipeLockRef.current = false;
+      setEnteringListingId(null);
+      window.setTimeout(() => {
+        activeDragRef.current = false;
+      }, 80);
+    }, SWIPE_EXIT_DURATION);
   };
 
   const navigateCard = (direction: 'next' | 'previous') => {
-    if (dragLockRef.current) return;
+    if (swipeLockRef.current) return;
     dismissOnboarding();
-    dragLockRef.current = true;
     setCurrentIndex((index) => {
       if (direction === 'next') return Math.min(sortedListings.length, index + 1);
-      return Math.max(0, index - 1);
+      const previousIndex = Math.max(0, index - 1);
+      setEnteringListingId(sortedListings[previousIndex]?.id ?? null);
+      return previousIndex;
     });
-    window.setTimeout(() => {
-      dragLockRef.current = false;
-    }, 520);
-  };
-
-  const handleTrackPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    pointerStartRef.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
-    activeDragRef.current = false;
-  };
-
-  const handleTrackPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const start = pointerStartRef.current;
-    if (!start || start.id !== event.pointerId) return;
-    if (Math.abs(event.clientX - start.x) > 8) activeDragRef.current = true;
-  };
-
-  const handleTrackPointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
-    const start = pointerStartRef.current;
-    if (!start || start.id !== event.pointerId) return;
-    pointerStartRef.current = null;
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) {
-      window.setTimeout(() => {
-        activeDragRef.current = false;
-      }, 90);
-      return;
-    }
-    activeDragRef.current = true;
-    window.setTimeout(() => {
-      activeDragRef.current = false;
-    }, 90);
-    if (dx < 0) {
-      navigateCard('next');
-      return;
-    }
-    navigateCard('previous');
-  };
-
-  const handleTrackTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    touchStartRef.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-  };
-
-  const handleTrackTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    const start = touchStartRef.current;
-    if (!start) return;
-    const touch = event.touches[0];
-    const dx = touch.clientX - start.x;
-    const dy = touch.clientY - start.y;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) event.preventDefault();
-  };
-
-  const handleTrackTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    const start = touchStartRef.current;
-    touchStartRef.current = null;
-    if (!start) return;
-    const touch = event.changedTouches[0];
-    const dx = touch.clientX - start.x;
-    const dy = touch.clientY - start.y;
-    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) <= Math.abs(dy)) return;
-    if (dragLockRef.current) return;
-    navigateCard(dx < 0 ? 'next' : 'previous');
   };
 
   const handleTrackWheel = (event: React.WheelEvent<HTMLDivElement>) => {
@@ -265,7 +220,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 24) return;
     if (wheelLockRef.current) return;
     wheelLockRef.current = true;
-    navigateCard(event.deltaX > 0 ? 'next' : 'previous');
+    if (event.deltaX > 0) commitCardExit('pass');
+    else openSavePicker();
     window.setTimeout(() => {
       wheelLockRef.current = false;
     }, 900);
@@ -308,7 +264,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       <OverlayIconButton
         onClick={() => navigateCard('previous')}
         label="Undo to previous card"
-        className="absolute left-4 z-20"
+        className="absolute left-4 z-[70]"
         style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
         variant="glass"
         icon={<Undo2 size={14} />}
@@ -320,45 +276,43 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           onClose();
         }}
         label="Close cards view"
-        className="absolute z-20"
+        className="absolute z-[70]"
         style={{ right: '1rem', top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
         variant="glass"
       />
       {/* Card stack */}
       <div
-        ref={trackRef}
-        className="relative min-h-0 flex-1 overflow-hidden px-2 pt-2 pb-2"
-        style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none', overscrollBehaviorY: 'contain' }}
+        ref={stackRef}
+        className="relative min-h-0 flex-1 overflow-visible px-2 pb-2 pt-2"
+        style={{ touchAction: 'none', overscrollBehaviorX: 'none', overscrollBehaviorY: 'contain' }}
         onWheel={handleTrackWheel}
-        onPointerDownCapture={handleTrackPointerDown}
-        onPointerMoveCapture={handleTrackPointerMove}
-        onPointerUpCapture={handleTrackPointerEnd}
-        onPointerCancelCapture={() => { pointerStartRef.current = null; activeDragRef.current = false; }}
-        onTouchStart={handleTrackTouchStart}
-        onTouchMove={handleTrackTouchMove}
-        onTouchEnd={handleTrackTouchEnd}
       >
-        <motion.div
-          className="relative h-full"
-          animate={{ x: -activeIndex * (cardWidth + CARD_GAP) }}
-          transition={{ type: 'spring', stiffness: 360, damping: 38, mass: 0.28 }}
-          style={{
-            width: trackWidth,
-            willChange: 'transform',
-            paddingLeft: Math.max(0, (viewportWidth - cardWidth) / 2 - 12),
-            paddingRight: Math.max(0, (viewportWidth - cardWidth) / 2 - 12),
-          }}
-        >
+        <div className="relative mx-auto h-full" style={{ width: cardWidth }}>
           {visibleListings.map((item, offset) => {
-            const index = windowStart + offset;
+            const index = activeIndex + offset;
             return (
             <CardModeListingCard
-              key={item.id}
+              key={`${item.id}-${activeIndex}-${offset}`}
               listing={item}
               width={cardWidth}
-              active={index === activeIndex}
-              className="absolute top-0"
-              style={{ left: index * (cardWidth + CARD_GAP) }}
+              active={offset === 0}
+              stackIndex={offset}
+              enterFrom={offset === 0 && enteringListingId === item.id ? 'left' : null}
+              swipeExitAction={null}
+              exitStartX={0}
+              className="absolute left-0 top-0"
+              style={{ height: '100%' }}
+              onSwipe={(action, offsetX) => {
+                if (action === 'save') {
+                  openSavePicker(item);
+                  return;
+                }
+                commitCardExit(action, item, offsetX);
+              }}
+              onDragActivity={(dragging) => {
+                activeDragRef.current = dragging;
+              }}
+              onSwipePreview={setActiveSwipePreview}
               onOpenDetail={() => {
                 if (activeDragRef.current) return;
                 dismissOnboarding();
@@ -378,12 +332,34 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             />
             );
           })}
-        </motion.div>
+          {exitingCard && (
+            <CardModeListingCard
+              key={`exiting-${exitingCard.listing.id}-${exitingCard.token}`}
+              listing={exitingCard.listing}
+              width={cardWidth}
+              active
+              inert
+              stackIndex={0}
+              enterFrom={null}
+              swipeExitAction={exitingCard.action}
+              exitStartX={exitingCard.startX}
+              className="absolute left-0 top-0 z-[60]"
+              style={{ height: '100%' }}
+              onSwipe={() => undefined}
+              onDragActivity={() => undefined}
+              onSwipePreview={() => undefined}
+              onOpenDetail={() => undefined}
+              onOpenMap={() => undefined}
+              onClose={onClose}
+              onInteract={() => undefined}
+            />
+          )}
+        </div>
       </div>
 
       {/* Action buttons */}
       <div
-        className="flex-shrink-0 px-6 flex items-center justify-center gap-2.5"
+        className="relative z-[80] flex flex-shrink-0 items-center justify-center gap-2.5 bg-transparent px-6 pt-5"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
       >
         <FloatingActionButton
@@ -395,25 +371,27 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
         <button
           onClick={passListing}
-          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-secondary)]')}
+          className={cn(
+            ACTION_BUTTON_CLASS,
+            'text-[var(--color-text-secondary)]',
+            activeSwipePreview === 'pass' && 'bg-[var(--color-surface)] text-[var(--color-text-primary)]'
+          )}
         >
-          <X size={16} strokeWidth={2.4} />
+          <X size={18} strokeWidth={2.4} />
           Pass
         </button>
 
         <motion.button
           onClick={() => {
-            dismissOnboarding();
-            setSavePickerListing(listing);
+            openSavePicker();
           }}
           className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-primary)]')}
-          animate={likePulse ? { scale: [1, 1.16, 1] } : { scale: 1 }}
-          transition={{ duration: 0.24, ease: 'easeOut' }}
+          whileTap={{ scale: 0.95 }}
         >
           <Heart
-            size={16}
+            size={18}
             strokeWidth={2.4}
-            className={cn(liked || likePulse ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
+            className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
           />
           Save
         </motion.button>
@@ -435,7 +413,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <SaveToCollectionSheet
             listingId={savePickerListing.id}
             onClose={() => setSavePickerListing(null)}
-            onSaved={handleSaved}
+            onSaved={() => {
+              const savedListing = savePickerListing;
+              setSavePickerListing(null);
+              commitCardExit('save', savedListing);
+            }}
           />
         )}
       </AnimatePresence>
@@ -484,7 +466,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </div>
               <h3 className="mt-1 type-subtitle text-[var(--color-text-primary)]">Welcome to card mode ✨</h3>
               <p className="mt-2 type-body text-[var(--color-text-secondary)]">
-                Swipe left or right, or tap <span className="type-label">Pass</span> or <span className="type-label">Save</span> to move through homes.
+                Swipe left to pass, right to save, or use the buttons below the card.
               </p>
               <Button onClick={dismissOnboarding} size="md" className="mt-4 min-w-[132px] type-btn">
                 Got it
@@ -638,27 +620,60 @@ function CardModeListingCard({
   listing,
   width,
   active,
+  inert = false,
+  stackIndex,
+  enterFrom,
+  swipeExitAction,
+  exitStartX,
   className,
   onOpenDetail,
   onOpenMap,
   onClose,
   onInteract,
+  onSwipe,
+  onDragActivity,
+  onSwipePreview,
   style,
 }: {
   listing: Listing;
   width: number;
   active: boolean;
+  inert?: boolean;
+  stackIndex: number;
+  enterFrom: 'left' | null;
+  swipeExitAction: CardSwipeAction | null;
+  exitStartX: number;
   className?: string;
   onOpenDetail: () => void;
   onOpenMap: () => void;
   onClose: () => void;
   onInteract: () => void;
+  onSwipe: (action: CardSwipeAction, offsetX: number) => void;
+  onDragActivity: (dragging: boolean) => void;
+  onSwipePreview: (action: CardSwipeAction | null) => void;
   style?: CSSProperties;
 }) {
+  const [dragX, setDragX] = useState(0);
   const images = getListingImages(listing);
   const mapPreviewSrc = getStaticMapPreviewUrl(listing.coordinates, MAPBOX_TOKEN);
   const imageScrollRef = useRef<HTMLDivElement>(null);
   const imagePullStartRef = useRef<{ x: number; y: number; atTop: boolean } | null>(null);
+  const suppressClickRef = useRef(false);
+
+  const activeSaveStampOpacity = active ? Math.min(1, Math.max(0, dragX / 96)) : 0;
+  const activePassStampOpacity = active ? Math.min(1, Math.max(0, -dragX / 96)) : 0;
+  const exitX = swipeExitAction === 'save' ? width + 150 : swipeExitAction === 'pass' ? -width - 150 : 0;
+  const exitRotate = swipeExitAction === 'save' ? 15 : swipeExitAction === 'pass' ? -15 : 0;
+  const cardAnimate = swipeExitAction
+    ? { x: exitX, y: 0, rotate: exitRotate, scale: 1, opacity: 1 }
+    : active
+    ? { x: 0, y: 0, rotate: dragX / 18, scale: 1, opacity: 1 }
+    : { x: 0, y: stackIndex * 13, rotate: 0, scale: 1 - stackIndex * 0.035, opacity: 1 - stackIndex * 0.13 };
+
+  const handleOpenDetail = () => {
+    if (!active || suppressClickRef.current) return;
+    onOpenDetail();
+  };
 
   const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     imagePullStartRef.current = {
@@ -675,7 +690,6 @@ function CardModeListingCard({
     const dy = event.touches[0].clientY - start.y;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) {
       event.preventDefault();
-      event.stopPropagation();
       return;
     }
     if (!start.atTop) return;
@@ -695,21 +709,98 @@ function CardModeListingCard({
 
   return (
     <motion.article
-      className={cn('h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select', className)}
-      style={{ width, ...style }}
-      animate={{ scale: active ? 1 : 0.965, opacity: active ? 1 : 0.82 }}
-      transition={{ type: 'spring', stiffness: 240, damping: 32, mass: 0.3 }}
+      className={cn(
+        'h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select',
+        active && 'shadow-[0_14px_30px_rgba(15,23,41,0.14)]',
+        className
+      )}
+      style={{
+        width,
+        zIndex: 30 - stackIndex,
+        pointerEvents: active && !inert ? 'auto' : 'none',
+        touchAction: 'none',
+        ...style,
+      }}
+      drag={active && !swipeExitAction ? 'x' : false}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.86}
+      dragMomentum={false}
+      initial={
+        swipeExitAction
+          ? { x: exitStartX, rotate: exitStartX / 18, scale: 1, opacity: 1 }
+          : enterFrom === 'left'
+          ? { x: -width - 150, rotate: -13, scale: 1, opacity: 1 }
+          : false
+      }
+      onDragStart={() => {
+        suppressClickRef.current = true;
+        onDragActivity(true);
+      }}
+      onDrag={(_, info) => {
+        setDragX(info.offset.x);
+        if (info.offset.x > 18) {
+          onSwipePreview('save');
+        } else if (info.offset.x < -18) {
+          onSwipePreview('pass');
+        } else {
+          onSwipePreview(null);
+        }
+      }}
+      onDragEnd={(_, info) => {
+        const action =
+          info.offset.x > SWIPE_COMMIT_DISTANCE || info.velocity.x > SWIPE_COMMIT_VELOCITY
+            ? 'save'
+            : info.offset.x < -SWIPE_COMMIT_DISTANCE || info.velocity.x < -SWIPE_COMMIT_VELOCITY
+            ? 'pass'
+            : null;
+
+        if (action) {
+          setDragX(action === 'save' ? 0 : info.offset.x);
+          onSwipePreview(null);
+          onSwipe(action, info.offset.x);
+          if (action === 'save') {
+            window.setTimeout(() => {
+              suppressClickRef.current = false;
+              onDragActivity(false);
+            }, 120);
+          }
+          return;
+        }
+
+        setDragX(0);
+        onSwipePreview(null);
+        window.setTimeout(() => {
+          suppressClickRef.current = false;
+          onDragActivity(false);
+        }, 120);
+      }}
+      animate={cardAnimate}
+      transition={
+        swipeExitAction
+          ? { type: 'tween', duration: SWIPE_EXIT_DURATION / 1000, ease: [0.22, 1, 0.36, 1] }
+          : { type: 'spring', stiffness: 360, damping: 34, mass: 0.34 }
+      }
     >
       <div
         className="block h-full w-full cursor-pointer text-left"
         role="button"
         tabIndex={0}
-        onClick={onOpenDetail}
+        onClick={handleOpenDetail}
         onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') onOpenDetail();
+          if (event.key === 'Enter' || event.key === ' ') handleOpenDetail();
         }}
       >
         <div className="relative h-full rounded-[22px] bg-white">
+          {swipeExitAction === 'pass' ? (
+            <SwipeStamp label="PASS" tone="pass" opacity={1} rotation="-rotate-6" />
+          ) : (
+            activePassStampOpacity > 0 && <SwipeStamp label="PASS" tone="pass" opacity={activePassStampOpacity} rotation="-rotate-6" />
+          )}
+          {swipeExitAction === 'save' ? (
+            <SwipeStamp label="SAVE" tone="save" opacity={1} rotation="rotate-6" />
+          ) : (
+            activeSaveStampOpacity > 0 && <SwipeStamp label="SAVE" tone="save" opacity={activeSaveStampOpacity} rotation="rotate-6" />
+          )}
           <div
             ref={imageScrollRef}
             className="h-full overflow-y-auto rounded-[22px] bg-white scrollbar-hide"
@@ -718,7 +809,7 @@ function CardModeListingCard({
               overscrollBehavior: 'contain',
               overscrollBehaviorX: 'none',
               scrollBehavior: 'smooth',
-              touchAction: 'pan-y',
+              touchAction: active ? 'pan-y' : 'none',
             }}
             onTouchStart={handleImageTouchStart}
             onTouchMove={handleImageTouchMove}
@@ -792,5 +883,37 @@ function CardModeListingCard({
         </div>
       </div>
     </motion.article>
+  );
+}
+
+function SwipeStamp({
+  label,
+  tone,
+  opacity,
+  rotation,
+}: {
+  label: string;
+  tone: 'pass' | 'save';
+  opacity: number;
+  rotation: string;
+}) {
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-[42%] z-20 -translate-x-1/2 -translate-y-1/2">
+      <motion.div
+        aria-hidden="true"
+        className={cn(
+          'rounded-2xl border-2 px-5 py-2.5 type-heading-sm tracking-[0.1em] shadow-[0_10px_26px_rgba(15,23,41,0.14)] backdrop-blur-sm',
+          tone === 'save'
+            ? 'border-[var(--color-accent)] bg-white/76 text-[var(--color-accent)]'
+            : 'border-[#6B7280] bg-white/76 text-[#4B5563]',
+          rotation
+        )}
+        initial={{ opacity, scale: opacity > 0 ? 1 : 0.92 }}
+        animate={{ opacity, scale: opacity > 0 ? 1 : 0.92 }}
+        transition={{ duration: 0.08 }}
+      >
+        {label}
+      </motion.div>
+    </div>
   );
 }

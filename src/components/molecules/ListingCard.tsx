@@ -9,7 +9,7 @@ import { formatBedBathSqftLine, formatMlsLine } from '@/lib/utils/listing-displa
 import { useSavedStore } from '@/store/savedStore';
 import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
-import { ListingAddressRow } from '@/components/listing/ListingDisplay';
+import { ListingAddressRow } from '@/components/atoms/ListingParts';
 import PriceText from '@/components/atoms/PriceText';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;

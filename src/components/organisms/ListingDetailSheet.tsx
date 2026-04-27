@@ -10,7 +10,7 @@ import Button from '@/components/atoms/Button';
 import IconButton from '@/components/atoms/IconButton';
 import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
-import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/listing/ListingDisplay';
+import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/atoms/ListingParts';
 import PriceText from '@/components/atoms/PriceText';
 
 export default function ListingDetailSheet() {

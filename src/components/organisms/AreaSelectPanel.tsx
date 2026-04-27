@@ -58,7 +58,7 @@ export default function AreaSelectPanel({
   return (
     <>
       <div className="pointer-events-none absolute inset-0 z-30">
-        <div className="absolute left-4 right-4 top-4 hidden items-center justify-between gap-4 lg:flex">
+        <div className="absolute left-4 right-4 top-4 hidden grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 lg:grid">
           <button
             type="button"
             onClick={onBack}
@@ -67,7 +67,7 @@ export default function AreaSelectPanel({
           >
             Cancel
           </button>
-          <div className="pointer-events-auto absolute left-1/2 top-0 flex min-h-11 min-w-0 w-[min(340px,calc(100%-16rem))] -translate-x-1/2 items-center justify-center rounded-full bg-white/70 px-4 py-2 text-[var(--color-text-primary)] backdrop-blur-xl">
+          <div className="pointer-events-auto mx-auto flex min-h-11 min-w-0 w-full max-w-[340px] items-center justify-center rounded-full bg-white/70 px-4 py-2 text-[var(--color-text-primary)] backdrop-blur-xl">
             <p className="min-w-0 text-center type-body leading-tight whitespace-normal">{desktopTopLabel}</p>
           </div>
           <div className="pointer-events-auto flex shrink-0 items-center gap-2">

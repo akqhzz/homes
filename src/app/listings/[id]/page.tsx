@@ -9,7 +9,7 @@ import PageShell from '@/components/templates/PageShell';
 import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import ListingImageGallery from '@/components/organisms/ListingImageGallery';
 import ListingLocationMap from '@/components/organisms/ListingLocationMap';
-import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/listing/ListingDisplay';
+import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/atoms/ListingParts';
 import PriceText from '@/components/atoms/PriceText';
 
 interface ListingPageProps {

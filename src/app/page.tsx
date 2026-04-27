@@ -21,7 +21,7 @@ import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
 import { Neighborhood, SavedSearch } from '@/lib/types';
 import { getListingsInViewport, rankCardModeListings } from '@/lib/listing-scope';
-import { applyFilters, filterListingsBySearchArea, getAreaScopeBounds } from '@/lib/search-filters';
+import { applyFilters, filterListingsBySearchArea, getAreaScopeBounds } from '@/lib/search/filters';
 import {
   areSearchSnapshotsEqual,
   createSearchSnapshot,
@@ -30,7 +30,7 @@ import {
   removeLocationsMatchingNeighborhood,
   SearchSnapshot,
   searchToSnapshot,
-} from '@/lib/search-utils';
+} from '@/lib/search/utils';
 import { AreaChip, getAreaChips, getCompactAreaChipLabel } from '@/lib/utils/search-display';
 import { cn } from '@/lib/utils/cn';
 
@@ -42,7 +42,12 @@ const AreaSelectPanel = dynamic(() => import('@/components/organisms/AreaSelectP
 const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingDetailSheet'), { ssr: false });
 const SavedSearchesPanel = dynamic(() => import('@/components/organisms/SavedSearchesPanel'), { ssr: false });
 const ListingsSidebar = dynamic(() => import('@/components/organisms/ListingsSidebar'), { ssr: false });
-const ListingsListView = dynamic(() => import('@/components/organisms/ListingsListView'), { ssr: false });
+let listingsListViewPreload: Promise<typeof import('@/components/organisms/ListingsListView')> | null = null;
+const preloadListingsListView = () => {
+  listingsListViewPreload ??= import('@/components/organisms/ListingsListView');
+  return listingsListViewPreload;
+};
+const ListingsListView = dynamic(() => preloadListingsListView(), { ssr: false });
 
 function getSearchViewState(
   selectedLocations: SavedSearch['locations'],
@@ -177,6 +182,22 @@ export default function MapPage() {
     window.addEventListener('resize', syncDesktopExpand);
     return () => window.removeEventListener('resize', syncDesktopExpand);
   }, [setDesktopMapExpanded]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.innerWidth >= 1024) return;
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(() => {
+        void preloadListingsListView();
+      }, { timeout: 1800 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = globalThis.setTimeout(() => {
+      void preloadListingsListView();
+    }, 600);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     let edgeTouch = false;
