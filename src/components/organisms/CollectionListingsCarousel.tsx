@@ -1,14 +1,16 @@
 'use client';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMapStore } from '@/store/mapStore';
 import { Listing } from '@/lib/types';
 import CollectionListingCard from '@/components/molecules/CollectionListingCard';
 import { cn } from '@/lib/utils/cn';
+import { getWindowRange } from '@/lib/utils/windowing';
 
-const CARD_WIDTH = 288;
-const GAP = 12;
+const CARD_WIDTH = 320;
+const GAP = 20;
 const SWIPE_THRESHOLD = 34;
+const TRACK_HEIGHT = 292;
 
 type CollectionListingItem = Listing & {
   collectionData: {
@@ -38,15 +40,22 @@ export default function CollectionListingsCarousel({
 }: CollectionListingsCarouselProps) {
   const [viewportWidth, setViewportWidth] = useState(390);
   const [currentIndex, setCurrentIndex] = useState(() => {
-    const index = listings.findIndex((listing) => listing.id === useMapStore.getState().selectedListingId);
+    const activeId = useMapStore.getState().mobileCarouselListingId ?? useMapStore.getState().selectedListingId;
+    const index = listings.findIndex((listing) => listing.id === activeId);
     return index >= 0 ? index : 0;
   });
   const [instantMove, setInstantMove] = useState(true);
   const carouselRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ x: number; y: number; id: number } | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const selectedListingId = useMapStore((s) => s.selectedListingId);
-  const setSelectedListingId = useMapStore((s) => s.setSelectedListingId);
+  const wheelLockRef = useRef(false);
+  const syncingExternalSelectionRef = useRef(false);
+  const mobileCarouselListingId = useMapStore((s) => s.mobileCarouselListingId);
+  const mobileCarouselSelectionSource = useMapStore((s) => s.mobileCarouselSelectionSource);
+  const mobileCarouselSelectionVersion = useMapStore((s) => s.mobileCarouselSelectionVersion);
+  const setMobileCarouselListingId = useMapStore((s) => s.setMobileCarouselListingId);
+  const markVisitedListing = useMapStore((s) => s.markVisitedListing);
+  const activeIndex = Math.max(0, Math.min(currentIndex, listings.length - 1));
 
   useEffect(() => {
     const updateWidth = () => setViewportWidth(window.innerWidth);
@@ -66,23 +75,57 @@ export default function CollectionListingsCarousel({
   }, []);
 
   useLayoutEffect(() => {
-    if (!selectedListingId) return;
-    const index = listings.findIndex((listing) => listing.id === selectedListingId);
-    if (index >= 0) {
-      const frame = requestAnimationFrame(() => {
-        setInstantMove(true);
-        setCurrentIndex(index);
-        requestAnimationFrame(() => setInstantMove(false));
-      });
-      return () => cancelAnimationFrame(frame);
-    }
-  }, [listings, selectedListingId]);
+    if (mobileCarouselSelectionSource !== 'marker') return;
+    const activeId = mobileCarouselListingId;
+    if (!activeId) return;
+    const index = listings.findIndex((listing) => listing.id === activeId);
+    if (index < 0) return;
+    const frame = requestAnimationFrame(() => {
+      syncingExternalSelectionRef.current = true;
+      setInstantMove(true);
+      setCurrentIndex(index);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [listings, mobileCarouselListingId, mobileCarouselSelectionSource, mobileCarouselSelectionVersion]);
+
+  useEffect(() => {
+    if (!instantMove || !syncingExternalSelectionRef.current) return;
+    const frame = requestAnimationFrame(() => {
+      syncingExternalSelectionRef.current = false;
+      setInstantMove(false);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentIndex, instantMove]);
+
+  useEffect(() => {
+    const previousHtmlOverscroll = document.documentElement.style.overscrollBehaviorX;
+    const previousBodyOverscroll = document.body.style.overscrollBehaviorX;
+    document.documentElement.style.overscrollBehaviorX = 'none';
+    document.body.style.overscrollBehaviorX = 'none';
+    return () => {
+      document.documentElement.style.overscrollBehaviorX = previousHtmlOverscroll;
+      document.body.style.overscrollBehaviorX = previousBodyOverscroll;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mobileCarouselListingId) return;
+    markVisitedListing(mobileCarouselListingId);
+  }, [markVisitedListing, mobileCarouselListingId]);
+
+  useEffect(() => {
+    if (mobileCarouselSelectionSource === 'marker') return;
+    if (syncingExternalSelectionRef.current) return;
+    const centeredListing = listings[activeIndex];
+    if (!centeredListing) return;
+    setMobileCarouselListingId(centeredListing.id, 'carousel');
+  }, [activeIndex, listings, mobileCarouselSelectionSource, setMobileCarouselListingId]);
 
   const goTo = (index: number) => {
     const nextIndex = Math.max(0, Math.min(listings.length - 1, index));
     setInstantMove(false);
     setCurrentIndex(nextIndex);
-    if (listings[nextIndex]) setSelectedListingId(listings[nextIndex].id);
+    if (listings[nextIndex]) setMobileCarouselListingId(listings[nextIndex].id, 'carousel');
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -114,23 +157,48 @@ export default function CollectionListingsCarousel({
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) event.preventDefault();
   };
 
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest('[data-card-image="true"]')) return;
+    event.preventDefault();
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
+    if (wheelLockRef.current) return;
+    wheelLockRef.current = true;
+    goTo(currentIndex + (event.deltaX > 0 ? 1 : -1));
+    window.setTimeout(() => {
+      wheelLockRef.current = false;
+    }, 320);
+  };
+
   const centeredOffset = Math.max(0, (viewportWidth - CARD_WIDTH) / 2);
+  const { start: windowStart, end: windowEnd } = useMemo(
+    () => getWindowRange(activeIndex, listings.length),
+    [activeIndex, listings.length]
+  );
+  const visibleListings = listings.slice(windowStart, windowEnd);
+  const trackWidth = Math.max(0, listings.length * CARD_WIDTH + Math.max(0, listings.length - 1) * GAP);
 
   return (
-    <div ref={carouselRef} className={cn('w-full overflow-hidden py-3', className)} style={{ touchAction: 'none' }}>
+    <div ref={carouselRef} className={cn('w-full overflow-hidden pt-3 pb-5', className)} style={{ touchAction: 'none' }}>
       <motion.div
-        className="flex"
-        animate={{ x: centeredOffset - currentIndex * (CARD_WIDTH + GAP) }}
+        className="relative"
+        animate={{ x: centeredOffset - activeIndex * (CARD_WIDTH + GAP) }}
         transition={instantMove ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 34, mass: 0.34 }}
-        style={{ gap: GAP, touchAction: 'none', willChange: 'transform' }}
+        style={{ width: trackWidth, height: TRACK_HEIGHT, touchAction: 'none', willChange: 'transform' }}
         onPointerDownCapture={handlePointerDown}
         onPointerUpCapture={handlePointerUp}
         onPointerCancelCapture={() => { dragStartRef.current = null; }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
+        onWheel={handleWheel}
       >
-        {listings.map((listing) => (
-          <div key={listing.id} className="shrink-0">
+        {visibleListings.map((listing, offset) => {
+          const index = windowStart + offset;
+          return (
+          <div
+            key={listing.id}
+            className="absolute top-0"
+            style={{ left: index * (CARD_WIDTH + GAP), width: CARD_WIDTH }}
+          >
             <CollectionListingCard
               listing={listing}
               notes={listing.collectionData.notes}
@@ -142,7 +210,8 @@ export default function CollectionListingsCarousel({
               onTagClick={(anchorRect) => onTagClick(listing.id, anchorRect)}
             />
           </div>
-        ))}
+          );
+        })}
       </motion.div>
     </div>
   );

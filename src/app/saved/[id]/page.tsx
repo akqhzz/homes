@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDownWideNarrow, LayoutList, Map, Tag } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
@@ -101,6 +101,7 @@ export default function CollectionPage() {
   const toggleLike = useSavedStore((state) => state.toggleLike);
   const { activePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
   const setSelectedListingId = useMapStore((state) => state.setSelectedListingId);
+  const setMobileCarouselListingId = useMapStore((state) => state.setMobileCarouselListingId);
   const setViewState = useMapStore((state) => state.setViewState);
 
   const [mobileView, setMobileView] = useState<CollectionView>('list');
@@ -137,7 +138,8 @@ export default function CollectionPage() {
   useEffect(() => {
     setCarouselVisible(false);
     setSelectedListingId(null);
-  }, [id, setCarouselVisible, setSelectedListingId]);
+    setMobileCarouselListingId(null, null);
+  }, [id, setCarouselVisible, setMobileCarouselListingId, setSelectedListingId]);
 
   useEffect(() => {
     setViewState(getCollectionViewport(sortedListings));
@@ -147,8 +149,9 @@ export default function CollectionPage() {
     if (mobileView !== 'map') {
       setCarouselVisible(false);
       setSelectedListingId(null);
+      setMobileCarouselListingId(null, null);
     }
-  }, [mobileView, setCarouselVisible, setSelectedListingId]);
+  }, [mobileView, setCarouselVisible, setMobileCarouselListingId, setSelectedListingId]);
 
   useEffect(() => {
     pendingRemovalIdsRef.current = pendingRemovalIds;
@@ -327,8 +330,16 @@ export default function CollectionPage() {
                   style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
                   variant="glass"
                 />
-                {isCarouselVisible && sortedListings.length > 0 && (
-                  <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20">
+                <AnimatePresence>
+                  {isCarouselVisible && sortedListings.length > 0 && (
+                    <motion.div
+                      initial={{ y: 28, opacity: 0, scale: 0.965 }}
+                      animate={{ y: 0, opacity: 1, scale: 1 }}
+                      exit={{ y: 28, opacity: 0, scale: 0.965 }}
+                      transition={{ type: 'tween', duration: 0.28, ease: [0.2, 0, 0.1, 1] }}
+                      style={{ touchAction: 'none' }}
+                      className="pointer-events-none absolute inset-x-0 bottom-14 z-20"
+                    >
                     <CollectionListingsCarousel
                       listings={sortedListings}
                       currentCollectionId={collection.id}
@@ -338,8 +349,9 @@ export default function CollectionPage() {
                       onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
                       className="pointer-events-auto pb-2"
                     />
-                  </div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 
@@ -464,6 +476,7 @@ export default function CollectionPage() {
                 <CollectionListingsGrid
                   listings={sortedListings}
                   currentCollectionId={collection.id}
+                  cardTall
                   onTagClick={(listingId, anchorRect) => {
                     setDesktopSortAnchor(null);
                     setTagPanelState({ mode: 'assign', listingId, anchorRect });

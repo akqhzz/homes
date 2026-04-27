@@ -96,7 +96,9 @@ export default function TopBar({
               className="text-[var(--color-text-primary)]"
             />
             {hasAppliedArea && (
-              <span className="absolute right-[10px] top-[10px] h-1.5 w-1.5 rounded-full bg-[#374151] ring-1 ring-white" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
+                1
+              </span>
             )}
           </button>
           {showAreaMenu && (

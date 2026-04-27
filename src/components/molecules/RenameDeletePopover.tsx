@@ -85,7 +85,7 @@ export default function RenameDeletePopover({
             style={{ bottom, right }}
             data-rename-delete-popover="true"
           >
-            <p className="type-label text-[#0F1729]">{deleteTitle}</p>
+            <p className="type-heading-sm text-[#0F1729]">{deleteTitle}</p>
             <p className="mt-1 type-caption text-[#6B7280]">{deleteDescription}</p>
             <div className="mt-3 flex gap-2">
               <button

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import FloatingActionButton from '@/components/atoms/FloatingActionButton';
+import { cn } from '@/lib/utils/cn';
 
 const NAV_ITEMS = [
   { href: '/', icon: Map, label: 'Map' },
@@ -79,7 +80,10 @@ export default function BottomNav() {
           layoutId="saved-undo-control"
           onClick={() => setActivePanel('saved-searches')}
           aria-label="Saved searches"
-          className="relative"
+          className={cn(
+            'relative',
+            activeSearchDirty && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
+          )}
         >
           {activeSearch?.thumbnail ? (
             <span className="relative block h-[19px] w-[19px] overflow-hidden rounded-[6px]">
@@ -89,7 +93,9 @@ export default function BottomNav() {
             <Bookmark size={18} className="text-[var(--color-text-primary)]" />
           )}
           {activeSearchDirty && (
-            <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[var(--color-text-primary)] ring-1 ring-white" />
+            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#374151] px-1 type-nano leading-none text-white">
+              1
+            </span>
           )}
         </FloatingActionButton>
       )}

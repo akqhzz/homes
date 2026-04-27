@@ -1,7 +1,6 @@
 export function formatPrice(price: number): string {
   if (price >= 1_000_000) {
-    const m = price / 1_000_000;
-    return `$${m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)}M`;
+    return `$${(price / 1_000_000).toFixed(2)}M`;
   }
   if (price >= 1_000) {
     const k = price / 1_000;
@@ -37,7 +36,7 @@ export function formatPropertyType(type: string): string {
 
 export function formatAvgPrice(price: number): string {
   if (price >= 1_000_000) {
-    return `Avg. $${(price / 1_000_000).toFixed(1)}M`;
+    return `Avg. $${(price / 1_000_000).toFixed(2)}M`;
   }
   return `Avg. $${Math.round(price / 1000)}K`;
 }

@@ -1,11 +1,14 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Check, Ellipsis } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useMapStore } from '@/store/mapStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
+import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { Coordinates, Listing, SavedSearch } from '@/lib/types';
+import { applyFilters, filterListingsBySearchArea } from '@/lib/search/filters';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
@@ -43,6 +46,7 @@ export default function SavedSearchesPanel({
   const { selectedLocations, filters, setLocations, replaceFilters } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { searches, saveSearch, activeSearchId, setActiveSearchId, renameSearch, deleteSearch } = useSavedSearchStore();
+  const visitedListingIds = useMapStore((s) => s.visitedListingIds);
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
   const [saving, setSaving] = useState(canSaveCurrent && !activeSearchId);
@@ -56,6 +60,15 @@ export default function SavedSearchesPanel({
   const inputRef = useRef<HTMLInputElement>(null);
   const desktopPanelRef = useRef<HTMLDivElement>(null);
   const updateFeedbackTimeoutRef = useRef<number | null>(null);
+  const unseenNewCountBySearchId = useMemo(() => {
+    const visitedIds = new Set(visitedListingIds);
+    return new Map(
+      searches.map((search) => [
+        search.id,
+        getUnseenRecentListingCount(search, visitedIds),
+      ])
+    );
+  }, [searches, visitedListingIds]);
 
   useEffect(() => {
     if (!saving) return;
@@ -219,7 +232,8 @@ export default function SavedSearchesPanel({
             const isSelected = activeSearchId === search.id;
             const showUpdatedState = updatedSearchId === search.id;
             const criteriaSummary = getSavedSearchCriteriaSummary(search);
-            const hasNewListings = Boolean(search.newListingsCount && search.newListingsCount > 0);
+            const unseenNewListingsCount = unseenNewCountBySearchId.get(search.id) ?? 0;
+            const hasNewListings = unseenNewListingsCount > 0;
 
             return (
             <div
@@ -302,7 +316,7 @@ export default function SavedSearchesPanel({
                   </div>
                   {hasNewListings && (
                     <span className="type-micro mt-2 inline-flex self-start rounded-full bg-[var(--color-brand-600)] px-2 py-1 text-[var(--color-text-inverse)]">
-                      {search.newListingsCount} new
+                      {unseenNewListingsCount} new
                     </span>
                   )}
                 </div>
@@ -317,7 +331,7 @@ export default function SavedSearchesPanel({
                   </button>
                   <div className="flex items-center justify-end gap-2">
                     {showUpdatedState ? (
-                      <span className="shrink-0 rounded-full border border-[var(--color-success)] bg-[var(--color-brand-50)] px-3 py-2 type-caption text-[var(--color-success)]">
+                      <span className="shrink-0 rounded-full border border-[var(--color-success)] bg-[color-mix(in_srgb,var(--color-success)_10%,white)] px-3 py-2 type-caption text-[var(--color-success)]">
                         Updated
                       </span>
                     ) : isSelected && activeSearchDirty ? (
@@ -413,4 +427,17 @@ export default function SavedSearchesPanel({
 
 function getDefaultThumbnailListing(listings: Listing[]) {
   return [...listings].sort((a, b) => a.daysOnMarket - b.daysOnMarket)[0];
+}
+
+function getUnseenRecentListingCount(search: SavedSearch, visitedIds: Set<string>) {
+  const matchingListings = filterListingsBySearchArea(
+    applyFilters(MOCK_LISTINGS, search.filters),
+    search.locations,
+    search.areaBoundary ?? [],
+    new Set(search.neighborhoodIds ?? [])
+  );
+
+  return matchingListings.filter(
+    (listing) => listing.daysOnMarket <= 3 && !visitedIds.has(listing.id)
+  ).length;
 }

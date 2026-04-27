@@ -43,8 +43,6 @@ const MENU_ITEMS = [
   { icon: Shield, label: 'Privacy & Security' },
   { icon: MessageSquare, label: 'Send Feedback' },
 ];
-const SURFACE_ICON_BUTTON_CLASS =
-  'relative flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]';
 const MENU_TRIGGER_CLASS =
   'flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]';
 
@@ -361,18 +359,25 @@ export default function DesktopHeader({
               setShowCollections(false);
               setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches');
             }}
-            className={SURFACE_ICON_BUTTON_CLASS}
+            className={cn(
+              'relative flex h-11 max-w-[190px] items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] no-select',
+              activeSearchId && 'pr-4',
+              activeSearchDirty && 'border border-[var(--color-text-primary)] shadow-[inset_0_0_0_1px_var(--color-text-primary)]'
+            )}
             aria-label="Saved searches"
           >
             {activeSearch?.thumbnail ? (
-              <span className="relative block h-5 w-5 overflow-hidden rounded-[6px]">
+              <span className="relative block h-5 w-5 shrink-0 overflow-hidden rounded-[6px]">
                 <Image src={activeSearch.thumbnail} alt="" fill sizes="20px" className="object-cover object-center" />
               </span>
             ) : (
-              <Bookmark size={18} className="text-[var(--color-text-primary)]" />
+              <Bookmark size={16} className="shrink-0 text-[var(--color-text-primary)]" />
             )}
+            <span className="min-w-0 truncate">{activeSearch ? activeSearch.name : 'Searches'}</span>
             {activeSearchDirty && (
-              <span className="absolute right-[11px] top-[11px] h-1.5 w-1.5 rounded-full bg-[var(--color-text-primary)] ring-1 ring-white" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-1 type-nano leading-none text-[var(--color-text-inverse)]">
+                1
+              </span>
             )}
           </button>
         </div>
