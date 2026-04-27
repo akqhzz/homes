@@ -8,6 +8,7 @@ import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
+import { useListingSave } from '@/hooks/useListingSave';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
@@ -78,7 +79,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const stackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const { isLiked, swipeDislike } = useSavedStore();
+  const { swipeDislike } = useSavedStore();
   const { setActivePanel } = useUIStore();
   const { setViewState, setSelectedListingId } = useMapStore();
 
@@ -91,6 +92,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   }, [listings, sortMode]);
   const activeIndex = Math.min(currentIndex, Math.max(0, sortedListings.length - 1));
   const listing = sortedListings[activeIndex];
+  const { isSaved: liked, unsave } = useListingSave(listing?.id ?? '');
   const detailDrawerListing = drawerListing ?? listing;
   const mapDrawerListing = drawerListing ?? listing;
   const visibleListings = useMemo(
@@ -255,7 +257,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     );
   }
 
-  const liked = isLiked(listing.id);
   return (
     <motion.div
       className="fixed inset-0 z-50 flex flex-col bg-white overscroll-none"
@@ -388,6 +389,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         <button
           onClick={() => {
             if (swipeLockRef.current) return;
+            if (liked) {
+              unsave();
+              setActiveSwipePreview(null);
+              return;
+            }
             setActiveSwipePreview('save');
             window.setTimeout(() => {
               setActiveSwipePreview(null);

@@ -115,7 +115,7 @@ export default function MapView({
     setViewportBounds,
   } = useMapStore();
   const { setCarouselVisible, isSatelliteMode, isCarouselVisible, isDesktopMapExpanded, setDesktopMapExpanded } = useUIStore();
-  const isLiked = useSavedStore((s) => s.isLiked);
+  const likedListingIds = useSavedStore((s) => s.likedListingIds);
   const mapRef = useRef<MapRef | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<MapRef | null>(null);
@@ -213,8 +213,8 @@ export default function MapView({
   );
   const visitedListingIdSet = useMemo(() => new Set(visitedListingIds), [visitedListingIds]);
   const savedListingIdSet = useMemo(
-    () => new Set(listings.filter((listing) => isLiked(listing.id)).map((listing) => listing.id)),
-    [isLiked, listings]
+    () => new Set(listings.filter((listing) => likedListingIds.has(listing.id)).map((listing) => listing.id)),
+    [likedListingIds, listings]
   );
   const useClusteredListingLayers = showListings && viewState.zoom < CLUSTER_TRANSITION_ZOOM;
   const desktopPreviewListing =

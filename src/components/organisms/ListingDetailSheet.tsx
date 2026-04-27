@@ -5,6 +5,7 @@ import { Heart, Share2, Calendar, Home, Car, DollarSign, ChevronLeft, ChevronRig
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { formatDaysOnMarket, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
+import { useListingSave } from '@/hooks/useListingSave';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/atoms/Button';
 import IconButton from '@/components/atoms/IconButton';
@@ -16,16 +17,15 @@ import PriceText from '@/components/atoms/PriceText';
 export default function ListingDetailSheet() {
   const detailListingId = useUIStore((s) => s.detailListingId);
   const closeListingDetail = useUIStore((s) => s.closeListingDetail);
-  const { toggleLike, isLiked } = useSavedStore();
   const [imgIndex, setImgIndex] = useState(0);
   const [showAddToCollection, setShowAddToCollection] = useState(false);
   const collections = useSavedStore((s) => s.collections);
   const addToCollection = useSavedStore((s) => s.addToCollection);
+  const saveListing = useSavedStore((s) => s.saveListing);
+  const { isSaved: liked, unsave } = useListingSave(detailListingId ?? '');
 
   const listing = MOCK_LISTINGS.find((l) => l.id === detailListingId);
   if (!listing) return null;
-
-  const liked = isLiked(listing.id);
 
   const footer = (
         <div className="flex gap-3">
@@ -33,9 +33,16 @@ export default function ListingDetailSheet() {
             variant="secondary"
             size="md"
             className="flex-1"
-            onClick={() => setShowAddToCollection(!showAddToCollection)}
+            onClick={() => {
+              if (liked) {
+                unsave();
+                setShowAddToCollection(false);
+                return;
+              }
+              setShowAddToCollection(!showAddToCollection);
+            }}
           >
-            {showAddToCollection ? 'Cancel' : 'Save to Collection'}
+            {liked ? 'Saved' : showAddToCollection ? 'Cancel' : 'Save to Collection'}
           </Button>
           <Button size="md" className="flex-1">
             Contact Agent
@@ -83,7 +90,7 @@ export default function ListingDetailSheet() {
             </IconButton>
             <IconButton
               onClick={() => {
-                if (liked) toggleLike(listing.id);
+                if (liked) unsave();
                 else setShowAddToCollection(true);
               }}
               variant="glass"
@@ -187,7 +194,7 @@ export default function ListingDetailSheet() {
                       <button
                         key={col.id}
                         onClick={() => {
-                          if (!liked) toggleLike(listing.id);
+                          saveListing(listing.id);
                           addToCollection(col.id, listing.id);
                           setShowAddToCollection(false);
                         }}

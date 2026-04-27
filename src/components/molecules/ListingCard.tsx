@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatDaysOnMarket } from '@/lib/utils/format';
 import { formatBedBathSqftLine, formatMlsLine } from '@/lib/utils/listing-display';
-import { useSavedStore } from '@/store/savedStore';
+import { useListingSave } from '@/hooks/useListingSave';
 import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 import { ListingAddressRow } from '@/components/atoms/ListingParts';
@@ -61,9 +61,7 @@ export default function ListingCard({
   const [showSavePicker, setShowSavePicker] = useState(false);
   const [saveAnchorRect, setSaveAnchorRect] = useState<DOMRect | null>(null);
   const router = useRouter();
-  const isLiked = useSavedStore((s) => s.isLiked(listing.id));
-  const toggleLike = useSavedStore((s) => s.toggleLike);
-  const removeFromAllCollections = useSavedStore((s) => s.removeFromAllCollections);
+  const { isSaved, unsave } = useListingSave(listing.id);
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
   const imagePointerMoved = useRef(false);
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
@@ -72,7 +70,7 @@ export default function ListingCard({
   const wheelLockRef = useRef(false);
   const carouselImageHeight = carouselImageHeightOverride ?? (desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT);
   const carouselTotalHeight = carouselTotalHeightOverride ?? (desktopTall ? 264 : CAROUSEL_TOTAL_HEIGHT);
-  const resolvedLiked = likedOverride ?? isLiked;
+  const resolvedLiked = likedOverride ?? isSaved;
 
   const getContainerWidth = useCallback(() => imageAreaRef.current?.offsetWidth ?? 288, []);
 
@@ -226,8 +224,7 @@ export default function ListingCard({
       setSaveAnchorRect(event.currentTarget.getBoundingClientRect());
     }
     if (resolvedLiked) {
-      toggleLike(listing.id);
-      removeFromAllCollections(listing.id);
+      unsave();
       return;
     }
     setShowSavePicker(true);

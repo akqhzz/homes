@@ -97,6 +97,7 @@ export default function PriceMarker({
       onClick={handleClick}
       onMouseEnter={() => setIsPointerHovered(true)}
       onMouseLeave={() => setIsPointerHovered(false)}
+      aria-label={isSaved ? `Saved listing at ${formatPrice(price)}` : `Listing at ${formatPrice(price)}`}
       className={cn(
         'type-micro inline-flex cursor-pointer items-center gap-1 rounded-full border py-[0.3125rem] leading-none transition-[transform,box-shadow,background-color,border-color,color] duration-150 no-select',
         isSaved ? 'px-1.5' : 'px-2',

@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { Heart } from 'lucide-react';
-import { useSavedStore } from '@/store/savedStore';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 import { cn } from '@/lib/utils/cn';
+import { useListingSave } from '@/hooks/useListingSave';
 
 interface ListingSaveButtonProps {
   listingId: string;
@@ -14,7 +14,7 @@ interface ListingSaveButtonProps {
 export default function ListingSaveButton({ listingId, variant = 'pill', className }: ListingSaveButtonProps) {
   const [showPicker, setShowPicker] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const isLiked = useSavedStore((s) => s.isLiked(listingId));
+  const { isSaved, unsave } = useListingSave(listingId);
 
   return (
     <>
@@ -22,6 +22,11 @@ export default function ListingSaveButton({ listingId, variant = 'pill', classNa
         type="button"
         onClick={(event) => {
           event.stopPropagation();
+          if (isSaved) {
+            unsave();
+            setShowPicker(false);
+            return;
+          }
           setAnchorRect(event.currentTarget.getBoundingClientRect());
           setShowPicker(true);
         }}
@@ -35,7 +40,7 @@ export default function ListingSaveButton({ listingId, variant = 'pill', classNa
           className
         )}
       >
-        <Heart size={15} className={cn(isLiked && 'fill-[var(--color-accent)] text-[var(--color-accent)]')} />
+        <Heart size={15} className={cn(isSaved && 'fill-[var(--color-accent)] text-[var(--color-accent)]')} />
         {variant !== 'icon' && 'Save'}
       </button>
       {showPicker && (

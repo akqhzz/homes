@@ -41,11 +41,11 @@ export default function SaveToCollectionSheet({
   const createCollection = useSavedStore((s) => s.createCollection);
   const renameCollection = useSavedStore((s) => s.renameCollection);
   const deleteCollection = useSavedStore((s) => s.deleteCollection);
-  const toggleLike = useSavedStore((s) => s.toggleLike);
+  const saveListing = useSavedStore((s) => s.saveListing);
   const isLiked = useSavedStore((s) => s.isLiked(listingId));
 
   const finishSave = (collectionId: string) => {
-    if (!isLiked) toggleLike(listingId);
+    if (!isLiked) saveListing(listingId);
     addToCollection(collectionId, listingId);
     onSaved?.(collectionId);
     onClose();

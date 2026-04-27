@@ -7,6 +7,8 @@ interface SavedStore {
   collections: Collection[];
   likedListingIds: Set<string>;
 
+  saveListing: (listingId: string) => void;
+  unsaveListing: (listingId: string) => void;
   toggleLike: (listingId: string) => void;
   isLiked: (listingId: string) => boolean;
   addToCollection: (collectionId: string, listingId: string) => void;
@@ -31,6 +33,24 @@ export const useSavedStore = create<SavedStore>()(
     (set, get) => ({
       collections: [],
       likedListingIds: new Set<string>(),
+
+      saveListing: (listingId) =>
+        set((s) => {
+          if (s.likedListingIds.has(listingId)) return {};
+          return { likedListingIds: new Set(s.likedListingIds).add(listingId) };
+        }),
+
+      unsaveListing: (listingId) =>
+        set((s) => ({
+          likedListingIds: new Set([...s.likedListingIds].filter((id) => id !== listingId)),
+          collections: s.collections.map((c) => ({
+            ...c,
+            listings: c.listings
+              .filter((l) => l.listingId !== listingId)
+              .map((l, i) => ({ ...l, order: i })),
+            updatedAt: new Date().toISOString(),
+          })),
+        })),
 
       toggleLike: (listingId) =>
         set((s) => {

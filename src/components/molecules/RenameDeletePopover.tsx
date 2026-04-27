@@ -40,7 +40,7 @@ export default function RenameDeletePopover({
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[65]"
+        className="fixed inset-0 z-[95]"
         data-rename-delete-popover="true"
         onClick={onClose}
       />
@@ -51,7 +51,7 @@ export default function RenameDeletePopover({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="fixed z-[70] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+            className="fixed z-[100] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
             style={{ bottom, right }}
             data-rename-delete-popover="true"
           >
@@ -81,7 +81,7 @@ export default function RenameDeletePopover({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="fixed z-[70] w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+            className="fixed z-[100] w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
             style={{ bottom, right }}
             data-rename-delete-popover="true"
           >
