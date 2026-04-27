@@ -34,7 +34,8 @@ const DAYS_OPTIONS = [
 const PRICE_MIN = 0;
 const PRICE_MAX = 2000000;
 const PRICE_STEP = 50000;
-const PRICE_BUCKETS = [2, 5, 8, 12, 10, 7, 4, 6, 3, 2, 1, 1];
+const PRICE_BUCKET_COUNT = 12;
+const PRICE_BAR_MAX_HEIGHT = 44;
 
 export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { totalListings?: number }) {
   const setActivePanel = useUIStore((s) => s.setActivePanel);
@@ -66,7 +67,16 @@ export function FilterPanelBody() {
 
   const priceRange = [filters.minPrice ?? PRICE_MIN, filters.maxPrice ?? PRICE_MAX];
   const selectedListedWithin = DAYS_OPTIONS.find((option) => option.value === filters.maxDaysOnMarket)?.value ?? '';
-  const pricePercent = (value: number) => ((value - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
+  const priceHistogram = useMemo(() => {
+    const nonPriceFilteredListings = applyFilters(MOCK_LISTINGS, {
+      ...filters,
+      minPrice: undefined,
+      maxPrice: undefined,
+    });
+
+    return buildPriceHistogram(nonPriceFilteredListings, PRICE_BUCKET_COUNT);
+  }, [filters]);
+  const maxPriceBucketCount = Math.max(1, ...priceHistogram);
 
   const handlePriceRangeChange = ([min, max]: number[]) => {
     setFilters({
@@ -80,14 +90,16 @@ export function FilterPanelBody() {
       <Section title="Price Range">
         <div>
           <div className="pointer-events-none flex h-12 items-end gap-1 px-1">
-            {PRICE_BUCKETS.map((count, index) => {
-              const bucketCenter = ((index + 0.5) / PRICE_BUCKETS.length) * 100;
-              const inRange = bucketCenter >= pricePercent(priceRange[0]) && bucketCenter <= pricePercent(priceRange[1]);
+            {priceHistogram.map((count, index) => {
+              const bucketMin = PRICE_MIN + (index / priceHistogram.length) * (PRICE_MAX - PRICE_MIN);
+              const bucketMax = PRICE_MIN + ((index + 1) / priceHistogram.length) * (PRICE_MAX - PRICE_MIN);
+              const inRange = bucketMax >= priceRange[0] && bucketMin <= priceRange[1];
+              const height = count === 0 ? 3 : Math.max(6, Math.round((count / maxPriceBucketCount) * PRICE_BAR_MAX_HEIGHT));
               return (
                 <div
-              key={index}
+                  key={index}
                   className={cn('flex-1 rounded-t transition-colors', inRange ? 'bg-[var(--color-brand-600)]' : 'bg-[#E5E7EB]')}
-                  style={{ height: `${Math.max(6, count * 3)}px` }}
+                  style={{ height: `${height}px` }}
                 />
               );
             })}
@@ -244,6 +256,19 @@ export function FilterPanelBody() {
       </Section>
     </>
   );
+}
+
+function buildPriceHistogram(listings: Array<{ price: number }>, bucketCount: number) {
+  const bucketSize = (PRICE_MAX - PRICE_MIN) / bucketCount;
+  const buckets = Array.from({ length: bucketCount }, () => 0);
+
+  listings.forEach(({ price }) => {
+    const clampedPrice = Math.min(Math.max(price, PRICE_MIN), PRICE_MAX);
+    const bucketIndex = Math.min(bucketCount - 1, Math.floor((clampedPrice - PRICE_MIN) / bucketSize));
+    buckets[bucketIndex] += 1;
+  });
+
+  return buckets;
 }
 
 export function FilterPanelFooter({

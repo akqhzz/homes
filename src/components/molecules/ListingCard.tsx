@@ -36,6 +36,8 @@ interface ListingCardProps {
   onSavedToCollection?: (collectionId: string) => void;
   excludedCollectionIds?: string[];
   carouselWidth?: number;
+  carouselImageHeight?: number;
+  carouselTotalHeight?: number;
 }
 
 export default function ListingCard({
@@ -51,6 +53,8 @@ export default function ListingCard({
   onSavedToCollection,
   excludedCollectionIds,
   carouselWidth,
+  carouselImageHeight: carouselImageHeightOverride,
+  carouselTotalHeight: carouselTotalHeightOverride,
 }: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
   const [imgIndex, setImgIndex] = useState(0);
@@ -66,8 +70,8 @@ export default function ListingCard({
   const imageAreaRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const wheelLockRef = useRef(false);
-  const carouselImageHeight = desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT;
-  const carouselTotalHeight = desktopTall ? 264 : CAROUSEL_TOTAL_HEIGHT;
+  const carouselImageHeight = carouselImageHeightOverride ?? (desktopTall ? 186 : CAROUSEL_IMAGE_HEIGHT);
+  const carouselTotalHeight = carouselTotalHeightOverride ?? (desktopTall ? 264 : CAROUSEL_TOTAL_HEIGHT);
   const resolvedLiked = likedOverride ?? isLiked;
 
   const getContainerWidth = useCallback(() => imageAreaRef.current?.offsetWidth ?? 288, []);
@@ -384,7 +388,7 @@ export default function ListingCard({
         {displayImages.length > 1 && (
           <div
             className="pointer-events-none absolute inset-x-3 z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex"
-            style={{ top: desktopTall ? 105 : 98 }}
+            style={{ top: carouselImageHeight / 2 }}
           >
             {imgIndex > 0 ? (
               <button

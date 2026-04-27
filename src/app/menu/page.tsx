@@ -15,7 +15,7 @@ export default function MenuPage() {
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="flex-shrink-0 px-4 pt-4 pb-0">
           <div className="mb-1 flex items-center justify-center">
-            <h1 className="type-title text-[var(--color-text-primary)]">homes</h1>
+            <h1 className="type-title-lg text-[var(--color-text-primary)]">h.</h1>
           </div>
         </div>
 
@@ -32,7 +32,7 @@ export default function MenuPage() {
                   <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                     <item.icon size={15} className="text-[var(--color-text-primary)]" />
                   </div>
-                  <span className="flex-1 type-body font-medium text-[var(--color-text-primary)]">{item.label}</span>
+                  <span className="flex-1 type-body text-[var(--color-text-primary)]">{item.label}</span>
                   <ChevronRight size={15} className="text-[#D1D5DB]" />
                 </button>
               ))}
@@ -44,7 +44,7 @@ export default function MenuPage() {
               <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
                 <LogOut size={15} className="text-[var(--color-accent)]" />
               </div>
-              <span className="flex-1 type-body font-medium text-[var(--color-accent)]">Sign Out</span>
+              <span className="flex-1 type-body text-[var(--color-accent)]">Sign Out</span>
               <ChevronRight size={15} className="text-[#FCA5A5]" />
             </button>
           </div>

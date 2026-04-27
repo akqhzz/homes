@@ -6,7 +6,9 @@ import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 const ROUND_CONTROL_CLASS =
-  'flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[var(--color-surface)]';
+  'relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[var(--color-surface)]';
+const ACTIVE_AREA_CONTROL_CLASS =
+  'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]';
 const AREA_MENU_ITEM_CLASS = 'w-full rounded-xl px-3 py-2 text-left hover:bg-[var(--color-surface)]';
 
 interface TopBarProps {
@@ -85,10 +87,17 @@ export default function TopBar({
         <div ref={areaMenuRef} className="relative shrink-0">
           <button
             onClick={handleAreaClick}
-            className={ROUND_CONTROL_CLASS}
+            className={cn(ROUND_CONTROL_CLASS, hasAppliedArea && ACTIVE_AREA_CONTROL_CLASS)}
             aria-label="Area selection"
+            aria-pressed={hasAppliedArea}
           >
-            <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
+            <SquareDashedMousePointer
+              size={18}
+              className="text-[var(--color-text-primary)]"
+            />
+            {hasAppliedArea && (
+              <span className="absolute right-[10px] top-[10px] h-1.5 w-1.5 rounded-full bg-[#374151] ring-1 ring-white" />
+            )}
           </button>
           {showAreaMenu && (
             <div className="absolute left-0 top-12 z-30 w-40 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
@@ -110,18 +119,18 @@ export default function TopBar({
           )}
         </div>
 
-        <motion.div layoutId="map-search-bar" className="flex flex-1 items-center gap-2.5 rounded-full bg-white px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
+        <motion.div layoutId="map-search-bar" className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden rounded-full bg-white px-4 py-2.5 shadow-[var(--shadow-control)] min-h-[44px] no-select">
           <button
             onClick={() => setActivePanel('search')}
-            className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+            className="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden text-left"
           >
             <Search size={17} className="text-[var(--color-text-tertiary)] flex-shrink-0" />
             {selectedLocations.length > 0 || hasAppliedArea ? (
-              <span className="inline-flex max-w-full items-center truncate rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 type-body font-medium text-[var(--color-brand-text)]">
-                {locationLabel}
+              <span className="inline-flex min-w-0 max-w-full items-center overflow-hidden rounded-full bg-[var(--color-brand-surface)] px-2.5 py-0.5 type-body font-medium text-[var(--color-brand-text)]">
+                <span className="min-w-0 truncate">{locationLabel}</span>
               </span>
             ) : (
-              <span className="type-body font-medium text-[var(--color-text-tertiary)] flex-1 truncate">
+              <span className="min-w-0 flex-1 truncate type-body font-medium text-[var(--color-text-tertiary)]">
                 {locationLabel}
               </span>
             )}

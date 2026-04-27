@@ -504,7 +504,7 @@ export default function InsightsPage() {
           </div>
 
           {/* Swipe indicator dots */}
-          <div className="flex items-center justify-center gap-2 py-2.5 shrink-0">
+          <div className="flex shrink-0 items-center justify-center gap-1.5 pb-1 pt-0.5">
             {CARDS.map((_, i) => (
               <button
                 key={i}
@@ -513,8 +513,8 @@ export default function InsightsPage() {
                 onClick={() => setIndex(i)}
                 className="transition-all duration-200"
                 style={{
-                  width: i === index ? 20 : 6,
-                  height: 6,
+                  width: i === index ? 14 : 4,
+                  height: 4,
                   borderRadius: 9999,
                   background: i === index ? 'var(--color-brand-600)' : 'var(--color-border-strong)',
                 }}

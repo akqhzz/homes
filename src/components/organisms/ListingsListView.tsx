@@ -49,6 +49,8 @@ export default function ListingsListView({
   const selectedLocations = useSearchStore((s) => s.selectedLocations);
   const router = useRouter();
   const isMobile = variant === 'mobile';
+  const listCardImageHeight = isMobile ? 218 : 216;
+  const listCardTotalHeight = isMobile ? 296 : 294;
 
   const sorted = useMemo(() => sortListings(listings, sort), [listings, sort]);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
@@ -211,6 +213,8 @@ export default function ListingsListView({
                   desktopTall={!isMobile}
                   imageTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
                   contentTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
+                  carouselImageHeight={listCardImageHeight}
+                  carouselTotalHeight={listCardTotalHeight}
                 />
               </div>
             ))}
