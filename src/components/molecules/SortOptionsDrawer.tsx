@@ -33,6 +33,7 @@ export default function SortOptionsDrawer<T extends string>({
       onClose={onClose}
       heightClassName="h-auto max-h-[78dvh]"
       contentClassName="px-4 pb-4 overflow-visible"
+      zIndex={90}
     >
       <div className="flex flex-col gap-2">
         {options.map((option) => {

@@ -231,6 +231,7 @@ export default function SaveToCollectionSheet({
           onClose={onClose}
           heightClassName="max-h-[84dvh]"
           contentClassName="px-4 pb-4"
+          zIndex={90}
         >
           {content}
         </MobileDrawer>

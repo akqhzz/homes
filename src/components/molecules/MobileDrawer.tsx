@@ -15,6 +15,7 @@ interface MobileDrawerProps {
   showBackdrop?: boolean;
   showHandle?: boolean;
   showCloseButton?: boolean;
+  zIndex?: number;
 }
 
 export default function MobileDrawer({
@@ -28,6 +29,7 @@ export default function MobileDrawer({
   showBackdrop = true,
   showHandle = true,
   showCloseButton = true,
+  zIndex,
 }: MobileDrawerProps) {
   const drawerRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -218,6 +220,7 @@ export default function MobileDrawer({
           exit={{ opacity: 0 }}
         transition={{ duration: 0.16, ease: 'easeOut' }}
         className="fixed inset-0 z-50 bg-black/25"
+        style={zIndex !== undefined ? { zIndex: zIndex - 5 } : undefined}
         onClick={onClose}
       />
       )}
@@ -251,6 +254,7 @@ export default function MobileDrawer({
         animate={{ y: 0 }}
         exit={{ y: 36, opacity: 0 }}
         transition={{ type: 'tween', duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+        style={zIndex !== undefined ? { zIndex } : undefined}
         className={cn(
           'fixed inset-x-0 bottom-0 z-[60] flex h-auto w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-[var(--shadow-sheet)]',
           heightClassName,

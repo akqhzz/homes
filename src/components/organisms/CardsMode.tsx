@@ -458,6 +458,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             contentClassName="px-6 pb-6 pt-0"
             showBackdrop
             showCloseButton={false}
+            zIndex={90}
           >
             <div className="mx-auto flex max-w-[320px] flex-col items-center text-center">
               <div className="relative flex h-24 w-full items-center justify-center">
@@ -495,6 +496,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             onClose={() => setShowDetailDrawer(false)}
             heightClassName="max-h-[72dvh]"
             contentClassName="p-4"
+            zIndex={90}
             footer={(
               <Button
                 onClick={() => {
@@ -540,6 +542,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             onClose={() => setShowMapDrawer(false)}
             heightClassName="h-[58dvh]"
             contentClassName="flex flex-1 flex-col px-4 pb-4 pt-0"
+            zIndex={90}
           >
             {MAPBOX_TOKEN ? (
               <div className="relative flex min-h-0 flex-1 overflow-hidden rounded-[24px]">
