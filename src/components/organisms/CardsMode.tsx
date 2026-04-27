@@ -168,7 +168,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   };
 
   const passListing = () => {
-    commitCardExit('pass');
+    if (swipeLockRef.current) return;
+    setActiveSwipePreview('pass');
+    window.setTimeout(() => commitCardExit('pass'), 180);
   };
 
   const openSavePicker = (targetListing = listing) => {
@@ -195,8 +197,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     setExitingCard({ listing: targetListing, action, startX, token: nextExitToken });
     setCurrentIndex((i) => i + 1);
     window.setTimeout(() => {
-      setExitingCard(null);
       swipeLockRef.current = false;
+    }, 360);
+    window.setTimeout(() => {
+      setExitingCard(null);
       setEnteringListingId(null);
       window.setTimeout(() => {
         activeDragRef.current = false;
@@ -300,6 +304,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               enterFrom={offset === 0 && enteringListingId === item.id ? 'left' : null}
               swipeExitAction={null}
               exitStartX={0}
+              previewAction={offset === 0 ? activeSwipePreview : null}
               className="absolute left-0 top-0"
               style={{ height: '100%' }}
               onSwipe={(action, offsetX) => {
@@ -343,6 +348,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               enterFrom={null}
               swipeExitAction={exitingCard.action}
               exitStartX={exitingCard.startX}
+              previewAction={null}
               className="absolute left-0 top-0 z-[60]"
               style={{ height: '100%' }}
               onSwipe={() => undefined}
@@ -359,7 +365,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
       {/* Action buttons */}
       <div
-        className="relative z-[80] flex flex-shrink-0 items-center justify-center gap-2.5 bg-transparent px-6 pt-5"
+        className="relative z-[80] flex flex-shrink-0 items-center justify-center gap-2.5 bg-transparent px-6 pt-3"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
       >
         <FloatingActionButton
@@ -381,12 +387,20 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           Pass
         </button>
 
-        <motion.button
+        <button
           onClick={() => {
-            openSavePicker();
+            if (swipeLockRef.current) return;
+            setActiveSwipePreview('save');
+            window.setTimeout(() => {
+              setActiveSwipePreview(null);
+              openSavePicker();
+            }, 180);
           }}
-          className={cn(ACTION_BUTTON_CLASS, 'text-[var(--color-text-primary)]')}
-          whileTap={{ scale: 0.95 }}
+          className={cn(
+            ACTION_BUTTON_CLASS,
+            'text-[var(--color-text-primary)]',
+            activeSwipePreview === 'save' && 'bg-[var(--color-accent-subtle,#fdf2f8)] text-[var(--color-accent)]'
+          )}
         >
           <Heart
             size={18}
@@ -394,7 +408,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
           />
           Save
-        </motion.button>
+        </button>
 
         <FloatingActionButton
           onClick={() => {
@@ -625,6 +639,7 @@ function CardModeListingCard({
   enterFrom,
   swipeExitAction,
   exitStartX,
+  previewAction,
   className,
   onOpenDetail,
   onOpenMap,
@@ -643,6 +658,7 @@ function CardModeListingCard({
   enterFrom: 'left' | null;
   swipeExitAction: CardSwipeAction | null;
   exitStartX: number;
+  previewAction: CardSwipeAction | null;
   className?: string;
   onOpenDetail: () => void;
   onOpenMap: () => void;
@@ -660,8 +676,8 @@ function CardModeListingCard({
   const imagePullStartRef = useRef<{ x: number; y: number; atTop: boolean } | null>(null);
   const suppressClickRef = useRef(false);
 
-  const activeSaveStampOpacity = active ? Math.min(1, Math.max(0, dragX / 96)) : 0;
-  const activePassStampOpacity = active ? Math.min(1, Math.max(0, -dragX / 96)) : 0;
+  const activeSaveStampOpacity = active ? Math.max(previewAction === 'save' ? 1 : 0, Math.min(1, Math.max(0, dragX / 96))) : 0;
+  const activePassStampOpacity = active ? Math.max(previewAction === 'pass' ? 1 : 0, Math.min(1, Math.max(0, -dragX / 96))) : 0;
   const exitX = swipeExitAction === 'save' ? width + 150 : swipeExitAction === 'pass' ? -width - 150 : 0;
   const exitRotate = swipeExitAction === 'save' ? 15 : swipeExitAction === 'pass' ? -15 : 0;
   const cardAnimate = swipeExitAction
@@ -755,7 +771,7 @@ function CardModeListingCard({
             : null;
 
         if (action) {
-          setDragX(action === 'save' ? 0 : info.offset.x);
+          setDragX(0);
           onSwipePreview(null);
           onSwipe(action, info.offset.x);
           if (action === 'save') {
