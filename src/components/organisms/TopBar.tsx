@@ -7,7 +7,7 @@ import { useUIStore } from '@/store/uiStore';
 import { cn } from '@/lib/utils/cn';
 const ROUND_CONTROL_CLASS =
   'flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[var(--color-surface)]';
-const AREA_MENU_ITEM_CLASS = 'w-full rounded-xl px-3 py-2 text-left font-button hover:bg-[var(--color-surface)]';
+const AREA_MENU_ITEM_CLASS = 'w-full rounded-xl px-3 py-2 text-left hover:bg-[var(--color-surface)]';
 
 interface TopBarProps {
   hasAppliedArea?: boolean;
@@ -30,7 +30,7 @@ export default function TopBar({
   const areaMenuRef = useRef<HTMLDivElement>(null);
   const { selectedLocations } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
-  const { activePanel, setActivePanel, setAreaSelectMode } = useUIStore();
+  const { setActivePanel, setAreaSelectMode } = useUIStore();
 
   const filterCount = activeFilterCount();
   const locationLabel = compactAreaChipLabel
@@ -132,7 +132,6 @@ export default function TopBar({
           onClick={() => setActivePanel('filter')}
           className={cn(
             'relative flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select',
-            activePanel === 'search' && 'pointer-events-none opacity-0',
             filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
           )}
         >

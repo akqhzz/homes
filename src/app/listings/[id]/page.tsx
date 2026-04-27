@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Bath, BedDouble, Calendar, Car, DollarSign, Home, Ruler, Share2, ShieldCheck, Snowflake, Sun, TrainFront } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
-import { formatDaysOnMarket, formatPriceFull, formatPropertyType, formatSqft } from '@/lib/utils/format';
+import { formatDaysOnMarket, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import BackButton from '@/components/atoms/BackButton';
 import OverlayCloseButton from '@/components/atoms/OverlayCloseButton';
 import PageShell from '@/components/templates/PageShell';
@@ -10,6 +10,7 @@ import ListingSaveButton from '@/components/molecules/ListingSaveButton';
 import ListingImageGallery from '@/components/organisms/ListingImageGallery';
 import ListingLocationMap from '@/components/organisms/ListingLocationMap';
 import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/listing/ListingDisplay';
+import PriceText from '@/components/atoms/PriceText';
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;
@@ -47,7 +48,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
             <div>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 className="type-hero text-[var(--color-text-primary)]">{formatPriceFull(listing.price)}</h1>
+                  <h1 className="type-hero text-[var(--color-text-primary)]"><PriceText price={listing.price} format="full" /></h1>
                   <ListingAddressRow
                     className="mt-2 type-body text-[var(--color-text-secondary)]"
                     iconClassName="text-[var(--color-text-tertiary)]"

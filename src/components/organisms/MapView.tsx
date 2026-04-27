@@ -17,23 +17,30 @@ import ListingCard from '@/components/molecules/ListingCard';
 import { useMapStore } from '@/store/mapStore';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedStore } from '@/store/savedStore';
+import styles from './MapView.module.css';
 
 const MAPBOX_TOKEN = getMapboxToken();
+
+// Hex mirrors of CSS tokens — Mapbox paint props don't support CSS variables
+const BRAND_300 = '#92c3b2'; // --color-brand-300
+const BRAND_400 = '#61a08b'; // --color-brand-400
+const BRAND_700 = '#255b53'; // --color-brand-700
+
 // Boundary system: active boundaries are used for applied search/area selections and draw mode.
 // Preview boundaries are hover-only in area-select and intentionally lighter/dashed.
 const ACTIVE_BOUNDARY_STYLE = {
-  lineColor: '#21503F',
+  lineColor: BRAND_700,
   lineOpacity: 0.96,
-  lineWidth: 0.9,
+  lineWidth: 1.2,
   lineDasharray: [1, 0],
-  fillColor: '#337B61',
-  fillOpacity: 0.05,
+  fillColor: BRAND_400,
+  fillOpacity: 0.03,
 };
 
 const PREVIEW_BOUNDARY_STYLE = {
-  lineColor: '#86BEA7',
+  lineColor: BRAND_300,
   lineOpacity: 0.78,
-  lineWidth: 0.9,
+  lineWidth: 1.2,
   lineDasharray: [2, 2],
   fillColor: ACTIVE_BOUNDARY_STYLE.fillColor,
   fillOpacity: ACTIVE_BOUNDARY_STYLE.fillOpacity,
@@ -597,7 +604,7 @@ export default function MapView({
           latitude={point.lat}
           anchor="center"
         >
-          <div className="h-1.5 w-1.5 rounded-full bg-[#21503F] shadow-[0_1px_2px_rgba(15,23,41,0.24)]" />
+          <div className="h-1.5 w-1.5 rounded-full bg-[#255b53] shadow-[0_1px_2px_rgba(15,23,41,0.24)]" />
         </Marker>
       ))}
 
@@ -696,7 +703,7 @@ export default function MapView({
                   >
                     <button
                       type="button"
-                      className={item.clusterId === highlightedClusterId ? 'map-cluster-marker is-highlighted' : 'map-cluster-marker'}
+                      className={`${styles.clusterMarker}${item.clusterId === highlightedClusterId ? ` ${styles.highlighted}` : ''}`}
                       onClick={() => handleClusterExpand(item.clusterId, [item.coordinates.lng, item.coordinates.lat])}
                       aria-label={`Expand ${item.count} listings`}
                     >

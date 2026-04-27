@@ -366,7 +366,7 @@ export default function DesktopHeader({
           >
             {activeSearch?.thumbnail ? (
               <span className="relative block h-5 w-5 overflow-hidden rounded-[6px]">
-                <Image src={activeSearch.thumbnail} alt="" fill sizes="20px" className="object-cover" />
+                <Image src={activeSearch.thumbnail} alt="" fill sizes="20px" className="object-cover object-center" />
               </span>
             ) : (
               <Bookmark size={18} className="text-[var(--color-text-primary)]" />

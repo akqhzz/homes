@@ -83,7 +83,7 @@ export default function BottomNav() {
         >
           {activeSearch?.thumbnail ? (
             <span className="relative block h-[19px] w-[19px] overflow-hidden rounded-[6px]">
-              <Image src={activeSearch.thumbnail} alt="" fill sizes="19px" className="object-cover" />
+              <Image src={activeSearch.thumbnail} alt="" fill sizes="19px" className="object-cover object-center" />
             </span>
           ) : (
             <Bookmark size={18} className="text-[var(--color-text-primary)]" />

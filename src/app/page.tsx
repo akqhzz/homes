@@ -32,6 +32,7 @@ import {
   searchToSnapshot,
 } from '@/lib/search-utils';
 import { AreaChip, getAreaChips, getCompactAreaChipLabel } from '@/lib/utils/search-display';
+import { cn } from '@/lib/utils/cn';
 
 const MapView = dynamic(() => import('@/components/organisms/MapView'), { ssr: false });
 const SearchPanel = dynamic(() => import('@/components/organisms/SearchPanel'), { ssr: false });
@@ -41,6 +42,7 @@ const AreaSelectPanel = dynamic(() => import('@/components/organisms/AreaSelectP
 const ListingDetailSheet = dynamic(() => import('@/components/organisms/ListingDetailSheet'), { ssr: false });
 const SavedSearchesPanel = dynamic(() => import('@/components/organisms/SavedSearchesPanel'), { ssr: false });
 const ListingsSidebar = dynamic(() => import('@/components/organisms/ListingsSidebar'), { ssr: false });
+const ListingsListView = dynamic(() => import('@/components/organisms/ListingsListView'), { ssr: false });
 
 function getSearchViewState(
   selectedLocations: SavedSearch['locations'],
@@ -98,6 +100,7 @@ export default function MapPage() {
   const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
   const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const [preSavedSearchState, setPreSavedSearchState] = useState<SearchSnapshot | null>(null);
+  const [mobileListingsView, setMobileListingsView] = useState<'map' | 'list'>('map');
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const isAreaSelect = activePanel === 'area-select';
@@ -141,6 +144,7 @@ export default function MapPage() {
     (focusedNeighborhood && !selectedNeighborhoods.has(focusedNeighborhood.id) ? focusedNeighborhood.id : null);
   const areaSelectHasVisibleBoundary =
     selectedNeighborhoods.size > 0 || drawnBoundary.length > 0 || hasSearchBoundary;
+  const isMobileListingsList = mobileListingsView === 'list' && !isAreaSelect;
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -211,6 +215,15 @@ export default function MapPage() {
     setViewState(nextViewState);
   }, [appliedBoundary, appliedNeighborhoods, isAreaSelect, selectedLocations, setViewState]);
 
+  const openMobileListingsList = () => {
+    setActivePanel('none');
+    setCarouselVisible(false);
+    setSelectedListingId(null);
+    setMobileCarouselListingId(null);
+    setHoveredListingId(null);
+    setMobileListingsView('list');
+  };
+
   const toggleNeighborhood = (id: string) => {
     setAreaUndoStack((stack) => [...stack, new Set(selectedNeighborhoods)]);
     setAreaRedoStack([]);
@@ -256,6 +269,7 @@ export default function MapPage() {
     const isDrawMode = mode === 'draw';
     const { neighborhoods, boundary } = getSeededAreaDraft(isAreaSelect);
 
+    setMobileListingsView('map');
     setSelectedNeighborhoods(neighborhoods);
     setDrawnBoundary(boundary);
     resetAreaDraftHistory();
@@ -653,6 +667,27 @@ export default function MapPage() {
           </AnimatePresence>
         </div>
 
+        <AnimatePresence>
+          {isMobileListingsList && (
+            <motion.div
+              key="mobile-listings-list"
+              initial={{ y: 28, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 28, opacity: 0 }}
+              transition={{ type: 'tween', duration: 0.24, ease: [0.2, 0, 0.1, 1] }}
+              className="fixed inset-0 z-40 bg-white lg:hidden"
+            >
+              <ListingsListView
+                listings={scopedListings}
+                useMapAreaLabel={!hasVisibleBoundary}
+                areaTitleLabel={hasVisibleBoundary ? compactAreaChipLabel : undefined}
+                variant="mobile"
+                onShowMap={() => setMobileListingsView('map')}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Desktop listings sidebar */}
         {!isDesktopMapExpanded && (
           <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[696px] 3xl:w-[1036px]">
@@ -666,7 +701,26 @@ export default function MapPage() {
       </div>
 
       {/* Mobile bottom nav (pill + side buttons) */}
-      {!isAreaSelect && <BottomNav />}
+      {!isAreaSelect && !isMobileListingsList && (
+        <>
+          <div
+            className={cn(
+              'pointer-events-none fixed inset-x-0 z-30 flex justify-center px-4 lg:hidden',
+              isCarouselVisible && 'hidden'
+            )}
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5.5rem)' }}
+          >
+            <button
+              type="button"
+              onClick={openMobileListingsList}
+              className="pointer-events-auto flex h-10 items-center rounded-full bg-[var(--color-surface-elevated)] px-4 type-caption font-medium text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-all hover:bg-[var(--color-surface)] active:scale-95"
+            >
+              {scopedListings.length} listings
+            </button>
+          </div>
+          <BottomNav />
+        </>
+      )}
 
       {/* Mobile-only panels */}
       <AnimatePresence>
@@ -696,6 +750,7 @@ export default function MapPage() {
               createSearchSnapshot(selectedLocations, filters, appliedBoundary, appliedNeighborhoods),
               searchToSnapshot(activeSavedSearch)
             )}
+            currentListings={filteredListings}
             onSelectSearch={handleSelectSavedSearch}
             onDeselectSearch={handleDeselectSavedSearch}
             onUpdateSearch={handleUpdateSavedSearch}

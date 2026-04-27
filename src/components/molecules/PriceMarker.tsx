@@ -19,7 +19,7 @@ type MarkerTone = 'default' | 'visited' | 'saved';
 
 const MINIMIZED_BASE_STYLES: Record<MarkerTone, string> = {
   default:
-    'h-3 w-3 border-white bg-[var(--color-marker-default-bg)] text-[var(--color-marker-default-text)] shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
+    'h-3 w-3 border-white bg-[var(--color-brand-600)] text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
   visited:
     'h-3 w-3 border-white bg-[var(--color-brand-200)] text-[var(--color-brand-700)] shadow-[0_1px_3px_rgba(0,0,0,0.08)]',
   saved:
@@ -28,7 +28,7 @@ const MINIMIZED_BASE_STYLES: Record<MarkerTone, string> = {
 
 const EXPANDED_BASE_STYLES: Record<MarkerTone, string> = {
   default:
-    'border-[var(--color-brand-600)] bg-[var(--color-marker-default-bg)] text-[var(--color-marker-default-text)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]',
+    'border-[var(--color-brand-600)] bg-[var(--color-brand-600)] text-white shadow-[0_1px_4px_rgba(0,0,0,0.10)]',
   visited:
     'border-white bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]',
   saved:
@@ -37,7 +37,7 @@ const EXPANDED_BASE_STYLES: Record<MarkerTone, string> = {
 
 const EXPANDED_HOVER_STYLES: Record<MarkerTone, string> = {
   default:
-    'border-[var(--color-brand-500)] bg-[var(--color-brand-500)] text-[var(--color-marker-default-text)] -translate-y-px shadow-[0_3px_10px_rgba(42,101,79,0.14)]',
+    'border-[var(--color-brand-500)] bg-[var(--color-brand-500)] text-white -translate-y-px shadow-[0_3px_10px_rgba(42,101,79,0.14)]',
   visited:
     'border-white bg-[var(--color-brand-100)] text-[var(--color-brand-700)] -translate-y-px shadow-[0_3px_10px_rgba(42,101,79,0.12)]',
   saved:
@@ -45,7 +45,7 @@ const EXPANDED_HOVER_STYLES: Record<MarkerTone, string> = {
 };
 
 const SELECTED_STYLE =
-  'border-[var(--color-marker-active-bg)] bg-[var(--color-marker-active-bg)] text-[var(--color-marker-active-text)] shadow-[0_3px_10px_rgba(0,0,0,0.22)]';
+  'border-[#0F1729] bg-[#0F1729] text-white shadow-[0_3px_10px_rgba(0,0,0,0.22)]';
 
 export default function PriceMarker({
   price,
@@ -77,7 +77,7 @@ export default function PriceMarker({
         onMouseLeave={() => setIsPointerHovered(false)}
         aria-label={isSaved ? `Saved listing at ${formatPrice(price)}` : `Listing at ${formatPrice(price)}`}
         className={cn(
-          'map-pin-marker inline-flex cursor-pointer items-center justify-center rounded-full border transition-[transform,box-shadow,background-color,border-color,color] duration-150 no-select',
+          'inline-flex cursor-pointer items-center justify-center rounded-full border transition-[transform,box-shadow,background-color,border-color,color] duration-150 no-select',
           MINIMIZED_BASE_STYLES[tone]
         )}
       >
@@ -98,7 +98,7 @@ export default function PriceMarker({
       onMouseEnter={() => setIsPointerHovered(true)}
       onMouseLeave={() => setIsPointerHovered(false)}
       className={cn(
-        'map-pin-marker type-micro inline-flex cursor-pointer items-center gap-1 rounded-full border py-[0.3125rem] leading-none transition-[transform,box-shadow,background-color,border-color,color] duration-150 no-select',
+        'type-micro inline-flex cursor-pointer items-center gap-1 rounded-full border py-[0.3125rem] leading-none transition-[transform,box-shadow,background-color,border-color,color] duration-150 no-select',
         isSaved ? 'px-1.5' : 'px-2',
         isActive
           ? SELECTED_STYLE

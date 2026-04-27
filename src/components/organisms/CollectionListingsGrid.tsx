@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { Listing } from '@/lib/types';
 import CollectionListingCard from '@/components/molecules/CollectionListingCard';
 import { cn } from '@/lib/utils/cn';
@@ -32,11 +33,17 @@ export default function CollectionListingsGrid({
   if (listings.length === 0) {
     return (
       <div className="py-20 text-center">
-        <div className="mb-4 text-5xl">📂</div>
+        <EmptyCollectionIllustration />
         <p className="type-label text-[#0F1729]">Empty collection</p>
         <p className="mt-1 type-body text-[#9CA3AF]">
           Save listings from the map to add them here
         </p>
+        <Link
+          href="/"
+          className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-4 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]"
+        >
+          Go to Map
+        </Link>
       </div>
     );
   }
@@ -64,4 +71,8 @@ export default function CollectionListingsGrid({
       ))}
     </div>
   );
+}
+
+export function EmptyCollectionIllustration({ className }: { className?: string }) {
+  return <div className={cn('mb-4 text-5xl', className)}>📂</div>;
 }

@@ -12,6 +12,7 @@ import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import CollectionWorkspaceHeader from '@/components/organisms/CollectionWorkspaceHeader';
+import { EmptyCollectionIllustration } from '@/components/organisms/CollectionListingsGrid';
 
 interface MenuState {
   colId: string;
@@ -136,7 +137,7 @@ export default function SavedPage() {
                   onClick={() => toggleDesktopCreate('header')}
                   className="relative flex h-11 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] no-select"
                 >
-                  + New
+                  Create New
                 </button>
                 {desktopCreateAnchor === 'header' && (
                   <div className="absolute right-0 top-[3.25rem] z-20 w-80 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
@@ -169,7 +170,7 @@ export default function SavedPage() {
           {collections.length === 0 ? (
             <div className="flex min-h-[min(52vh,32rem)] w-full items-center justify-center lg:min-h-[calc(100vh-16rem)]">
               <div className="text-center">
-                <div className="mb-4 text-5xl">🏠</div>
+                <EmptyCollectionIllustration />
                 <p className="type-heading text-[var(--color-text-primary)]">No collections yet</p>
                 <p className="mt-1 type-body text-[var(--color-text-tertiary)]">Create a collection to organize homes you want to revisit, compare, or share.</p>
                 <div ref={emptyStateCreateRef} className="relative mt-4 inline-flex">
@@ -178,7 +179,7 @@ export default function SavedPage() {
                     onClick={() => toggleDesktopCreate('empty')}
                     className="inline-flex h-11 items-center justify-center rounded-full bg-[var(--color-text-primary)] px-4 type-btn text-[var(--color-text-inverse)] transition-colors hover:bg-[var(--color-primary-hover)]"
                   >
-                    + New
+                    Create New
                   </button>
                   {desktopCreateAnchor === 'empty' && (
                     <div className="absolute left-1/2 top-[3.25rem] z-20 w-80 -translate-x-1/2 rounded-[22px] bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
@@ -228,11 +229,13 @@ export default function SavedPage() {
                     }}
                   >
                     {/* Cover — first listing image, full fill */}
-                    <div className="relative aspect-[16/11] overflow-hidden bg-[var(--color-border)] sm:aspect-[4/3]">
+                    <div className="relative aspect-[16/11] overflow-hidden bg-[var(--color-surface)] sm:aspect-[4/3]">
                       {firstListing ? (
                         <Image src={firstListing.images[0]} alt="" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl opacity-20">🏠</div>
+                        <div className="flex h-full w-full items-center justify-center">
+                          <EmptyCollectionIllustration className="mb-0 text-4xl opacity-25" />
+                        </div>
                       )}
                     </div>
 

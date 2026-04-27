@@ -1,0 +1,30 @@
+.clusterMarker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.95rem;
+  height: 1.95rem;
+  padding: 0 0.48rem;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-brand-600) 96%, transparent);
+  color: var(--color-text-inverse);
+  font-family: var(--font-body-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-brand-700) 22%, transparent);
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.clusterMarker:hover {
+  background: color-mix(in srgb, var(--color-brand-500) 98%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-brand-700) 26%, transparent);
+}
+
+.clusterMarker.highlighted {
+  background: rgba(15, 23, 41, 0.98);
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(15, 23, 41, 0.24);
+}

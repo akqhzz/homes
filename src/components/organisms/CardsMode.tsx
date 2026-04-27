@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeftRight, ChevronRight, Heart, Map, MapPin, ArrowDownWideNarrow, Undo2, X } from 'lucide-react';
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
-import { formatPrice, formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
+import { formatDaysOnMarket, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
@@ -22,6 +22,7 @@ import Button from '@/components/atoms/Button';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 import SortOptionsDrawer from '@/components/molecules/SortOptionsDrawer';
 import MapListingPin from '@/components/atoms/MapListingPin';
+import PriceText from '@/components/atoms/PriceText';
 
 const MAPBOX_TOKEN = getMapboxToken();
 const SWIPE_THRESHOLD = 38;
@@ -513,7 +514,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="type-title text-[var(--color-text-primary)]">{formatPrice(detailDrawerListing.price)}</p>
+            <p className="type-title text-[var(--color-text-primary)]"><PriceText price={detailDrawerListing.price} /></p>
             <p className="mt-1 type-body text-[var(--color-text-secondary)]">
               {detailDrawerListing.beds}bd · {detailDrawerListing.baths}ba · {formatSqft(detailDrawerListing.sqft)} sqft
             </p>
@@ -738,7 +739,7 @@ function CardModeListingCard({
             <div className="flex items-end gap-2">
               <div className="relative flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-[var(--color-background)] px-4 shadow-[0_8px_28px_rgba(15,23,41,0.16)]">
                 <div className="flex w-full min-w-0 items-start justify-between gap-2">
-                  <p className="type-title min-w-0 truncate leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
+                  <p className="type-title min-w-0 truncate leading-tight text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
                   <span className="shrink-0 pt-0.5 type-caption font-medium text-[var(--color-text-secondary)]">
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>

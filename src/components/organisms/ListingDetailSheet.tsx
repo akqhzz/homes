@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Heart, Share2, Calendar, Home, Car, DollarSign, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
-import { formatPriceFull, formatDaysOnMarket, formatPropertyType, formatSqft } from '@/lib/utils/format';
+import { formatDaysOnMarket, formatPropertyType, formatSqft } from '@/lib/utils/format';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/atoms/Button';
@@ -11,6 +11,7 @@ import IconButton from '@/components/atoms/IconButton';
 import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/listing/ListingDisplay';
+import PriceText from '@/components/atoms/PriceText';
 
 export default function ListingDetailSheet() {
   const detailListingId = useUIStore((s) => s.detailListingId);
@@ -117,7 +118,7 @@ export default function ListingDetailSheet() {
           {/* Price & basics */}
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="type-title text-[var(--color-text-primary)]">{formatPriceFull(listing.price)}</h1>
+              <h1 className="type-title text-[var(--color-text-primary)]"><PriceText price={listing.price} format="full" /></h1>
               <p className="type-body mt-1 text-[var(--color-text-secondary)]">
                 {listing.beds} bed · {listing.baths} bath · {formatSqft(listing.sqft)} sqft
               </p>

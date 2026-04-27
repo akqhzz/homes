@@ -4,12 +4,13 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Listing } from '@/lib/types';
-import { formatPrice, formatDaysOnMarket } from '@/lib/utils/format';
+import { formatDaysOnMarket } from '@/lib/utils/format';
 import { formatBedBathSqftLine, formatMlsLine } from '@/lib/utils/listing-display';
 import { useSavedStore } from '@/store/savedStore';
 import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/components/molecules/SaveToCollectionSheet';
 import { ListingAddressRow } from '@/components/listing/ListingDisplay';
+import PriceText from '@/components/atoms/PriceText';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 252;
@@ -268,7 +269,7 @@ export default function ListingCard({
             </button>
           </div>
           <div className="px-0.5 pb-1">
-            <p className="type-heading leading-tight text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
+            <p className="type-heading leading-tight text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
             <p className="mt-0.5 type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '   ', spacedSqft: false })}</p>
           </div>
         </div>
@@ -291,7 +292,7 @@ export default function ListingCard({
             </button>
           </div>
           <div className="p-4">
-            <p className="type-subtitle text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
+            <p className="type-subtitle text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
             <div className="mt-1 flex flex-col gap-[1px]">
               <p className="type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft)}</p>
               <ListingAddressRow className="gap-1 type-caption text-[var(--color-text-secondary)]" iconSize={11}>
@@ -435,7 +436,7 @@ export default function ListingCard({
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="type-heading text-[var(--color-text-primary)]">{formatPrice(listing.price)}</p>
+              <p className="type-heading text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
               <div className="mt-0.5 flex flex-col gap-[1px]">
                 <p className="truncate type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '\u00a0\u00a0', spacedSqft: false })}</p>
                 <p className="pr-2 type-caption text-[var(--color-text-secondary)] line-clamp-2">

@@ -5,7 +5,7 @@ import { Check, Ellipsis } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
-import { Coordinates, SavedSearch } from '@/lib/types';
+import { Coordinates, Listing, SavedSearch } from '@/lib/types';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
@@ -17,6 +17,7 @@ interface SavedSearchesPanelProps {
   currentBoundary?: Coordinates[];
   currentNeighborhoodIds?: string[];
   activeSearchDirty?: boolean;
+  currentListings?: Listing[];
   onSelectSearch?: (search: SavedSearch) => void;
   onDeselectSearch?: () => void;
   onUpdateSearch?: (searchId: string) => void;
@@ -33,6 +34,7 @@ export default function SavedSearchesPanel({
   currentBoundary = [],
   currentNeighborhoodIds = [],
   activeSearchDirty = false,
+  currentListings = [],
   onSelectSearch,
   onDeselectSearch,
   onUpdateSearch,
@@ -134,6 +136,7 @@ export default function SavedSearchesPanel({
       filters,
       areaBoundary: currentBoundary,
       neighborhoodIds: currentNeighborhoodIds,
+      thumbnail: getDefaultThumbnailListing(currentListings)?.images[0],
     });
     setSaving(false);
     setNewSearchName('');
@@ -237,15 +240,22 @@ export default function SavedSearchesPanel({
                   : 'border-transparent bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)]'
               )}
             >
-              {search.thumbnail && (
-                <Image
-                  src={search.thumbnail}
-                  alt=""
-                  width={56}
-                  height={56}
-                  className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
-                />
-              )}
+              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
+                {search.thumbnail ? (
+                  <Image
+                    src={search.thumbnail}
+                    alt=""
+                    width={56}
+                    height={56}
+                    className="h-full w-full object-cover object-center"
+                    draggable={false}
+                  />
+                ) : (
+                  <span className="type-heading-sm text-[var(--color-text-secondary)]">
+                    {search.name.trim().charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
               <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   {renamingId === search.id ? (
@@ -399,4 +409,8 @@ export default function SavedSearchesPanel({
       )}
     </>
   );
+}
+
+function getDefaultThumbnailListing(listings: Listing[]) {
+  return [...listings].sort((a, b) => a.daysOnMarket - b.daysOnMarket)[0];
 }

@@ -31,7 +31,7 @@ export default function DesktopSortMenu<T extends string>({
               type="button"
               onClick={() => onChange(option.value)}
               className={cn(
-                'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-button transition-colors',
+                'flex w-full items-center justify-between rounded-xl px-3 py-2 text-left transition-colors',
                 selected ? 'bg-[#F5F6F7] text-[#0F1729]' : 'text-[#6B7280] hover:bg-[#F5F6F7] hover:text-[#0F1729]'
               )}
             >

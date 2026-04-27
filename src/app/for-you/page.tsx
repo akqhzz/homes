@@ -77,11 +77,10 @@ function HBarChart({ rows, color }: { rows: { label: string; value: number; sub?
 function PieChart({ slices }: { slices: { label: string; value: number; color: string }[] }) {
   const cx = 100, cy = 100, r = 86;
   const total = slices.reduce((s, sl) => s + sl.value, 0);
-  let angle = -Math.PI / 2;
-  const paths = slices.map(sl => {
+  const paths = slices.map((sl, index) => {
+    const startA = -Math.PI / 2 + slices.slice(0, index).reduce((sum, item) => sum + (item.value / total) * 2 * Math.PI, 0);
     const sweep = (sl.value / total) * 2 * Math.PI;
-    const startA = angle, endA = angle + sweep;
-    angle = endA;
+    const endA = startA + sweep;
     const x1 = cx + r * Math.cos(startA), y1 = cy + r * Math.sin(startA);
     const x2 = cx + r * Math.cos(endA), y2 = cy + r * Math.sin(endA);
     const mid = startA + sweep / 2;

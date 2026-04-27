@@ -32,13 +32,6 @@
   --color-brand-surface-strong: var(--color-brand-100);
   --color-brand-text: var(--color-brand-900);
 
-  --color-marker-default-bg: var(--color-brand-600);
-  --color-marker-default-text: #ffffff;
-  --color-marker-active-bg: #0F1729;
-  --color-marker-active-text: #ffffff;
-  --color-marker-saved-bg: #EF4444;
-  --color-marker-saved-text: #ffffff;
-
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -55,9 +48,6 @@
 
   --font-body-sans: var(--font-body), system-ui, -apple-system, sans-serif;
   --font-heading: var(--font-heading-source), var(--font-body-sans);
-  --font-button: var(--font-body-sans);
-  --font-caption: var(--font-body-sans);
-  --font-sans: var(--font-body-sans);
 
   --breakpoint-3xl: 117rem;
 }
@@ -88,7 +78,7 @@ button,
 input,
 textarea,
 select {
-  font-family: var(--font-button);
+  font-family: var(--font-body-sans);
 }
 
 button,
@@ -139,6 +129,7 @@ button,
 /* UI tokens — weight variants for labels and buttons                */
 .type-label   { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1.25; }
 .type-btn     { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1;    }
+.price-currency { font-family: var(--font-currency), var(--font-heading); }
 
 #__next,
 main {
@@ -181,21 +172,6 @@ main {
   outline-offset: 2px;
 }
 
-/* Snap scroll for carousels */
-.snap-x-mandatory {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-
-.snap-center {
-  scroll-snap-align: center;
-}
-
-/* Safe area for bottom nav on iPhone */
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
 /* Smooth drag */
 .no-select {
   -webkit-user-select: none;
@@ -208,12 +184,6 @@ main {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   background: rgba(255, 255, 255, 0.9);
-}
-
-.glass-dark {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: rgba(15, 23, 41, 0.85);
 }
 
 /* Hide scrollbar but keep functionality */
@@ -229,112 +199,4 @@ main {
   width: 100%;
   max-width: var(--layout-content-max);
   margin-inline: auto;
-}
-
-.pagination-shell {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-  padding-bottom: 1rem;
-}
-
-.pagination-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.pagination-arrow,
-.pagination-page {
-  border: 0;
-  background: transparent;
-  color: var(--color-text-secondary);
-  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease;
-}
-
-.pagination-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-}
-
-.pagination-page {
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0 0.5rem;
-  border-radius: 9999px;
-  font-family: var(--font-body-sans);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.pagination-arrow:hover:not(:disabled),
-.pagination-page:hover:not(.is-active) {
-  background: rgba(15, 23, 41, 0.05);
-  color: var(--color-text-primary);
-}
-
-.pagination-page.is-active {
-  color: var(--color-text-primary);
-  background: rgba(15, 23, 41, 0.08);
-}
-
-.pagination-arrow:disabled {
-  color: var(--color-text-tertiary);
-  cursor: default;
-}
-
-.pagination-ellipsis {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  color: var(--color-text-tertiary);
-  font-family: var(--font-body-sans);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.map-cluster-marker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.95rem;
-  height: 1.95rem;
-  padding: 0 0.48rem;
-  border: 1.5px solid rgba(255, 255, 255, 0.95);
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--color-brand-600) 96%, transparent);
-  color: var(--color-text-inverse);
-  font-family: var(--font-body-sans);
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-brand-700) 22%, transparent);
-  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
-}
-
-.map-cluster-marker:hover {
-  background: color-mix(in srgb, var(--color-brand-500) 98%, transparent);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-brand-700) 26%, transparent);
-}
-
-.map-cluster-marker.is-highlighted {
-  background: rgba(15, 23, 41, 0.98);
-  transform: scale(1.08);
-  box-shadow: 0 6px 18px rgba(15, 23, 41, 0.24);
-}
-
-.map-pin-marker {
-  transition:
-    transform 150ms ease,
-    box-shadow 150ms ease,
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
 }

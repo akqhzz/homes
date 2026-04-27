@@ -38,6 +38,7 @@ interface SaveSearchInput {
   filters: SearchFilters;
   areaBoundary?: Coordinates[];
   neighborhoodIds?: string[];
+  thumbnail?: string;
 }
 
 interface SavedSearchStore {
@@ -67,7 +68,7 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
       neighborhoodIds: input.neighborhoodIds?.length ? [...input.neighborhoodIds] : undefined,
       createdAt: new Date().toISOString(),
       newListingsCount: 0,
-      thumbnail: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80',
+      thumbnail: input.thumbnail ?? 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80',
     };
     set((state) => ({
       searches: [search, ...state.searches],
