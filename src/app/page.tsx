@@ -20,7 +20,7 @@ import DesktopSidebar from '@/components/organisms/DesktopSidebar';
 import TopBar from '@/components/organisms/TopBar';
 import ListingsCarousel from '@/components/organisms/ListingsCarousel';
 import DesktopHeader from '@/components/organisms/DesktopHeader';
-import { Neighborhood, SavedSearch } from '@/lib/types';
+import { Coordinates, Neighborhood, SavedSearch } from '@/lib/types';
 import { getListingsInViewport, rankCardModeListings } from '@/lib/listing-scope';
 import { applyFilters, filterListingsBySearchArea, getAreaScopeBounds } from '@/lib/search/filters';
 import {
@@ -52,10 +52,10 @@ const ListingsListView = dynamic(() => preloadListingsListView(), { ssr: false }
 
 function getSearchViewState(
   selectedLocations: SavedSearch['locations'],
-  boundary: { lat: number; lng: number }[],
+  boundaries: Coordinates[][],
   neighborhoodIds: Set<string>
 ) {
-  const bounds = getAreaScopeBounds(selectedLocations, boundary, neighborhoodIds);
+  const bounds = getAreaScopeBounds(selectedLocations, boundaries, neighborhoodIds);
 
   if (!bounds) return null;
 
@@ -69,7 +69,7 @@ function getSearchViewState(
 
 function getAreaViewStateScopeKey(
   selectedLocations: SavedSearch['locations'],
-  boundary: { lat: number; lng: number }[],
+  boundaries: Coordinates[][],
   neighborhoodIds: Set<string>
 ) {
   return JSON.stringify({
@@ -79,9 +79,17 @@ function getAreaViewStateScopeKey(
       bbox: location.bbox ?? null,
       boundary: location.boundary ?? [],
     })),
-    boundary,
+    boundaries,
     neighborhoodIds: [...neighborhoodIds].sort(),
   });
+}
+
+function cloneBoundary(boundary: Coordinates[]) {
+  return boundary.map((point) => ({ ...point }));
+}
+
+function getSearchBoundaries(search: SavedSearch) {
+  return search.areaBoundaries?.map(cloneBoundary) ?? (search.areaBoundary ? [cloneBoundary(search.areaBoundary)] : []);
 }
 
 export default function MapPage() {
@@ -102,9 +110,9 @@ export default function MapPage() {
   const setViewState = useMapStore((s) => s.setViewState);
   const viewportBounds = useMapStore((s) => s.viewportBounds);
   const visitedListingIds = useMapStore((s) => s.visitedListingIds);
-  const appliedBoundary = useAreaScopeStore((s) => s.appliedBoundary);
+  const appliedBoundaries = useAreaScopeStore((s) => s.appliedBoundaries);
   const appliedNeighborhoods = useAreaScopeStore((s) => s.appliedNeighborhoods);
-  const setAppliedBoundary = useAreaScopeStore((s) => s.setAppliedBoundary);
+  const setAppliedBoundaries = useAreaScopeStore((s) => s.setAppliedBoundaries);
   const setAppliedNeighborhoods = useAreaScopeStore((s) => s.setAppliedNeighborhoods);
   const setAppliedArea = useAreaScopeStore((s) => s.setAppliedArea);
   const clearAppliedAreaScope = useAreaScopeStore((s) => s.clearAppliedArea);
@@ -120,6 +128,7 @@ export default function MapPage() {
   const [hoveredNeighborhood, setHoveredNeighborhood] = useState<Neighborhood | null>(null);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [isDrawingArea, setIsDrawingArea] = useState(false);
+  const [drawnBoundaries, setDrawnBoundaries] = useState<Coordinates[][]>([]);
   const [drawnBoundary, setDrawnBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const [redoBoundary, setRedoBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const [clearedBoundarySnapshot, setClearedBoundarySnapshot] = useState<{ lat: number; lng: number }[] | null>(null);
@@ -131,7 +140,16 @@ export default function MapPage() {
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const isAreaSelect = activePanel === 'area-select';
-  const hasAppliedArea = appliedBoundary.length > 0 || appliedNeighborhoods.size > 0;
+  const visibleDraftBoundaries = useMemo(
+    () => [...drawnBoundaries, ...(drawnBoundary.length > 0 ? [drawnBoundary] : [])],
+    [drawnBoundaries, drawnBoundary]
+  );
+  const completedDraftBoundaries = useMemo(
+    () => [...drawnBoundaries, ...(drawnBoundary.length >= 3 ? [drawnBoundary] : [])],
+    [drawnBoundaries, drawnBoundary]
+  );
+  const draftBoundaryCount = completedDraftBoundaries.length;
+  const hasAppliedArea = appliedBoundaries.length > 0 || appliedNeighborhoods.size > 0;
   const hasSearchBoundary = selectedLocations.some((location) => (location.boundary?.length ?? 0) > 2);
   const hasVisibleBoundary = hasAppliedArea || hasSearchBoundary;
   const filteredListings = useMemo(
@@ -139,10 +157,10 @@ export default function MapPage() {
       filterListingsBySearchArea(
         applyFilters(MOCK_LISTINGS, filters),
         selectedLocations,
-        appliedBoundary,
+        appliedBoundaries,
         appliedNeighborhoods
       ),
-    [appliedBoundary, appliedNeighborhoods, filters, selectedLocations]
+    [appliedBoundaries, appliedNeighborhoods, filters, selectedLocations]
   );
   const scopedListings = useMemo(
     () => (hasVisibleBoundary ? filteredListings : getListingsInViewport(filteredListings, viewportBounds)),
@@ -163,18 +181,18 @@ export default function MapPage() {
   const activeAreaChips = getAreaChips({
     neighborhoodIds: [...appliedNeighborhoods],
     searchLocations: selectedLocations,
-    hasCustomBoundary: appliedBoundary.length >= 3,
+    hasCustomBoundary: appliedBoundaries.length > 0,
   });
   const compactAreaChipLabel = getCompactAreaChipLabel(activeAreaChips);
   const areaPreviewNeighborhoodId =
     hoveredNeighborhood?.id ??
     (focusedNeighborhood && !selectedNeighborhoods.has(focusedNeighborhood.id) ? focusedNeighborhood.id : null);
   const areaSelectHasVisibleBoundary =
-    selectedNeighborhoods.size > 0 || drawnBoundary.length > 0 || hasSearchBoundary;
+    selectedNeighborhoods.size > 0 || visibleDraftBoundaries.length > 0 || hasSearchBoundary;
   const isMobileListingsList = mobileListingsView === 'list' && !isAreaSelect;
   const areaViewStateScopeKey = useMemo(
-    () => getAreaViewStateScopeKey(selectedLocations, appliedBoundary, appliedNeighborhoods),
-    [appliedBoundary, appliedNeighborhoods, selectedLocations]
+    () => getAreaViewStateScopeKey(selectedLocations, appliedBoundaries, appliedNeighborhoods),
+    [appliedBoundaries, appliedNeighborhoods, selectedLocations]
   );
   const previousAreaViewStateScopeKey = useRef(areaViewStateScopeKey);
 
@@ -250,20 +268,20 @@ export default function MapPage() {
     }
     setActiveSearchDirty(
       !areSearchSnapshotsEqual(
-        createSearchSnapshot(selectedLocations, filters, appliedBoundary, appliedNeighborhoods),
+        createSearchSnapshot(selectedLocations, filters, appliedBoundaries, appliedNeighborhoods),
         searchToSnapshot(activeSavedSearch)
       )
     );
-  }, [activeSavedSearch, appliedBoundary, appliedNeighborhoods, filters, selectedLocations, setActiveSearchDirty]);
+  }, [activeSavedSearch, appliedBoundaries, appliedNeighborhoods, filters, selectedLocations, setActiveSearchDirty]);
 
   useEffect(() => {
     if (isAreaSelect) return;
     if (previousAreaViewStateScopeKey.current === areaViewStateScopeKey) return;
     previousAreaViewStateScopeKey.current = areaViewStateScopeKey;
-    const nextViewState = getSearchViewState(selectedLocations, appliedBoundary, appliedNeighborhoods);
+    const nextViewState = getSearchViewState(selectedLocations, appliedBoundaries, appliedNeighborhoods);
     if (!nextViewState) return;
     setViewState(nextViewState);
-  }, [appliedBoundary, appliedNeighborhoods, areaViewStateScopeKey, isAreaSelect, selectedLocations, setViewState]);
+  }, [appliedBoundaries, appliedNeighborhoods, areaViewStateScopeKey, isAreaSelect, selectedLocations, setViewState]);
 
   const openMobileListingsList = () => {
     setActivePanel('none');
@@ -301,27 +319,32 @@ export default function MapPage() {
     if (preserveCurrentDraft) {
       return {
         neighborhoods: new Set(selectedNeighborhoods),
-        boundary: drawnBoundary.map((point) => ({ ...point })),
+        boundaries: visibleDraftBoundaries.map(cloneBoundary),
       };
     }
 
     const { matchedNeighborhoodIds, fallbackBoundary } = getCarryoverAreaSelection(selectedLocations);
     const neighborhoods = new Set([...appliedNeighborhoods, ...matchedNeighborhoodIds]);
-    const boundarySource = appliedBoundary.length >= 3 ? appliedBoundary : fallbackBoundary;
+    const boundaries = appliedBoundaries.length > 0
+      ? appliedBoundaries.map(cloneBoundary)
+      : fallbackBoundary.length >= 3
+        ? [cloneBoundary(fallbackBoundary)]
+        : [];
 
     return {
       neighborhoods,
-      boundary: boundarySource.map((point) => ({ ...point })),
+      boundaries,
     };
   };
 
   const openAreaSelection = (mode: 'select' | 'draw') => {
     const isDrawMode = mode === 'draw';
-    const { neighborhoods, boundary } = getSeededAreaDraft(isAreaSelect);
+    const { neighborhoods, boundaries } = getSeededAreaDraft(isAreaSelect);
 
     setMobileListingsView('map');
     setSelectedNeighborhoods(neighborhoods);
-    setDrawnBoundary(boundary);
+    setDrawnBoundaries(boundaries);
+    setDrawnBoundary([]);
     resetAreaDraftHistory();
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
@@ -353,6 +376,7 @@ export default function MapPage() {
   const clearAppliedArea = () => {
     clearAppliedAreaScope();
     setSelectedNeighborhoods(new Set());
+    setDrawnBoundaries([]);
     setDrawnBoundary([]);
     setRedoBoundary([]);
     setClearedBoundarySnapshot(null);
@@ -374,7 +398,8 @@ export default function MapPage() {
 
   const removeAppliedAreaChip = (chip: AreaChip) => {
     if (chip.kind === 'custom-boundary') {
-      setAppliedBoundary([]);
+      setAppliedBoundaries([]);
+      setDrawnBoundaries([]);
       setDrawnBoundary([]);
       setRedoBoundary([]);
       setClearedBoundarySnapshot(null);
@@ -473,12 +498,30 @@ export default function MapPage() {
     });
   };
 
+  const addDrawnBoundaryShape = () => {
+    if (drawnBoundary.length < 3) return;
+    setDrawnBoundaries((boundaries) => [...boundaries, cloneBoundary(drawnBoundary)]);
+    setDrawnBoundary([]);
+    setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
+  };
+
+  const clearDrawnBoundaryShapes = () => {
+    setDrawnBoundaries([]);
+    setDrawnBoundary([]);
+    setRedoBoundary([]);
+    setClearedBoundarySnapshot(null);
+    setClearedBoundaryRedoSnapshot(null);
+  };
+
   const resetAreaSelectDraft = () => {
     setActivePanel('none');
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
     setIsDrawingArea(false);
     setSelectedNeighborhoods(new Set());
+    setDrawnBoundaries([]);
     setDrawnBoundary([]);
     setRedoBoundary([]);
     setClearedBoundarySnapshot(null);
@@ -492,16 +535,17 @@ export default function MapPage() {
   };
 
   const applyAreaSelect = () => {
-    setAppliedArea({ neighborhoods: selectedNeighborhoods, boundary: drawnBoundary });
+    setAppliedArea({ neighborhoods: selectedNeighborhoods, boundaries: completedDraftBoundaries });
     resetAreaSelectDraft();
   };
 
   const applySavedSearch = (search: SavedSearch) => {
     const nextNeighborhoods = new Set(search.neighborhoodIds ?? []);
-    const nextBoundary = search.areaBoundary?.map((point) => ({ ...point })) ?? [];
-    setAppliedArea({ neighborhoods: nextNeighborhoods, boundary: nextBoundary });
+    const nextBoundaries = getSearchBoundaries(search);
+    setAppliedArea({ neighborhoods: nextNeighborhoods, boundaries: nextBoundaries });
     setSelectedNeighborhoods(new Set(nextNeighborhoods));
-    setDrawnBoundary(nextBoundary);
+    setDrawnBoundaries(nextBoundaries);
+    setDrawnBoundary([]);
     setRedoBoundary([]);
     setClearedBoundarySnapshot(null);
     setClearedBoundaryRedoSnapshot(null);
@@ -514,13 +558,13 @@ export default function MapPage() {
     setSelectedListingId(null);
     setMobileCarouselListingId(null);
 
-    const nextViewState = getSearchViewState(search.locations, nextBoundary, nextNeighborhoods);
+    const nextViewState = getSearchViewState(search.locations, nextBoundaries, nextNeighborhoods);
     if (nextViewState) setViewState(nextViewState);
   };
 
   const handleSelectSavedSearch = (search: SavedSearch) => {
     setPreSavedSearchState((current) =>
-      current ?? createSearchSnapshot(selectedLocations, filters, appliedBoundary, appliedNeighborhoods)
+      current ?? createSearchSnapshot(selectedLocations, filters, appliedBoundaries, appliedNeighborhoods)
     );
     applySavedSearch(search);
   };
@@ -532,9 +576,10 @@ export default function MapPage() {
     if (!fallback) return;
     setLocations(fallback.locations);
     replaceFilters(fallback.filters);
-    setAppliedArea({ boundary: fallback.areaBoundary, neighborhoods: fallback.neighborhoodIds });
+    setAppliedArea({ boundaries: fallback.areaBoundaries, neighborhoods: fallback.neighborhoodIds });
     setSelectedNeighborhoods(new Set(fallback.neighborhoodIds));
-    setDrawnBoundary(fallback.areaBoundary);
+    setDrawnBoundaries(fallback.areaBoundaries);
+    setDrawnBoundary([]);
     setRedoBoundary([]);
     setClearedBoundarySnapshot(null);
     setClearedBoundaryRedoSnapshot(null);
@@ -545,7 +590,7 @@ export default function MapPage() {
     setPreSavedSearchState(null);
     const nextViewState = getSearchViewState(
       fallback.locations,
-      fallback.areaBoundary,
+      fallback.areaBoundaries,
       new Set(fallback.neighborhoodIds)
     );
     if (nextViewState) setViewState(nextViewState);
@@ -556,7 +601,8 @@ export default function MapPage() {
       name: searches.find((search) => search.id === searchId)?.name ?? 'Saved Search',
       locations: selectedLocations,
       filters,
-      areaBoundary: appliedBoundary,
+      areaBoundary: appliedBoundaries[0],
+      areaBoundaries: appliedBoundaries,
       neighborhoodIds: [...appliedNeighborhoods],
     });
   };
@@ -622,7 +668,7 @@ export default function MapPage() {
                 setHoveredNeighborhood(null);
               }
             }}
-            drawnBoundary={isAreaSelect ? drawnBoundary : appliedBoundary}
+            drawnBoundaries={isAreaSelect ? visibleDraftBoundaries : appliedBoundaries}
             isAreaMode={isAreaSelect}
           />
 
@@ -700,10 +746,15 @@ export default function MapPage() {
                 hasVisibleBoundary={areaSelectHasVisibleBoundary}
                 isDrawing={isDrawingArea}
                 pointCount={drawnBoundary.length}
+                shapeCount={draftBoundaryCount}
+                canAddShape={drawnBoundary.length >= 3}
+                canClearShapes={visibleDraftBoundaries.length > 0}
                 canUndoBoundary={drawnBoundary.length > 0 || areaUndoStack.length > 0 || clearedBoundarySnapshot !== null}
                 canRedoBoundary={redoBoundary.length > 0 || areaRedoStack.length > 0 || clearedBoundaryRedoSnapshot !== null}
                 onBack={cancelAreaSelect}
                 onApply={applyAreaSelect}
+                onAddShape={addDrawnBoundaryShape}
+                onClearShapes={clearDrawnBoundaryShapes}
                 onToggleNeighborhood={toggleNeighborhood}
                 onCloseNeighborhood={() => setFocusedNeighborhood(null)}
                 onUndoBoundary={undoBoundary}
@@ -790,10 +841,11 @@ export default function MapPage() {
           <SavedSearchesPanel
             key="saved-searches"
             hasActiveCriteria={hasActiveSearchCriteria}
-            currentBoundary={appliedBoundary}
+            currentBoundary={appliedBoundaries[0]}
+            currentBoundaries={appliedBoundaries}
             currentNeighborhoodIds={[...appliedNeighborhoods]}
             activeSearchDirty={activeSavedSearch !== null && !areSearchSnapshotsEqual(
-              createSearchSnapshot(selectedLocations, filters, appliedBoundary, appliedNeighborhoods),
+              createSearchSnapshot(selectedLocations, filters, appliedBoundaries, appliedNeighborhoods),
               searchToSnapshot(activeSavedSearch)
             )}
             currentListings={filteredListings}

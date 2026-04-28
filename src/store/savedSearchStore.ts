@@ -1,6 +1,5 @@
 'use client';
 import { create } from 'zustand';
-import { MOCK_SAVED_SEARCHES } from '@/lib/mock-data';
 import { Coordinates, Location, SavedSearch, SearchFilters } from '@/lib/types';
 
 const EMPTY_FILTERS: SearchFilters = {
@@ -15,28 +14,12 @@ function normalizeFilters(filters: Partial<SearchFilters> | undefined): SearchFi
   };
 }
 
-function cloneSearch(search: SavedSearch): SavedSearch {
-  return {
-    ...search,
-    locations: search.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
-    filters: normalizeFilters(search.filters),
-    areaBoundary: search.areaBoundary?.map((point) => ({ ...point })),
-    neighborhoodIds: search.neighborhoodIds ? [...search.neighborhoodIds] : undefined,
-  };
-}
-
-const INITIAL_SEARCHES: SavedSearch[] = MOCK_SAVED_SEARCHES.map((search) =>
-  cloneSearch({
-    ...search,
-    filters: normalizeFilters(search.filters),
-  })
-);
-
 interface SaveSearchInput {
   name: string;
   locations: Location[];
   filters: SearchFilters;
   areaBoundary?: Coordinates[];
+  areaBoundaries?: Coordinates[][];
   neighborhoodIds?: string[];
   thumbnail?: string;
 }
@@ -54,7 +37,7 @@ interface SavedSearchStore {
 }
 
 export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
-  searches: INITIAL_SEARCHES,
+  searches: [],
   activeSearchId: null,
   activeSearchDirty: false,
   saveSearch: (input) => {
@@ -65,6 +48,7 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
       locations: input.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
       filters: normalizeFilters(input.filters),
       areaBoundary: input.areaBoundary?.map((point) => ({ ...point })),
+      areaBoundaries: input.areaBoundaries?.map((boundary) => boundary.map((point) => ({ ...point }))),
       neighborhoodIds: input.neighborhoodIds?.length ? [...input.neighborhoodIds] : undefined,
       createdAt: new Date().toISOString(),
       newListingsCount: 0,
@@ -86,6 +70,7 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
               locations: input.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
               filters: normalizeFilters(input.filters),
               areaBoundary: input.areaBoundary?.map((point) => ({ ...point })),
+              areaBoundaries: input.areaBoundaries?.map((boundary) => boundary.map((point) => ({ ...point }))),
               neighborhoodIds: input.neighborhoodIds?.length ? [...input.neighborhoodIds] : undefined,
               createdAt: search.createdAt,
             }

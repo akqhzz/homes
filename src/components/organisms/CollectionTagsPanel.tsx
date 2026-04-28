@@ -4,6 +4,7 @@ import { Check, Pencil, Plus, Trash2 } from 'lucide-react';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import AnchoredPopover from '@/components/molecules/AnchoredPopover';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
+import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
 import { cn } from '@/lib/utils/cn';
 
 type PanelMode = 'assign' | 'filter';
@@ -34,6 +35,8 @@ function CollectionTagsPanelContent({
   const [creating, setCreating] = useState(false);
   const [menuTag, setMenuTag] = useState<string | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<DOMRect | null>(null);
+  const [confirmDeleteTag, setConfirmDeleteTag] = useState<string | null>(null);
+  const [confirmDeletePosition, setConfirmDeletePosition] = useState<{ right: number; bottom: number } | null>(null);
   const [editingTag, setEditingTag] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const longPressTimer = useRef<number | null>(null);
@@ -82,7 +85,7 @@ function CollectionTagsPanelContent({
             <div
               key={tag}
               className={cn(
-                'inline-flex select-none items-center gap-1 rounded-full border px-1.5 py-0.5 transition-colors',
+                'inline-flex select-none items-center gap-1 rounded-full border px-1 py-0 transition-colors',
                 editingTag === tag
                   ? 'border-[var(--color-border-strong)] bg-transparent text-[var(--color-text-primary)]'
                   : selected
@@ -125,17 +128,17 @@ function CollectionTagsPanelContent({
                       }
                     }}
                     onBlur={() => finishRenameTag(tag)}
-                    className="type-btn h-8 min-w-0 bg-transparent pr-1 text-[var(--color-text-primary)] outline-none"
+                    className="type-caption h-6 min-w-0 bg-transparent pr-1 font-semibold text-[var(--color-text-primary)] outline-none"
                     autoFocus
                   />
                   <button
                     type="button"
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => finishRenameTag(tag)}
-                    className="flex h-7 w-7 items-center justify-center text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
+                    className="flex h-6 w-6 items-center justify-center text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
                     aria-label="Confirm tag rename"
                   >
-                    <Check size={13} />
+                    <Check size={11} />
                   </button>
                 </div>
               ) : (
@@ -149,10 +152,10 @@ function CollectionTagsPanelContent({
                       }
                       onToggleTag(tag);
                     }}
-                    className="type-btn inline-flex min-h-8 items-center gap-1 rounded-full px-2.5"
+                    className="type-caption inline-flex min-h-6 items-center gap-1 rounded-full px-2 font-semibold"
                   >
                     {tag}
-                    {selected && <Check size={12} />}
+                    {selected && <Check size={10} />}
                   </button>
                 </>
               )}
@@ -203,7 +206,13 @@ function CollectionTagsPanelContent({
             <button
               type="button"
               onClick={() => {
-                onDeleteTag(menuTag);
+                if (menuAnchor) {
+                  setConfirmDeletePosition({
+                    right: window.innerWidth - menuAnchor.right,
+                    bottom: window.innerHeight - menuAnchor.top + 4,
+                  });
+                }
+                setConfirmDeleteTag(menuTag);
                 setMenuTag(null);
                 setMenuAnchor(null);
               }}
@@ -215,6 +224,33 @@ function CollectionTagsPanelContent({
           )}
         </div>
       </AnchoredPopover>
+      {onDeleteTag && confirmDeleteTag && confirmDeletePosition && (
+        <RenameDeletePopover
+          open
+          confirmOpen
+          right={confirmDeletePosition.right}
+          bottom={confirmDeletePosition.bottom}
+          renameLabel="Rename"
+          deleteLabel="Delete"
+          deleteTitle="Delete tag?"
+          deleteDescription={`This will remove "${confirmDeleteTag}" from this collection and its listings.`}
+          onClose={() => {
+            setConfirmDeleteTag(null);
+            setConfirmDeletePosition(null);
+          }}
+          onRename={() => {}}
+          onRequestDelete={() => {}}
+          onCancelDelete={() => {
+            setConfirmDeleteTag(null);
+            setConfirmDeletePosition(null);
+          }}
+          onConfirmDelete={() => {
+            onDeleteTag(confirmDeleteTag);
+            setConfirmDeleteTag(null);
+            setConfirmDeletePosition(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -119,6 +119,7 @@ export default function CollectionPage() {
   const availableTags = Array.from(
     new Set([...(collection?.tags ?? []), ...listings.flatMap((listing) => listing.collectionData.tags)])
   );
+  const hasCreatedTags = availableTags.length > 0;
   const filteredListings = activeTagFilters.length === 0
     ? listings
     : listings.filter((listing) =>
@@ -234,17 +235,19 @@ export default function CollectionPage() {
             compactProgress={mobileHeaderProgress}
             rightSlot={(
               <>
-                <ControlPillButton
-                  onClick={(event) => {
-                    setDesktopSortAnchor(null);
-                    setTagPanelState({ mode: 'filter', anchorRect: event.currentTarget.getBoundingClientRect() });
-                  }}
-                  active={hasActiveTagFilters}
-                  badge={hasActiveTagFilters ? activeTagFilters.length : null}
-                >
-                  <Tag size={16} />
-                  Tags
-                </ControlPillButton>
+                {hasCreatedTags && (
+                  <ControlPillButton
+                    onClick={(event) => {
+                      setDesktopSortAnchor(null);
+                      setTagPanelState({ mode: 'filter', anchorRect: event.currentTarget.getBoundingClientRect() });
+                    }}
+                    active={hasActiveTagFilters}
+                    badge={hasActiveTagFilters ? activeTagFilters.length : null}
+                  >
+                    <Tag size={16} />
+                    Tags
+                  </ControlPillButton>
+                )}
                 <ControlPillButton
                   onClick={(event) => {
                     const rect = event.currentTarget.getBoundingClientRect();
@@ -438,18 +441,20 @@ export default function CollectionPage() {
                     <Map size={16} />
                   </button>
                 </div>
-                <ControlPillButton
-                  onClick={() => {
-                    setShowSortDrawer(false);
-                    setTagPanelState({ mode: 'filter', anchorRect: null });
-                  }}
-                  active={hasActiveTagFilters}
-                  badge={hasActiveTagFilters ? activeTagFilters.length : null}
-                  className="h-11 w-11 justify-center px-0"
-                  aria-label="Tags"
-                >
-                  <Tag size={18} />
-                </ControlPillButton>
+                {hasCreatedTags && (
+                  <ControlPillButton
+                    onClick={() => {
+                      setShowSortDrawer(false);
+                      setTagPanelState({ mode: 'filter', anchorRect: null });
+                    }}
+                    active={hasActiveTagFilters}
+                    badge={hasActiveTagFilters ? activeTagFilters.length : null}
+                    className="h-11 w-11 justify-center px-0"
+                    aria-label="Tags"
+                  >
+                    <Tag size={18} />
+                  </ControlPillButton>
+                )}
                 {mobileView === 'list' && (
                   <ControlPillButton
                     onClick={() => {

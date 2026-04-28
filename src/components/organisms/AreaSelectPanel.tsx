@@ -10,6 +10,10 @@ import { cn } from '@/lib/utils/cn';
 const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
 const ICON_BUTTON_CLASS =
   'flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35';
+const SECONDARY_BUTTON_CLASS =
+  'h-11 shrink-0 rounded-full bg-white px-4 type-label text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] disabled:opacity-40';
+const PRIMARY_BUTTON_CLASS =
+  'h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] disabled:opacity-40';
 const MOBILE_FLOATING_BAR_STYLE = { paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' } as const;
 
 interface AreaSelectPanelProps {
@@ -19,10 +23,15 @@ interface AreaSelectPanelProps {
   hasVisibleBoundary?: boolean;
   isDrawing: boolean;
   pointCount: number;
+  shapeCount?: number;
+  canAddShape?: boolean;
+  canClearShapes?: boolean;
   canUndoBoundary: boolean;
   canRedoBoundary: boolean;
   onBack: () => void;
   onApply: () => void;
+  onAddShape?: () => void;
+  onClearShapes?: () => void;
   onToggleNeighborhood: (id: string) => void;
   onCloseNeighborhood: () => void;
   onUndoBoundary: () => void;
@@ -35,25 +44,56 @@ export default function AreaSelectPanel({
   selectedNeighborhoods,
   isDrawing,
   pointCount,
+  shapeCount = 0,
+  canAddShape = false,
+  canClearShapes = false,
   canUndoBoundary,
   canRedoBoundary,
   onBack,
   onApply,
+  onAddShape,
+  onClearShapes,
   onToggleNeighborhood,
   onCloseNeighborhood,
   onUndoBoundary,
   onRedoBoundary,
 }: AreaSelectPanelProps) {
   const selectedCount = selectedNeighborhoods.size;
-  const hasSelection = selectedCount > 0 || pointCount > 0;
+  const hasSelection = selectedCount > 0 || pointCount > 0 || shapeCount > 0;
   const title = hasSelection
     ? selectedCount > 0
       ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
       : `${MOCK_LISTINGS.length} listings`
     : 'Tap any area to pick or remove it';
 
-  const desktopTopLabel = isDrawing ? 'Tap map to draw' : title;
-  const mobileTopLabel = isDrawing ? 'Tap map to draw' : title;
+  const drawHint = shapeCount > 0
+    ? `${shapeCount} shape${shapeCount === 1 ? '' : 's'}`
+    : pointCount > 0
+      ? `${pointCount} point${pointCount === 1 ? '' : 's'}`
+      : 'Tap map to draw';
+  const desktopTopLabel = isDrawing ? drawHint : title;
+  const mobileTopLabel = isDrawing ? drawHint : title;
+  const showDrawControls = isDrawing && (pointCount > 0 || shapeCount > 0);
+  const renderDrawControls = () => (
+    <div className="flex min-w-0 items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={onAddShape}
+        disabled={!canAddShape}
+        className={SECONDARY_BUTTON_CLASS}
+      >
+        Add shape
+      </button>
+      <button
+        type="button"
+        onClick={onClearShapes}
+        disabled={!canClearShapes}
+        className={SECONDARY_BUTTON_CLASS}
+      >
+        Clear
+      </button>
+    </div>
+  );
 
   return (
     <>
@@ -67,9 +107,15 @@ export default function AreaSelectPanel({
           >
             Cancel
           </button>
-          <div className="pointer-events-auto mx-auto flex min-h-11 min-w-0 w-full max-w-[340px] items-center justify-center rounded-full bg-white/70 px-4 py-2 text-[var(--color-text-primary)] backdrop-blur-xl">
-            <p className="min-w-0 text-center type-body leading-tight whitespace-normal">{desktopTopLabel}</p>
-          </div>
+          {showDrawControls ? (
+            <div className="pointer-events-auto mx-auto flex min-h-11 min-w-0 items-center justify-center">
+              {renderDrawControls()}
+            </div>
+          ) : (
+            <div className="pointer-events-auto mx-auto flex min-h-11 min-w-0 w-full max-w-[340px] items-center justify-center rounded-full bg-white/70 px-4 py-2 text-[var(--color-text-primary)] backdrop-blur-xl">
+              <p className="min-w-0 text-center type-body leading-tight whitespace-normal">{desktopTopLabel}</p>
+            </div>
+          )}
           <div className="pointer-events-auto flex shrink-0 items-center gap-2">
             <button onClick={onUndoBoundary} disabled={!canUndoBoundary} className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)] disabled:opacity-35">
               <Undo2 size={15} />
@@ -79,7 +125,7 @@ export default function AreaSelectPanel({
             </button>
             <button
               onClick={onApply}
-              className="h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] lg:px-9"
+              className={cn(PRIMARY_BUTTON_CLASS, 'lg:px-9')}
             >
               Done
             </button>
@@ -95,12 +141,18 @@ export default function AreaSelectPanel({
           >
             <ArrowLeft size={18} strokeWidth={2.2} />
           </button>
-          <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-4 text-[var(--color-text-primary)] backdrop-blur-xl">
-            <p className="min-w-0 truncate type-body leading-tight">{mobileTopLabel}</p>
-          </div>
+          {showDrawControls ? (
+            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center justify-center">
+              {renderDrawControls()}
+            </div>
+          ) : (
+            <div className="pointer-events-auto flex h-11 min-w-0 flex-1 items-center rounded-full bg-white/70 px-4 text-[var(--color-text-primary)] backdrop-blur-xl">
+              <p className="min-w-0 truncate type-body leading-tight">{mobileTopLabel}</p>
+            </div>
+          )}
           <button
             onClick={onApply}
-            className="pointer-events-auto ml-auto h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)]"
+            className={cn(PRIMARY_BUTTON_CLASS, 'pointer-events-auto ml-auto')}
           >
             Done
           </button>

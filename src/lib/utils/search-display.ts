@@ -215,7 +215,7 @@ export function getSavedSearchCriteriaSummary(search: SavedSearch) {
     searchAreaNames: search.locations
       .filter((location) => (location.boundary?.length ?? 0) >= 3)
       .map((location) => location.name),
-    hasCustomBoundary: (search.areaBoundary?.length ?? 0) >= 3,
+    hasCustomBoundary: (search.areaBoundaries?.length ?? 0) > 0 || (search.areaBoundary?.length ?? 0) >= 3,
   });
   const locationSummary = getLocationSummaryLabel(locationLabels);
   const scopeSummary = locationSummary ?? areaLabel;

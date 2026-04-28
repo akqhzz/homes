@@ -61,7 +61,7 @@ export default function DesktopSidebar() {
         className="type-title-lg mt-0 flex h-11 w-11 items-center justify-center leading-none tracking-[-0.06em] text-[var(--color-text-primary)]"
         aria-label="Homes"
       >
-        h.
+        D.
       </button>
 
       <nav className="mt-[18.5rem] flex flex-col items-center gap-6">

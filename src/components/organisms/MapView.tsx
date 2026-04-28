@@ -81,6 +81,7 @@ interface MapViewProps {
   onNeighborhoodHover?: (neighborhood: Neighborhood | null) => void;
   onAreaMapClick?: (coordinates: { lat: number; lng: number }) => void;
   drawnBoundary?: { lat: number; lng: number }[];
+  drawnBoundaries?: { lat: number; lng: number }[][];
   searchedLocations?: Location[];
   showAmenities?: boolean;
   isAreaMode?: boolean;
@@ -97,6 +98,7 @@ export default function MapView({
   onNeighborhoodHover,
   onAreaMapClick,
   drawnBoundary = [],
+  drawnBoundaries,
   searchedLocations = [],
   showAmenities = false,
   isAreaMode = false,
@@ -127,6 +129,7 @@ export default function MapView({
     ? 'mapbox://styles/mapbox/satellite-streets-v12'
     : 'mapbox://styles/mapbox/standard';
   const isDesktopViewport = typeof window !== 'undefined' && window.innerWidth >= 1024;
+  const visibleDrawnBoundaries = drawnBoundaries ?? (drawnBoundary.length > 0 ? [drawnBoundary] : []);
 
   const handleMarkerClick = useCallback(
     (listingId: string) => {
@@ -566,10 +569,15 @@ export default function MapView({
           </Source>
         ))}
 
-      {drawnBoundary.length > 1 && (
-        <Source id="drawn-search-boundary" type="geojson" data={getDrawnBoundaryFeature(drawnBoundary)}>
+      {visibleDrawnBoundaries.map((boundary, boundaryIndex) => boundary.length > 1 && (
+        <Source
+          key={`drawn-search-boundary-${boundaryIndex}`}
+          id={`drawn-search-boundary-${boundaryIndex}`}
+          type="geojson"
+          data={getDrawnBoundaryFeature(boundary)}
+        >
           <Layer
-            id="drawn-search-boundary-line"
+            id={`drawn-search-boundary-line-${boundaryIndex}`}
             type="line"
             layout={{
               'line-join': 'round',
@@ -583,9 +591,9 @@ export default function MapView({
               'line-emissive-strength': 0.8,
             }}
           />
-          {drawnBoundary.length > 2 && (
+          {boundary.length > 2 && (
             <Layer
-              id="drawn-search-boundary-fill"
+              id={`drawn-search-boundary-fill-${boundaryIndex}`}
               type="fill"
               paint={{
                 'fill-color': ACTIVE_BOUNDARY_STYLE.fillColor,
@@ -595,18 +603,18 @@ export default function MapView({
             />
           )}
         </Source>
-      )}
+      ))}
 
-      {drawnBoundary.map((point, index) => (
+      {visibleDrawnBoundaries.flatMap((boundary, boundaryIndex) => boundary.map((point, pointIndex) => (
         <Marker
-          key={`draw-point-${point.lat}-${point.lng}-${index}`}
+          key={`draw-point-${boundaryIndex}-${point.lat}-${point.lng}-${pointIndex}`}
           longitude={point.lng}
           latitude={point.lat}
           anchor="center"
         >
           <div className="h-1.5 w-1.5 rounded-full bg-[#255b53] shadow-[0_1px_2px_rgba(15,23,41,0.24)]" />
         </Marker>
-      ))}
+      )))}
 
       {/* Neighbourhood pins (shown at lower zoom or in area-select mode) */}
       {showAmenities && AMENITY_POINTS.map((amenity) => (

@@ -1,23 +1,31 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
-import { Location, SavedSearch, SearchFilters } from '@/lib/types';
+import { Coordinates, Location, SavedSearch, SearchFilters } from '@/lib/types';
 
 export interface SearchSnapshot {
   locations: SavedSearch['locations'];
   filters: SearchFilters;
-  areaBoundary: { lat: number; lng: number }[];
+  areaBoundaries: Coordinates[][];
   neighborhoodIds: string[];
+}
+
+function cloneBoundary(boundary: Coordinates[]) {
+  return boundary.map((point) => ({ ...point }));
+}
+
+function getSearchBoundaries(search: SavedSearch) {
+  return search.areaBoundaries?.map(cloneBoundary) ?? (search.areaBoundary ? [cloneBoundary(search.areaBoundary)] : []);
 }
 
 export function createSearchSnapshot(
   locations: SavedSearch['locations'],
   filters: SearchFilters,
-  areaBoundary: { lat: number; lng: number }[],
+  areaBoundaries: Coordinates[][],
   neighborhoods: Set<string>
 ): SearchSnapshot {
   return {
     locations: locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
     filters: { ...filters, propertyTypes: [...filters.propertyTypes] },
-    areaBoundary: areaBoundary.map((point) => ({ ...point })),
+    areaBoundaries: areaBoundaries.map(cloneBoundary),
     neighborhoodIds: [...neighborhoods].sort(),
   };
 }
@@ -26,7 +34,7 @@ export function searchToSnapshot(search: SavedSearch): SearchSnapshot {
   return {
     locations: search.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
     filters: { ...search.filters, propertyTypes: [...search.filters.propertyTypes] },
-    areaBoundary: search.areaBoundary?.map((point) => ({ ...point })) ?? [],
+    areaBoundaries: getSearchBoundaries(search),
     neighborhoodIds: [...(search.neighborhoodIds ?? [])].sort(),
   };
 }

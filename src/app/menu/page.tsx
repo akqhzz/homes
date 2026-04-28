@@ -15,7 +15,7 @@ export default function MenuPage() {
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="flex-shrink-0 px-4 pt-4 pb-0">
           <div className="mb-1 flex items-center justify-center">
-            <h1 className="type-title-lg text-[var(--color-text-primary)]">h.</h1>
+            <h1 className="type-title-lg text-[var(--color-text-primary)]">D.</h1>
           </div>
         </div>
 

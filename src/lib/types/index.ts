@@ -65,6 +65,7 @@ export interface SavedSearch {
   locations: Location[];
   filters: SearchFilters;
   areaBoundary?: Coordinates[];
+  areaBoundaries?: Coordinates[][];
   neighborhoodIds?: string[];
   createdAt: string;
   newListingsCount?: number;

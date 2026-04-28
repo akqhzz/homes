@@ -12,12 +12,14 @@ import { applyFilters, filterListingsBySearchArea } from '@/lib/search/filters';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
 import RenameDeletePopover from '@/components/molecules/RenameDeletePopover';
+import { EmptyCollectionIllustration } from '@/components/organisms/CollectionListingsGrid';
 import { cn } from '@/lib/utils/cn';
 import { getSavedSearchCriteriaSummary } from '@/lib/utils/search-display';
 
 interface SavedSearchesPanelProps {
   hasActiveCriteria?: boolean;
   currentBoundary?: Coordinates[];
+  currentBoundaries?: Coordinates[][];
   currentNeighborhoodIds?: string[];
   activeSearchDirty?: boolean;
   currentListings?: Listing[];
@@ -35,6 +37,7 @@ interface SearchMenuState {
 export default function SavedSearchesPanel({
   hasActiveCriteria,
   currentBoundary = [],
+  currentBoundaries,
   currentNeighborhoodIds = [],
   activeSearchDirty = false,
   currentListings = [],
@@ -148,6 +151,7 @@ export default function SavedSearchesPanel({
       locations: selectedLocations,
       filters,
       areaBoundary: currentBoundary,
+      areaBoundaries: currentBoundaries ?? (currentBoundary.length >= 3 ? [currentBoundary] : []),
       neighborhoodIds: currentNeighborhoodIds,
       thumbnail: getDefaultThumbnailListing(currentListings)?.images[0],
     });
@@ -228,6 +232,15 @@ export default function SavedSearchesPanel({
       <div className="px-4 py-4">
         <p className="mb-3 type-heading text-[var(--color-text-primary)]">My Searches</p>
         <div className="flex flex-col gap-3">
+          {searches.length === 0 && (
+            <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-7 text-center">
+              <EmptyCollectionIllustration className="mb-3" />
+              <p className="type-heading-sm text-[var(--color-text-primary)]">No saved searches yet</p>
+              <p className="mt-1 max-w-[18rem] type-caption text-[var(--color-text-tertiary)]">
+                Save your current filters and areas to revisit matching homes here.
+              </p>
+            </div>
+          )}
           {searches.map((search) => {
             const isSelected = activeSearchId === search.id;
             const showUpdatedState = updatedSearchId === search.id;
@@ -433,7 +446,7 @@ function getUnseenRecentListingCount(search: SavedSearch, visitedIds: Set<string
   const matchingListings = filterListingsBySearchArea(
     applyFilters(MOCK_LISTINGS, search.filters),
     search.locations,
-    search.areaBoundary ?? [],
+    search.areaBoundaries ?? search.areaBoundary ?? [],
     new Set(search.neighborhoodIds ?? [])
   );
 
