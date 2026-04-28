@@ -118,13 +118,13 @@ button,
 .type-3,  .type-caption     { font-family: var(--font-body-sans); font-size: 0.75rem;   font-weight: 500; line-height: 1.33; }
 .type-4,  .type-body        { font-family: var(--font-body-sans); font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
 .type-5,  .type-body-lg     { font-family: var(--font-body-sans); font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
-.type-6,  .type-heading-sm  { font-family: var(--font-heading);   font-size: 1rem;      font-weight: 500; line-height: 1.5;  }
-.type-7,  .type-heading     { font-family: var(--font-heading);   font-size: 1.125rem;  font-weight: 500; line-height: 1.28; }
-.type-8,  .type-subtitle    { font-family: var(--font-heading);   font-size: 1.25rem;   font-weight: 500; line-height: 1.24; }
-.type-9,  .type-title       { font-family: var(--font-heading);   font-size: 1.5rem;    font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; }
-.type-10, .type-title-lg    { font-family: var(--font-heading);   font-size: 1.875rem;  font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; }
-.type-11, .type-hero        { font-family: var(--font-heading);   font-size: 2.25rem;   font-weight: 500; line-height: 1.1;  letter-spacing: -0.01em; }
-.type-12, .type-display     { font-family: var(--font-heading);   font-size: 3.75rem;   font-weight: 500; line-height: 0.96; letter-spacing: -0.02em; }
+.type-6,  .type-heading-sm  { font-family: var(--font-heading);   font-size: 1rem;      font-weight: 500; line-height: 1.5;  text-transform: capitalize; }
+.type-7,  .type-heading     { font-family: var(--font-heading);   font-size: 1.125rem;  font-weight: 500; line-height: 1.28; text-transform: capitalize; }
+.type-8,  .type-subtitle    { font-family: var(--font-heading);   font-size: 1.25rem;   font-weight: 500; line-height: 1.24; text-transform: capitalize; }
+.type-9,  .type-title       { font-family: var(--font-heading);   font-size: 1.5rem;    font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; text-transform: capitalize; }
+.type-10, .type-title-lg    { font-family: var(--font-heading);   font-size: 1.875rem;  font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; text-transform: capitalize; }
+.type-11, .type-hero        { font-family: var(--font-heading);   font-size: 2.25rem;   font-weight: 500; line-height: 1.1;  letter-spacing: -0.01em; text-transform: capitalize; }
+.type-12, .type-display     { font-family: var(--font-heading);   font-size: 3.75rem;   font-weight: 500; line-height: 0.96; letter-spacing: -0.02em; text-transform: capitalize; }
 
 /* UI tokens — weight variants for labels and buttons                */
 .type-label   { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1.25; }
@@ -136,10 +136,13 @@ main {
   height: 100%;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
+/* Hide all scrollbars globally */
+*, *::before, *::after {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mapbox overrides */
@@ -172,31 +175,24 @@ main {
   outline-offset: 2px;
 }
 
-/* Smooth drag */
-.no-select {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
+@layer utilities {
+  /* Disables text selection and tap highlight — used on draggable/swipeable elements */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-/* Glass morphism */
-.glass {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.9);
-}
+  /* Frosted glass surface */
+  .glass {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.9);
+  }
 
-/* Hide scrollbar but keep functionality */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.layout-content-wide {
-  width: 100%;
-  max-width: var(--layout-content-max);
-  margin-inline: auto;
+  .layout-content-wide {
+    width: 100%;
+    max-width: var(--layout-content-max);
+    margin-inline: auto;
+  }
 }

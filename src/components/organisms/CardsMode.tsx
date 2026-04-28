@@ -813,7 +813,7 @@ function CardModeListingCard({
           )}
           <div
             ref={imageScrollRef}
-            className="h-full overflow-y-auto rounded-[22px] bg-white scrollbar-hide"
+            className="h-full overflow-y-auto rounded-[22px] bg-white"
             style={{
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain',

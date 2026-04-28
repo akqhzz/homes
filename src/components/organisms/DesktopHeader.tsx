@@ -20,7 +20,7 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
-import { useSavedStore } from '@/store/savedStore';
+import { DEFAULT_COLLECTION_ID, useSavedStore } from '@/store/savedStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import { useLocationSearch } from '@/hooks/useLocationSearch';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
@@ -264,7 +264,7 @@ export default function DesktopHeader({
               <div className="absolute left-0 right-0 top-[54px] z-[80] rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
                 {(selectedLocations.length > 0 || visibleAreaChips.length > 0) && (
                   <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
-                    <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
+                    <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
                       {selectedLocations.map((location) => (
                         <SearchLocationChip
                           key={location.id}
@@ -442,6 +442,7 @@ export default function DesktopHeader({
                   <div className="flex flex-col gap-2.5">
                     {collections.slice(0, 4).map((collection) => {
                       const listing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
+                      const isDefaultCollection = collection.id === DEFAULT_COLLECTION_ID;
                       return (
                         <div
                           key={collection.id}
@@ -504,14 +505,16 @@ export default function DesktopHeader({
                               )}
                               <span className="block type-caption text-[var(--color-text-tertiary)]">{collection.listings.length} Listing{collection.listings.length === 1 ? '' : 's'}</span>
                             </span>
-                            <button
-                              type="button"
-                              onClick={(event) => openCollectionMenu(event, collection.id)}
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
-                              aria-label="Collection options"
-                            >
-                              <Ellipsis size={16} />
-                            </button>
+                            {!isDefaultCollection && (
+                              <button
+                                type="button"
+                                onClick={(event) => openCollectionMenu(event, collection.id)}
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
+                                aria-label="Collection options"
+                              >
+                                <Ellipsis size={16} />
+                              </button>
+                            )}
                           </div>
                         </div>
                       );

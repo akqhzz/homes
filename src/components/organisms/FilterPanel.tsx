@@ -290,7 +290,7 @@ export function FilterPanelFooter({
   return (
     <div className="space-y-3">
       {selectedFilterChips.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {selectedFilterChips.map((chip) => (
             <SearchLocationChip
               key={chip.key}

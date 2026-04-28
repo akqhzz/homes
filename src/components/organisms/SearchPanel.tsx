@@ -193,7 +193,7 @@ export default function SearchPanel({
         >
           {(selectedLocations.length > 0 || visibleAreaChips.length > 0) && (
             <div className="flex items-center gap-2 border-b border-[var(--color-surface)] px-2 py-2">
-              <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-hide">
+              <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
                 {selectedLocations.map((loc) => (
                   <SearchLocationChip
                     key={loc.id}
