@@ -42,7 +42,15 @@ export default function RenameDeletePopover({
       <div
         className="fixed inset-0 z-[95]"
         data-rename-delete-popover="true"
-        onClick={onClose}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
       />
       <AnimatePresence>
         {!confirmOpen && (
@@ -54,10 +62,16 @@ export default function RenameDeletePopover({
             className="fixed z-[100] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
             style={{ bottom, right }}
             data-rename-delete-popover="true"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
-              onClick={onRename}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onRename();
+              }}
               className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F1729] hover:bg-[#F5F6F7]"
             >
               <Pencil size={14} />
@@ -65,7 +79,11 @@ export default function RenameDeletePopover({
             </button>
             <button
               type="button"
-              onClick={onRequestDelete}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onRequestDelete();
+              }}
               className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#EF4444] hover:bg-red-50"
             >
               <Trash2 size={14} />
@@ -84,20 +102,30 @@ export default function RenameDeletePopover({
             className="fixed z-[100] w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
             style={{ bottom, right }}
             data-rename-delete-popover="true"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
             <p className="type-heading-sm text-[#0F1729]">{deleteTitle}</p>
             <p className="mt-1 type-caption text-[#6B7280]">{deleteDescription}</p>
             <div className="mt-3 flex gap-2">
               <button
                 type="button"
-                onClick={onCancelDelete}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onCancelDelete();
+                }}
                 className="h-9 flex-1 rounded-full bg-[#F5F6F7] type-caption font-semibold text-[#0F1729]"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={onConfirmDelete}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onConfirmDelete();
+                }}
                 className="h-9 flex-1 rounded-full bg-[#EF4444] type-caption font-semibold text-white"
               >
                 Delete

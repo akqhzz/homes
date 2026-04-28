@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/atoms/ListingParts';
 import PriceText from '@/components/atoms/PriceText';
+import ListingVisitTracker from '@/components/effects/ListingVisitTracker';
 
 export default function ListingDetailSheet() {
   const detailListingId = useUIStore((s) => s.detailListingId);
@@ -231,6 +232,7 @@ export default function ListingDetailSheet() {
 
   return (
     <>
+      <ListingVisitTracker listingId={listing.id} />
       <div className="lg:hidden">
         <MobileDrawer
           title={listing.address.split(',')[0]}

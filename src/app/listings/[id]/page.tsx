@@ -11,6 +11,7 @@ import ListingImageGallery from '@/components/organisms/ListingImageGallery';
 import ListingLocationMap from '@/components/organisms/ListingLocationMap';
 import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/components/atoms/ListingParts';
 import PriceText from '@/components/atoms/PriceText';
+import ListingVisitTracker from '@/components/effects/ListingVisitTracker';
 
 interface ListingPageProps {
   params: Promise<{ id: string }>;
@@ -30,6 +31,7 @@ export default async function ListingPage({ params }: ListingPageProps) {
 
   return (
     <PageShell showBottomNav={false} desktopWide desktopHeaderVariant="listing" desktopHeaderListingId={listing.id}>
+      <ListingVisitTracker listingId={listing.id} />
       <main className="h-full overflow-y-auto bg-white pb-24 lg:pb-0">
         <div className="layout-content-wide px-4 py-4 lg:px-8 lg:pb-7 lg:pt-3">
           <div className="relative">

@@ -3,6 +3,32 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Collection } from '@/lib/types';
 
+export const DEFAULT_COLLECTION_ID = 'col-my-favorites';
+
+const DEFAULT_COLLECTION: Collection = {
+  id: DEFAULT_COLLECTION_ID,
+  name: 'My Favorites',
+  listings: [],
+  collaborators: [],
+  tags: [],
+  createdAt: '2026-04-27T00:00:00.000Z',
+  updatedAt: '2026-04-27T00:00:00.000Z',
+};
+
+function withDefaultCollection(collections: Collection[]) {
+  const defaultCollection = collections.find((collection) => collection.id === DEFAULT_COLLECTION_ID);
+  const otherCollections = collections.filter((collection) => collection.id !== DEFAULT_COLLECTION_ID);
+  return [
+    ...otherCollections,
+    {
+      ...DEFAULT_COLLECTION,
+      ...defaultCollection,
+      id: DEFAULT_COLLECTION_ID,
+      name: DEFAULT_COLLECTION.name,
+    },
+  ];
+}
+
 interface SavedStore {
   collections: Collection[];
   likedListingIds: Set<string>;
@@ -31,7 +57,7 @@ interface SavedStore {
 export const useSavedStore = create<SavedStore>()(
   persist(
     (set, get) => ({
-      collections: [],
+      collections: withDefaultCollection([]),
       likedListingIds: new Set<string>(),
 
       saveListing: (listingId) =>
@@ -64,7 +90,7 @@ export const useSavedStore = create<SavedStore>()(
 
       addToCollection: (collectionId, listingId) =>
         set((s) => ({
-          collections: s.collections.map((c) => {
+          collections: withDefaultCollection(s.collections).map((c) => {
             if (c.id !== collectionId) return c;
             if (c.listings.some((l) => l.listingId === listingId)) return c;
             return {
@@ -107,7 +133,7 @@ export const useSavedStore = create<SavedStore>()(
         const id = `col-${Date.now()}`;
         set((s) => ({
           collections: [
-            ...s.collections,
+            ...withDefaultCollection(s.collections),
             {
               id,
               name,
@@ -122,15 +148,19 @@ export const useSavedStore = create<SavedStore>()(
         return id;
       },
 
-      renameCollection: (id, name) =>
+      renameCollection: (id, name) => {
+        if (id === DEFAULT_COLLECTION_ID) return;
         set((s) => ({
           collections: s.collections.map((c) =>
             c.id === id ? { ...c, name, updatedAt: new Date().toISOString() } : c
           ),
-        })),
+        }));
+      },
 
-      deleteCollection: (id) =>
-        set((s) => ({ collections: s.collections.filter((c) => c.id !== id) })),
+      deleteCollection: (id) => {
+        if (id === DEFAULT_COLLECTION_ID) return;
+        set((s) => ({ collections: s.collections.filter((c) => c.id !== id) }));
+      },
 
       addCollectionTag: (collectionId, tag) =>
         set((s) => ({
@@ -247,11 +277,12 @@ export const useSavedStore = create<SavedStore>()(
       name: 'homes-saved-v2',
       // Serialize Sets properly
       partialize: (s) => ({
-        collections: s.collections,
+        collections: withDefaultCollection(s.collections),
         likedListingIds: Array.from(s.likedListingIds),
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          state.collections = withDefaultCollection(state.collections);
           state.likedListingIds = new Set(state.likedListingIds as unknown as string[]);
         }
       },

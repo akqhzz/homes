@@ -13,6 +13,7 @@ import {
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useMapStore } from '@/store/mapStore';
+import { useAreaScopeStore } from '@/store/areaScopeStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import BottomNav from '@/components/organisms/BottomNav';
 import DesktopSidebar from '@/components/organisms/DesktopSidebar';
@@ -66,6 +67,23 @@ function getSearchViewState(
   };
 }
 
+function getAreaViewStateScopeKey(
+  selectedLocations: SavedSearch['locations'],
+  boundary: { lat: number; lng: number }[],
+  neighborhoodIds: Set<string>
+) {
+  return JSON.stringify({
+    locations: selectedLocations.map((location) => ({
+      id: location.id,
+      coordinates: location.coordinates,
+      bbox: location.bbox ?? null,
+      boundary: location.boundary ?? [],
+    })),
+    boundary,
+    neighborhoodIds: [...neighborhoodIds].sort(),
+  });
+}
+
 export default function MapPage() {
   const {
     activePanel,
@@ -84,6 +102,12 @@ export default function MapPage() {
   const setViewState = useMapStore((s) => s.setViewState);
   const viewportBounds = useMapStore((s) => s.viewportBounds);
   const visitedListingIds = useMapStore((s) => s.visitedListingIds);
+  const appliedBoundary = useAreaScopeStore((s) => s.appliedBoundary);
+  const appliedNeighborhoods = useAreaScopeStore((s) => s.appliedNeighborhoods);
+  const setAppliedBoundary = useAreaScopeStore((s) => s.setAppliedBoundary);
+  const setAppliedNeighborhoods = useAreaScopeStore((s) => s.setAppliedNeighborhoods);
+  const setAppliedArea = useAreaScopeStore((s) => s.setAppliedArea);
+  const clearAppliedAreaScope = useAreaScopeStore((s) => s.clearAppliedArea);
   const {
     searches,
     activeSearchId,
@@ -102,8 +126,6 @@ export default function MapPage() {
   const [clearedBoundaryRedoSnapshot, setClearedBoundaryRedoSnapshot] = useState<{ lat: number; lng: number }[] | null>(null);
   const [areaUndoStack, setAreaUndoStack] = useState<Set<string>[]>([]);
   const [areaRedoStack, setAreaRedoStack] = useState<Set<string>[]>([]);
-  const [appliedNeighborhoods, setAppliedNeighborhoods] = useState<Set<string>>(new Set());
-  const [appliedBoundary, setAppliedBoundary] = useState<{ lat: number; lng: number }[]>([]);
   const [preSavedSearchState, setPreSavedSearchState] = useState<SearchSnapshot | null>(null);
   const [mobileListingsView, setMobileListingsView] = useState<'map' | 'list'>('map');
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -150,6 +172,11 @@ export default function MapPage() {
   const areaSelectHasVisibleBoundary =
     selectedNeighborhoods.size > 0 || drawnBoundary.length > 0 || hasSearchBoundary;
   const isMobileListingsList = mobileListingsView === 'list' && !isAreaSelect;
+  const areaViewStateScopeKey = useMemo(
+    () => getAreaViewStateScopeKey(selectedLocations, appliedBoundary, appliedNeighborhoods),
+    [appliedBoundary, appliedNeighborhoods, selectedLocations]
+  );
+  const previousAreaViewStateScopeKey = useRef(areaViewStateScopeKey);
 
   const handleCarouselPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     carouselDragStart.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
@@ -231,10 +258,12 @@ export default function MapPage() {
 
   useEffect(() => {
     if (isAreaSelect) return;
+    if (previousAreaViewStateScopeKey.current === areaViewStateScopeKey) return;
+    previousAreaViewStateScopeKey.current = areaViewStateScopeKey;
     const nextViewState = getSearchViewState(selectedLocations, appliedBoundary, appliedNeighborhoods);
     if (!nextViewState) return;
     setViewState(nextViewState);
-  }, [appliedBoundary, appliedNeighborhoods, isAreaSelect, selectedLocations, setViewState]);
+  }, [appliedBoundary, appliedNeighborhoods, areaViewStateScopeKey, isAreaSelect, selectedLocations, setViewState]);
 
   const openMobileListingsList = () => {
     setActivePanel('none');
@@ -322,8 +351,7 @@ export default function MapPage() {
   };
 
   const clearAppliedArea = () => {
-    setAppliedNeighborhoods(new Set());
-    setAppliedBoundary([]);
+    clearAppliedAreaScope();
     setSelectedNeighborhoods(new Set());
     setDrawnBoundary([]);
     setRedoBoundary([]);
@@ -464,16 +492,14 @@ export default function MapPage() {
   };
 
   const applyAreaSelect = () => {
-    setAppliedNeighborhoods(new Set(selectedNeighborhoods));
-    setAppliedBoundary(drawnBoundary);
+    setAppliedArea({ neighborhoods: selectedNeighborhoods, boundary: drawnBoundary });
     resetAreaSelectDraft();
   };
 
   const applySavedSearch = (search: SavedSearch) => {
     const nextNeighborhoods = new Set(search.neighborhoodIds ?? []);
     const nextBoundary = search.areaBoundary?.map((point) => ({ ...point })) ?? [];
-    setAppliedNeighborhoods(nextNeighborhoods);
-    setAppliedBoundary(nextBoundary);
+    setAppliedArea({ neighborhoods: nextNeighborhoods, boundary: nextBoundary });
     setSelectedNeighborhoods(new Set(nextNeighborhoods));
     setDrawnBoundary(nextBoundary);
     setRedoBoundary([]);
@@ -506,8 +532,7 @@ export default function MapPage() {
     if (!fallback) return;
     setLocations(fallback.locations);
     replaceFilters(fallback.filters);
-    setAppliedBoundary(fallback.areaBoundary);
-    setAppliedNeighborhoods(new Set(fallback.neighborhoodIds));
+    setAppliedArea({ boundary: fallback.areaBoundary, neighborhoods: fallback.neighborhoodIds });
     setSelectedNeighborhoods(new Set(fallback.neighborhoodIds));
     setDrawnBoundary(fallback.areaBoundary);
     setRedoBoundary([]);

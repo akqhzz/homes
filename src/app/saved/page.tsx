@@ -4,8 +4,9 @@ import Image from 'next/image';
 import { Check, Ellipsis } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useSavedStore } from '@/store/savedStore';
+import { DEFAULT_COLLECTION_ID, useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
+import { Collection } from '@/lib/types';
 import PageShell from '@/components/templates/PageShell';
 import Avatar from '@/components/atoms/Avatar';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
@@ -207,11 +208,10 @@ export default function SavedPage() {
             </div>
           ) : (
             <div className="layout-content-wide">
-              <div className="grid w-full grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5">
+              <div className="grid w-full grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 3xl:grid-cols-6">
               {collections.map((col) => {
-              const firstListing = col.listings.length > 0
-                ? MOCK_LISTINGS.find((l) => l.id === col.listings[0].listingId)
-                : null;
+              const coverImages = getCollectionCoverImages(col);
+              const isDefaultCollection = col.id === DEFAULT_COLLECTION_ID;
 
               return (
                 <motion.article
@@ -228,16 +228,7 @@ export default function SavedPage() {
                       if (event.key === 'Enter' || event.key === ' ') router.push(`/saved/${col.id}`);
                     }}
                   >
-                    {/* Cover — first listing image, full fill */}
-                    <div className="relative aspect-[16/11] overflow-hidden bg-[var(--color-surface)] sm:aspect-[4/3]">
-                      {firstListing ? (
-                        <Image src={firstListing.images[0]} alt="" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <EmptyCollectionIllustration className="mb-0 text-4xl opacity-25" />
-                        </div>
-                      )}
-                    </div>
+                    <CollectionCoverGrid images={coverImages} />
 
                     {/* pr-12 reserves space for the absolutely-positioned ... button */}
                     <div className="px-4 pb-3.5 pt-2 pr-12 flex items-start gap-2">
@@ -294,13 +285,15 @@ export default function SavedPage() {
                   </div>
 
                   {/* ... button — outside overflow-hidden, positioned at article level */}
-                  <button
-                    onClick={(event) => openMenu(event, col.id)}
-                    className="absolute bottom-3 right-1 flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-text-secondary)]"
-                    aria-label="Collection options"
-                  >
-                    <Ellipsis size={17} />
-                  </button>
+                  {!isDefaultCollection && (
+                    <button
+                      onClick={(event) => openMenu(event, col.id)}
+                      className="absolute bottom-3 right-1 flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-text-secondary)]"
+                      aria-label="Collection options"
+                    >
+                      <Ellipsis size={17} />
+                    </button>
+                  )}
                 </motion.article>
               );
             })}
@@ -352,5 +345,43 @@ export default function SavedPage() {
         )}
       </AnimatePresence>
     </PageShell>
+  );
+}
+
+function getCollectionCoverImages(collection: Collection) {
+  return [...collection.listings]
+    .sort((a, b) => a.order - b.order)
+    .map((collectionListing) => MOCK_LISTINGS.find((listing) => listing.id === collectionListing.listingId)?.images[0])
+    .filter((image): image is string => Boolean(image))
+    .slice(0, 3);
+}
+
+function CollectionCoverGrid({ images }: { images: string[] }) {
+  return (
+    <div className="grid aspect-[16/9] grid-cols-[2fr_1fr] gap-[3px] overflow-hidden bg-white">
+      <CollectionCoverSlot image={images[0]} className="h-full" sizes="(max-width: 768px) 66vw, 360px" />
+      <div className="grid min-h-0 grid-rows-2 gap-[3px]">
+        <CollectionCoverSlot image={images[1]} sizes="(max-width: 768px) 33vw, 180px" />
+        <CollectionCoverSlot image={images[2]} sizes="(max-width: 768px) 33vw, 180px" />
+      </div>
+    </div>
+  );
+}
+
+function CollectionCoverSlot({
+  image,
+  className,
+  sizes,
+}: {
+  image?: string;
+  className?: string;
+  sizes: string;
+}) {
+  return (
+    <div className={`relative min-h-0 overflow-hidden bg-[var(--color-surface)] ${className ?? ''}`}>
+      {image && (
+        <Image src={image} alt="" fill sizes={sizes} className="object-cover" />
+      )}
+    </div>
   );
 }

@@ -3,6 +3,9 @@ import { Tag } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import ListingCard from '@/components/molecules/ListingCard';
 
+const TALL_COLLECTION_IMAGE_HEIGHT = 218;
+const TALL_COLLECTION_TOTAL_HEIGHT = 296;
+
 interface CollectionListingCardProps {
   listing: Listing;
   notes?: string;
@@ -37,6 +40,8 @@ export default function CollectionListingCard({
         imageTouchMode="vertical-scroll"
         contentTouchMode="vertical-scroll"
         desktopTall={tall}
+        carouselImageHeight={tall ? TALL_COLLECTION_IMAGE_HEIGHT : undefined}
+        carouselTotalHeight={tall ? TALL_COLLECTION_TOTAL_HEIGHT : undefined}
         likedOverride={!pendingRemoval}
         onLikeToggle={() => onToggleLike()}
         onSavedToCollection={onSavedToCollection}

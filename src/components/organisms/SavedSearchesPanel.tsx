@@ -331,7 +331,7 @@ export default function SavedSearchesPanel({
                   </button>
                   <div className="flex items-center justify-end gap-2">
                     {showUpdatedState ? (
-                      <span className="shrink-0 rounded-full border border-[var(--color-success)] bg-[color-mix(in_srgb,var(--color-success)_10%,white)] px-3 py-2 type-caption text-[var(--color-success)]">
+                      <span className="shrink-0 rounded-full border border-[var(--color-brand-600)] bg-[var(--color-brand-50)] px-3 py-2 type-caption text-[var(--color-brand-700)]">
                         Updated
                       </span>
                     ) : isSelected && activeSearchDirty ? (

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Check, Ellipsis, Plus } from 'lucide-react';
-import { useSavedStore } from '@/store/savedStore';
+import { DEFAULT_COLLECTION_ID, useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import MobileDrawer from '@/components/molecules/MobileDrawer';
 import CreateInlineField from '@/components/molecules/CreateInlineField';
@@ -22,6 +22,9 @@ interface SaveToCollectionSheetProps {
   anchorRect?: DOMRect | null;
   excludedCollectionIds?: string[];
 }
+
+const DESKTOP_DROPDOWN_MAX_HEIGHT = 360;
+const DESKTOP_VIEWPORT_PADDING = 16;
 
 export default function SaveToCollectionSheet({
   listingId,
@@ -130,6 +133,7 @@ export default function SaveToCollectionSheet({
 
       <div className="flex flex-col gap-2.5">
         {collections.map((collection) => {
+          const isDefaultCollection = collection.id === DEFAULT_COLLECTION_ID;
           const alreadySaved =
             !excludedCollectionIds.includes(collection.id) &&
             collection.listings.some((item) => item.listingId === listingId);
@@ -202,14 +206,16 @@ export default function SaveToCollectionSheet({
                     {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
                   </span>
                 </span>
-                <button
-                  type="button"
-                  onClick={(event) => openMenu(event, collection.id)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
-                  aria-label="Collection options"
-                >
-                  <Ellipsis size={16} />
-                </button>
+                {!isDefaultCollection && (
+                  <button
+                    type="button"
+                    onClick={(event) => openMenu(event, collection.id)}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
+                    aria-label="Collection options"
+                  >
+                    <Ellipsis size={16} />
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -221,7 +227,11 @@ export default function SaveToCollectionSheet({
   const viewportWidth = typeof window === 'undefined' ? 390 : window.innerWidth;
   const viewportHeight = typeof window === 'undefined' ? 844 : window.innerHeight;
   const left = anchorRect ? Math.min(Math.max(anchorRect.right - 320, 16), viewportWidth - 336) : viewportWidth / 2 - 160;
-  const top = anchorRect ? Math.min(anchorRect.bottom + 10, viewportHeight - 420) : 96;
+  const preferredTop = anchorRect ? anchorRect.bottom + 10 : 96;
+  const top = Math.max(
+    DESKTOP_VIEWPORT_PADDING,
+    Math.min(preferredTop, viewportHeight - DESKTOP_DROPDOWN_MAX_HEIGHT - DESKTOP_VIEWPORT_PADDING)
+  );
 
   const drawer = (
     <>
@@ -252,8 +262,9 @@ export default function SaveToCollectionSheet({
           }}
         />
         <div
-          className="fixed z-[60] max-h-[min(640px,calc(100vh-12rem))] w-80 overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+          className="fixed z-[60] max-h-[360px] w-80 overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
           style={{ left, top }}
+          onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
         >
           <p className="mb-3 type-heading text-[var(--color-text-primary)]">Save To Collection</p>
