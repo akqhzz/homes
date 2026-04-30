@@ -1,28 +1,13 @@
 'use client';
 import { create } from 'zustand';
-import { Coordinates, Location, SavedSearch, SearchFilters } from '@/lib/types';
-
-const EMPTY_FILTERS: SearchFilters = {
-  propertyTypes: [],
-};
-
-function normalizeFilters(filters: Partial<SearchFilters> | undefined): SearchFilters {
-  return {
-    ...EMPTY_FILTERS,
-    ...filters,
-    propertyTypes: [...(filters?.propertyTypes ?? [])],
-  };
-}
-
-interface SaveSearchInput {
-  name: string;
-  locations: Location[];
-  filters: SearchFilters;
-  areaBoundary?: Coordinates[];
-  areaBoundaries?: Coordinates[][];
-  neighborhoodIds?: string[];
-  thumbnail?: string;
-}
+import type { SavedSearch } from '@/lib/types';
+import {
+  createSavedSearch,
+  removeSavedSearch,
+  renameSavedSearch,
+  replaceSavedSearch,
+  type SaveSearchInput,
+} from '@/features/saved-searches/lib/savedSearchActions';
 
 interface SavedSearchStore {
   searches: SavedSearch[];
@@ -42,18 +27,7 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
   activeSearchDirty: false,
   saveSearch: (input) => {
     const id = `ss-${Date.now()}`;
-    const search: SavedSearch = {
-      id,
-      name: input.name,
-      locations: input.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
-      filters: normalizeFilters(input.filters),
-      areaBoundary: input.areaBoundary?.map((point) => ({ ...point })),
-      areaBoundaries: input.areaBoundaries?.map((boundary) => boundary.map((point) => ({ ...point }))),
-      neighborhoodIds: input.neighborhoodIds?.length ? [...input.neighborhoodIds] : undefined,
-      createdAt: new Date().toISOString(),
-      newListingsCount: 0,
-      thumbnail: input.thumbnail ?? 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80',
-    };
+    const search = createSavedSearch(input, id, new Date().toISOString());
     set((state) => ({
       searches: [search, ...state.searches],
       activeSearchId: id,
@@ -63,28 +37,16 @@ export const useSavedSearchStore = create<SavedSearchStore>((set) => ({
   },
   updateSearch: (id, input) =>
     set((state) => ({
-      searches: state.searches.map((search) =>
-        search.id === id
-          ? {
-              ...search,
-              locations: input.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
-              filters: normalizeFilters(input.filters),
-              areaBoundary: input.areaBoundary?.map((point) => ({ ...point })),
-              areaBoundaries: input.areaBoundaries?.map((boundary) => boundary.map((point) => ({ ...point }))),
-              neighborhoodIds: input.neighborhoodIds?.length ? [...input.neighborhoodIds] : undefined,
-              createdAt: search.createdAt,
-            }
-          : search
-      ),
+      searches: replaceSavedSearch(state.searches, id, input),
       activeSearchDirty: false,
     })),
   renameSearch: (id, name) =>
     set((state) => ({
-      searches: state.searches.map((search) => (search.id === id ? { ...search, name } : search)),
+      searches: renameSavedSearch(state.searches, id, name),
     })),
   deleteSearch: (id) =>
     set((state) => ({
-      searches: state.searches.filter((search) => search.id !== id),
+      searches: removeSavedSearch(state.searches, id),
       activeSearchId: state.activeSearchId === id ? null : state.activeSearchId,
       activeSearchDirty: state.activeSearchId === id ? false : state.activeSearchDirty,
     })),

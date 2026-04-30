@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Homes
+
+A Next.js real-estate exploration app with an interactive map, listing cards, saved collections, saved searches, filters, and listing detail experiences.
 
 ## Getting Started
 
-First, run the development server:
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quality Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run these before handing off structural or UI changes:
 
-## Learn More
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project Docs
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Architecture](docs/ARCHITECTURE.md): code ownership, folder boundaries, route/client rules.
+- [UI Components](docs/UI_COMPONENTS.md): shared UI primitives, button variants, component styling rules.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Structure At A Glance
 
-## Deploy on Vercel
+- `src/app`: thin route entry files.
+- `src/features`: domain-owned UI, hooks, and logic.
+- `src/components/ui`: shared visual primitives.
+- `src/components/navigation`: shared router-aware controls.
+- `src/components/layout`: app shell, desktop/mobile navigation, and global layout.
+- `src/hooks`: shared browser/interaction hooks.
+- `src/lib`: shared pure logic and external helpers.
+- `src/store`: Zustand adapters.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Editing Guidance
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Before structural edits, read the architecture and UI docs above. This app intentionally uses feature ownership instead of the old atoms/molecules/organisms model.
+
+Before editing Next.js route conventions, read the relevant local Next.js docs under `node_modules/next/dist/docs/`, as required by `AGENTS.md`.
+
+## Manual QA Focus
+
+Tests cover pure helpers, but browser QA is still needed for:
+
+- desktop and mobile explore map
+- filters, saved searches, and area selection
+- listing card save/unsave
+- listing detail page/sheet
+- saved collections and collection detail page
+- cards mode

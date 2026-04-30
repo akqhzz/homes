@@ -1,6 +1,10 @@
 'use client';
 import { create } from 'zustand';
 import type { Coordinates } from '@/lib/types';
+import {
+  cloneBoundaries,
+  cloneNeighborhoods,
+} from '@/features/search/lib/searchActions';
 
 interface AreaScopeStore {
   appliedBoundaries: Coordinates[][];
@@ -13,18 +17,6 @@ interface AreaScopeStore {
     neighborhoods?: Set<string> | string[];
   }) => void;
   clearAppliedArea: () => void;
-}
-
-function cloneBoundary(boundary: Coordinates[]) {
-  return boundary.map((point) => ({ ...point }));
-}
-
-function cloneBoundaries(boundaries: Coordinates[][]) {
-  return boundaries.filter((boundary) => boundary.length >= 3).map(cloneBoundary);
-}
-
-function cloneNeighborhoods(neighborhoods: Set<string> | string[]) {
-  return new Set(neighborhoods);
 }
 
 export const useAreaScopeStore = create<AreaScopeStore>((set) => ({

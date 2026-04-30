@@ -1,6 +1,8 @@
 'use client';
 import { TrendingDown, Home, Search } from 'lucide-react';
-import PageShell from '@/components/templates/PageShell';
+import PageShell from '@/components/layout/PageShell';
+import ActionRow from '@/components/ui/ActionRow';
+import Button from '@/components/ui/Button';
 
 const NOTIFICATIONS = [
   {
@@ -39,18 +41,23 @@ export default function NotificationsPage() {
         <div className="px-4 pt-4 lg:pt-6 pb-5 flex-shrink-0 border-b border-[#F5F6F7]">
           <div className="flex items-center justify-between">
             <h1 className="type-title text-[#0F1729]">Alerts</h1>
-            <button className="type-body font-medium text-[#9CA3AF]">Mark all read</button>
+            <Button variant="ghost" size="sm" className="type-body font-medium text-[#9CA3AF] hover:text-[#0F1729]">
+              Mark all read
+            </Button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto pb-24">
           {NOTIFICATIONS.map((n) => (
-            <button
+            <ActionRow
               key={n.id}
-              className="w-full flex items-start gap-3 px-4 py-4 border-b border-[#F5F6F7] text-left hover:bg-[#FAFAFA] transition-colors"
+              size="md"
+              leading={
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${n.bg}`}>
+                  {n.icon}
+                </div>
+              }
+              className="items-start rounded-none border-b border-[#F5F6F7] px-4 py-4 font-normal hover:bg-[#FAFAFA]"
             >
-              <div className={`w-10 h-10 rounded-full ${n.bg} flex items-center justify-center flex-shrink-0`}>
-                {n.icon}
-              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <p className="type-label text-[#0F1729] leading-snug">{n.title}</p>
@@ -59,7 +66,7 @@ export default function NotificationsPage() {
                 <p className="type-body text-[#6B7280] mt-0.5 leading-relaxed">{n.body}</p>
                 <p className="type-caption text-[#9CA3AF] mt-1.5">{n.time}</p>
               </div>
-            </button>
+            </ActionRow>
           ))}
         </div>
       </div>

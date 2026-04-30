@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import PageShell from '@/components/templates/PageShell';
+import PageShell from '@/components/layout/PageShell';
 import { cn } from '@/lib/utils/cn';
 
 /* ══════════════════════════════════════════════════════════════════

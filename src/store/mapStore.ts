@@ -1,6 +1,11 @@
 'use client';
 import { create } from 'zustand';
 import type { BoundingBox } from '@/lib/geo';
+import {
+  markListingVisited,
+  setMobileCarouselSelection,
+  type MobileCarouselSelectionSource,
+} from '@/features/map/lib/mapStoreActions';
 
 interface ViewState {
   longitude: number;
@@ -18,9 +23,9 @@ interface MapStore {
   hoveredListingId: string | null;
   setHoveredListingId: (id: string | null) => void;
   mobileCarouselListingId: string | null;
-  mobileCarouselSelectionSource: 'marker' | 'carousel' | null;
+  mobileCarouselSelectionSource: MobileCarouselSelectionSource;
   mobileCarouselSelectionVersion: number;
-  setMobileCarouselListingId: (id: string | null, source?: 'marker' | 'carousel' | null) => void;
+  setMobileCarouselListingId: (id: string | null, source?: MobileCarouselSelectionSource) => void;
   visitedListingIds: string[];
   markVisitedListing: (id: string) => void;
 }
@@ -42,16 +47,11 @@ export const useMapStore = create<MapStore>((set) => ({
   mobileCarouselSelectionSource: null,
   mobileCarouselSelectionVersion: 0,
   setMobileCarouselListingId: (mobileCarouselListingId, mobileCarouselSelectionSource = null) =>
-    set((state) => ({
-      mobileCarouselListingId,
-      mobileCarouselSelectionSource,
-      mobileCarouselSelectionVersion: state.mobileCarouselSelectionVersion + 1,
-    })),
+    set((state) => setMobileCarouselSelection(state, mobileCarouselListingId, mobileCarouselSelectionSource)),
   visitedListingIds: [],
   markVisitedListing: (id) =>
-    set((state) =>
-      state.visitedListingIds.includes(id)
-        ? state
-        : { visitedListingIds: [...state.visitedListingIds, id] }
-    ),
+    set((state) => {
+      const visitedListingIds = markListingVisited(state.visitedListingIds, id);
+      return visitedListingIds === state.visitedListingIds ? state : { visitedListingIds };
+    }),
 }));

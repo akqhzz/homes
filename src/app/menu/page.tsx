@@ -1,6 +1,8 @@
 'use client';
 import { Bell, ChevronRight, LogOut, MessageSquare, Shield, User } from 'lucide-react';
-import PageShell from '@/components/templates/PageShell';
+import PageShell from '@/components/layout/PageShell';
+import ActionRow from '@/components/ui/ActionRow';
+import { cn } from '@/lib/utils/cn';
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -23,30 +25,40 @@ export default function MenuPage() {
           <div className="px-4 py-4">
             <div className="overflow-hidden rounded-2xl bg-[var(--color-surface)]">
               {MENU_ITEMS.map((item, i) => (
-                <button
+                <ActionRow
                   key={item.label}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[var(--color-surface-hover)] ${
-                    i < MENU_ITEMS.length - 1 ? 'border-b border-white' : ''
-                  }`}
+                  size="md"
+                  leading={
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white">
+                      <item.icon size={15} className="text-[var(--color-text-primary)]" />
+                    </div>
+                  }
+                  trailing={<ChevronRight size={15} className="text-[#D1D5DB]" />}
+                  className={cn(
+                    'rounded-none px-4 py-3.5 font-normal hover:bg-[var(--color-surface-hover)]',
+                    i < MENU_ITEMS.length - 1 && 'border-b border-white'
+                  )}
                 >
-                  <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
-                    <item.icon size={15} className="text-[var(--color-text-primary)]" />
-                  </div>
                   <span className="flex-1 type-body text-[var(--color-text-primary)]">{item.label}</span>
-                  <ChevronRight size={15} className="text-[#D1D5DB]" />
-                </button>
+                </ActionRow>
               ))}
             </div>
           </div>
 
           <div className="px-4">
-            <button className="w-full flex items-center gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3.5 text-left transition-colors hover:bg-red-50">
-              <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center flex-shrink-0">
-                <LogOut size={15} className="text-[var(--color-accent)]" />
-              </div>
+            <ActionRow
+              tone="danger"
+              size="md"
+              leading={
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white">
+                  <LogOut size={15} className="text-[var(--color-accent)]" />
+                </div>
+              }
+              trailing={<ChevronRight size={15} className="text-[#FCA5A5]" />}
+              className="bg-[var(--color-surface)] px-4 py-3.5 font-normal"
+            >
               <span className="flex-1 type-body text-[var(--color-accent)]">Sign Out</span>
-              <ChevronRight size={15} className="text-[#FCA5A5]" />
-            </button>
+            </ActionRow>
           </div>
         </div>
       </div>
