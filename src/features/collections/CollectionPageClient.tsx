@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowDownWideNarrow, LayoutList, Map, Tag } from 'lucide-react';
+import { ArrowDownWideNarrow, LayoutList, ListFilter, Map } from 'lucide-react';
 import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
@@ -73,7 +73,6 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
   const [desktopSortAnchor, setDesktopSortAnchor] = useState<DOMRect | null>(null);
   const [tagPanelState, setTagPanelState] = useState<TagPanelState>(null);
   const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
-  const [compactMobileHeaderProgress, setCompactMobileHeaderProgress] = useState(0);
   const [pendingRemovalByCollection, setPendingRemovalByCollection] = useState<Record<string, string[]>>({});
   const pendingRemovalIdsRef = useRef<string[]>([]);
 
@@ -97,7 +96,7 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
     () => (collection ? pendingRemovalByCollection[collection.id] ?? [] : []),
     [collection, pendingRemovalByCollection]
   );
-  const mobileHeaderProgress = mobileView === 'map' ? 1 : compactMobileHeaderProgress;
+  const mobileHeaderProgress = mobileView === 'map' ? 1 : 0;
 
   useEffect(() => {
     setCarouselVisible(false);
@@ -219,8 +218,6 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
             className="lg:min-h-0"
             title={collection.name}
             titleClassName="type-title"
-            subtitleClassName="type-body"
-            subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
             compact={mobileView === 'map'}
             compactProgress={mobileHeaderProgress}
             rightSlot={(
@@ -234,7 +231,7 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
                     active={hasActiveTagFilters}
                     badge={hasActiveTagFilters ? activeTagFilters.length : null}
                   >
-                    <Tag size={16} />
+                    <ListFilter size={16} />
                     Tags
                   </ControlPillButton>
                 )}
@@ -265,11 +262,11 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
             {mobileView === 'list' && (
               <div className="pointer-events-none absolute inset-x-0 top-0 z-20">
                 <div
-                  className="relative bg-white/94 px-4 backdrop-blur-[10px] transition-[padding,min-height] duration-300 ease-out"
+                  className="relative bg-white/94 px-4 backdrop-blur-[10px]"
                   style={{
-                    paddingTop: `calc(env(safe-area-inset-top, 0px) + ${0.66 - mobileHeaderProgress * 0.2}rem)`,
-                    paddingBottom: `${0.4 - mobileHeaderProgress * 0.32}rem`,
-                    minHeight: `${68 - mobileHeaderProgress * 28}px`,
+                    paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.52rem)',
+                    paddingBottom: '0.3rem',
+                    minHeight: '54px',
                   }}
                 >
                   <OverlayCloseButton
@@ -282,11 +279,9 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
                     <CollectionWorkspaceHeader
                       showBackButton={false}
                       title={collection.name}
-                      titleClassName="type-title"
-                      subtitleClassName="type-body"
-                      subtitle={`${listings.length} listing${listings.length === 1 ? '' : 's'}`}
-                      compactProgress={mobileHeaderProgress}
-                      className="min-h-[2.5rem]"
+                      titleClassName="type-heading-sm"
+                      compactProgress={0}
+                      className="min-h-[2rem]"
                     />
                   </div>
                 </div>
@@ -294,13 +289,8 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
             )}
             {mobileView === 'list' ? (
               <div
-                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-[5.35rem] [overflow-anchor:none]"
-                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', scrollBehavior: 'smooth' }}
-                onScroll={(event) => {
-                  const raw = Math.max(0, Math.min(1, event.currentTarget.scrollTop / 240));
-                  const eased = raw * raw * (3 - 2 * raw);
-                  setCompactMobileHeaderProgress(eased);
-                }}
+                className="min-h-0 flex-1 overflow-y-auto px-4 pb-32 pt-[3.65rem] [overflow-anchor:none]"
+                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
               >
                 <CollectionListingsGrid
                   listings={sortedListings}
@@ -403,7 +393,7 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
                     className="h-11 w-11 justify-center px-0"
                     aria-label="Tags"
                   >
-                    <Tag size={18} />
+                    <ListFilter size={18} />
                   </ControlPillButton>
                 )}
                 {mobileView === 'list' && (

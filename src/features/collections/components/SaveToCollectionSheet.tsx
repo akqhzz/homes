@@ -310,6 +310,7 @@ export default function SaveToCollectionSheet({
           confirmOpen={!!confirmDeleteId}
           right={menuState.right}
           bottom={menuState.bottom}
+          zIndex={140}
           deleteTitle="Delete collection?"
           deleteDescription="This will remove the collection and its saved listing references."
           onClose={closeMenu}

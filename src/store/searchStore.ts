@@ -1,5 +1,6 @@
 'use client';
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Location, SearchFilters } from '@/lib/types';
 import {
   DEFAULT_FILTERS,
@@ -25,21 +26,32 @@ interface SearchStore {
   activeFilterCount: () => number;
 }
 
-export const useSearchStore = create<SearchStore>((set, get) => ({
-  selectedLocations: [],
-  addLocation: (loc) =>
-    set((s) => ({
-      selectedLocations: addLocation(s.selectedLocations, loc),
-    })),
-  setLocations: (selectedLocations) => set({ selectedLocations }),
-  removeLocation: (id) =>
-    set((s) => ({ selectedLocations: removeLocation(s.selectedLocations, id) })),
-  clearLocations: () => set({ selectedLocations: [] }),
+export const useSearchStore = create<SearchStore>()(
+  persist(
+    (set, get) => ({
+      selectedLocations: [],
+      addLocation: (loc) =>
+        set((s) => ({
+          selectedLocations: addLocation(s.selectedLocations, loc),
+        })),
+      setLocations: (selectedLocations) => set({ selectedLocations }),
+      removeLocation: (id) =>
+        set((s) => ({ selectedLocations: removeLocation(s.selectedLocations, id) })),
+      clearLocations: () => set({ selectedLocations: [] }),
 
-  filters: DEFAULT_FILTERS,
-  setFilters: (f) => set((s) => ({ filters: mergeFilters(s.filters, f) })),
-  replaceFilters: (filters) => set({ filters: cloneFilters(filters) }),
-  resetFilters: () => set({ filters: DEFAULT_FILTERS }),
+      filters: DEFAULT_FILTERS,
+      setFilters: (f) => set((s) => ({ filters: mergeFilters(s.filters, f) })),
+      replaceFilters: (filters) => set({ filters: cloneFilters(filters) }),
+      resetFilters: () => set({ filters: DEFAULT_FILTERS }),
 
-  activeFilterCount: () => getActiveFilterCount(get().filters),
-}));
+      activeFilterCount: () => getActiveFilterCount(get().filters),
+    }),
+    {
+      name: 'homes-search-v1',
+      partialize: (state) => ({
+        selectedLocations: state.selectedLocations,
+        filters: state.filters,
+      }),
+    }
+  )
+);

@@ -36,6 +36,7 @@ interface ListingCardProps {
   likedOverride?: boolean;
   onLikeToggle?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onSavedToCollection?: (collectionId: string) => void;
+  onOpenListing?: () => void;
   excludedCollectionIds?: string[];
   carouselWidth?: number;
   carouselImageHeight?: number;
@@ -53,6 +54,7 @@ export default function ListingCard({
   likedOverride,
   onLikeToggle,
   onSavedToCollection,
+  onOpenListing,
   excludedCollectionIds,
   carouselWidth,
   carouselImageHeight: carouselImageHeightOverride,
@@ -247,6 +249,7 @@ export default function ListingCard({
   ) : null;
 
   const openListingPage = () => {
+    onOpenListing?.();
     router.push(`/listings/${listing.id}`);
   };
   const mlsLine = formatMlsLine(listing.mlsNumber, listing.brokerage);

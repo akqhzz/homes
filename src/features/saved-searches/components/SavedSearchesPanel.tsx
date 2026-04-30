@@ -76,7 +76,10 @@ export default function SavedSearchesPanel({
 
   useEffect(() => {
     if (!saving) return;
-    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    const frame = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
     return () => cancelAnimationFrame(frame);
   }, [saving]);
 
@@ -155,6 +158,15 @@ export default function SavedSearchesPanel({
     setNewSearchName('');
   };
 
+  const handleSavingChange = (open: boolean) => {
+    setSaving(open);
+    if (!open) return;
+    window.setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
+  };
+
   const closeMenu = () => {
     setMenuState(null);
     setConfirmDeleteId(null);
@@ -212,7 +224,7 @@ export default function SavedSearchesPanel({
         <p className="mb-3 type-heading text-[var(--color-text-primary)]">Save Current Search</p>
         <CreateInlineField
           open={saving}
-          onOpenChange={setSaving}
+          onOpenChange={handleSavingChange}
           value={newSearchName}
           onValueChange={setNewSearchName}
           placeholder="Search name..."
@@ -344,23 +356,35 @@ export default function SavedSearchesPanel({
                         Updated
                       </span>
                     ) : isSelected && activeSearchDirty ? (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onUpdateSearch?.(search.id);
-                          setUpdatedSearchId(search.id);
-                          if (updateFeedbackTimeoutRef.current) {
-                            window.clearTimeout(updateFeedbackTimeoutRef.current);
-                          }
-                          updateFeedbackTimeoutRef.current = window.setTimeout(() => {
-                            setUpdatedSearchId((current) => (current === search.id ? null : current));
-                          }, 1400);
-                        }}
-                        className="shrink-0 rounded-full bg-[var(--color-text-primary)] px-3 py-2 type-caption text-[var(--color-text-inverse)]"
-                      >
-                        Update?
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleLoadSearch(search);
+                          }}
+                          className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-2 type-caption text-[var(--color-text-primary)]"
+                        >
+                          Unselect
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onUpdateSearch?.(search.id);
+                            setUpdatedSearchId(search.id);
+                            if (updateFeedbackTimeoutRef.current) {
+                              window.clearTimeout(updateFeedbackTimeoutRef.current);
+                            }
+                            updateFeedbackTimeoutRef.current = window.setTimeout(() => {
+                              setUpdatedSearchId((current) => (current === search.id ? null : current));
+                            }, 1400);
+                          }}
+                          className="shrink-0 rounded-full bg-[var(--color-text-primary)] px-3 py-2 type-caption text-[var(--color-text-inverse)]"
+                        >
+                          Update?
+                        </button>
+                      </>
                     ) : isSelected ? (
                       <button
                         type="button"
@@ -398,17 +422,15 @@ export default function SavedSearchesPanel({
         </MobileDrawer>
       )}
       {isDesktop && (
-        <div
-          ref={desktopPanelRef}
-          className="fixed z-[60] max-h-[min(640px,calc(100vh-12rem))] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
-          style={
-            desktopPosition
-              ? { top: desktopPosition.top, left: desktopPosition.left }
-              : { top: 70, left: '50%', marginLeft: -210 }
-          }
-        >
-          {content}
-        </div>
+        desktopPosition && (
+          <div
+            ref={desktopPanelRef}
+            className="fixed z-[60] max-h-[min(640px,calc(100vh-12rem))] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+            style={{ top: desktopPosition.top, left: desktopPosition.left }}
+          >
+            {content}
+          </div>
+        )
       )}
       {menuState && (
         <RenameDeletePopover

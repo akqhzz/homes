@@ -19,6 +19,7 @@ interface RenameDeletePopoverProps {
   onRequestDelete: () => void;
   onCancelDelete: () => void;
   onConfirmDelete: () => void;
+  zIndex?: number;
 }
 
 // Shared overflow menu system for collection/search cards: same menu, same delete confirmation, same portal layering.
@@ -36,6 +37,7 @@ export default function RenameDeletePopover({
   onRequestDelete,
   onCancelDelete,
   onConfirmDelete,
+  zIndex = 100,
 }: RenameDeletePopoverProps) {
   if (typeof document === 'undefined' || !open) return null;
   const viewportWidth = window.innerWidth;
@@ -48,7 +50,8 @@ export default function RenameDeletePopover({
   return createPortal(
     <>
       <div
-        className="fixed inset-0 z-[95]"
+        className="fixed inset-0"
+        style={{ zIndex: zIndex - 5 }}
         data-rename-delete-popover="true"
         onPointerDown={(event) => {
           event.preventDefault();
@@ -67,8 +70,8 @@ export default function RenameDeletePopover({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="fixed z-[100] w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-            style={{ bottom: menuBottom, right: menuRight }}
+            className="fixed w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+            style={{ bottom: menuBottom, right: menuRight, zIndex }}
             data-rename-delete-popover="true"
             onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => event.stopPropagation()}
@@ -104,8 +107,8 @@ export default function RenameDeletePopover({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="fixed z-[100] w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
-            style={{ bottom: confirmBottom, right: confirmRight }}
+            className="fixed w-56 rounded-2xl bg-white p-3 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+            style={{ bottom: confirmBottom, right: confirmRight, zIndex }}
             data-rename-delete-popover="true"
             onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => event.stopPropagation()}

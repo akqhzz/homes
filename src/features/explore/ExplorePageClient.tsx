@@ -34,6 +34,7 @@ const ListingDetailSheet = dynamic(() => import('@/features/listings/components/
 const SavedSearchesPanel = dynamic(() => import('@/features/saved-searches/components/SavedSearchesPanel'), { ssr: false });
 const ListingsSidebar = dynamic(() => import('@/features/listings/components/ListingsSidebar'), { ssr: false });
 const preloadListingsListView = () => Promise.resolve();
+const MOBILE_LIST_RETURN_KEY = 'homes-mobile-list-return';
 
 export default function ExplorePageClient() {
   const {
@@ -67,7 +68,10 @@ export default function ExplorePageClient() {
     setActiveSearchDirty,
     updateSearch,
   } = useSavedSearchStore();
-  const [mobileListingsView, setMobileListingsView] = useState<'map' | 'list'>('map');
+  const [mobileListingsView, setMobileListingsView] = useState<'map' | 'list'>(() => {
+    if (typeof window === 'undefined') return 'map';
+    return window.sessionStorage.getItem(`${MOBILE_LIST_RETURN_KEY}:view`) === 'list' ? 'list' : 'map';
+  });
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const {
@@ -375,7 +379,11 @@ export default function ExplorePageClient() {
                 useMapAreaLabel={!hasVisibleBoundary}
                 areaTitleLabel={hasVisibleBoundary ? compactAreaChipLabel : undefined}
                 variant="mobile"
-                onShowMap={() => setMobileListingsView('map')}
+                onShowMap={() => {
+                  window.sessionStorage.removeItem(`${MOBILE_LIST_RETURN_KEY}:view`);
+                  setMobileListingsView('map');
+                }}
+                scrollRestorationKey={MOBILE_LIST_RETURN_KEY}
               />
             </motion.div>
           )}

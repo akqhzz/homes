@@ -32,6 +32,7 @@ interface ListingsListViewProps {
   areaTitleLabel?: string;
   variant?: ListingsListVariant;
   onShowMap?: () => void;
+  scrollRestorationKey?: string;
 }
 
 export default function ListingsListView({
@@ -40,6 +41,7 @@ export default function ListingsListView({
   areaTitleLabel,
   variant = 'desktop',
   onShowMap,
+  scrollRestorationKey,
 }: ListingsListViewProps) {
   const [sort, setSort] = useState<SortOption>('newest');
   const [showSort, setShowSort] = useState(false);
@@ -84,6 +86,22 @@ export default function ListingsListView({
   useEffect(() => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage]);
+
+  useEffect(() => {
+    if (!isMobile || !scrollRestorationKey) return;
+    const savedScroll = window.sessionStorage.getItem(`${scrollRestorationKey}:scroll`);
+    if (!savedScroll) return;
+    const frame = requestAnimationFrame(() => {
+      scrollContainerRef.current?.scrollTo({ top: Number(savedScroll) || 0 });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isMobile, scrollRestorationKey, visibleListings.length]);
+
+  const rememberMobileListPosition = () => {
+    if (!isMobile || !scrollRestorationKey) return;
+    window.sessionStorage.setItem(`${scrollRestorationKey}:view`, 'list');
+    window.sessionStorage.setItem(`${scrollRestorationKey}:scroll`, String(scrollContainerRef.current?.scrollTop ?? 0));
+  };
 
   const canStartCloseDrag = () => isMobile && Boolean(onShowMap) && (scrollContainerRef.current?.scrollTop ?? 0) <= 1;
 
@@ -203,7 +221,10 @@ export default function ListingsListView({
                 )}
                 onMouseEnter={() => setHoveredListingId(listing.id)}
                 onMouseLeave={() => setHoveredListingId(null)}
-                onClick={() => router.push(`/listings/${listing.id}`)}
+                onClick={() => {
+                  rememberMobileListPosition();
+                  router.push(`/listings/${listing.id}`);
+                }}
               >
                 <ListingCard
                   listing={listing}
@@ -212,6 +233,7 @@ export default function ListingsListView({
                   desktopTall={!isMobile}
                   imageTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
                   contentTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
+                  onOpenListing={rememberMobileListPosition}
                   carouselImageHeight={listCardImageHeight}
                   carouselTotalHeight={listCardTotalHeight}
                 />

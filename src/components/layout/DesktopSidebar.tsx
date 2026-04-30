@@ -55,7 +55,7 @@ export default function DesktopSidebar() {
     href === '/' ? pathname === '/' || pathname === '/map' : pathname.startsWith(href);
 
   return (
-    <aside className="hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:py-5">
+    <aside className="relative hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:py-5">
       <button
         type="button"
         onClick={() => router.push('/')}
@@ -65,7 +65,7 @@ export default function DesktopSidebar() {
         D.
       </button>
 
-      <nav className="mt-[18.5rem] flex flex-col items-center gap-6">
+      <nav className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-6">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
