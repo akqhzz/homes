@@ -7,6 +7,7 @@ import OverlayCloseButton from '@/components/navigation/OverlayCloseButton';
 import Button from '@/components/ui/Button';
 import PageShell from '@/components/layout/PageShell';
 import ListingSaveButton from '@/features/listings/components/ListingSaveButton';
+import ListingNoteButton from '@/features/listings/components/ListingNoteButton';
 import ListingImageGallery from '@/features/listings/components/ListingImageGallery';
 import ListingLocationMap from '@/features/listings/components/ListingLocationMap';
 import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/features/listings/components/ListingParts';
@@ -146,9 +147,14 @@ export default function ListingPageContent({ listing }: ListingPageContentProps)
             </Button>
             <ListingSaveButton listingId={listing.id} variant="icon" />
             <Button size="lg" className="flex-1">
-              Contact Agent
+              Contact
             </Button>
           </div>
+          <ListingNoteButton
+            listingId={listing.id}
+            variant="mobile"
+            className="h-11 w-11 shrink-0 bg-white shadow-[var(--shadow-control)] hover:bg-[var(--color-surface)]"
+          />
         </div>
       </main>
     </PageShell>

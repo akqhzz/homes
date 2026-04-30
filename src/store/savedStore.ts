@@ -25,6 +25,7 @@ export { DEFAULT_COLLECTION_ID };
 interface SavedStore {
   collections: Collection[];
   likedListingIds: Set<string>;
+  listingNotes: Record<string, string>;
 
   saveListing: (listingId: string) => void;
   unsaveListing: (listingId: string) => void;
@@ -41,6 +42,7 @@ interface SavedStore {
   deleteCollectionTag: (collectionId: string, tag: string) => void;
   reorderListings: (collectionId: string, fromIndex: number, toIndex: number) => void;
   updateListingNote: (collectionId: string, listingId: string, note: string) => void;
+  setListingNote: (listingId: string, note: string) => void;
   addTagToListing: (collectionId: string, listingId: string, tag: string) => void;
   removeTagFromListing: (collectionId: string, listingId: string, tag: string) => void;
 
@@ -52,6 +54,7 @@ export const useSavedStore = create<SavedStore>()(
     (set, get) => ({
       collections: withDefaultCollection([]),
       likedListingIds: new Set<string>(),
+      listingNotes: {},
 
       saveListing: (listingId) =>
         set((s) => {
@@ -133,6 +136,23 @@ export const useSavedStore = create<SavedStore>()(
       updateListingNote: (collectionId, listingId, note) =>
         set((s) => ({
           collections: updateListingNote(s.collections, collectionId, listingId, note),
+          listingNotes: { ...s.listingNotes, [listingId]: note },
+        })),
+
+      setListingNote: (listingId, note) =>
+        set((s) => ({
+          listingNotes: { ...s.listingNotes, [listingId]: note },
+          collections: s.collections.map((collection) =>
+            collection.listings.some((listing) => listing.listingId === listingId)
+              ? {
+                  ...collection,
+                  listings: collection.listings.map((listing) =>
+                    listing.listingId === listingId ? { ...listing, notes: note } : listing
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : collection
+          ),
         })),
 
       addTagToListing: (collectionId, listingId, tag) =>
@@ -155,11 +175,13 @@ export const useSavedStore = create<SavedStore>()(
       partialize: (s) => ({
         collections: withDefaultCollection(s.collections),
         likedListingIds: Array.from(s.likedListingIds),
+        listingNotes: s.listingNotes,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.collections = withDefaultCollection(state.collections);
           state.likedListingIds = new Set(state.likedListingIds as unknown as string[]);
+          state.listingNotes = state.listingNotes ?? {};
         }
       },
     }

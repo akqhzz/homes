@@ -100,7 +100,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const activeDragRef = useRef(false);
   const swipeLockRef = useRef(false);
   const exitTokenRef = useRef(0);
-  const commitCardExitRef = useRef<((action: CardSwipeAction) => void) | null>(null);
+  const commitCardExitRef = useRef<((action: CardSwipeAction, targetListing?: Listing, startX?: number) => void) | null>(null);
+  const quickSaveListingRef = useRef<(() => void) | null>(null);
   const stackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -250,7 +251,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (swipeLockRef.current) return;
     dismissDesktopTip();
     setActiveSwipePreview('pass');
-    window.setTimeout(() => commitCardExit('pass'), 340);
+    window.setTimeout(() => commitCardExitRef.current?.('pass'), 340);
   };
 
   const openSavePicker = (targetListing = listing, anchorRect: DOMRect | null = null) => {
@@ -292,7 +293,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     setHeartDelightKey((key) => key + 1);
     if (exitDelay <= 0) {
       setActiveSwipePreview(null);
-      commitCardExit('save', targetListing, startX);
+      commitCardExitRef.current?.('save', targetListing, startX);
       window.setTimeout(() => {
         setQuickSavePrompt({ listing: targetListing, collectionName: quickSaveCollection.name });
       }, 180);
@@ -308,7 +309,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     setActiveSwipePreview('save');
     window.setTimeout(() => {
       setActiveSwipePreview(null);
-      commitCardExit('save', targetListing, startX);
+      commitCardExitRef.current?.('save', targetListing, startX);
     }, exitDelay);
   };
 
@@ -322,6 +323,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     }
     quickSaveListing();
   };
+
+  useEffect(() => {
+    quickSaveListingRef.current = () => quickSaveListing();
+  });
 
   const resetDesktopGalleryForCardTransition = () => {
     if (desktopImageStripRef.current) {
@@ -522,6 +527,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         onClose();
         return;
       }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (!liked) quickSaveListingRef.current?.();
+        return;
+      }
       if (event.key === 'ArrowDown' || event.key === 'PageDown') {
         event.preventDefault();
         passCurrentListing();
@@ -549,6 +559,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     dismissOnboarding,
     isDesktop,
     listing,
+    liked,
     navigateCard,
     onClose,
     passCurrentListing,
@@ -602,17 +613,17 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           }}
           aria-label="Close cards view"
           data-card-overlay-control="true"
-          className="absolute right-[1.35rem] top-3 z-[100] xl:right-[1.6rem] xl:top-4"
+          className="absolute right-2 top-3 z-[100] xl:right-3 xl:top-4"
         >
           <X size={20} strokeWidth={2.3} />
         </Button>
 
-        <div className="relative mx-auto flex min-h-0 w-[calc(100%-8.5rem)] max-w-[1540px] flex-1 flex-col justify-center gap-5">
+        <div className="relative mx-auto flex min-h-0 w-[calc(100%-6.75rem)] max-w-[1580px] flex-1 flex-col justify-start gap-4">
           <div className="pointer-events-none absolute bottom-[7.25rem] left-1/2 z-0 h-10 w-[calc(100%-2.8rem)] max-w-[1490px] -translate-x-1/2 rounded-[22px] bg-white/32 shadow-[0_6px_18px_rgba(15,23,41,0.045)]" />
           <div className="pointer-events-none absolute bottom-[6.95rem] left-1/2 z-0 h-10 w-[calc(100%-5.2rem)] max-w-[1430px] -translate-x-1/2 rounded-[20px] bg-white/18 shadow-[0_5px_14px_rgba(15,23,41,0.035)]" />
           <div
             data-desktop-card-surface="true"
-            className="relative z-10 cursor-default lg:h-[calc(100vh-150px)]"
+            className="relative z-10 cursor-default lg:h-[calc(100vh-132px)]"
           >
             <AnimatePresence initial={false} custom={desktopCardDirection}>
               <motion.div

@@ -9,6 +9,7 @@ interface AnchoredPopoverProps {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  backdropClassName?: string;
   align?: 'left' | 'right';
   offset?: number;
 }
@@ -19,6 +20,7 @@ export default function AnchoredPopover({
   onClose,
   children,
   className,
+  backdropClassName = 'z-[45]',
   align = 'right',
   offset = 8,
 }: AnchoredPopoverProps) {
@@ -71,7 +73,7 @@ export default function AnchoredPopover({
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[45]" onClick={onClose} />
+      <div className={`fixed inset-0 ${backdropClassName}`} onClick={onClose} />
       <AnimatePresence>
         <motion.div
           ref={popoverRef}

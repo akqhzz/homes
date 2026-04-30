@@ -10,6 +10,7 @@ import { useLocationSearch } from '@/features/search/hooks/useLocationSearch';
 import { cn } from '@/lib/utils/cn';
 import { Location } from '@/lib/types';
 import ListingSaveButton from '@/features/listings/components/ListingSaveButton';
+import ListingNoteButton from '@/features/listings/components/ListingNoteButton';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 import BackButton from '@/components/navigation/BackButton';
 import { AreaChip } from '@/lib/utils/search-display';
@@ -231,14 +232,16 @@ export default function DesktopHeader({
           {isListingVariant ? (
             <>
               {listingId && (
-                <ListingSaveButton
-                  listingId={listingId}
-                  className="bg-[var(--color-text-primary)] text-[var(--color-text-inverse)] hover:bg-[var(--color-primary-hover)]"
-                />
+                <>
+                  <ListingSaveButton
+                    listingId={listingId}
+                    className="bg-[var(--color-text-primary)] text-[var(--color-text-inverse)] hover:bg-[var(--color-primary-hover)]"
+                  />
+                  <ListingNoteButton listingId={listingId} variant="desktop" />
+                </>
               )}
-              <Button variant="surface" size="md" className="type-label">
+              <Button variant="surface" shape="circle" size="md" aria-label="Share listing">
                 <Share2 size={15} />
-                Share
               </Button>
             </>
           ) : isCollectionsPage ? (

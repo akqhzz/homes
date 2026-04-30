@@ -118,8 +118,6 @@ export default function SavedCollectionsPageClient() {
           <CollectionWorkspaceHeader
             title="Collections"
             titleClassName="type-title lg:text-[1.875rem]"
-            subtitleClassName="type-body"
-            subtitle={`${collections.length} collection${collections.length === 1 ? '' : 's'}`}
             showBackButton
             hideSubtitleOnMobile
             rightSlot={(

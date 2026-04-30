@@ -22,7 +22,7 @@ export default function HeartDelight({ activeKey, children }: HeartDelightProps)
         key={`heart-icon-${activeKey}`}
         className="relative z-10 inline-flex"
         animate={activeKey > 0 ? { scale: [1, 1.42, 0.9, 1.08, 1] } : { scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.2, 0.7, 0.2, 1] }}
+        transition={{ duration: 0.68, ease: [0.2, 0.7, 0.2, 1] }}
       >
         {children}
       </motion.span>
@@ -39,7 +39,7 @@ export default function HeartDelight({ activeKey, children }: HeartDelightProps)
               className="absolute h-7 w-7 rounded-full border border-[var(--color-accent)]"
               initial={{ scale: 0.35, opacity: 0.5 }}
               animate={{ scale: 1.45, opacity: 0 }}
-              transition={{ duration: 0.48, ease: 'easeOut' }}
+              transition={{ duration: 0.66, ease: 'easeOut' }}
             />
             {PARTICLES.map((particle, index) => (
               <motion.span
@@ -47,7 +47,7 @@ export default function HeartDelight({ activeKey, children }: HeartDelightProps)
                 className="absolute h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]"
                 initial={{ x: 0, y: 0, scale: 0.3, opacity: 0 }}
                 animate={{ x: particle.x, y: particle.y, scale: [0.3, 1, 0.4], opacity: [0, 1, 0] }}
-                transition={{ duration: 0.52, delay: particle.delay, ease: [0.2, 0.7, 0.2, 1] }}
+                transition={{ duration: 0.7, delay: particle.delay * 1.25, ease: [0.2, 0.7, 0.2, 1] }}
               />
             ))}
           </motion.span>

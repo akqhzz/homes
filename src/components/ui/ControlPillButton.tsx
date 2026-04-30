@@ -1,5 +1,5 @@
 'use client';
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import Button from '@/components/ui/Button';
 import ButtonBadge from '@/components/ui/ButtonBadge';
 import { cn } from '@/lib/utils/cn';
@@ -9,15 +9,16 @@ interface ControlPillButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
   badge?: ReactNode;
 }
 
-export default function ControlPillButton({
+const ControlPillButton = forwardRef<HTMLButtonElement, ControlPillButtonProps>(function ControlPillButton({
   active = false,
   badge,
   className,
   children,
   ...props
-}: ControlPillButtonProps) {
+}, ref) {
   return (
     <Button
+      ref={ref}
       variant="elevated"
       size="control"
       active={active}
@@ -28,4 +29,6 @@ export default function ControlPillButton({
       {badge && <ButtonBadge className="-right-1 -top-1">{badge}</ButtonBadge>}
     </Button>
   );
-}
+});
+
+export default ControlPillButton;
