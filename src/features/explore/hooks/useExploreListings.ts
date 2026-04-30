@@ -13,6 +13,7 @@ interface UseExploreListingsOptions {
   appliedNeighborhoods: Set<string>;
   viewportBounds: BoundingBox | null;
   visitedListingIds: string[];
+  savedListingIds: Iterable<string>;
   activeFilterCount: number;
 }
 
@@ -23,6 +24,7 @@ export function useExploreListings({
   appliedNeighborhoods,
   viewportBounds,
   visitedListingIds,
+  savedListingIds,
   activeFilterCount,
 }: UseExploreListingsOptions) {
   const hasAppliedArea = appliedBoundaries.length > 0 || appliedNeighborhoods.size > 0;
@@ -51,9 +53,10 @@ export function useExploreListings({
         filteredListings,
         scopedListings,
         visitedListingIds,
+        savedListingIds,
         hasBoundaryScope: hasVisibleBoundary,
       }),
-    [filteredListings, hasVisibleBoundary, scopedListings, visitedListingIds]
+    [filteredListings, hasVisibleBoundary, savedListingIds, scopedListings, visitedListingIds]
   );
 
   return {

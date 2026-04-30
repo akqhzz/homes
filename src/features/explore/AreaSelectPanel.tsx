@@ -80,7 +80,7 @@ export default function AreaSelectPanel({
         disabled={!canAddShape}
         className="shrink-0 px-4 type-label disabled:opacity-40"
       >
-        Add shape
+        + New Shape
       </Button>
       <Button
         variant="elevated"
@@ -254,7 +254,7 @@ export default function AreaSelectPanel({
                   }}
                   className="absolute bottom-2 right-2 h-9 w-[92px] gap-1.5 px-3 type-caption font-semibold"
                 >
-                  {selectedNeighborhoods.has(focusedNeighborhood.id) ? <Check size={13} /> : <Plus size={13} />}
+                  {selectedNeighborhoods.has(focusedNeighborhood.id) ? <Check size={11} className="shrink-0" /> : <Plus size={13} />}
                   {selectedNeighborhoods.has(focusedNeighborhood.id) ? 'Included' : 'Include'}
                 </Button>
               </div>

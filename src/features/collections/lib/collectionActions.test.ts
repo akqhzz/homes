@@ -85,20 +85,31 @@ test('remove listing helpers compact order values', () => {
 
 test('create, rename, and delete collection respect default collection guardrails', () => {
   const created = createCollection([], 'col-new', 'Weekend tours', now);
-  assert.deepEqual(created.map((item) => item.id), [DEFAULT_COLLECTION_ID, 'col-new']);
+  assert.deepEqual(created.map((item) => item.id), ['col-new', DEFAULT_COLLECTION_ID]);
 
   const renamed = renameCollection(created, 'col-new', 'Shortlist', '2026-04-30T00:00:00.000Z');
-  assert.equal(renamed[1].name, 'Shortlist');
-  assert.equal(renamed[1].updatedAt, '2026-04-30T00:00:00.000Z');
+  assert.equal(renamed[0].name, 'Shortlist');
+  assert.equal(renamed[0].updatedAt, '2026-04-30T00:00:00.000Z');
 
   const defaultRename = renameCollection(renamed, DEFAULT_COLLECTION_ID, 'Nope', now);
-  assert.equal(defaultRename[0].name, 'My Favorites');
+  assert.equal(defaultRename[1].name, 'My Favorites');
 
   const deleteDefault = deleteCollection(renamed, DEFAULT_COLLECTION_ID);
   assert.equal(deleteDefault, renamed);
 
   const deleted = deleteCollection(renamed, 'col-new');
   assert.deepEqual(deleted.map((item) => item.id), [DEFAULT_COLLECTION_ID]);
+});
+
+test('createCollection inserts new collections before older user collections', () => {
+  const source = [
+    collection({ id: 'col-older', name: 'Older' }),
+    collection({ id: DEFAULT_COLLECTION_ID, name: 'My Favorites' }),
+  ];
+
+  const created = createCollection(source, 'col-newer', 'Newer', now);
+
+  assert.deepEqual(created.map((item) => item.id), ['col-newer', 'col-older', DEFAULT_COLLECTION_ID]);
 });
 
 test('reorderCollectionListings sorts by current order before moving', () => {

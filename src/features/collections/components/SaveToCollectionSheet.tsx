@@ -20,6 +20,7 @@ interface SaveToCollectionSheetProps {
   onClose: () => void;
   onSaved?: (collectionId: string) => void;
   anchorRect?: DOMRect | null;
+  placement?: 'above' | 'below';
   excludedCollectionIds?: string[];
 }
 
@@ -31,6 +32,7 @@ export default function SaveToCollectionSheet({
   onClose,
   onSaved,
   anchorRect,
+  placement = 'below',
   excludedCollectionIds = [],
 }: SaveToCollectionSheetProps) {
   const [newName, setNewName] = useState('');
@@ -226,8 +228,17 @@ export default function SaveToCollectionSheet({
 
   const viewportWidth = typeof window === 'undefined' ? 390 : window.innerWidth;
   const viewportHeight = typeof window === 'undefined' ? 844 : window.innerHeight;
-  const left = anchorRect ? Math.min(Math.max(anchorRect.right - 320, 16), viewportWidth - 336) : viewportWidth / 2 - 160;
-  const preferredTop = anchorRect ? anchorRect.bottom + 10 : 96;
+  const preferredLeft = anchorRect
+    ? placement === 'above'
+      ? anchorRect.left + anchorRect.width / 2 - 160
+      : anchorRect.right - 320
+    : viewportWidth / 2 - 160;
+  const left = Math.min(Math.max(preferredLeft, 16), viewportWidth - 336);
+  const preferredTop = anchorRect
+    ? placement === 'above'
+      ? anchorRect.top - DESKTOP_DROPDOWN_MAX_HEIGHT - 10
+      : anchorRect.bottom + 10
+    : 96;
   const top = Math.max(
     DESKTOP_VIEWPORT_PADDING,
     Math.min(preferredTop, viewportHeight - DESKTOP_DROPDOWN_MAX_HEIGHT - DESKTOP_VIEWPORT_PADDING)

@@ -76,7 +76,7 @@ export default function CardModeListingCard({
   const cardAnimate = swipeExitAction
     ? { x: exitX, y: 0, rotate: exitRotate, scale: 1, opacity: 1 }
     : active
-    ? { x: 0, y: 0, rotate: dragX / 18, scale: 1, opacity: 1 }
+    ? { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 }
     : { x: 0, y: stackIndex * 13, rotate: 0, scale: 1 - stackIndex * 0.035, opacity: 1 - stackIndex * 0.13 };
 
   const handleOpenDetail = () => {
@@ -121,7 +121,7 @@ export default function CardModeListingCard({
       }}
       drag={active && !swipeExitAction ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.86}
+      dragElastic={0.62}
       dragMomentum={false}
       initial={
         swipeExitAction

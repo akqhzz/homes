@@ -1,4 +1,4 @@
-import { Coordinates, Listing, Location, Neighborhood } from '@/lib/types';
+import type { Coordinates, Listing, Location, Neighborhood } from '@/lib/types';
 
 export type BoundingBox = [number, number, number, number];
 

@@ -9,6 +9,7 @@ import { useSearchStore } from '@/store/searchStore';
 import { useMapStore } from '@/store/mapStore';
 import { useAreaScopeStore } from '@/store/areaScopeStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
+import { useSavedStore } from '@/store/savedStore';
 import BottomNav from '@/components/layout/BottomNav';
 import DesktopSidebar from '@/components/layout/DesktopSidebar';
 import TopBar from '@/components/layout/TopBar';
@@ -56,6 +57,7 @@ export default function ExplorePageClient() {
   const setViewState = useMapStore((s) => s.setViewState);
   const viewportBounds = useMapStore((s) => s.viewportBounds);
   const visitedListingIds = useMapStore((s) => s.visitedListingIds);
+  const savedListingIds = useSavedStore((s) => s.likedListingIds);
   const appliedBoundaries = useAreaScopeStore((s) => s.appliedBoundaries);
   const appliedNeighborhoods = useAreaScopeStore((s) => s.appliedNeighborhoods);
   const setAppliedBoundaries = useAreaScopeStore((s) => s.setAppliedBoundaries);
@@ -151,6 +153,7 @@ export default function ExplorePageClient() {
     appliedNeighborhoods,
     viewportBounds,
     visitedListingIds,
+    savedListingIds,
     activeFilterCount: activeFilterCount(),
   });
   const { activeSearchDirty, updateActiveSearch } = useSavedSearchSession({

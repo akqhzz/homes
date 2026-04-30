@@ -72,17 +72,23 @@ export function removeListingFromCollectionById(
 }
 
 export function createCollection(collections: Collection[], id: string, name: string, createdAt: string) {
+  const normalizedCollections = withDefaultCollection(collections);
+  const defaultCollection = normalizedCollections.find((collection) => collection.id === DEFAULT_COLLECTION_ID);
+  const otherCollections = normalizedCollections.filter((collection) => collection.id !== DEFAULT_COLLECTION_ID);
+  const newCollection = {
+    id,
+    name,
+    listings: [],
+    collaborators: [],
+    tags: [],
+    createdAt,
+    updatedAt: createdAt,
+  };
+
   return [
-    ...withDefaultCollection(collections),
-    {
-      id,
-      name,
-      listings: [],
-      collaborators: [],
-      tags: [],
-      createdAt,
-      updatedAt: createdAt,
-    },
+    newCollection,
+    ...otherCollections,
+    ...(defaultCollection ? [defaultCollection] : []),
   ];
 }
 

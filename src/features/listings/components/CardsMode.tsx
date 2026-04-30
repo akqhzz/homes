@@ -7,7 +7,7 @@ import { ArrowDownWideNarrow, ArrowLeftRight, ChevronLeft, ChevronRight, Externa
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatSqft } from '@/lib/utils/format';
-import { useSavedStore } from '@/store/savedStore';
+import { DEFAULT_COLLECTION_ID, useSavedStore } from '@/store/savedStore';
 import { useListingSave } from '@/features/listings/hooks/useListingSave';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
@@ -36,14 +36,16 @@ const MAPBOX_TOKEN = getMapboxToken();
 const SWIPE_EXIT_DURATION = 480;
 const STACK_VISIBLE_COUNT = 3;
 const DESKTOP_IMAGE_SWIPE_THRESHOLD = 34;
+const DESKTOP_IMAGE_WHEEL_LOCK_MS = 720;
 const CARD_MODE_ONBOARDING_STORAGE_KEY = 'homes-card-mode-onboarding-seen';
 const ACTION_BUTTON_CLASS =
   'flex h-12 items-center gap-2 rounded-full bg-white px-6 type-label shadow-[var(--shadow-control)] transition-all no-select hover:-translate-y-0.5 hover:bg-[var(--color-surface)] hover:shadow-[0_10px_28px_rgba(15,23,41,0.14)] active:scale-95';
+const DESKTOP_ACTION_BUTTON_LABEL_CLASS = 'text-[18px] leading-none xl:text-[19px] 2xl:text-[20px]';
 const DESKTOP_CARD_SURFACE_SELECTOR = '[data-desktop-card-surface="true"], [data-desktop-card-controls="true"], [data-card-overlay-control="true"]';
 const DESKTOP_CARD_VARIANTS = {
-  enter: (direction: 1 | -1) => ({ y: direction * 20, opacity: 1, scale: 1 }),
+  enter: (direction: 1 | -1) => ({ y: direction * 18, opacity: 0.985, scale: 1 }),
   center: { y: 0, opacity: 1, scale: 1 },
-  exit: (direction: 1 | -1) => ({ y: -direction * 20, opacity: 1, scale: 1 }),
+  exit: (direction: 1 | -1) => ({ y: -direction * 18, opacity: 0.985, scale: 1 }),
 };
 
 interface CardsModeProps {
@@ -66,6 +68,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [drawerListing, setDrawerListing] = useState<Listing | null>(null);
   const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
   const [savePickerAnchorRect, setSavePickerAnchorRect] = useState<DOMRect | null>(null);
+  const [savePickerMode, setSavePickerMode] = useState<'commit' | 'change'>('commit');
+  const [quickSavePrompt, setQuickSavePrompt] = useState<{ listing: Listing; collectionName: string } | null>(null);
   const [desktopImageIndex, setDesktopImageIndex] = useState(0);
   const [desktopImageAutoplay, setDesktopImageAutoplay] = useState(true);
   const [desktopCardDirection, setDesktopCardDirection] = useState<1 | -1>(1);
@@ -89,11 +93,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const stackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const { swipeDislike } = useSavedStore();
+  const collections = useSavedStore((state) => state.collections);
+  const saveListing = useSavedStore((state) => state.saveListing);
+  const addToCollection = useSavedStore((state) => state.addToCollection);
+  const swipeDislike = useSavedStore((state) => state.swipeDislike);
   const { setActivePanel } = useUIStore();
   const { setViewState, setSelectedListingId } = useMapStore();
 
-  const sortedListings = useMemo(() => sortCardsModeListings(listings, sortMode), [listings, sortMode]);
+  const [sessionListings] = useState(() => listings);
+  const sortedListings = useMemo(() => sortCardsModeListings(sessionListings, sortMode), [sessionListings, sortMode]);
   const activeIndex = Math.min(currentIndex, Math.max(0, sortedListings.length - 1));
   const listing = sortedListings[activeIndex];
   const { isSaved: liked, unsave } = useListingSave(listing?.id ?? '');
@@ -102,6 +110,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const visibleListings = useMemo(
     () => sortedListings.slice(activeIndex, activeIndex + STACK_VISIBLE_COUNT),
     [activeIndex, sortedListings]
+  );
+  const latestCollection = useMemo(
+    () => collections.find((collection) => collection.id !== DEFAULT_COLLECTION_ID) ?? collections[0],
+    [collections]
   );
   useDocumentOverscrollLock({ x: true, y: true });
 
@@ -174,6 +186,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     return () => window.clearTimeout(timer);
   }, [desktopImageAutoplay, desktopImageIndex, desktopSortAnchorRect, isDesktop, listing, savePickerListing]);
 
+  useEffect(() => {
+    if (!quickSavePrompt) return;
+    if (savePickerMode === 'change' && savePickerListing) return;
+    const timer = window.setTimeout(() => {
+      setQuickSavePrompt(null);
+    }, 2600);
+    return () => window.clearTimeout(timer);
+  }, [quickSavePrompt, savePickerListing, savePickerMode]);
+
   const dismissOnboarding = useCallback(() => {
     if (!showOnboarding) return;
     if (typeof window !== 'undefined') {
@@ -198,11 +219,61 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (!targetListing || swipeLockRef.current) return;
     dismissOnboarding();
     activeDragRef.current = true;
+    setSavePickerMode('commit');
     setSavePickerAnchorRect(anchorRect);
     setSavePickerListing(targetListing);
     window.setTimeout(() => {
       activeDragRef.current = false;
     }, 120);
+  };
+
+  const openChangeCollectionPicker = (targetListing: Listing) => {
+    dismissOnboarding();
+    dismissDesktopTip();
+    setSavePickerMode('change');
+    const promptRect =
+      typeof document === 'undefined'
+        ? null
+        : document.querySelector('[data-quick-save-prompt="true"]')?.getBoundingClientRect() ?? null;
+    setSavePickerAnchorRect(promptRect);
+    setSavePickerListing(targetListing);
+  };
+
+  const quickSaveListing = (targetListing = listing, startX = 0, exitDelay = 520) => {
+    if (!targetListing || !latestCollection || swipeLockRef.current) return;
+    dismissOnboarding();
+    dismissDesktopTip();
+    if (exitDelay <= 0) {
+      setActiveSwipePreview(null);
+      commitCardExit('save', targetListing, startX);
+      window.setTimeout(() => {
+        setQuickSavePrompt({ listing: targetListing, collectionName: latestCollection.name });
+      }, 180);
+      window.setTimeout(() => {
+        saveListing(targetListing.id);
+        addToCollection(latestCollection.id, targetListing.id);
+      }, SWIPE_EXIT_DURATION);
+      return;
+    }
+    saveListing(targetListing.id);
+    addToCollection(latestCollection.id, targetListing.id);
+    setQuickSavePrompt({ listing: targetListing, collectionName: latestCollection.name });
+    setActiveSwipePreview('save');
+    window.setTimeout(() => {
+      setActiveSwipePreview(null);
+      commitCardExit('save', targetListing, startX);
+    }, exitDelay);
+  };
+
+  const toggleHeartSave = () => {
+    if (swipeLockRef.current || !listing) return;
+    if (liked) {
+      unsave();
+      setQuickSavePrompt(null);
+      setActiveSwipePreview(null);
+      return;
+    }
+    quickSaveListing();
   };
 
   const resetDesktopGalleryForCardTransition = () => {
@@ -303,7 +374,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     showDesktopImage(event.deltaX > 0 ? 'next' : 'previous', imageCount);
     window.setTimeout(() => {
       imageWheelLockRef.current = false;
-    }, 260);
+    }, DESKTOP_IMAGE_WHEEL_LOCK_MS);
   };
 
   const handleDesktopImagePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -339,6 +410,8 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       constrainedDx = -Math.pow(Math.abs(dx), 0.65);
     }
     desktopImageStripRef.current.style.transition = 'none';
+    const maxSwipeDistance = width;
+    constrainedDx = Math.max(-maxSwipeDistance, Math.min(maxSwipeDistance, constrainedDx));
     desktopImageStripRef.current.style.transform = `translateX(${-desktopImageIndex * width + constrainedDx}px)`;
   };
 
@@ -357,10 +430,18 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       }
       return;
     }
-    if (dx < 0 && desktopImageIndex < imageCount - 1) {
-      setDesktopImageIndex(desktopImageIndex + 1);
-    } else if (dx > 0 && desktopImageIndex > 0) {
-      setDesktopImageIndex(desktopImageIndex - 1);
+    const nextIndex =
+      dx < 0 && desktopImageIndex < imageCount - 1
+        ? desktopImageIndex + 1
+        : dx > 0 && desktopImageIndex > 0
+        ? desktopImageIndex - 1
+        : desktopImageIndex;
+    if (nextIndex !== desktopImageIndex) {
+      if (desktopImageStripRef.current) {
+        desktopImageStripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        desktopImageStripRef.current.style.transform = `translateX(${-nextIndex * width}px)`;
+      }
+      setDesktopImageIndex(nextIndex);
     } else if (desktopImageStripRef.current) {
       desktopImageStripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
       desktopImageStripRef.current.style.transform = `translateX(${-desktopImageIndex * width}px)`;
@@ -457,9 +538,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <X size={20} strokeWidth={2.3} />
         </Button>
 
-        <div className="relative mx-auto flex min-h-0 w-[calc(100%-5.5rem)] max-w-[1540px] flex-1 flex-col justify-center gap-3">
-          <div className="pointer-events-none absolute bottom-[6.25rem] left-1/2 z-0 h-10 w-[calc(100%-2.8rem)] max-w-[1490px] -translate-x-1/2 rounded-[22px] bg-white/32 shadow-[0_6px_18px_rgba(15,23,41,0.045)]" />
-          <div className="pointer-events-none absolute bottom-[5.95rem] left-1/2 z-0 h-10 w-[calc(100%-5.2rem)] max-w-[1430px] -translate-x-1/2 rounded-[20px] bg-white/18 shadow-[0_5px_14px_rgba(15,23,41,0.035)]" />
+        <div className="relative mx-auto flex min-h-0 w-[calc(100%-8.5rem)] max-w-[1540px] flex-1 flex-col justify-center gap-5">
+          <div className="pointer-events-none absolute bottom-[7.25rem] left-1/2 z-0 h-10 w-[calc(100%-2.8rem)] max-w-[1490px] -translate-x-1/2 rounded-[22px] bg-white/32 shadow-[0_6px_18px_rgba(15,23,41,0.045)]" />
+          <div className="pointer-events-none absolute bottom-[6.95rem] left-1/2 z-0 h-10 w-[calc(100%-5.2rem)] max-w-[1430px] -translate-x-1/2 rounded-[20px] bg-white/18 shadow-[0_5px_14px_rgba(15,23,41,0.035)]" />
           <AnimatePresence mode="wait" custom={desktopCardDirection}>
             <motion.div
               key={listing.id}
@@ -470,7 +551,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.18, ease: [0.2, 0, 0.1, 1] }}
+              transition={{ duration: 0.34, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               <div
                 ref={desktopImageAreaRef}
@@ -636,8 +717,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             </motion.div>
           </AnimatePresence>
 
-          <div className="relative z-20 flex shrink-0 items-center justify-center gap-2.5">
-            <div data-desktop-card-controls="true" className="contents">
+          <div className="relative z-20 grid shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4">
+            <div />
+            <div data-desktop-card-controls="true" className="relative flex items-center justify-center gap-2.5">
             {showDesktopTip && (
               <div className="absolute bottom-[calc(100%+0.9rem)] left-1/2 w-[360px] -translate-x-1/2 rounded-[24px] bg-white px-6 py-5 text-center shadow-[0_18px_44px_rgba(15,23,41,0.18)]">
                 <p className="font-heading text-[1.25rem] font-semibold leading-tight text-[var(--color-text-primary)]">Choose with Pass or Save</p>
@@ -664,37 +746,27 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               onClick={passListing}
               className={cn(
                 ACTION_BUTTON_CLASS,
-                'h-[4.9rem] min-w-[204px] px-14 !text-[20px] !leading-none font-semibold text-[var(--color-text-secondary)]',
+                'h-[4.1rem] min-w-[168px] gap-2.5 !px-9 !text-[18px] !leading-none font-semibold text-[var(--color-text-secondary)] xl:h-[4.35rem] xl:min-w-[180px] xl:gap-3 xl:!px-10 xl:!text-[19px] 2xl:h-[4.6rem] 2xl:min-w-[192px] 2xl:!px-12 2xl:!text-[20px]',
                 activeSwipePreview === 'pass' && 'bg-[var(--color-surface)] text-[var(--color-text-primary)]'
               )}
             >
-              <X size={30} strokeWidth={2.4} />
-              Pass
+              <X size={24} strokeWidth={2.4} />
+              <span className={DESKTOP_ACTION_BUTTON_LABEL_CLASS}>Pass</span>
             </button>
             <button
-              onClick={(event) => {
-                if (swipeLockRef.current) return;
-                dismissDesktopTip();
-                if (liked) {
-                  const anchorRect = event.currentTarget.getBoundingClientRect();
-                  openSavePicker(listing, anchorRect);
-                  return;
-                }
-                const anchorRect = event.currentTarget.getBoundingClientRect();
-                openSavePicker(listing, anchorRect);
-              }}
+              onClick={toggleHeartSave}
               className={cn(
                 ACTION_BUTTON_CLASS,
-                'h-[4.9rem] min-w-[204px] px-14 !text-[20px] !leading-none font-semibold text-[var(--color-text-primary)]',
+                'h-[4.1rem] min-w-[168px] gap-2.5 !px-9 !text-[18px] !leading-none font-semibold text-[var(--color-text-primary)] xl:h-[4.35rem] xl:min-w-[180px] xl:gap-3 xl:!px-10 xl:!text-[19px] 2xl:h-[4.6rem] 2xl:min-w-[192px] 2xl:!px-12 2xl:!text-[20px]',
                 activeSwipePreview === 'save' && 'bg-[var(--color-accent-subtle,#fdf2f8)] text-[var(--color-accent)]'
               )}
             >
               <Heart
-                size={30}
+                size={24}
                 strokeWidth={2.4}
                 className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
               />
-              Save
+              <span className={DESKTOP_ACTION_BUTTON_LABEL_CLASS}>Save</span>
             </button>
             <Button
               variant="elevated"
@@ -709,6 +781,17 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             >
               <ArrowDownWideNarrow size={17} />
             </Button>
+            </div>
+            <div className="flex min-w-0 justify-end">
+              <AnimatePresence>
+                {quickSavePrompt && (
+                  <QuickSavePrompt
+                    collectionName={quickSavePrompt.collectionName}
+                    onChangeCollection={() => openChangeCollectionPicker(quickSavePrompt.listing)}
+                    desktop
+                  />
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -736,14 +819,23 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             <SaveToCollectionSheet
               listingId={savePickerListing.id}
               anchorRect={savePickerAnchorRect}
+              placement="above"
               onClose={() => {
                 setSavePickerListing(null);
                 setSavePickerAnchorRect(null);
               }}
-              onSaved={() => {
+              onSaved={(collectionId) => {
                 const savedListing = savePickerListing;
                 setSavePickerListing(null);
                 setSavePickerAnchorRect(null);
+                if (savePickerMode === 'change') {
+                  const collectionName =
+                    collections.find((collection) => collection.id === collectionId)?.name ?? 'Collection';
+                  if (savedListing) {
+                    setQuickSavePrompt({ listing: savedListing, collectionName });
+                  }
+                  return;
+                }
                 setActiveSwipePreview('save');
                 window.setTimeout(() => {
                   setActiveSwipePreview(null);
@@ -813,7 +905,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               style={{ height: '100%' }}
               onSwipe={(action, offsetX) => {
                 if (action === 'save') {
-                  openSavePicker(item);
+                  quickSaveListing(item, offsetX, 0);
                   return;
                 }
                 commitCardExit(action, item, offsetX);
@@ -889,23 +981,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           )}
         >
           <X size={18} strokeWidth={2.4} />
-          Pass
+          <span>Pass</span>
         </button>
 
         <button
-          onClick={() => {
-            if (swipeLockRef.current) return;
-            if (liked) {
-              unsave();
-              setActiveSwipePreview(null);
-              return;
-            }
-            setActiveSwipePreview('save');
-            window.setTimeout(() => {
-              setActiveSwipePreview(null);
-              openSavePicker();
-            }, 180);
-          }}
+          onClick={toggleHeartSave}
           className={cn(
             ACTION_BUTTON_CLASS,
             'text-[var(--color-text-primary)]',
@@ -917,7 +997,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
             strokeWidth={2.4}
             className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
           />
-          Save
+          <span>Save</span>
         </button>
 
         <Button
@@ -936,6 +1016,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
       {/* Listing detail drawer */}
       <AnimatePresence>
+        {quickSavePrompt && (
+          <QuickSavePrompt
+            collectionName={quickSavePrompt.collectionName}
+            onChangeCollection={() => openChangeCollectionPicker(quickSavePrompt.listing)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {savePickerListing && (
           <SaveToCollectionSheet
             listingId={savePickerListing.id}
@@ -944,11 +1033,23 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               setSavePickerListing(null);
               setSavePickerAnchorRect(null);
             }}
-            onSaved={() => {
+            onSaved={(collectionId) => {
               const savedListing = savePickerListing;
               setSavePickerListing(null);
               setSavePickerAnchorRect(null);
-              commitCardExit('save', savedListing);
+              if (savePickerMode === 'change') {
+                const collectionName =
+                  collections.find((collection) => collection.id === collectionId)?.name ?? 'Collection';
+                if (savedListing) {
+                  setQuickSavePrompt({ listing: savedListing, collectionName });
+                }
+                return;
+              }
+              setActiveSwipePreview('save');
+              window.setTimeout(() => {
+                setActiveSwipePreview(null);
+                commitCardExit('save', savedListing);
+              }, 520);
             }}
           />
         )}
@@ -1140,6 +1241,45 @@ function DesktopListingImage({
       decoding="async"
       onError={() => setFailedSrc(src)}
     />
+  );
+}
+
+function QuickSavePrompt({
+  collectionName,
+  desktop = false,
+  onChangeCollection,
+}: {
+  collectionName: string;
+  desktop?: boolean;
+  onChangeCollection: () => void;
+}) {
+  return (
+    <motion.div
+      data-card-overlay-control="true"
+      data-quick-save-prompt="true"
+      className={cn(
+        'z-[130] flex items-center justify-between gap-3 rounded-md border border-white/70 bg-white/58 shadow-[0_12px_34px_rgba(15,23,41,0.16)] backdrop-blur-2xl',
+        desktop
+          ? 'relative h-14 w-full max-w-[320px] py-3 pl-6 pr-3'
+          : 'fixed left-1/2 top-[calc(env(safe-area-inset-top,0px)+0.75rem)] h-11 w-[min(calc(100vw-7.25rem),292px)] -translate-x-1/2 py-1.5 pl-4 pr-1.5'
+      )}
+      initial={{ y: desktop ? 10 : -10, opacity: 0, scale: 0.98 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      exit={{ y: desktop ? 8 : -8, opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <p className="min-w-0 truncate type-label text-[var(--color-text-primary)]">
+        Saved to &quot;{collectionName}&quot;
+      </p>
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={onChangeCollection}
+        className="h-8 shrink-0 px-3 type-label"
+      >
+        Change
+      </Button>
+    </motion.div>
   );
 }
 
