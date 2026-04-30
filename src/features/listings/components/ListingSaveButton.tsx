@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Heart } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import HeartDelight from '@/components/ui/HeartDelight';
 import SaveToCollectionSheet from '@/features/collections/components/SaveToCollectionSheet';
 import { cn } from '@/lib/utils/cn';
 import { useListingSave } from '@/features/listings/hooks/useListingSave';
@@ -15,6 +16,7 @@ interface ListingSaveButtonProps {
 export default function ListingSaveButton({ listingId, variant = 'pill', className }: ListingSaveButtonProps) {
   const [showPicker, setShowPicker] = useState(false);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  const [heartDelightKey, setHeartDelightKey] = useState(0);
   const { isSaved, unsave } = useListingSave(listingId);
   const isIconOnly = variant === 'icon';
 
@@ -37,7 +39,9 @@ export default function ListingSaveButton({ listingId, variant = 'pill', classNa
         }}
         className={cn(variant === 'toolbar' && 'flex-1', className)}
       >
-        <Heart size={15} className={cn(isSaved && 'fill-[var(--color-accent)] text-[var(--color-accent)]')} />
+        <HeartDelight activeKey={heartDelightKey}>
+          <Heart size={15} className={cn(isSaved && 'fill-[var(--color-accent)] text-[var(--color-accent)]')} />
+        </HeartDelight>
         {!isIconOnly && 'Save'}
       </Button>
       {showPicker && (
@@ -45,6 +49,7 @@ export default function ListingSaveButton({ listingId, variant = 'pill', classNa
           listingId={listingId}
           anchorRect={anchorRect}
           onClose={() => setShowPicker(false)}
+          onSaved={() => setHeartDelightKey((key) => key + 1)}
         />
       )}
     </>

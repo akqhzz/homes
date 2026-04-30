@@ -91,7 +91,7 @@ function CollectionTagsPanelContent({
                   ? 'border-[var(--color-border-strong)] bg-transparent text-[var(--color-text-primary)]'
                   : selected
                   ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-[var(--color-text-inverse)]'
-                  : 'border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-brand-600)] hover:text-[var(--color-brand-600)]'
+                  : 'border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]'
               )}
               style={{ WebkitTouchCallout: 'none' }}
               onContextMenu={(event) => {

@@ -8,6 +8,7 @@ import { useSavedStore } from '@/store/savedStore';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
+import { cn } from '@/lib/utils/cn';
 import PageShell from '@/components/layout/PageShell';
 import CollectionWorkspaceHeader from '@/features/collections/components/CollectionWorkspaceHeader';
 import CollectionListingsGrid from '@/features/collections/components/CollectionListingsGrid';
@@ -61,7 +62,7 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
   } = useSavedStore();
   const isLiked = useSavedStore((state) => state.isLiked);
   const toggleLike = useSavedStore((state) => state.toggleLike);
-  const { activePanel, isCarouselVisible, setCarouselVisible } = useUIStore();
+  const { activePanel, isCarouselVisible, isDesktopMapExpanded, setCarouselVisible, setDesktopMapExpanded } = useUIStore();
   const setSelectedListingId = useMapStore((state) => state.setSelectedListingId);
   const setMobileCarouselListingId = useMapStore((state) => state.setMobileCarouselListingId);
   const setViewState = useMapStore((state) => state.setViewState);
@@ -100,9 +101,11 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
 
   useEffect(() => {
     setCarouselVisible(false);
+    setDesktopMapExpanded(false);
     setSelectedListingId(null);
     setMobileCarouselListingId(null, null);
-  }, [collectionId, setCarouselVisible, setMobileCarouselListingId, setSelectedListingId]);
+    return () => setDesktopMapExpanded(false);
+  }, [collectionId, setCarouselVisible, setDesktopMapExpanded, setMobileCarouselListingId, setSelectedListingId]);
 
   useEffect(() => {
     setViewState(getCollectionViewport(sortedListings));
@@ -179,6 +182,7 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
   };
   const handleDeleteCollectionTag = (tag: string) => {
     deleteCollectionTag(collection.id, tag);
+    setActiveTagFilters((current) => current.filter((item) => item !== tag));
   };
 
   const handleCollectionLikeToggle = (listingId: string) => {
@@ -419,11 +423,16 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
           </div>
 
           <div className="hidden h-full w-full min-w-0 flex-1 overflow-hidden lg:flex">
-            <div className="relative min-h-0 min-w-0 flex-1 self-stretch lg:mr-2 lg:mt-4 lg:overflow-hidden lg:rounded-tr-[28px]">
+            <div
+              className={cn(
+                'relative min-h-0 min-w-0 flex-1 self-stretch lg:overflow-hidden',
+                isDesktopMapExpanded ? 'lg:mr-0 lg:mt-0 lg:rounded-none' : 'lg:mr-2 lg:mt-4 lg:rounded-tr-[28px]'
+              )}
+            >
               <MapView listings={sortedListings} showListings />
             </div>
 
-            <div className="hidden h-full shrink-0 overflow-hidden lg:block lg:w-[688px] 3xl:w-[1024px]">
+            {!isDesktopMapExpanded && <div className="hidden h-full shrink-0 overflow-hidden lg:block lg:w-[688px] 3xl:w-[1024px]">
               <div className="h-full overflow-y-auto px-4 py-4">
                 <CollectionListingsGrid
                   listings={sortedListings}
@@ -438,7 +447,7 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
                   onSavedListing={handleCollectionResave}
                 />
               </div>
-            </div>
+            </div>}
 
             <AnchoredPopover
               open={!!desktopSortAnchor}

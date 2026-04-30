@@ -351,7 +351,7 @@ export default function DesktopHeader({
               aria-label="Open cards"
             >
               <GalleryHorizontalEnd size={16} className="shrink-0 text-[var(--color-text-primary)]" />
-              Card Mode
+              Card Mode ✨
             </Button>
           ) : (
             <div ref={collectionsRef} className="relative">

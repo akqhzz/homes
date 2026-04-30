@@ -23,6 +23,7 @@ interface AreaSelectPanelProps {
   shapeCount?: number;
   canAddShape?: boolean;
   canClearShapes?: boolean;
+  showDrawControls?: boolean;
   canUndoBoundary: boolean;
   canRedoBoundary: boolean;
   onBack: () => void;
@@ -44,6 +45,7 @@ export default function AreaSelectPanel({
   shapeCount = 0,
   canAddShape = false,
   canClearShapes = false,
+  showDrawControls: showDrawControlsOverride,
   canUndoBoundary,
   canRedoBoundary,
   onBack,
@@ -64,13 +66,15 @@ export default function AreaSelectPanel({
     : 'Tap any area to pick or remove it';
 
   const drawHint = shapeCount > 0
-    ? `${shapeCount} shape${shapeCount === 1 ? '' : 's'}`
+    ? showDrawControlsOverride === false
+      ? 'Tap map to draw'
+      : `${shapeCount} shape${shapeCount === 1 ? '' : 's'}`
     : pointCount > 0
       ? `${pointCount} point${pointCount === 1 ? '' : 's'}`
       : 'Tap map to draw';
   const desktopTopLabel = isDrawing ? drawHint : title;
   const mobileTopLabel = isDrawing ? drawHint : title;
-  const showDrawControls = isDrawing && (pointCount > 0 || shapeCount > 0);
+  const showDrawControls = showDrawControlsOverride ?? (isDrawing && (pointCount > 0 || shapeCount > 0));
   const renderDrawControls = () => (
     <div className="flex min-w-0 items-center justify-center gap-2">
       <Button

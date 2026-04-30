@@ -8,6 +8,7 @@ import { useSavedStore } from '@/store/savedStore';
 import { useListingSave } from '@/features/listings/hooks/useListingSave';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/ui/Button';
+import HeartDelight from '@/components/ui/HeartDelight';
 import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/ui/MobileDrawer';
 import { ListingAddressRow, ListingFactRow, ListingFeaturePills } from '@/features/listings/components/ListingParts';
@@ -19,6 +20,7 @@ export default function ListingDetailSheet() {
   const closeListingDetail = useUIStore((s) => s.closeListingDetail);
   const [imgIndex, setImgIndex] = useState(0);
   const [showAddToCollection, setShowAddToCollection] = useState(false);
+  const [heartDelightKey, setHeartDelightKey] = useState(0);
   const collections = useSavedStore((s) => s.collections);
   const addToCollection = useSavedStore((s) => s.addToCollection);
   const saveListing = useSavedStore((s) => s.saveListing);
@@ -106,10 +108,12 @@ export default function ListingDetailSheet() {
               size="md"
               aria-label={liked ? 'Unsave listing' : 'Save listing'}
             >
-              <Heart
-                size={16}
-                className={cn(liked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')}
-              />
+              <HeartDelight activeKey={heartDelightKey}>
+                <Heart
+                  size={16}
+                  className={cn(liked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')}
+                />
+              </HeartDelight>
             </Button>
           </div>
         </div>
@@ -206,6 +210,7 @@ export default function ListingDetailSheet() {
                         onClick={() => {
                           saveListing(listing.id);
                           addToCollection(col.id, listing.id);
+                          setHeartDelightKey((key) => key + 1);
                           setShowAddToCollection(false);
                         }}
                         className="flex items-center gap-3 rounded-xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"

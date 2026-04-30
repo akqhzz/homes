@@ -18,6 +18,7 @@ import OverlayCloseButton from '@/components/navigation/OverlayCloseButton';
 import MobileDrawer from '@/components/ui/MobileDrawer';
 import AnchoredPopover from '@/components/ui/AnchoredPopover';
 import DesktopSortMenu from '@/components/ui/DesktopSortMenu';
+import HeartDelight from '@/components/ui/HeartDelight';
 import SaveToCollectionSheet from '@/features/collections/components/SaveToCollectionSheet';
 import SortOptionsDrawer from '@/components/ui/SortOptionsDrawer';
 import MapListingPin from '@/features/listings/components/MapListingPin';
@@ -38,14 +39,15 @@ const STACK_VISIBLE_COUNT = 3;
 const DESKTOP_IMAGE_SWIPE_THRESHOLD = 34;
 const DESKTOP_IMAGE_WHEEL_LOCK_MS = 720;
 const CARD_MODE_ONBOARDING_STORAGE_KEY = 'homes-card-mode-onboarding-seen';
+const CARD_MODE_DESKTOP_TIP_STORAGE_KEY = 'homes-card-mode-desktop-tip-seen';
 const ACTION_BUTTON_CLASS =
   'flex h-12 items-center gap-2 rounded-full bg-white px-6 type-label shadow-[var(--shadow-control)] transition-all no-select hover:-translate-y-0.5 hover:bg-[var(--color-surface)] hover:shadow-[0_10px_28px_rgba(15,23,41,0.14)] active:scale-95';
 const DESKTOP_ACTION_BUTTON_LABEL_CLASS = 'text-[18px] leading-none xl:text-[19px] 2xl:text-[20px]';
 const DESKTOP_CARD_SURFACE_SELECTOR = '[data-desktop-card-surface="true"], [data-desktop-card-controls="true"], [data-card-overlay-control="true"]';
 const DESKTOP_CARD_VARIANTS = {
-  enter: (direction: 1 | -1) => ({ y: direction * 18, opacity: 0.985, scale: 1 }),
-  center: { y: 0, opacity: 1, scale: 1 },
-  exit: (direction: 1 | -1) => ({ y: -direction * 18, opacity: 0.985, scale: 1 }),
+  enter: (direction: 1 | -1) => ({ y: `${direction * 104}vh`, opacity: 1, scale: 1, zIndex: 1 }),
+  center: { y: 0, opacity: 1, scale: 1, zIndex: 1 },
+  exit: (direction: 1 | -1) => ({ y: `${-direction * 104}vh`, opacity: 1, scale: 1, zIndex: 2 }),
 };
 
 interface CardsModeProps {
@@ -76,7 +78,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [exitingCard, setExitingCard] = useState<{ listing: Listing; action: CardSwipeAction; startX: number; token: number } | null>(null);
   const [enteringListingId, setEnteringListingId] = useState<string | null>(null);
   const [activeSwipePreview, setActiveSwipePreview] = useState<CardSwipeAction | null>(null);
-  const [showDesktopTip, setShowDesktopTip] = useState(true);
+  const [heartDelightKey, setHeartDelightKey] = useState(0);
+  const [showDesktopTip, setShowDesktopTip] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(CARD_MODE_DESKTOP_TIP_STORAGE_KEY) !== 'true';
+  });
   const [showOnboarding, setShowOnboarding] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(CARD_MODE_ONBOARDING_STORAGE_KEY) !== 'true';
@@ -115,6 +121,18 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     () => collections.find((collection) => collection.id !== DEFAULT_COLLECTION_ID) ?? collections[0],
     [collections]
   );
+
+  const getActiveDesktopImageElements = useCallback(() => {
+    if (typeof document === 'undefined' || !listing) {
+      return { area: desktopImageAreaRef.current, strip: desktopImageStripRef.current };
+    }
+    const activeCards = Array.from(document.querySelectorAll<HTMLElement>('[data-desktop-card-active="true"]'));
+    const activeCard = activeCards.find((card) => card.dataset.desktopListingId === listing.id) ?? activeCards.at(-1);
+    return {
+      area: activeCard?.querySelector<HTMLDivElement>('[data-desktop-image-area="true"]') ?? desktopImageAreaRef.current,
+      strip: activeCard?.querySelector<HTMLDivElement>('[data-desktop-image-strip="true"]') ?? desktopImageStripRef.current,
+    };
+  }, [listing]);
   useDocumentOverscrollLock({ x: true, y: true });
 
   useEffect(() => {
@@ -170,11 +188,12 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   }, [activeIndex, sortedListings]);
 
   useEffect(() => {
-    if (!desktopImageStripRef.current) return;
-    const width = desktopImageAreaRef.current?.offsetWidth ?? 760;
-    desktopImageStripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-    desktopImageStripRef.current.style.transform = `translateX(${-desktopImageIndex * width}px)`;
-  }, [desktopImageIndex]);
+    const { area, strip } = getActiveDesktopImageElements();
+    if (!strip) return;
+    const width = area?.offsetWidth ?? 760;
+    strip.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    strip.style.transform = `translateX(${-desktopImageIndex * width}px)`;
+  }, [desktopImageIndex, getActiveDesktopImageElements]);
 
   useEffect(() => {
     if (!isDesktop || !listing || !desktopImageAutoplay || savePickerListing || desktopSortAnchorRect) return;
@@ -205,6 +224,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
   const dismissDesktopTip = useCallback(() => {
     if (!showDesktopTip) return;
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CARD_MODE_DESKTOP_TIP_STORAGE_KEY, 'true');
+    }
     setShowDesktopTip(false);
   }, [showDesktopTip]);
 
@@ -243,6 +265,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (!targetListing || !latestCollection || swipeLockRef.current) return;
     dismissOnboarding();
     dismissDesktopTip();
+    setHeartDelightKey((key) => key + 1);
     if (exitDelay <= 0) {
       setActiveSwipePreview(null);
       commitCardExit('save', targetListing, startX);
@@ -356,12 +379,23 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     }, 660);
   };
 
-  const showDesktopImage = (direction: 'next' | 'previous', imageCount: number) => {
+  const showDesktopImageAt = (index: number, imageCount: number) => {
     setDesktopImageAutoplay(false);
-    setDesktopImageIndex((index) => {
-      if (direction === 'next') return Math.min(index + 1, imageCount - 1);
-      return Math.max(index - 1, 0);
-    });
+    const nextIndex = Math.max(0, Math.min(index, imageCount - 1));
+    const { area, strip } = getActiveDesktopImageElements();
+    const width = area?.offsetWidth ?? 760;
+    if (strip) {
+      strip.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      strip.style.transform = `translateX(${-nextIndex * width}px)`;
+    }
+    setDesktopImageIndex(nextIndex);
+  };
+
+  const showDesktopImage = (direction: 'next' | 'previous', imageCount: number) => {
+    const nextIndex = direction === 'next'
+      ? Math.min(desktopImageIndex + 1, imageCount - 1)
+      : Math.max(desktopImageIndex - 1, 0);
+    showDesktopImageAt(nextIndex, imageCount);
   };
 
   const handleDesktopImageWheel = (event: React.WheelEvent<HTMLDivElement>, imageCount: number) => {
@@ -511,7 +545,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
 
     return (
       <motion.div
-        className="fixed inset-0 z-[90] hidden bg-[#F7F7F2] p-3 text-[var(--color-text-primary)] lg:flex lg:flex-col xl:p-4"
+        className="fixed inset-0 z-[90] hidden cursor-pointer bg-[#F7F7F2] p-3 text-[var(--color-text-primary)] lg:flex lg:flex-col xl:p-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -533,7 +567,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           }}
           aria-label="Close cards view"
           data-card-overlay-control="true"
-          className="absolute right-[1.35rem] top-[1.2rem] z-[100] xl:right-[1.6rem]"
+          className="absolute right-[1.35rem] top-3 z-[100] xl:right-[1.6rem] xl:top-4"
         >
           <X size={20} strokeWidth={2.3} />
         </Button>
@@ -541,21 +575,31 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         <div className="relative mx-auto flex min-h-0 w-[calc(100%-8.5rem)] max-w-[1540px] flex-1 flex-col justify-center gap-5">
           <div className="pointer-events-none absolute bottom-[7.25rem] left-1/2 z-0 h-10 w-[calc(100%-2.8rem)] max-w-[1490px] -translate-x-1/2 rounded-[22px] bg-white/32 shadow-[0_6px_18px_rgba(15,23,41,0.045)]" />
           <div className="pointer-events-none absolute bottom-[6.95rem] left-1/2 z-0 h-10 w-[calc(100%-5.2rem)] max-w-[1430px] -translate-x-1/2 rounded-[20px] bg-white/18 shadow-[0_5px_14px_rgba(15,23,41,0.035)]" />
-          <AnimatePresence mode="wait" custom={desktopCardDirection}>
-            <motion.div
-              key={listing.id}
-              data-desktop-card-surface="true"
-              custom={desktopCardDirection}
-              className="relative z-10 grid min-h-0 overflow-hidden rounded-[26px] bg-white shadow-[0_18px_54px_rgba(15,23,41,0.13)] lg:h-[calc(100vh-150px)] lg:grid-cols-[minmax(0,2.8fr)_minmax(315px,0.58fr)] xl:grid-cols-[minmax(0,3.25fr)_minmax(340px,0.58fr)]"
-              variants={DESKTOP_CARD_VARIANTS}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.34, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
+          <div
+            data-desktop-card-surface="true"
+            className="relative z-10 cursor-default lg:h-[calc(100vh-150px)]"
+          >
+            <AnimatePresence initial={false} custom={desktopCardDirection}>
+              <motion.div
+                key={listing.id}
+                data-desktop-card-surface="true"
+                data-desktop-card-active="true"
+                data-desktop-listing-id={listing.id}
+                custom={desktopCardDirection}
+                className="absolute inset-0 grid min-h-0 cursor-default overflow-hidden rounded-[26px] bg-white shadow-[0_18px_54px_rgba(15,23,41,0.13)] will-change-transform transform-gpu lg:grid-cols-[minmax(0,2.8fr)_minmax(315px,0.58fr)] xl:grid-cols-[minmax(0,3.25fr)_minmax(340px,0.58fr)]"
+                variants={DESKTOP_CARD_VARIANTS}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  y: { duration: 0.74, ease: [0.4, 0, 0.2, 1] },
+                  opacity: { duration: 0.74, ease: [0.4, 0, 0.2, 1] },
+                }}
+              >
               <div
                 ref={desktopImageAreaRef}
                 data-card-image="true"
+                data-desktop-image-area="true"
                 className="group relative min-h-0 overflow-hidden bg-[var(--color-surface)]"
                 onWheel={(event) => handleDesktopImageWheel(event, desktopImages.length)}
                 onPointerDown={handleDesktopImagePointerDown}
@@ -573,6 +617,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               >
                 <div
                   ref={desktopImageStripRef}
+                  data-desktop-image-strip="true"
                   className="flex h-full"
                   style={{ width: `${desktopImages.length * 100}%`, willChange: 'transform' }}
                 >
@@ -593,20 +638,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                     </div>
                   ))}
                 </div>
-
-                {desktopImages.length > 1 && (
-                  <div className="pointer-events-none absolute left-0 right-0 top-3 z-20 flex justify-center gap-1.5">
-                    {getVisibleDotIndexes(desktopImages.length, desktopImageIndex).map((index) => (
-                      <div
-                        key={`${listing.id}-dot-${index}`}
-                      className={cn(
-                          'h-1.5 rounded-full transition-all duration-200',
-                          index === desktopImageIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/60'
-                      )}
-                      />
-                    ))}
-                  </div>
-                )}
 
                 {desktopImages.length > 1 && (
                   <div className="pointer-events-none absolute inset-x-5 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex">
@@ -643,16 +674,44 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                   </div>
                 )}
 
+                {desktopImages.length > 1 && (
+                  <div className="pointer-events-none absolute left-0 right-0 top-3 z-20 flex flex-col items-center gap-1.5">
+                    <div className="flex justify-center gap-1.5">
+                      {Array.from({ length: Math.min(desktopImages.length, 8) }, (_, index) => (
+                        <span
+                          key={`${listing.id}-dot-${index}`}
+                          className={cn(
+                            'h-1.5 rounded-full bg-white/60 transition-all duration-200',
+                            index === desktopImageIndex ? 'w-5 bg-white' : 'w-1.5',
+                            desktopImages.length > 8 && index === 7 && desktopImageIndex >= 7 && 'w-5 bg-white'
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {desktopImages.length > 1 && (
+                  <div className="pointer-events-none absolute left-4 top-4 z-20 rounded-full bg-white/68 px-2.5 py-1 type-caption font-semibold text-[var(--color-text-primary)] shadow-[0_8px_20px_rgba(15,23,41,0.12)] backdrop-blur">
+                    {desktopImageIndex + 1}/{desktopImages.length}
+                  </div>
+                )}
+
                 <div className="absolute bottom-4 left-1/2 z-10 flex max-w-[84%] -translate-x-1/2 gap-1 overflow-hidden rounded-lg bg-white/62 p-1.5 shadow-[0_10px_28px_rgba(15,23,41,0.16)] backdrop-blur">
                   {getDesktopThumbnailImages(desktopImages).map(({ src, index }) => (
                     <button
                       key={`${listing.id}-thumb-${src}-${index}`}
                       type="button"
                       onPointerDown={(event) => event.stopPropagation()}
+                      onPointerMove={(event) => event.stopPropagation()}
+                      onPointerUp={(event) => {
+                        event.stopPropagation();
+                        showDesktopImageAt(index, desktopImages.length);
+                      }}
+                      onPointerCancel={(event) => event.stopPropagation()}
                       onClick={(event) => {
                         event.stopPropagation();
-                        setDesktopImageAutoplay(false);
-                        setDesktopImageIndex(index);
+                        showDesktopImageAt(index, desktopImages.length);
                       }}
                       className={cn(
                         'relative h-9 w-12 shrink-0 overflow-hidden rounded-md border transition-all',
@@ -714,8 +773,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                   <DesktopListingMap listing={listing} />
                 </div>
               </div>
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           <div className="relative z-20 grid shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4">
             <div />
@@ -757,15 +817,17 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               onClick={toggleHeartSave}
               className={cn(
                 ACTION_BUTTON_CLASS,
-                'h-[4.1rem] min-w-[168px] gap-2.5 !px-9 !text-[18px] !leading-none font-semibold text-[var(--color-text-primary)] xl:h-[4.35rem] xl:min-w-[180px] xl:gap-3 xl:!px-10 xl:!text-[19px] 2xl:h-[4.6rem] 2xl:min-w-[192px] 2xl:!px-12 2xl:!text-[20px]',
+                'relative h-[4.1rem] min-w-[168px] gap-2.5 !px-9 !text-[18px] !leading-none font-semibold text-[var(--color-text-primary)] xl:h-[4.35rem] xl:min-w-[180px] xl:gap-3 xl:!px-10 xl:!text-[19px] 2xl:h-[4.6rem] 2xl:min-w-[192px] 2xl:!px-12 2xl:!text-[20px]',
                 activeSwipePreview === 'save' && 'bg-[var(--color-accent-subtle,#fdf2f8)] text-[var(--color-accent)]'
               )}
             >
-              <Heart
-                size={24}
-                strokeWidth={2.4}
-                className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
-              />
+              <HeartDelight activeKey={heartDelightKey}>
+                <Heart
+                  size={24}
+                  strokeWidth={2.4}
+                  className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
+                />
+              </HeartDelight>
               <span className={DESKTOP_ACTION_BUTTON_LABEL_CLASS}>Save</span>
             </button>
             <Button
@@ -828,6 +890,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 const savedListing = savePickerListing;
                 setSavePickerListing(null);
                 setSavePickerAnchorRect(null);
+                setHeartDelightKey((key) => key + 1);
                 if (savePickerMode === 'change') {
                   const collectionName =
                     collections.find((collection) => collection.id === collectionId)?.name ?? 'Collection';
@@ -988,15 +1051,17 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           onClick={toggleHeartSave}
           className={cn(
             ACTION_BUTTON_CLASS,
-            'text-[var(--color-text-primary)]',
+            'relative text-[var(--color-text-primary)]',
             activeSwipePreview === 'save' && 'bg-[var(--color-accent-subtle,#fdf2f8)] text-[var(--color-accent)]'
           )}
         >
-          <Heart
-            size={18}
-            strokeWidth={2.4}
-            className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
-          />
+          <HeartDelight activeKey={heartDelightKey}>
+            <Heart
+              size={18}
+              strokeWidth={2.4}
+              className={cn((liked || activeSwipePreview === 'save') ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-accent)]')}
+            />
+          </HeartDelight>
           <span>Save</span>
         </button>
 
@@ -1037,6 +1102,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               const savedListing = savePickerListing;
               setSavePickerListing(null);
               setSavePickerAnchorRect(null);
+              setHeartDelightKey((key) => key + 1);
               if (savePickerMode === 'change') {
                 const collectionName =
                   collections.find((collection) => collection.id === collectionId)?.name ?? 'Collection';
@@ -1351,12 +1417,6 @@ function DesktopSwipeStamp({ action }: { action: CardSwipeAction }) {
       </motion.div>
     </div>
   );
-}
-
-function getVisibleDotIndexes(total: number, activeIndex: number) {
-  if (total <= 4) return Array.from({ length: total }, (_, index) => index);
-  const start = Math.min(Math.max(0, activeIndex - 1), total - 4);
-  return Array.from({ length: 4 }, (_, index) => start + index);
 }
 
 function getDesktopThumbnailImages(images: string[]) {

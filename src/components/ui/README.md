@@ -49,7 +49,7 @@ Keep these categories in mind while editing this folder:
 
 - Buttons and style foundations: `Button`, `ButtonBadge`, `ActionRow`, compatibility wrappers, and button class helpers.
 - Overlays and menus: `MobileDrawer`, `AnchoredPopover`, `RenameDeletePopover`, sort menus.
-- Display primitives: `Avatar`, `AppImageIcon`.
+- Display primitives: `Avatar`, `AppImageIcon`, `HeartDelight`.
 - Form primitives: small reusable controls like `CreateInlineField`.
 
 Feature-specific behavior belongs under `src/features/<feature>`. For example, a component that marks a listing as visited belongs to `src/features/listings`, not shared UI.

@@ -205,6 +205,17 @@ Guidance:
 - Use this when the icon is an app asset/image, not a Lucide icon.
 - Prefer Lucide icons directly for simple symbolic actions.
 
+### HeartDelight
+
+Use `HeartDelight` around save/heart icons when a successful save should trigger the shared pulse and burst animation.
+
+Current users:
+
+- Listing cards.
+- Collection listing cards through `ListingCard`.
+- Listing save buttons on detail/header surfaces.
+- Cards mode save controls.
+
 ## Navigation Controls
 
 Navigation-aware controls live in `src/components/navigation`, not `src/components/ui`, because they own router behavior.

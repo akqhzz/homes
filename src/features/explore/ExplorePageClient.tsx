@@ -14,6 +14,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import DesktopSidebar from '@/components/layout/DesktopSidebar';
 import TopBar from '@/components/layout/TopBar';
 import ListingsCarousel from '@/features/listings/components/ListingsCarousel';
+import ListingsListView from '@/features/listings/components/ListingsListView';
 import DesktopHeader from '@/components/layout/DesktopHeader';
 import MapControlButton from '@/components/ui/MapControlButton';
 import { getAreaChips, getCompactAreaChipLabel } from '@/lib/utils/search-display';
@@ -32,12 +33,7 @@ const AreaSelectPanel = dynamic(() => import('@/features/explore/AreaSelectPanel
 const ListingDetailSheet = dynamic(() => import('@/features/listings/components/ListingDetailSheet'), { ssr: false });
 const SavedSearchesPanel = dynamic(() => import('@/features/saved-searches/components/SavedSearchesPanel'), { ssr: false });
 const ListingsSidebar = dynamic(() => import('@/features/listings/components/ListingsSidebar'), { ssr: false });
-let listingsListViewPreload: Promise<typeof import('@/features/listings/components/ListingsListView')> | null = null;
-const preloadListingsListView = () => {
-  listingsListViewPreload ??= import('@/features/listings/components/ListingsListView');
-  return listingsListViewPreload;
-};
-const ListingsListView = dynamic(() => preloadListingsListView(), { ssr: false });
+const preloadListingsListView = () => Promise.resolve();
 
 export default function ExplorePageClient() {
   const {
@@ -93,6 +89,7 @@ export default function ExplorePageClient() {
     handleDeselectSavedSearch: deselectSavedSearchWithAreaRestore,
     handleNeighborhoodClick,
     handleSelectSavedSearch,
+    hasEditedDrawSession,
     isAreaSelect,
     isDrawingArea,
     openAreaSelect,
@@ -347,6 +344,7 @@ export default function ExplorePageClient() {
                 shapeCount={draftBoundaryCount}
                 canAddShape={canAddShape}
                 canClearShapes={canClearShapes}
+                showDrawControls={isDrawingArea && (drawnBoundary.length > 0 || hasEditedDrawSession)}
                 canUndoBoundary={canUndoBoundary}
                 canRedoBoundary={canRedoBoundary}
                 onBack={cancelAreaSelect}

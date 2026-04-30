@@ -26,6 +26,7 @@ interface SaveToCollectionSheetProps {
 
 const DESKTOP_DROPDOWN_MAX_HEIGHT = 360;
 const DESKTOP_VIEWPORT_PADDING = 16;
+const DESKTOP_ANCHOR_GAP = 10;
 
 export default function SaveToCollectionSheet({
   listingId,
@@ -236,13 +237,25 @@ export default function SaveToCollectionSheet({
   const left = Math.min(Math.max(preferredLeft, 16), viewportWidth - 336);
   const preferredTop = anchorRect
     ? placement === 'above'
-      ? anchorRect.top - DESKTOP_DROPDOWN_MAX_HEIGHT - 10
-      : anchorRect.bottom + 10
+      ? anchorRect.top - DESKTOP_DROPDOWN_MAX_HEIGHT - DESKTOP_ANCHOR_GAP
+      : anchorRect.bottom + DESKTOP_ANCHOR_GAP
     : 96;
   const top = Math.max(
     DESKTOP_VIEWPORT_PADDING,
     Math.min(preferredTop, viewportHeight - DESKTOP_DROPDOWN_MAX_HEIGHT - DESKTOP_VIEWPORT_PADDING)
   );
+  const bottom = anchorRect && placement === 'above'
+    ? Math.min(
+      Math.max(viewportHeight - anchorRect.top + DESKTOP_ANCHOR_GAP, DESKTOP_VIEWPORT_PADDING),
+      viewportHeight - DESKTOP_VIEWPORT_PADDING
+    )
+    : undefined;
+  const maxHeight = anchorRect && placement === 'above'
+    ? Math.min(DESKTOP_DROPDOWN_MAX_HEIGHT, Math.max(180, anchorRect.top - DESKTOP_ANCHOR_GAP - DESKTOP_VIEWPORT_PADDING))
+    : DESKTOP_DROPDOWN_MAX_HEIGHT;
+  const dropdownStyle = placement === 'above' && bottom !== undefined
+    ? { left, bottom, maxHeight }
+    : { left, top, maxHeight };
 
   const drawer = (
     <>
@@ -273,8 +286,8 @@ export default function SaveToCollectionSheet({
           }}
         />
         <div
-          className="fixed z-[120] max-h-[360px] w-80 overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
-          style={{ left, top }}
+          className="fixed z-[120] w-80 overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+          style={dropdownStyle}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           onWheel={(event) => event.stopPropagation()}

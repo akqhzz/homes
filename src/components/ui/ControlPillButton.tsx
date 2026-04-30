@@ -21,11 +21,11 @@ export default function ControlPillButton({
       variant="elevated"
       size="control"
       active={active}
-      className={cn('type-btn', className)}
+      className={cn('type-btn relative', badge && 'pr-5', className)}
       {...props}
     >
       {children}
-      {badge && <ButtonBadge>{badge}</ButtonBadge>}
+      {badge && <ButtonBadge className="-right-1 -top-1">{badge}</ButtonBadge>}
     </Button>
   );
 }

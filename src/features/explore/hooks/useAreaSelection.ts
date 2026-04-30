@@ -63,6 +63,7 @@ export function useAreaSelection({
   const [isDrawingArea, setIsDrawingArea] = useState(false);
   const [drawnBoundaries, setDrawnBoundaries] = useState<Coordinates[][]>([]);
   const [drawnBoundary, setDrawnBoundary] = useState<Coordinates[]>([]);
+  const [hasEditedDrawSession, setHasEditedDrawSession] = useState(false);
   const [redoBoundary, setRedoBoundary] = useState<Coordinates[]>([]);
   const [clearedBoundarySnapshot, setClearedBoundarySnapshot] = useState<Coordinates[] | null>(null);
   const [clearedBoundaryRedoSnapshot, setClearedBoundaryRedoSnapshot] = useState<Coordinates[] | null>(null);
@@ -115,6 +116,7 @@ export function useAreaSelection({
     setSelectedNeighborhoods(neighborhoods);
     setDrawnBoundaries(boundaries);
     setDrawnBoundary([]);
+    setHasEditedDrawSession(false);
     resetAreaDraftHistory();
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
@@ -136,6 +138,7 @@ export function useAreaSelection({
     setSelectedNeighborhoods(new Set());
     setDrawnBoundaries([]);
     setDrawnBoundary([]);
+    setHasEditedDrawSession(false);
     resetAreaDraftHistory();
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
@@ -149,6 +152,7 @@ export function useAreaSelection({
     setSelectedNeighborhoods(new Set());
     setDrawnBoundaries([]);
     setDrawnBoundary([]);
+    setHasEditedDrawSession(false);
     resetAreaDraftHistory();
   };
 
@@ -165,6 +169,15 @@ export function useAreaSelection({
       next.add(id);
     }
     setSelectedNeighborhoods(next);
+  };
+
+  const clearPreviewForRemovedNeighborhoods = (neighborhoods: Set<string>) => {
+    setFocusedNeighborhood((neighborhood) => (
+      neighborhood && !neighborhoods.has(neighborhood.id) ? null : neighborhood
+    ));
+    setHoveredNeighborhood((neighborhood) => (
+      neighborhood && !neighborhoods.has(neighborhood.id) ? null : neighborhood
+    ));
   };
 
   const clearVisibleBoundaries = () => {
@@ -228,6 +241,7 @@ export function useAreaSelection({
         const previous = stack[stack.length - 1];
         setAreaRedoStack((redo) => [new Set(selectedNeighborhoods), ...redo]);
         setSelectedNeighborhoods(new Set(previous));
+        clearPreviewForRemovedNeighborhoods(previous);
         return stack.slice(0, -1);
       });
       return;
@@ -277,6 +291,7 @@ export function useAreaSelection({
   };
 
   const addDrawnBoundaryPoint = (coordinates: Coordinates) => {
+    setHasEditedDrawSession(true);
     setDrawnBoundary((points) => [...points, coordinates]);
     setRedoBoundary([]);
     setClearedBoundarySnapshot(null);
@@ -285,6 +300,7 @@ export function useAreaSelection({
 
   const addDrawnBoundaryShape = () => {
     if (drawnBoundary.length < 3) return;
+    setHasEditedDrawSession(true);
     setDrawnBoundaries((boundaries) => [...boundaries, cloneBoundary(drawnBoundary)]);
     setDrawnBoundary([]);
     resetAreaDraftHistory();
@@ -293,6 +309,7 @@ export function useAreaSelection({
   const clearDrawnBoundaryShapes = () => {
     setDrawnBoundaries([]);
     setDrawnBoundary([]);
+    setHasEditedDrawSession(false);
     resetAreaDraftHistory();
   };
 
@@ -308,6 +325,7 @@ export function useAreaSelection({
     setSelectedNeighborhoods(new Set(nextNeighborhoods));
     setDrawnBoundaries(nextBoundaries);
     setDrawnBoundary([]);
+    setHasEditedDrawSession(false);
     resetAreaDraftHistory();
     setFocusedNeighborhood(null);
     setHoveredNeighborhood(null);
@@ -382,6 +400,7 @@ export function useAreaSelection({
     handleDeselectSavedSearch,
     handleNeighborhoodClick,
     handleSelectSavedSearch,
+    hasEditedDrawSession,
     isAreaSelect,
     isDrawingArea,
     openAreaSelect: () => openAreaSelection('select'),

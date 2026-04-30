@@ -12,6 +12,7 @@ import SaveToCollectionSheet from '@/features/collections/components/SaveToColle
 import { ListingAddressRow } from '@/features/listings/components/ListingParts';
 import PriceText from '@/features/listings/components/PriceText';
 import Button from '@/components/ui/Button';
+import HeartDelight from '@/components/ui/HeartDelight';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 252;
@@ -61,6 +62,7 @@ export default function ListingCard({
   const [imgIndex, setImgIndex] = useState(0);
   const [showSavePicker, setShowSavePicker] = useState(false);
   const [saveAnchorRect, setSaveAnchorRect] = useState<DOMRect | null>(null);
+  const [heartDelightKey, setHeartDelightKey] = useState(0);
   const router = useRouter();
   const { isSaved, unsave } = useListingSave(listing.id);
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -235,7 +237,10 @@ export default function ListingCard({
     <SaveToCollectionSheet
       listingId={listing.id}
       onClose={() => setShowSavePicker(false)}
-      onSaved={onSavedToCollection}
+      onSaved={(collectionId) => {
+        setHeartDelightKey((key) => key + 1);
+        onSavedToCollection?.(collectionId);
+      }}
       anchorRect={saveAnchorRect}
       excludedCollectionIds={excludedCollectionIds}
     />
@@ -268,10 +273,12 @@ export default function ListingCard({
               onClick={handleSaveClick}
               aria-label={resolvedLiked ? 'Unsave listing' : 'Save listing'}
             >
-              <Heart
-                size={13}
-                className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)]')}
-              />
+              <HeartDelight activeKey={heartDelightKey}>
+                <Heart
+                  size={13}
+                  className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-secondary)]')}
+                />
+              </HeartDelight>
             </Button>
           </div>
           <div className="px-0.5 pb-1">
@@ -298,7 +305,9 @@ export default function ListingCard({
               onClick={handleSaveClick}
               aria-label={resolvedLiked ? 'Unsave listing' : 'Save listing'}
             >
-              <Heart size={14} className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')} />
+              <HeartDelight activeKey={heartDelightKey}>
+                <Heart size={14} className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')} />
+              </HeartDelight>
             </Button>
           </div>
           <div className="p-4">
@@ -436,10 +445,12 @@ export default function ListingCard({
             onClick={handleSaveClick}
             aria-label={resolvedLiked ? 'Unsave listing' : 'Save listing'}
           >
-            <Heart
-              size={14}
-              className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')}
-            />
+            <HeartDelight activeKey={heartDelightKey}>
+              <Heart
+                size={14}
+                className={cn(resolvedLiked ? 'fill-[var(--color-accent)] text-[var(--color-accent)]' : 'text-[var(--color-text-primary)]')}
+              />
+            </HeartDelight>
           </Button>
         </div>
 
