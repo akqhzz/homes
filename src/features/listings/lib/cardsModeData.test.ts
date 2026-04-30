@@ -50,10 +50,15 @@ test('sortCardsModeListings sorts without mutating input', () => {
   assert.deepEqual(sortCardsModeListings(source, 'newest').map((item) => item.id), ['cheap-new', 'expensive-old']);
 });
 
-test('getCardsModeListingImages repeats listing images and falls back when empty', () => {
+test('getCardsModeListingImages uses real listing images without padding and falls back when empty', () => {
   assert.deepEqual(
     getCardsModeListingImages(baseListing),
-    Array.from({ length: CARD_MODE_IMAGE_COUNT }, (_, index) => baseListing.images[index % baseListing.images.length])
+    baseListing.images
+  );
+
+  assert.deepEqual(
+    getCardsModeListingImages({ images: Array.from({ length: CARD_MODE_IMAGE_COUNT + 2 }, (_, index) => `${index}.jpg`) }),
+    Array.from({ length: CARD_MODE_IMAGE_COUNT }, (_, index) => `${index}.jpg`)
   );
 
   assert.deepEqual(

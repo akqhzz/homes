@@ -40,8 +40,9 @@ const DESKTOP_IMAGE_SWIPE_THRESHOLD = 34;
 const DESKTOP_IMAGE_WHEEL_LOCK_MS = 720;
 const CARD_MODE_ONBOARDING_STORAGE_KEY = 'homes-card-mode-onboarding-seen';
 const CARD_MODE_DESKTOP_TIP_STORAGE_KEY = 'homes-card-mode-desktop-tip-seen';
+const CARD_MODE_LAST_COLLECTION_STORAGE_KEY = 'homes-card-mode-last-collection-id';
 const ACTION_BUTTON_CLASS =
-  'flex h-12 items-center gap-2 rounded-full bg-white px-6 type-label shadow-[var(--shadow-control)] transition-all no-select hover:-translate-y-0.5 hover:bg-[var(--color-surface)] hover:shadow-[0_10px_28px_rgba(15,23,41,0.14)] active:scale-95';
+  'flex h-12 items-center gap-2 rounded-full bg-white px-6 type-label shadow-[var(--shadow-control)] transition-all outline-none no-select hover:-translate-y-0.5 hover:bg-[var(--color-surface)] hover:shadow-[0_10px_28px_rgba(15,23,41,0.14)] active:scale-95';
 const DESKTOP_ACTION_BUTTON_LABEL_CLASS = 'text-[18px] leading-none xl:text-[19px] 2xl:text-[20px]';
 const DESKTOP_CARD_SURFACE_SELECTOR = '[data-desktop-card-surface="true"], [data-desktop-card-controls="true"], [data-card-overlay-control="true"]';
 const DESKTOP_CARD_VARIANTS = {
@@ -74,6 +75,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [quickSavePrompt, setQuickSavePrompt] = useState<{ listing: Listing; collectionName: string } | null>(null);
   const [desktopImageIndex, setDesktopImageIndex] = useState(0);
   const [desktopImageAutoplay, setDesktopImageAutoplay] = useState(true);
+  const [desktopImageZoomKey, setDesktopImageZoomKey] = useState('');
   const [desktopCardDirection, setDesktopCardDirection] = useState<1 | -1>(1);
   const [exitingCard, setExitingCard] = useState<{ listing: Listing; action: CardSwipeAction; startX: number; token: number } | null>(null);
   const [enteringListingId, setEnteringListingId] = useState<string | null>(null);
@@ -87,6 +89,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(CARD_MODE_ONBOARDING_STORAGE_KEY) !== 'true';
   });
+  const [preferredCollectionId, setPreferredCollectionId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem(CARD_MODE_LAST_COLLECTION_STORAGE_KEY);
+  });
   const wheelLockRef = useRef(false);
   const imageWheelLockRef = useRef(false);
   const desktopImagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -96,6 +102,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const activeDragRef = useRef(false);
   const swipeLockRef = useRef(false);
   const exitTokenRef = useRef(0);
+  const commitCardExitRef = useRef<((action: CardSwipeAction) => void) | null>(null);
   const stackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -117,9 +124,13 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     () => sortedListings.slice(activeIndex, activeIndex + STACK_VISIBLE_COUNT),
     [activeIndex, sortedListings]
   );
-  const latestCollection = useMemo(
+  const fallbackCollection = useMemo(
     () => collections.find((collection) => collection.id !== DEFAULT_COLLECTION_ID) ?? collections[0],
     [collections]
+  );
+  const quickSaveCollection = useMemo(
+    () => collections.find((collection) => collection.id === preferredCollectionId) ?? fallbackCollection,
+    [collections, fallbackCollection, preferredCollectionId]
   );
 
   const getActiveDesktopImageElements = useCallback(() => {
@@ -206,6 +217,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   }, [desktopImageAutoplay, desktopImageIndex, desktopSortAnchorRect, isDesktop, listing, savePickerListing]);
 
   useEffect(() => {
+    if (!isDesktop || !listing || !desktopImageAutoplay) return;
+    const nextZoomKey = `${listing.id}:${desktopImageIndex}`;
+    const frame = window.requestAnimationFrame(() => {
+      setDesktopImageZoomKey(nextZoomKey);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [desktopImageAutoplay, desktopImageIndex, isDesktop, listing]);
+
+  useEffect(() => {
     if (!quickSavePrompt) return;
     if (savePickerMode === 'change' && savePickerListing) return;
     const timer = window.setTimeout(() => {
@@ -261,26 +281,34 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     setSavePickerListing(targetListing);
   };
 
+  const rememberCollection = (collectionId: string) => {
+    setPreferredCollectionId(collectionId);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CARD_MODE_LAST_COLLECTION_STORAGE_KEY, collectionId);
+    }
+  };
+
   const quickSaveListing = (targetListing = listing, startX = 0, exitDelay = 520) => {
-    if (!targetListing || !latestCollection || swipeLockRef.current) return;
+    if (!targetListing || !quickSaveCollection || swipeLockRef.current) return;
     dismissOnboarding();
     dismissDesktopTip();
+    rememberCollection(quickSaveCollection.id);
     setHeartDelightKey((key) => key + 1);
     if (exitDelay <= 0) {
       setActiveSwipePreview(null);
       commitCardExit('save', targetListing, startX);
       window.setTimeout(() => {
-        setQuickSavePrompt({ listing: targetListing, collectionName: latestCollection.name });
+        setQuickSavePrompt({ listing: targetListing, collectionName: quickSaveCollection.name });
       }, 180);
       window.setTimeout(() => {
         saveListing(targetListing.id);
-        addToCollection(latestCollection.id, targetListing.id);
+        addToCollection(quickSaveCollection.id, targetListing.id);
       }, SWIPE_EXIT_DURATION);
       return;
     }
     saveListing(targetListing.id);
-    addToCollection(latestCollection.id, targetListing.id);
-    setQuickSavePrompt({ listing: targetListing, collectionName: latestCollection.name });
+    addToCollection(quickSaveCollection.id, targetListing.id);
+    setQuickSavePrompt({ listing: targetListing, collectionName: quickSaveCollection.name });
     setActiveSwipePreview('save');
     window.setTimeout(() => {
       setActiveSwipePreview(null);
@@ -335,6 +363,10 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     }, SWIPE_EXIT_DURATION);
   };
 
+  useEffect(() => {
+    commitCardExitRef.current = commitCardExit;
+  });
+
   const navigateCard = useCallback((direction: 'next' | 'previous') => {
     if (swipeLockRef.current) return;
     dismissOnboarding();
@@ -347,6 +379,13 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       return previousIndex;
     });
   }, [dismissOnboarding, sortedListings]);
+
+  const passCurrentListing = useCallback(() => {
+    if (swipeLockRef.current) return;
+    dismissDesktopTip();
+    setActiveSwipePreview('pass');
+    window.setTimeout(() => commitCardExitRef.current?.('pass'), 340);
+  }, [dismissDesktopTip]);
 
   const handleTrackWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -366,11 +405,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (wheelLockRef.current || swipeLockRef.current) return;
     wheelLockRef.current = true;
     if (event.deltaY > 0) {
-      setActiveSwipePreview('pass');
-      window.setTimeout(() => {
-        setActiveSwipePreview(null);
-        navigateCard('next');
-      }, 340);
+      passCurrentListing();
     } else {
       navigateCard('previous');
     }
@@ -379,7 +414,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     }, 660);
   };
 
-  const showDesktopImageAt = (index: number, imageCount: number) => {
+  const showDesktopImageAt = useCallback((index: number, imageCount: number) => {
     setDesktopImageAutoplay(false);
     const nextIndex = Math.max(0, Math.min(index, imageCount - 1));
     const { area, strip } = getActiveDesktopImageElements();
@@ -389,14 +424,14 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       strip.style.transform = `translateX(${-nextIndex * width}px)`;
     }
     setDesktopImageIndex(nextIndex);
-  };
+  }, [getActiveDesktopImageElements]);
 
-  const showDesktopImage = (direction: 'next' | 'previous', imageCount: number) => {
+  const showDesktopImage = useCallback((direction: 'next' | 'previous', imageCount: number) => {
     const nextIndex = direction === 'next'
       ? Math.min(desktopImageIndex + 1, imageCount - 1)
       : Math.max(desktopImageIndex - 1, 0);
     showDesktopImageAt(nextIndex, imageCount);
-  };
+  }, [desktopImageIndex, showDesktopImageAt]);
 
   const handleDesktopImageWheel = (event: React.WheelEvent<HTMLDivElement>, imageCount: number) => {
     if (Math.abs(event.deltaX) <= Math.abs(event.deltaY) || Math.abs(event.deltaX) < 18) return;
@@ -502,12 +537,22 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       }
       if (event.key === 'ArrowDown' || event.key === 'PageDown') {
         event.preventDefault();
-        navigateCard('next');
+        passCurrentListing();
         return;
       }
       if (event.key === 'ArrowUp' || event.key === 'PageUp') {
         event.preventDefault();
         navigateCard('previous');
+        return;
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showDesktopImage('next', getCardsModeListingImages(listing).length);
+        return;
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showDesktopImage('previous', getCardsModeListingImages(listing).length);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -516,12 +561,15 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     desktopSortAnchorRect,
     dismissOnboarding,
     isDesktop,
+    listing,
     navigateCard,
     onClose,
+    passCurrentListing,
     savePickerListing,
     showDetailDrawer,
     showMapDrawer,
     showSortDrawer,
+    showDesktopImage,
   ]);
 
   if (!listing) {
@@ -625,7 +673,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                     <div key={`${listing.id}-${src}-${index}`} className="relative h-full flex-shrink-0" style={{ width: `${100 / desktopImages.length}%` }}>
                       <motion.div
                         className="absolute inset-0"
-                        animate={{ scale: desktopImageAutoplay && index === desktopImageIndex ? 1.045 : 1 }}
+                        animate={{ scale: desktopImageZoomKey === `${listing.id}:${desktopImageIndex}` && index === desktopImageIndex ? 1.045 : 1 }}
                         transition={{ duration: desktopImageAutoplay ? 4.2 : 0.18, delay: desktopImageAutoplay && index === desktopImageIndex ? 0.35 : 0, ease: 'easeOut' }}
                       >
                         <DesktopListingImage
@@ -887,6 +935,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 setSavePickerAnchorRect(null);
               }}
               onSaved={(collectionId) => {
+                rememberCollection(collectionId);
                 const savedListing = savePickerListing;
                 setSavePickerListing(null);
                 setSavePickerAnchorRect(null);
@@ -1099,6 +1148,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               setSavePickerAnchorRect(null);
             }}
             onSaved={(collectionId) => {
+              rememberCollection(collectionId);
               const savedListing = savePickerListing;
               setSavePickerListing(null);
               setSavePickerAnchorRect(null);
@@ -1420,9 +1470,5 @@ function DesktopSwipeStamp({ action }: { action: CardSwipeAction }) {
 }
 
 function getDesktopThumbnailImages(images: string[]) {
-  if (images.length <= 7) {
-    return images.map((src, index) => ({ src, index }));
-  }
-  const leading = images.slice(0, 6).map((src, index) => ({ src, index }));
-  return [...leading, { src: images[images.length - 1], index: images.length - 1 }];
+  return images.map((src, index) => ({ src, index }));
 }

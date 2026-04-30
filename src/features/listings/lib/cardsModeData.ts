@@ -27,9 +27,11 @@ export function sortCardsModeListings(listings: Listing[], sortMode: CardsModeSo
 }
 
 export function getCardsModeListingImages(listing: Pick<Listing, 'images'>) {
-  const available = listing.images.length > 0 ? listing.images : FALLBACK_LISTING_IMAGES;
+  if (listing.images.length > 0) {
+    return listing.images.slice(0, CARD_MODE_IMAGE_COUNT);
+  }
   return Array.from(
     { length: CARD_MODE_IMAGE_COUNT },
-    (_, index) => available[index % available.length] || FALLBACK_LISTING_IMAGES[index % FALLBACK_LISTING_IMAGES.length]
+    (_, index) => FALLBACK_LISTING_IMAGES[index % FALLBACK_LISTING_IMAGES.length]
   );
 }

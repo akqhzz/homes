@@ -4,13 +4,9 @@ import { Pencil, Search, SlidersHorizontal, SquareDashedMousePointer, Trash2 } f
 import { motion } from 'framer-motion';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
-import { cn } from '@/lib/utils/cn';
 import { useOutsidePointerDown } from '@/hooks/useOutsidePointerDown';
-const ROUND_CONTROL_CLASS =
-  'relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select hover:bg-[var(--color-surface)]';
-const ACTIVE_AREA_CONTROL_CLASS =
-  'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]';
-const AREA_MENU_ITEM_CLASS = 'w-full rounded-xl px-3 py-2 text-left hover:bg-[var(--color-surface)]';
+import Button from '@/components/ui/Button';
+import ActionRow from '@/components/ui/ActionRow';
 
 interface TopBarProps {
   hasAppliedArea?: boolean;
@@ -83,9 +79,13 @@ export default function TopBar({
     <div className="absolute top-4 left-4 right-4 z-20 flex justify-center">
       <div className="flex w-full max-w-[360px] items-center gap-2.5">
         <div ref={areaMenuRef} className="relative shrink-0">
-          <button
+          <Button
+            variant="elevated"
+            shape="circle"
+            size="control"
             onClick={handleAreaClick}
-            className={cn(ROUND_CONTROL_CLASS, hasAppliedArea && ACTIVE_AREA_CONTROL_CLASS)}
+            active={hasAppliedArea}
+            className="relative"
             aria-label="Area selection"
             aria-pressed={hasAppliedArea}
           >
@@ -98,22 +98,28 @@ export default function TopBar({
                 1
               </span>
             )}
-          </button>
+          </Button>
           {showAreaMenu && (
             <div className="absolute left-0 top-12 z-30 w-40 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]">
-              <button onClick={handleOpenAreaSelect} className={cn(AREA_MENU_ITEM_CLASS, 'flex items-center gap-2 text-[var(--color-text-primary)]')}>
-                <SquareDashedMousePointer size={15} />
+              <ActionRow
+                onClick={handleOpenAreaSelect}
+                leading={<SquareDashedMousePointer size={15} />}
+              >
                 <span>Select area</span>
-              </button>
-              <button onClick={handleOpenDrawArea} className={cn(AREA_MENU_ITEM_CLASS, 'flex items-center gap-2 text-[var(--color-text-primary)]')}>
-                <Pencil size={15} />
+              </ActionRow>
+              <ActionRow
+                onClick={handleOpenDrawArea}
+                leading={<Pencil size={15} />}
+              >
                 <span>Draw</span>
-              </button>
+              </ActionRow>
               {hasAppliedArea && (
-                <button onClick={handleClearArea} className={cn(AREA_MENU_ITEM_CLASS, 'flex items-center gap-2 text-[var(--color-text-primary)]')}>
-                  <Trash2 size={15} />
+                <ActionRow
+                  onClick={handleClearArea}
+                  leading={<Trash2 size={15} />}
+                >
                   <span>Clear area</span>
-                </button>
+                </ActionRow>
               )}
             </div>
           )}
@@ -137,12 +143,12 @@ export default function TopBar({
           </button>
         </motion.div>
 
-        <button
+        <Button
+          variant="elevated"
+          size="control"
           onClick={() => setActivePanel('filter')}
-          className={cn(
-            'relative flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-4 type-btn text-[var(--color-text-primary)] shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-colors no-select',
-            filterCount > 0 && 'shadow-[inset_0_0_0_1.5px_#374151,0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]'
-          )}
+          active={filterCount > 0}
+          className="relative shrink-0 type-btn"
         >
           <SlidersHorizontal size={16} className="text-[var(--color-text-primary)]" />
           Filter
@@ -151,7 +157,7 @@ export default function TopBar({
               {filterCount}
             </span>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

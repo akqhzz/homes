@@ -17,7 +17,7 @@ export type ButtonShape = 'pill' | 'circle';
 export type MapControlButtonShape = 'pill' | 'circle';
 
 const buttonBase =
-  'inline-flex items-center justify-center rounded-full transition-all duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 no-select';
+  'inline-flex items-center justify-center rounded-full transition-all duration-150 outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 no-select';
 
 const buttonToneClasses: Record<ButtonTone, string> = {
   primary:

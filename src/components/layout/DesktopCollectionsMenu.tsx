@@ -7,6 +7,8 @@ import { DEFAULT_COLLECTION_ID } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import CreateInlineField from '@/components/ui/CreateInlineField';
 import AppImageIcon from '@/components/ui/AppImageIcon';
+import ActionRow from '@/components/ui/ActionRow';
+import Button from '@/components/ui/Button';
 import { cn } from '@/lib/utils/cn';
 
 interface DesktopCollectionsMenuProps {
@@ -102,8 +104,10 @@ export default function DesktopCollectionsMenu({
                         className="type-body min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none"
                         autoFocus
                       />
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        shape="circle"
+                        size="xs"
                         onMouseDown={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
@@ -112,11 +116,11 @@ export default function DesktopCollectionsMenu({
                           event.stopPropagation();
                           onFinishCollectionRename();
                         }}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                        className="h-6 w-6 shrink-0"
                         aria-label="Finish rename"
                       >
                         <Check size={13} />
-                      </button>
+                      </Button>
                     </div>
                   ) : (
                     <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
@@ -126,34 +130,39 @@ export default function DesktopCollectionsMenu({
                   </span>
                 </span>
                 {!isDefaultCollection && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    shape="circle"
+                    size="sm"
                     onClick={(event) => onOpenCollectionMenu(event, collection.id)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
+                    className="shrink-0 text-[var(--color-text-secondary)] hover:bg-white hover:text-[var(--color-text-primary)]"
                     aria-label="Collection options"
                   >
                     <Ellipsis size={16} />
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
           );
         })}
-        <button
+        <ActionRow
           onClick={onShowAllCollections}
-          className="flex min-h-[84px] items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-white px-4 py-3 text-left transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface)]"
+          size="md"
+          className="min-h-[84px] gap-3 border border-[var(--color-border)] bg-white px-4 py-3 font-normal hover:border-[var(--color-border-strong)]"
+          leading={
+            <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
+              {MOCK_LISTINGS[0]?.images[0] && (
+                <Image src={MOCK_LISTINGS[0].images[0]} alt="" fill sizes="56px" className="object-cover" />
+              )}
+            </span>
+          }
+          trailing={<ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />}
         >
-          <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
-            {MOCK_LISTINGS[0]?.images[0] && (
-              <Image src={MOCK_LISTINGS[0].images[0]} alt="" fill sizes="56px" className="object-cover" />
-            )}
-          </span>
           <span className="min-w-0 flex-1">
             <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">All Collections</span>
             <span className="block type-caption text-[var(--color-text-tertiary)]">View Your Saved Homes</span>
           </span>
-          <ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />
-        </button>
+        </ActionRow>
       </div>
     </div>
   );

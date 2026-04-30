@@ -13,8 +13,6 @@ const NAV_ITEMS = [
   { href: '/for-you', icon: Sparkles, label: 'For You' },
   { href: '/menu', icon: Menu, label: 'Menu' },
 ] as const;
-const NAV_BUTTON_CLASS =
-  'flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-150 no-select hover:bg-[var(--color-surface)]';
 
 export default function BottomNav() {
   const router = useRouter();
@@ -52,18 +50,20 @@ export default function BottomNav() {
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
           return (
-            <button
+            <Button
               key={href}
+              variant="ghost"
+              shape="circle"
+              size="control"
               onClick={() => router.push(href)}
               aria-label={label}
-              className={NAV_BUTTON_CLASS}
             >
               <Icon
                 size={19}
                 strokeWidth={active ? 2.3 : 1.7}
                 className={active ? 'text-[var(--color-text-primary)]' : 'text-[#C4C4C4]'}
               />
-            </button>
+            </Button>
           );
         })}
       </div>

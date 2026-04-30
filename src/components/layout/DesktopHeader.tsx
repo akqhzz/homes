@@ -5,19 +5,17 @@ import { Bookmark, GalleryHorizontalEnd, Menu, Share2 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
-import { useSavedStore } from '@/store/savedStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import { useLocationSearch } from '@/features/search/hooks/useLocationSearch';
 import { cn } from '@/lib/utils/cn';
 import { Location } from '@/lib/types';
 import ListingSaveButton from '@/features/listings/components/ListingSaveButton';
-import RenameDeletePopover from '@/components/ui/RenameDeletePopover';
 import { getPrimaryLocationLabel } from '@/lib/utils/location-label';
 import BackButton from '@/components/navigation/BackButton';
 import { AreaChip } from '@/lib/utils/search-display';
 import ControlPillButton from '@/components/ui/ControlPillButton';
 import Button from '@/components/ui/Button';
-import DesktopCollectionsMenu, { DesktopCollectionsTrigger } from '@/components/layout/DesktopCollectionsMenu';
+import DesktopCollectionsControl from '@/components/layout/DesktopCollectionsControl';
 import DesktopSearchControl from '@/components/layout/DesktopSearchControl';
 import DesktopFilterControl from '@/components/layout/DesktopFilterControl';
 import DesktopAccountMenu from '@/components/layout/DesktopAccountMenu';
@@ -58,18 +56,11 @@ export default function DesktopHeader({
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showCollections, setShowCollections] = useState(false);
-  const [creatingCollection, setCreatingCollection] = useState(false);
-  const [newCollectionName, setNewCollectionName] = useState('');
-  const [collectionMenuState, setCollectionMenuState] = useState<{ collectionId: string; right: number; bottom: number } | null>(null);
-  const [renamingCollectionId, setRenamingCollectionId] = useState<string | null>(null);
-  const [renameCollectionName, setRenameCollectionName] = useState('');
-  const [confirmDeleteCollectionId, setConfirmDeleteCollectionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const filterRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const collectionsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const { selectedLocations, addLocation, removeLocation, clearLocations } = useSearchStore();
@@ -82,7 +73,6 @@ export default function DesktopHeader({
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { searches, activeSearchId, activeSearchDirty } = useSavedSearchStore();
   const { activePanel, setActivePanel } = useUIStore();
-  const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
 
   const isCollectionsPage = pathname.startsWith('/saved');
   const isListingVariant = variant === 'listing';
@@ -104,77 +94,18 @@ export default function DesktopHeader({
     setShowSearch(false);
   };
 
-  const handleCreateCollection = () => {
-    const name = newCollectionName.trim();
-    if (!name) return;
-    createCollection(name);
-    setNewCollectionName('');
-    setCreatingCollection(false);
-  };
-
-  const closeCollectionMenu = () => {
-    setCollectionMenuState(null);
-    setConfirmDeleteCollectionId(null);
-  };
-
-  const openCollectionMenu = (event: React.MouseEvent<HTMLButtonElement>, collectionId: string) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (collectionMenuState?.collectionId === collectionId) {
-      closeCollectionMenu();
-      return;
-    }
-    const rect = event.currentTarget.getBoundingClientRect();
-    setCollectionMenuState({
-      collectionId,
-      right: window.innerWidth - rect.right,
-      bottom: window.innerHeight - rect.top + 4,
-    });
-    setConfirmDeleteCollectionId(null);
-  };
-
-  const startCollectionRename = (collectionId: string, name: string) => {
-    closeCollectionMenu();
-    setRenamingCollectionId(collectionId);
-    setRenameCollectionName(name);
-  };
-
-  const finishCollectionRename = () => {
-    const name = renameCollectionName.trim();
-    if (!renamingCollectionId) return;
-    if (!name) {
-      setRenamingCollectionId(null);
-      setRenameCollectionName('');
-      return;
-    }
-    renameCollection(renamingCollectionId, name);
-    setRenamingCollectionId(null);
-    setRenameCollectionName('');
-  };
-
-  const confirmDeleteCollection = () => {
-    if (!confirmDeleteCollectionId) return;
-    deleteCollection(confirmDeleteCollectionId);
-    if (renamingCollectionId === confirmDeleteCollectionId) {
-      setRenamingCollectionId(null);
-      setRenameCollectionName('');
-    }
-    closeCollectionMenu();
-  };
-
   useEffect(() => {
-    if (!showFilter && !showSearch && !showMenu && !showCollections) return;
+    if (!showFilter && !showSearch && !showMenu) return;
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
       if (target instanceof HTMLElement && target.closest('[data-rename-delete-popover="true"]')) return;
       if (!filterRef.current?.contains(target)) setShowFilter(false);
       if (!searchRef.current?.contains(target)) setShowSearch(false);
       if (!menuRef.current?.contains(target)) setShowMenu(false);
-      if (!collectionsRef.current?.contains(target)) setShowCollections(false);
     };
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [showFilter, showSearch, showMenu, showCollections]);
+  }, [showFilter, showSearch, showMenu]);
 
   useEffect(() => {
     if (!showSearch) return;
@@ -197,42 +128,19 @@ export default function DesktopHeader({
         ) : null}
 
         {isMapPage && (
-          <div ref={collectionsRef} className="absolute left-6 top-1/2 -translate-y-1/2">
-            <Button
-              variant="surface"
-              size="control"
-              onClick={() => {
-                setShowCollections((value) => !value);
+          <DesktopCollectionsControl
+            open={showCollections}
+            onOpenChange={(open) => {
+              setShowCollections(open);
+              if (open) {
                 setShowFilter(false);
                 setShowSearch(false);
                 setShowMenu(false);
-              }}
-            >
-              <DesktopCollectionsTrigger />
-            </Button>
-            {showCollections && (
-              <DesktopCollectionsMenu
-                collections={collections}
-                creatingCollection={creatingCollection}
-                newCollectionName={newCollectionName}
-                renamingCollectionId={renamingCollectionId}
-                renameCollectionName={renameCollectionName}
-                onCreatingCollectionChange={setCreatingCollection}
-                onNewCollectionNameChange={setNewCollectionName}
-                onRenameCollectionNameChange={setRenameCollectionName}
-                onCreateCollection={handleCreateCollection}
-                onFinishCollectionRename={finishCollectionRename}
-                onCancelCollectionRename={() => {
-                  setRenamingCollectionId(null);
-                  setRenameCollectionName('');
-                }}
-                onOpenCollection={(collectionId) => router.push(`/saved/${collectionId}`)}
-                onOpenCollectionMenu={openCollectionMenu}
-                onShowAllCollections={() => router.push('/saved')}
-                align="left"
-              />
-            )}
-          </div>
+              }
+            }}
+            align="left"
+            className="absolute left-6 top-1/2 -translate-y-1/2"
+          />
         )}
 
         {/* Centered search */}
@@ -354,41 +262,17 @@ export default function DesktopHeader({
               Card Mode ✨
             </Button>
           ) : (
-            <div ref={collectionsRef} className="relative">
-              <Button
-                variant="surface"
-                size="control"
-                onClick={() => {
-                  setShowCollections((value) => !value);
+            <DesktopCollectionsControl
+              open={showCollections}
+              onOpenChange={(open) => {
+                setShowCollections(open);
+                if (open) {
                   setShowFilter(false);
                   setShowSearch(false);
                   setShowMenu(false);
-                }}
-              >
-                <DesktopCollectionsTrigger />
-              </Button>
-              {showCollections && (
-                <DesktopCollectionsMenu
-                  collections={collections}
-                  creatingCollection={creatingCollection}
-                  newCollectionName={newCollectionName}
-                  renamingCollectionId={renamingCollectionId}
-                  renameCollectionName={renameCollectionName}
-                  onCreatingCollectionChange={setCreatingCollection}
-                  onNewCollectionNameChange={setNewCollectionName}
-                  onRenameCollectionNameChange={setRenameCollectionName}
-                  onCreateCollection={handleCreateCollection}
-                  onFinishCollectionRename={finishCollectionRename}
-                  onCancelCollectionRename={() => {
-                    setRenamingCollectionId(null);
-                    setRenameCollectionName('');
-                  }}
-                  onOpenCollection={(collectionId) => router.push(`/saved/${collectionId}`)}
-                  onOpenCollectionMenu={openCollectionMenu}
-                  onShowAllCollections={() => router.push('/saved')}
-                />
-              )}
-            </div>
+                }
+              }}
+            />
           )}
           {!isListingVariant && !isMapPage && (
             <div ref={menuRef} className="relative">
@@ -411,24 +295,6 @@ export default function DesktopHeader({
         </nav>
       </header>
 
-      {collectionMenuState && (
-        <RenameDeletePopover
-          open
-          confirmOpen={!!confirmDeleteCollectionId}
-          right={collectionMenuState.right}
-          bottom={collectionMenuState.bottom}
-          deleteTitle="Delete collection?"
-          deleteDescription="This will remove the collection and its saved listing references."
-          onClose={closeCollectionMenu}
-          onRename={() => {
-            const active = collections.find((collection) => collection.id === collectionMenuState.collectionId);
-            if (active) startCollectionRename(active.id, active.name);
-          }}
-          onRequestDelete={() => setConfirmDeleteCollectionId(collectionMenuState.collectionId)}
-          onCancelDelete={() => setConfirmDeleteCollectionId(null)}
-          onConfirmDelete={confirmDeleteCollection}
-        />
-      )}
     </>
   );
 }

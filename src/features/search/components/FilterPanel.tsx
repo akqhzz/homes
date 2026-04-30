@@ -151,19 +151,15 @@ export function FilterPanelBody() {
       <Section title="Property Type">
         <div className="flex flex-wrap gap-2">
           {PROPERTY_TYPES.map(({ value, label, icon: Icon }) => (
-            <button
+            <FilterChip
               key={value}
+              active={filters.propertyTypes.includes(value)}
               onClick={() => togglePropertyType(value)}
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-4 py-2 type-btn transition-all',
-                filters.propertyTypes.includes(value)
-                  ? 'border-[var(--color-brand-600)] bg-[var(--color-brand-600)] text-white'
-                  : 'border-[#E5E7EB] text-[#0F1729] hover:border-[var(--color-brand-600)]'
-              )}
+              className="px-4"
             >
               <Icon size={14} />
               {label}
-            </button>
+            </FilterChip>
           ))}
         </div>
       </Section>
@@ -174,18 +170,14 @@ export function FilterPanelBody() {
             const val = opt === 'Any' ? undefined : parseInt(opt);
             const active = opt === 'Any' ? !filters.minBeds : filters.minBeds === val;
             return (
-              <button
+              <FilterChip
                 key={opt}
+                active={active}
                 onClick={() => setFilters({ minBeds: val })}
-                className={cn(
-                'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
-                active
-                    ? 'border-[var(--color-brand-600)] bg-[var(--color-brand-600)] text-white'
-                    : 'border-[#E5E7EB] text-[#0F1729] hover:border-[var(--color-brand-600)]'
-                )}
+                className="min-w-12 px-3"
               >
                 {opt}
-              </button>
+              </FilterChip>
             );
           })}
         </div>
@@ -197,18 +189,14 @@ export function FilterPanelBody() {
             const val = opt === 'Any' ? undefined : parseInt(opt);
             const active = opt === 'Any' ? !filters.minBaths : filters.minBaths === val;
             return (
-              <button
+              <FilterChip
                 key={opt}
+                active={active}
                 onClick={() => setFilters({ minBaths: val })}
-                className={cn(
-                'h-10 min-w-12 rounded-full border px-3 type-btn transition-all',
-                active
-                    ? 'border-[var(--color-brand-600)] bg-[var(--color-brand-600)] text-white'
-                    : 'border-[#E5E7EB] text-[#0F1729] hover:border-[var(--color-brand-600)]'
-                )}
+                className="min-w-12 px-3"
               >
                 {opt}
-              </button>
+              </FilterChip>
             );
           })}
         </div>
@@ -375,6 +363,30 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h3 className="mb-4 type-heading text-[#0F1729]">{title}</h3>
       {children}
     </div>
+  );
+}
+
+function FilterChip({
+  active,
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof Button> & { active: boolean }) {
+  return (
+    <Button
+      variant="secondary"
+      size="md"
+      className={cn(
+        'h-10 gap-1.5 border shadow-none',
+        active
+          ? 'border-[var(--color-brand-600)] bg-[var(--color-brand-600)] text-white hover:bg-[var(--color-brand-600)]'
+          : 'border-[#E5E7EB] bg-white text-[#0F1729] hover:border-[var(--color-brand-600)] hover:bg-white',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </Button>
   );
 }
 
