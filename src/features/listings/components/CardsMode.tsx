@@ -3,14 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowDownWideNarrow, ArrowLeftRight, ChevronLeft, ChevronRight, ExternalLink, Heart, Map, MapPin, Undo2, X } from 'lucide-react';
+import { ArrowDownWideNarrow, ArrowLeftRight, ChevronLeft, ChevronRight, ExternalLink, Heart, MapPin, Undo2, X } from 'lucide-react';
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatSqft } from '@/lib/utils/format';
 import { DEFAULT_COLLECTION_ID, useSavedStore } from '@/store/savedStore';
 import { useListingSave } from '@/features/listings/hooks/useListingSave';
-import { useUIStore } from '@/store/uiStore';
-import { useMapStore } from '@/store/mapStore';
 import { cn } from '@/lib/utils/cn';
 import { getMapboxToken } from '@/lib/mapbox';
 import Button from '@/components/ui/Button';
@@ -110,8 +108,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const saveListing = useSavedStore((state) => state.saveListing);
   const addToCollection = useSavedStore((state) => state.addToCollection);
   const swipeDislike = useSavedStore((state) => state.swipeDislike);
-  const { setActivePanel } = useUIStore();
-  const { setViewState, setSelectedListingId } = useMapStore();
 
   const [sessionListings] = useState(() => listings);
   const sortedListings = useMemo(() => sortCardsModeListings(sessionListings, sortMode), [sessionListings, sortMode]);
@@ -515,15 +511,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       desktopImageStripRef.current.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
       desktopImageStripRef.current.style.transform = `translateX(${-desktopImageIndex * width}px)`;
     }
-  };
-
-  const handleShowOnMap = (targetListing = listing) => {
-    if (!targetListing) return;
-    dismissOnboarding();
-    setViewState({ longitude: targetListing.coordinates.lng, latitude: targetListing.coordinates.lat, zoom: 15 });
-    setSelectedListingId(null);
-    setActivePanel('none');
-    onClose();
   };
 
   useEffect(() => {
@@ -970,18 +957,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
       transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
       style={{ overscrollBehaviorX: 'none', overscrollBehaviorY: 'none', touchAction: 'pan-y' }}
     >
-      <Button
-        onClick={() => navigateCard('previous')}
-        aria-label="Undo to previous card"
-        className="absolute left-4 z-[70]"
-        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.1rem)' }}
-        variant="overlay"
-        shape="circle"
-        size="sm"
-        disabled={activeIndex === 0}
-      >
-        <Undo2 size={14} />
-      </Button>
       <OverlayCloseButton
         onClick={() => {
           dismissOnboarding();
@@ -1078,10 +1053,11 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           variant="elevated"
           shape="circle"
           size="control"
-          onClick={() => handleShowOnMap()}
-          aria-label="Map"
+          onClick={() => navigateCard('previous')}
+          disabled={activeIndex === 0}
+          aria-label="Undo to previous card"
         >
-          <Map size={17} strokeWidth={2} />
+          <Undo2 size={17} />
         </Button>
 
         <button

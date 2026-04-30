@@ -279,7 +279,7 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
                     <CollectionWorkspaceHeader
                       showBackButton={false}
                       title={collection.name}
-                      titleClassName="type-heading-sm"
+                      titleClassName="type-heading"
                       compactProgress={0}
                       className="min-h-[2rem]"
                     />
