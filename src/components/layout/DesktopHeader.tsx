@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Bookmark, GalleryHorizontalEnd, Menu, Share2 } from 'lucide-react';
+import { Bookmark, ChevronRight, GalleryHorizontalEnd, Menu, Share2 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
@@ -73,7 +73,7 @@ export default function DesktopHeader({
   );
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
   const { searches, activeSearchId, activeSearchDirty } = useSavedSearchStore();
-  const { activePanel, setActivePanel } = useUIStore();
+  const { activePanel, setActivePanel, isDesktopSidebarCollapsed, setDesktopSidebarCollapsed } = useUIStore();
 
   const isCollectionsPage = pathname.startsWith('/saved');
   const isListingVariant = variant === 'listing';
@@ -129,19 +129,31 @@ export default function DesktopHeader({
         ) : null}
 
         {isMapPage && (
-          <DesktopCollectionsControl
-            open={showCollections}
-            onOpenChange={(open) => {
-              setShowCollections(open);
-              if (open) {
-                setShowFilter(false);
-                setShowSearch(false);
-                setShowMenu(false);
-              }
-            }}
-            align="left"
-            className="absolute left-6 top-1/2 -translate-y-1/2"
-          />
+          <div className="absolute left-6 top-1/2 flex -translate-y-1/2 items-center gap-2">
+            {isDesktopSidebarCollapsed && (
+              <Button
+                variant="surface"
+                shape="circle"
+                size="control"
+                onClick={() => setDesktopSidebarCollapsed(false)}
+                aria-label="Expand sidebar"
+              >
+                <ChevronRight size={18} />
+              </Button>
+            )}
+            <DesktopCollectionsControl
+              open={showCollections}
+              onOpenChange={(open) => {
+                setShowCollections(open);
+                if (open) {
+                  setShowFilter(false);
+                  setShowSearch(false);
+                  setShowMenu(false);
+                }
+              }}
+              align="left"
+            />
+          </div>
         )}
 
         {/* Centered search */}

@@ -1,9 +1,11 @@
 'use client';
-import { Bell, Heart, LogOut, Map, Menu, MessageSquare, Shield, Sparkles, User } from 'lucide-react';
+import { Bell, ChevronLeft, Heart, LogOut, Map, Menu, MessageSquare, Shield, Sparkles, User } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 import ActionRow from '@/components/ui/ActionRow';
+import Button from '@/components/ui/Button';
+import { useUIStore } from '@/store/uiStore';
 
 const MENU_ITEMS = [
   { icon: User, label: 'Profile' },
@@ -50,20 +52,33 @@ export default function DesktopSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
+  const { isDesktopSidebarCollapsed, setDesktopSidebarCollapsed } = useUIStore();
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' || pathname === '/map' : pathname.startsWith(href);
 
+  if (isDesktopSidebarCollapsed) return null;
+
   return (
     <aside className="relative hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:py-5">
-      <button
+      <Button
+        variant="ghost"
+        shape="circle"
+        size="control"
         type="button"
-        onClick={() => router.push('/')}
-        className="type-title-lg mt-0 flex h-11 w-11 items-center justify-center leading-none tracking-[-0.06em] text-[var(--color-text-primary)]"
-        aria-label="Homes"
+        onClick={() => setDesktopSidebarCollapsed(true)}
+        className="group relative mt-0 hover:bg-transparent"
+        aria-label="Collapse sidebar"
       >
-        D.
-      </button>
+        <span className="type-title-lg leading-none tracking-[-0.06em] text-[var(--color-text-primary)] transition-opacity group-hover:opacity-0">
+          D.
+        </span>
+        <ChevronLeft
+          size={18}
+          className="absolute opacity-0 transition-opacity group-hover:opacity-100"
+          aria-hidden="true"
+        />
+      </Button>
 
       <nav className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-6">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {

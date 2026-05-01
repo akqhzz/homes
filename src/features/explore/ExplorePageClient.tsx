@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -69,15 +69,8 @@ export default function ExplorePageClient() {
     setActiveSearchDirty,
     updateSearch,
   } = useSavedSearchStore();
-  const [mobileListingsView, setMobileListingsView] = useState<'map' | 'list'>(() => {
-    if (typeof window === 'undefined') return 'map';
-    return window.sessionStorage.getItem(`${MOBILE_LIST_RETURN_KEY}:view`) === 'list' ? 'list' : 'map';
-  });
-  const [desktopListingsView, setDesktopListingsView] = useState<'grid' | 'rows'>(() => {
-    if (typeof window === 'undefined') return 'grid';
-    const savedView = window.sessionStorage.getItem(`${DESKTOP_LIST_RETURN_KEY}:view`);
-    return savedView === 'grid' || savedView === 'rows' ? savedView : 'grid';
-  });
+  const [mobileListingsView, setMobileListingsView] = useState<'map' | 'list'>('map');
+  const [desktopListingsView, setDesktopListingsView] = useState<'grid' | 'rows'>('grid');
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const {
@@ -182,6 +175,16 @@ export default function ExplorePageClient() {
   const areaSelectHasVisibleBoundary =
     selectedNeighborhoods.size > 0 || visibleDraftBoundaries.length > 0 || hasSearchBoundary;
   const isMobileListingsList = mobileListingsView === 'list' && !isAreaSelect;
+  const useCompactDesktopMapControls = desktopListingsView === 'rows';
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setMobileListingsView(window.sessionStorage.getItem(`${MOBILE_LIST_RETURN_KEY}:view`) === 'list' ? 'list' : 'map');
+      const savedDesktopView = window.sessionStorage.getItem(`${DESKTOP_LIST_RETURN_KEY}:view`);
+      if (savedDesktopView === 'grid' || savedDesktopView === 'rows') setDesktopListingsView(savedDesktopView);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   useExplorePageEffects({
     isAreaSelect,
@@ -292,9 +295,20 @@ export default function ExplorePageClient() {
                 onClick={() => {
                   openAreaSelect();
                 }}
+                className={useCompactDesktopMapControls ? 'hidden 3xl:flex' : undefined}
               >
                 <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
                 Select Areas
+              </MapControlButton>
+              <MapControlButton
+                onClick={() => {
+                  openAreaSelect();
+                }}
+                shape="circle"
+                className={useCompactDesktopMapControls ? '3xl:hidden' : 'hidden'}
+                aria-label="Select Areas"
+              >
+                <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
               </MapControlButton>
               {hasVisibleBoundary && (
                 <MapControlButton
@@ -365,6 +379,7 @@ export default function ExplorePageClient() {
                 onCloseNeighborhood={() => setFocusedNeighborhood(null)}
                 onUndoBoundary={undoBoundary}
                 onRedoBoundary={redoBoundaryPoint}
+                compactDesktop={useCompactDesktopMapControls}
               />
             )}
           </AnimatePresence>
@@ -401,7 +416,7 @@ export default function ExplorePageClient() {
             'hidden shrink-0 overflow-hidden lg:block',
             isDesktopMapExpanded && 'lg:hidden',
             desktopListingsView === 'rows'
-              ? 'lg:w-[760px] xl:w-[880px] 2xl:w-[1160px] 3xl:w-[1420px]'
+              ? 'lg:w-[760px] xl:w-[940px] 2xl:w-[1240px] 3xl:w-[1420px]'
               : 'lg:w-[696px] 3xl:w-[1036px]'
           )}
         >

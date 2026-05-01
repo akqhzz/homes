@@ -22,6 +22,8 @@ interface UIStore {
   isSatelliteMode: boolean;
   isDesktopMapExpanded: boolean;
   setDesktopMapExpanded: (v: boolean) => void;
+  isDesktopSidebarCollapsed: boolean;
+  setDesktopSidebarCollapsed: (v: boolean) => void;
 }
 
 export const useUIStore = create<UIStore>((set) => ({
@@ -44,4 +46,6 @@ export const useUIStore = create<UIStore>((set) => ({
   isSatelliteMode: false,
   isDesktopMapExpanded: false,
   setDesktopMapExpanded: (isDesktopMapExpanded) => set({ isDesktopMapExpanded }),
+  isDesktopSidebarCollapsed: false,
+  setDesktopSidebarCollapsed: (isDesktopSidebarCollapsed) => set({ isDesktopSidebarCollapsed }),
 }));

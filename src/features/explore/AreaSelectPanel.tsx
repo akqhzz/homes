@@ -34,6 +34,7 @@ interface AreaSelectPanelProps {
   onCloseNeighborhood: () => void;
   onUndoBoundary: () => void;
   onRedoBoundary: () => void;
+  compactDesktop?: boolean;
 }
 
 export default function AreaSelectPanel({
@@ -56,6 +57,7 @@ export default function AreaSelectPanel({
   onCloseNeighborhood,
   onUndoBoundary,
   onRedoBoundary,
+  compactDesktop = false,
 }: AreaSelectPanelProps) {
   const selectedCount = selectedNeighborhoods.size;
   const hasSelection = selectedCount > 0 || pointCount > 0 || shapeCount > 0;
@@ -101,7 +103,12 @@ export default function AreaSelectPanel({
   return (
     <>
       <div className="pointer-events-none absolute inset-0 z-30">
-        <div className="absolute left-4 right-4 top-4 hidden grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 lg:grid">
+        <div
+          className={cn(
+            'absolute left-4 right-4 top-4 hidden grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3',
+            compactDesktop ? '3xl:grid' : 'lg:grid'
+          )}
+        >
           <Button
             variant="elevated"
             size="control"
@@ -154,7 +161,12 @@ export default function AreaSelectPanel({
           </div>
         </div>
 
-        <div className="absolute left-4 right-4 top-4 flex items-center gap-2 lg:hidden">
+        <div
+          className={cn(
+            'absolute left-4 right-4 top-4 flex items-center gap-2',
+            compactDesktop ? 'lg:flex 3xl:hidden' : 'lg:hidden'
+          )}
+        >
           <Button
             variant="elevated"
             size="control"
@@ -186,7 +198,10 @@ export default function AreaSelectPanel({
 
         {!focusedNeighborhood && (hasSelection || canUndoBoundary || canRedoBoundary) && (
           <div
-            className="absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto lg:hidden"
+            className={cn(
+              'absolute bottom-0 left-5 flex items-center gap-2 pointer-events-auto',
+              compactDesktop ? 'lg:flex 3xl:hidden' : 'lg:hidden'
+            )}
             style={MOBILE_FLOATING_BAR_STYLE}
           >
             <Button
@@ -224,10 +239,13 @@ export default function AreaSelectPanel({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 26, opacity: 0, scale: 0.98 }}
             transition={{ type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-40 overflow-visible pt-3 lg:hidden"
+            className={cn(
+              'pointer-events-none absolute inset-x-0 bottom-0 z-40 overflow-visible pt-3',
+              compactDesktop ? 'lg:block 3xl:hidden' : 'lg:hidden'
+            )}
             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' }}
           >
-            <article className="pointer-events-auto relative mx-auto flex h-[138px] w-[336px] gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]">
+            <article className="pointer-events-auto relative mx-auto flex h-[138px] w-[336px] max-w-[calc(100%-2rem)] gap-2 overflow-hidden rounded-2xl bg-white p-2 text-left shadow-[0_10px_30px_rgba(15,23,41,0.18)]">
               <Button
                 variant="overlay"
                 size="sm"
@@ -270,7 +288,10 @@ export default function AreaSelectPanel({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 18, opacity: 0, scale: 0.98 }}
             transition={{ type: 'tween', duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-6 left-1/2 z-40 hidden w-[420px] -translate-x-1/2 gap-3 overflow-hidden rounded-2xl bg-white p-3 text-left shadow-[0_12px_34px_rgba(15,23,41,0.18)] lg:flex"
+            className={cn(
+              'absolute bottom-6 left-1/2 z-40 hidden w-[420px] -translate-x-1/2 gap-3 overflow-hidden rounded-2xl bg-white p-3 text-left shadow-[0_12px_34px_rgba(15,23,41,0.18)]',
+              compactDesktop ? '3xl:flex' : 'lg:flex'
+            )}
           >
             <Image src={focusedNeighborhood.thumbnail} alt="" width={128} height={112} className="h-28 w-32 shrink-0 rounded-xl object-cover" draggable={false} />
             <div className="flex min-w-0 flex-1 flex-col">

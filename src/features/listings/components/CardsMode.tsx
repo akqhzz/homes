@@ -613,7 +613,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           }}
           aria-label="Close cards view"
           data-card-overlay-control="true"
-          className="absolute right-2 top-3 z-[100] xl:right-3 xl:top-4"
+          className="absolute right-4 top-3 z-[100] xl:right-5 xl:top-4"
         >
           <X size={20} strokeWidth={2.3} />
         </Button>
