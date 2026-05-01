@@ -82,6 +82,7 @@ export default function MapView({
   } = useMapStore();
   const { setCarouselVisible, isSatelliteMode, isCarouselVisible, isDesktopMapExpanded, setDesktopMapExpanded } = useUIStore();
   const likedListingIds = useSavedStore((s) => s.likedListingIds);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapRef | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<MapRef | null>(null);
@@ -163,6 +164,22 @@ export default function MapView({
     });
     return () => cancelAnimationFrame(frame);
   }, [isDesktopMapExpanded, mapLoaded]);
+
+  useEffect(() => {
+    if (!mapLoaded || !containerRef.current || typeof ResizeObserver === 'undefined') return;
+    const resizeMap = () => mapRef.current?.resize();
+    let frame: number | null = null;
+    const observer = new ResizeObserver(() => {
+      resizeMap();
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(resizeMap);
+    });
+    observer.observe(containerRef.current);
+    return () => {
+      observer.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [mapLoaded]);
 
   const indexedListings = useMemo(
     () =>
@@ -280,7 +297,7 @@ export default function MapView({
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden">
       {showListings && isDesktopViewport && (
         <button
           type="button"

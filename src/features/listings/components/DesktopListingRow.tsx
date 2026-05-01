@@ -40,7 +40,7 @@ export default function DesktopListingRow({ listing, onHoverStart, onHoverEnd, o
     <article
       onMouseEnter={onHoverStart}
       onMouseLeave={onHoverEnd}
-      className="group grid min-h-[560px] cursor-pointer grid-cols-[minmax(190px,0.16fr)_minmax(0,1fr)] gap-5 rounded-[30px] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)]"
+      className="group grid min-h-[420px] cursor-pointer grid-cols-[minmax(190px,0.16fr)_minmax(0,1fr)] gap-5 rounded-[30px] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)] 2xl:min-h-[560px]"
       role="button"
       tabIndex={0}
       onClick={onOpenListing}
@@ -113,7 +113,7 @@ export default function DesktopListingRow({ listing, onHoverStart, onHoverEnd, o
             <button
               key={`${listing.id}-${src}-${index}`}
               type="button"
-              className="relative h-full min-h-[528px] w-[78%] shrink-0 snap-start overflow-hidden rounded-[24px] bg-[var(--color-surface)]"
+              className="relative h-full min-h-[388px] w-[78%] shrink-0 snap-start overflow-hidden rounded-[24px] bg-[var(--color-surface)] 2xl:min-h-[528px]"
               onClick={onOpenListing}
               aria-label={`Open ${listing.address} image ${index + 1}`}
             >

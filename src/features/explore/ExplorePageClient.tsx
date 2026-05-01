@@ -73,7 +73,11 @@ export default function ExplorePageClient() {
     if (typeof window === 'undefined') return 'map';
     return window.sessionStorage.getItem(`${MOBILE_LIST_RETURN_KEY}:view`) === 'list' ? 'list' : 'map';
   });
-  const [desktopListingsView, setDesktopListingsView] = useState<'grid' | 'rows'>('grid');
+  const [desktopListingsView, setDesktopListingsView] = useState<'grid' | 'rows'>(() => {
+    if (typeof window === 'undefined') return 'grid';
+    const savedView = window.sessionStorage.getItem(`${DESKTOP_LIST_RETURN_KEY}:view`);
+    return savedView === 'grid' || savedView === 'rows' ? savedView : 'grid';
+  });
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const {
