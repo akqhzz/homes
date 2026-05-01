@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowDownWideNarrow, ChevronLeft, ChevronRight, Map as MapIcon } from 'lucide-react';
+import { ArrowDownWideNarrow, ChevronLeft, ChevronRight, Grid2X2, List, Map as MapIcon } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { useMapStore } from '@/store/mapStore';
 import { useSearchStore } from '@/store/searchStore';
 import ListingCard from '@/features/listings/components/ListingCard';
+import DesktopListingRow from '@/features/listings/components/DesktopListingRow';
 import DesktopSortMenu from '@/components/ui/DesktopSortMenu';
 import SortOptionsDrawer from '@/components/ui/SortOptionsDrawer';
 import MapControlButton from '@/components/ui/MapControlButton';
@@ -33,6 +34,8 @@ interface ListingsListViewProps {
   variant?: ListingsListVariant;
   onShowMap?: () => void;
   scrollRestorationKey?: string;
+  onDesktopViewChange?: (view: 'grid' | 'rows') => void;
+  desktopMapExpanded?: boolean;
 }
 
 export default function ListingsListView({
@@ -42,9 +45,16 @@ export default function ListingsListView({
   variant = 'desktop',
   onShowMap,
   scrollRestorationKey,
+  onDesktopViewChange,
+  desktopMapExpanded = false,
 }: ListingsListViewProps) {
   const [sort, setSort] = useState<SortOption>('newest');
   const [showSort, setShowSort] = useState(false);
+  const [desktopView, setDesktopView] = useState<'grid' | 'rows'>(() => {
+    if (typeof window === 'undefined' || !scrollRestorationKey) return 'grid';
+    const savedView = window.sessionStorage.getItem(`${scrollRestorationKey}:view`);
+    return savedView === 'grid' || savedView === 'rows' ? savedView : 'grid';
+  });
   const [page, setPage] = useState(1);
   const sortRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -84,22 +94,42 @@ export default function ListingsListView({
   useEffect(() => () => setHoveredListingId(null), [setHoveredListingId]);
 
   useEffect(() => {
+    if (isMobile) return;
+    onDesktopViewChange?.(desktopView);
+  }, [desktopView, isMobile, onDesktopViewChange]);
+
+  useEffect(() => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage]);
 
   useEffect(() => {
-    if (!isMobile || !scrollRestorationKey) return;
+    if (!scrollRestorationKey) return;
     const savedScroll = window.sessionStorage.getItem(`${scrollRestorationKey}:scroll`);
     if (!savedScroll) return;
     const frame = requestAnimationFrame(() => {
       scrollContainerRef.current?.scrollTo({ top: Number(savedScroll) || 0 });
     });
     return () => cancelAnimationFrame(frame);
-  }, [isMobile, scrollRestorationKey, visibleListings.length]);
+  }, [scrollRestorationKey, visibleListings.length]);
 
-  const rememberMobileListPosition = () => {
-    if (!isMobile || !scrollRestorationKey) return;
-    window.sessionStorage.setItem(`${scrollRestorationKey}:view`, 'list');
+  useEffect(() => {
+    if (isMobile || !scrollRestorationKey) return;
+    window.sessionStorage.setItem(`${scrollRestorationKey}:view`, desktopView);
+  }, [desktopView, isMobile, scrollRestorationKey]);
+
+  useEffect(() => {
+    if (isMobile || !scrollRestorationKey || desktopMapExpanded) return;
+    const savedScroll = window.sessionStorage.getItem(`${scrollRestorationKey}:scroll`);
+    if (!savedScroll) return;
+    const frame = requestAnimationFrame(() => {
+      scrollContainerRef.current?.scrollTo({ top: Number(savedScroll) || 0 });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [desktopMapExpanded, isMobile, scrollRestorationKey]);
+
+  const rememberListPosition = () => {
+    if (!scrollRestorationKey) return;
+    window.sessionStorage.setItem(`${scrollRestorationKey}:view`, isMobile ? 'list' : desktopView);
     window.sessionStorage.setItem(`${scrollRestorationKey}:scroll`, String(scrollContainerRef.current?.scrollTop ?? 0));
   };
 
@@ -165,26 +195,60 @@ export default function ListingsListView({
           {title}
         </p>
 
-        <div ref={sortRef} className="relative shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowSort((value) => !value)}
-            className="flex h-8 items-center gap-1.5 rounded-full px-2.5 type-btn text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
-          >
-            <ArrowDownWideNarrow size={15} />
-            Sort
-          </button>
-          {!isMobile && showSort && (
-            <div className="absolute right-0 top-12 z-20">
-              <DesktopSortMenu
-                options={SORT_OPTIONS}
-                value={sort}
-                onChange={(value) => {
-                  setSort(value);
-                  setPage(1);
-                  setShowSort(false);
-                }}
-              />
+        <div className="flex shrink-0 items-center gap-2">
+          <div ref={sortRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setShowSort((value) => !value)}
+              className="flex h-8 items-center gap-1.5 rounded-full px-2.5 type-btn text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
+            >
+              <ArrowDownWideNarrow size={15} />
+              Sort
+            </button>
+            {!isMobile && showSort && (
+              <div className="absolute right-0 top-12 z-20">
+                <DesktopSortMenu
+                  options={SORT_OPTIONS}
+                  value={sort}
+                  onChange={(value) => {
+                    setSort(value);
+                    setPage(1);
+                    setShowSort(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          {!isMobile && (
+            <div className="flex rounded-full bg-[var(--color-surface)] p-1">
+              <button
+                type="button"
+                onClick={() => setDesktopView('grid')}
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
+                  desktopView === 'grid'
+                    ? 'bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)]'
+                    : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+                )}
+                aria-label="Grid view"
+                aria-pressed={desktopView === 'grid'}
+              >
+                <Grid2X2 size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDesktopView('rows')}
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
+                  desktopView === 'rows'
+                    ? 'bg-white text-[var(--color-text-primary)] shadow-[var(--shadow-control)]'
+                    : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+                )}
+                aria-label="List view"
+                aria-pressed={desktopView === 'rows'}
+              >
+                <List size={15} />
+              </button>
             </div>
           )}
         </div>
@@ -207,40 +271,57 @@ export default function ListingsListView({
             : 'px-4 pt-4 pb-1.5'
         )}
       >
-        <div className={cn('mx-auto max-w-full', isMobile ? 'w-full' : 'w-fit')}>
-          <div className={cn(
-            'grid max-w-full justify-items-center',
-            isMobile ? 'w-full grid-cols-1 gap-4' : 'w-fit grid-cols-2 gap-4 3xl:grid-cols-3'
-          )}>
+        {!isMobile && desktopView === 'rows' ? (
+          <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-6">
             {visibleListings.map((listing) => (
-              <div
+              <DesktopListingRow
                 key={listing.id}
-                className={cn(
-                  'min-w-0 cursor-pointer rounded-2xl transition-transform hover:-translate-y-0.5',
-                  isMobile ? 'w-full max-w-[26rem]' : 'w-[20.5rem]'
-                )}
-                onMouseEnter={() => setHoveredListingId(listing.id)}
-                onMouseLeave={() => setHoveredListingId(null)}
-                onClick={() => {
-                  rememberMobileListPosition();
+                listing={listing}
+                onHoverStart={() => setHoveredListingId(listing.id)}
+                onHoverEnd={() => setHoveredListingId(null)}
+                onOpenListing={() => {
+                  rememberListPosition();
                   router.push(`/listings/${listing.id}`);
                 }}
-              >
-                <ListingCard
-                  listing={listing}
-                  variant="carousel"
-                  className={isMobile ? 'w-full' : 'w-[20.5rem]'}
-                  desktopTall={!isMobile}
-                  imageTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
-                  contentTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
-                  onOpenListing={rememberMobileListPosition}
-                  carouselImageHeight={listCardImageHeight}
-                  carouselTotalHeight={listCardTotalHeight}
-                />
-              </div>
+              />
             ))}
           </div>
-        </div>
+        ) : (
+          <div className={cn('mx-auto max-w-full', isMobile ? 'w-full' : 'w-fit')}>
+            <div className={cn(
+              'grid max-w-full justify-items-center',
+              isMobile ? 'w-full grid-cols-1 gap-4' : 'w-fit grid-cols-2 gap-4 3xl:grid-cols-3'
+            )}>
+              {visibleListings.map((listing) => (
+                <div
+                  key={listing.id}
+                  className={cn(
+                    'min-w-0 cursor-pointer rounded-2xl transition-transform hover:-translate-y-0.5',
+                    isMobile ? 'w-full max-w-[26rem]' : 'w-[20.5rem]'
+                  )}
+                  onMouseEnter={() => setHoveredListingId(listing.id)}
+                  onMouseLeave={() => setHoveredListingId(null)}
+                  onClick={() => {
+                    rememberListPosition();
+                    router.push(`/listings/${listing.id}`);
+                  }}
+                >
+                  <ListingCard
+                    listing={listing}
+                    variant="carousel"
+                    className={isMobile ? 'w-full' : 'w-[20.5rem]'}
+                    desktopTall={!isMobile}
+                    imageTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
+                    contentTouchMode={isMobile ? 'vertical-scroll' : 'locked'}
+                    onOpenListing={rememberListPosition}
+                    carouselImageHeight={listCardImageHeight}
+                    carouselTotalHeight={listCardTotalHeight}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {listings.length === 0 && (
           <div className="py-20 text-center">

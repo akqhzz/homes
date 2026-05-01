@@ -35,6 +35,7 @@ const SavedSearchesPanel = dynamic(() => import('@/features/saved-searches/compo
 const ListingsSidebar = dynamic(() => import('@/features/listings/components/ListingsSidebar'), { ssr: false });
 const preloadListingsListView = () => Promise.resolve();
 const MOBILE_LIST_RETURN_KEY = 'homes-mobile-list-return';
+const DESKTOP_LIST_RETURN_KEY = 'homes-desktop-list-return';
 
 export default function ExplorePageClient() {
   const {
@@ -72,6 +73,7 @@ export default function ExplorePageClient() {
     if (typeof window === 'undefined') return 'map';
     return window.sessionStorage.getItem(`${MOBILE_LIST_RETURN_KEY}:view`) === 'list' ? 'list' : 'map';
   });
+  const [desktopListingsView, setDesktopListingsView] = useState<'grid' | 'rows'>('grid');
   const carouselDragStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   const {
@@ -390,15 +392,24 @@ export default function ExplorePageClient() {
         </AnimatePresence>
 
         {/* Desktop listings sidebar */}
-        {!isDesktopMapExpanded && (
-          <div className="hidden shrink-0 overflow-hidden lg:block lg:w-[696px] 3xl:w-[1036px]">
-            <ListingsSidebar
-              listings={scopedListings}
-              useMapAreaLabel={!hasVisibleBoundary}
-              areaTitleLabel={hasVisibleBoundary ? compactAreaChipLabel : undefined}
-            />
-          </div>
-        )}
+        <div
+          className={cn(
+            'hidden shrink-0 overflow-hidden lg:block',
+            isDesktopMapExpanded && 'lg:hidden',
+            desktopListingsView === 'rows'
+              ? 'lg:w-[760px] xl:w-[880px] 2xl:w-[1160px] 3xl:w-[1420px]'
+              : 'lg:w-[696px] 3xl:w-[1036px]'
+          )}
+        >
+          <ListingsSidebar
+            listings={scopedListings}
+            useMapAreaLabel={!hasVisibleBoundary}
+            areaTitleLabel={hasVisibleBoundary ? compactAreaChipLabel : undefined}
+            onDesktopViewChange={setDesktopListingsView}
+            scrollRestorationKey={DESKTOP_LIST_RETURN_KEY}
+            desktopMapExpanded={isDesktopMapExpanded}
+          />
+        </div>
       </div>
 
       {/* Mobile bottom nav (pill + side buttons) */}
