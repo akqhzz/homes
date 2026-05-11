@@ -781,7 +781,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 <div className="shrink-0">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-heading text-[1.8rem] font-semibold leading-none tracking-normal text-[var(--color-text-primary)] xl:text-[2.05rem]"><PriceText price={listing.price} /></p>
+                      <p className="type-title-lg text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
                       <p className="mt-1 type-body text-[var(--color-text-secondary)]">
                         {listing.beds}bd · {listing.baths}ba · {formatSqft(listing.sqft)} sqft
                       </p>

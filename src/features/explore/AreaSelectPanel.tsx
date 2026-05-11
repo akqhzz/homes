@@ -113,7 +113,7 @@ export default function AreaSelectPanel({
             variant="elevated"
             size="control"
             onClick={onBack}
-            className="pointer-events-auto px-4"
+            className="pointer-events-auto px-4 type-label"
             aria-label="Cancel area selection"
           >
             Cancel

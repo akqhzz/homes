@@ -20,6 +20,7 @@ interface UIStore {
   setAreaSelectMode: (v: boolean) => void;
 
   isSatelliteMode: boolean;
+  setSatelliteMode: (v: boolean) => void;
   isDesktopMapExpanded: boolean;
   setDesktopMapExpanded: (v: boolean) => void;
   isDesktopSidebarCollapsed: boolean;
@@ -44,6 +45,7 @@ export const useUIStore = create<UIStore>((set) => ({
   setAreaSelectMode: (isAreaSelectMode) => set({ isAreaSelectMode }),
 
   isSatelliteMode: false,
+  setSatelliteMode: (isSatelliteMode) => set({ isSatelliteMode }),
   isDesktopMapExpanded: false,
   setDesktopMapExpanded: (isDesktopMapExpanded) => set({ isDesktopMapExpanded }),
   isDesktopSidebarCollapsed: false,

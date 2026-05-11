@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import type { MapLayerMouseEvent } from 'mapbox-gl';
 import Map, { type MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, Minus, Plus, Satellite } from 'lucide-react';
 import { Listing, Location, Neighborhood } from '@/lib/types';
 import { getMapboxToken } from '@/lib/mapbox';
+import MapControlButton from '@/components/ui/MapControlButton';
 import ListingCard from '@/features/listings/components/ListingCard';
 import BoundaryLayers from '@/features/map/components/BoundaryLayers';
 import ListingMarkers from '@/features/map/components/ListingMarkers';
@@ -33,6 +34,12 @@ const HOVER_CARD_HEIGHT = 252;
 const HOVER_CARD_EDGE_PADDING = 16;
 const HOVER_CARD_SIDE_GAP = 24;
 const HOVER_CARD_PIN_TOP_OFFSET = 20;
+const DESKTOP_MAP_ICON_CONTROL_CLASS = '!h-10 !w-10 3xl:!h-11 3xl:!w-11';
+const STANDARD_BASEMAP_CONFIG = {
+  theme: 'faded',
+  lightPreset: 'day',
+  show3dObjects: false,
+} as const;
 
 interface MapViewProps {
   listings: Listing[];
@@ -80,7 +87,7 @@ export default function MapView({
     markVisitedListing,
     setViewportBounds,
   } = useMapStore();
-  const { setCarouselVisible, isSatelliteMode, isCarouselVisible, isDesktopMapExpanded, setDesktopMapExpanded } = useUIStore();
+  const { setCarouselVisible, isSatelliteMode, setSatelliteMode, isCarouselVisible, isDesktopMapExpanded, setDesktopMapExpanded } = useUIStore();
   const likedListingIds = useSavedStore((s) => s.likedListingIds);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapRef | null>(null);
@@ -283,6 +290,74 @@ export default function MapView({
     onAreaMapClick?.({ lat: event.lngLat.lat, lng: event.lngLat.lng });
   }, [handleListingLayerPointer, handleMapClick, onAreaMapClick, showListings]);
 
+  const zoomIn = useCallback(() => {
+    mapRef.current?.getMap().zoomIn({ duration: 160 });
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    mapRef.current?.getMap().zoomOut({ duration: 160 });
+  }, []);
+
+  const applyStandardBasemapConfig = useCallback(() => {
+    if (isSatelliteMode) return;
+    const map = mapRef.current?.getMap();
+    if (!map || typeof map.setConfigProperty !== 'function') return;
+
+    try {
+      map.setConfigProperty('basemap', 'theme', STANDARD_BASEMAP_CONFIG.theme);
+      map.setConfigProperty('basemap', 'lightPreset', STANDARD_BASEMAP_CONFIG.lightPreset);
+      map.setConfigProperty('basemap', 'show3dObjects', STANDARD_BASEMAP_CONFIG.show3dObjects);
+    } catch {
+      // Mapbox may emit styledata before the Standard style config is ready.
+    }
+  }, [isSatelliteMode]);
+
+  useEffect(() => {
+    if (!mapLoaded || isSatelliteMode) return;
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    const frameIds = new Set<number>();
+    const timeoutIds = new Set<ReturnType<typeof setTimeout>>();
+    const scheduleApply = (delay = 0) => {
+      if (delay > 0) {
+        const timeout = setTimeout(() => {
+          timeoutIds.delete(timeout);
+          const frame = requestAnimationFrame(() => {
+            frameIds.delete(frame);
+            applyStandardBasemapConfig();
+          });
+          frameIds.add(frame);
+        }, delay);
+        timeoutIds.add(timeout);
+        return;
+      }
+
+      const frame = requestAnimationFrame(() => {
+        frameIds.delete(frame);
+        applyStandardBasemapConfig();
+      });
+      frameIds.add(frame);
+    };
+
+    const handleStyleLoad = () => scheduleApply();
+    const handleStyleImportLoad = () => {
+      scheduleApply();
+      scheduleApply(80);
+    };
+
+    if (map.isStyleLoaded()) scheduleApply();
+
+    map.on('style.load', handleStyleLoad);
+    map.on('style.import.load', handleStyleImportLoad);
+    return () => {
+      map.off('style.load', handleStyleLoad);
+      map.off('style.import.load', handleStyleImportLoad);
+      frameIds.forEach((frame) => cancelAnimationFrame(frame));
+      timeoutIds.forEach((timeout) => clearTimeout(timeout));
+    };
+  }, [applyStandardBasemapConfig, isSatelliteMode, mapLoaded]);
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-[#E8ECEF] p-6 text-center">
@@ -299,14 +374,45 @@ export default function MapView({
   return (
     <div ref={containerRef} className="relative h-full w-full overflow-hidden">
       {showListings && isDesktopViewport && (
-        <button
-          type="button"
+        <MapControlButton
           onClick={() => setDesktopMapExpanded(!isDesktopMapExpanded)}
-          className="absolute right-5 top-5 z-20 hidden h-11 w-11 items-center justify-center rounded-full bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)] lg:flex"
+          shape="circle"
+          className={`absolute right-3 top-3 z-20 hidden lg:flex ${DESKTOP_MAP_ICON_CONTROL_CLASS}`}
           aria-label={isDesktopMapExpanded ? 'Collapse map' : 'Expand map'}
         >
           {isDesktopMapExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-        </button>
+        </MapControlButton>
+      )}
+      {isDesktopViewport && (
+        <>
+          <div className="pointer-events-auto absolute bottom-3 left-3 z-20 hidden flex-col gap-1.5 lg:flex">
+            <MapControlButton
+              onClick={zoomIn}
+              shape="circle"
+              className="!h-8 !w-8"
+              aria-label="Zoom in"
+            >
+              <Plus size={15} className="text-[var(--color-text-primary)]" />
+            </MapControlButton>
+            <MapControlButton
+              onClick={zoomOut}
+              shape="circle"
+              className="!h-8 !w-8"
+              aria-label="Zoom out"
+            >
+              <Minus size={15} className="text-[var(--color-text-primary)]" />
+            </MapControlButton>
+            <MapControlButton
+              onClick={() => setSatelliteMode(!isSatelliteMode)}
+              shape="circle"
+              active={isSatelliteMode}
+              className="!h-8 !w-8"
+              aria-label={isSatelliteMode ? 'Switch to standard map' : 'Switch to satellite map'}
+            >
+              <Satellite size={14} className="text-[var(--color-text-primary)]" />
+            </MapControlButton>
+          </div>
+        </>
       )}
       <Map
         ref={mapRef}
@@ -343,11 +449,7 @@ export default function MapView({
         mapStyle={mapStyle}
         mapboxAccessToken={MAPBOX_TOKEN}
         config={{
-          basemap: {
-            theme: 'faded',
-            lightPreset: 'day',
-            show3dObjects: false,
-          },
+          basemap: STANDARD_BASEMAP_CONFIG,
         }}
         style={{ width: '100%', height: '100%' }}
         minZoom={9}

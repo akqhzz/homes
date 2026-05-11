@@ -36,6 +36,8 @@ const ListingsSidebar = dynamic(() => import('@/features/listings/components/Lis
 const preloadListingsListView = () => Promise.resolve();
 const MOBILE_LIST_RETURN_KEY = 'homes-mobile-list-return';
 const DESKTOP_LIST_RETURN_KEY = 'homes-desktop-list-return';
+const DESKTOP_MAP_CONTROL_CLASS = '!h-10 !gap-1.5 !px-3 text-[0.8125rem] 3xl:!h-11 3xl:!gap-2 3xl:!px-4 3xl:text-[0.875rem]';
+const DESKTOP_MAP_ICON_CONTROL_CLASS = '!h-10 !w-10 3xl:!h-11 3xl:!w-11';
 
 export default function ExplorePageClient() {
   const {
@@ -283,10 +285,11 @@ export default function ExplorePageClient() {
           />
 
           {!isAreaSelect && (
-            <div className="pointer-events-auto absolute left-5 top-5 z-20 hidden items-center gap-2 lg:flex">
+            <div className="pointer-events-auto absolute left-3 top-3 z-20 hidden items-center gap-2 lg:flex">
               <MapControlButton
                 onClick={openDrawAreaSelect}
                 shape="circle"
+                className={DESKTOP_MAP_ICON_CONTROL_CLASS}
                 aria-label="Draw"
               >
                 <Pencil size={18} className="text-[var(--color-text-primary)]" />
@@ -295,17 +298,8 @@ export default function ExplorePageClient() {
                 onClick={() => {
                   openAreaSelect();
                 }}
-                className={useCompactDesktopMapControls ? 'hidden 3xl:flex' : undefined}
-              >
-                <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
-                Select Areas
-              </MapControlButton>
-              <MapControlButton
-                onClick={() => {
-                  openAreaSelect();
-                }}
                 shape="circle"
-                className={useCompactDesktopMapControls ? '3xl:hidden' : 'hidden'}
+                className={DESKTOP_MAP_ICON_CONTROL_CLASS}
                 aria-label="Select Areas"
               >
                 <SquareDashedMousePointer size={18} className="text-[var(--color-text-primary)]" />
@@ -313,6 +307,7 @@ export default function ExplorePageClient() {
               {hasVisibleBoundary && (
                 <MapControlButton
                   onClick={clearVisibleBoundaries}
+                  className={DESKTOP_MAP_CONTROL_CLASS}
                 >
                   Clear Areas
                 </MapControlButton>

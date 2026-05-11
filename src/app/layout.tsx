@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Sans, Lora, Newsreader } from 'next/font/google';
+import { DM_Sans, Frank_Ruhl_Libre, Lora } from 'next/font/google';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -8,8 +8,9 @@ const dmSans = DM_Sans({
   display: 'swap',
 });
 
-const newsreader = Newsreader({
+const frankRuhlLibre = Frank_Ruhl_Libre({
   subsets: ['latin'],
+  weight: ['500'],
   variable: '--font-heading-source',
   display: 'swap',
 });
@@ -41,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${newsreader.variable} ${lora.variable} h-full`}>
+    <html lang="en" className={`${dmSans.variable} ${frankRuhlLibre.variable} ${lora.variable} h-full`}>
       <body className="h-full overflow-hidden">{children}</body>
     </html>
   );

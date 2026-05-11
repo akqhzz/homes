@@ -37,11 +37,11 @@ const EXPANDED_BASE_STYLES: Record<MarkerTone, string> = {
 
 const EXPANDED_HOVER_STYLES: Record<MarkerTone, string> = {
   default:
-    'border-[var(--color-brand-500)] bg-[var(--color-brand-500)] text-white -translate-y-px shadow-[0_3px_10px_rgba(42,101,79,0.14)]',
+    'border-[var(--color-brand-500)] bg-[var(--color-brand-500)] text-white -translate-y-px shadow-[0_3px_10px_rgba(54,113,149,0.14)]',
   visited:
-    'border-white bg-[var(--color-brand-100)] text-[var(--color-brand-700)] -translate-y-px shadow-[0_3px_10px_rgba(42,101,79,0.12)]',
+    'border-white bg-[var(--color-brand-100)] text-[var(--color-brand-700)] -translate-y-px shadow-[0_3px_10px_rgba(54,113,149,0.12)]',
   saved:
-    'border-white bg-[var(--color-surface)] text-[var(--color-text-primary)] -translate-y-px shadow-[0_3px_10px_rgba(42,101,79,0.12)]',
+    'border-white bg-[var(--color-surface)] text-[var(--color-text-primary)] -translate-y-px shadow-[0_3px_10px_rgba(15,23,41,0.12)]',
 };
 
 const SELECTED_STYLE =

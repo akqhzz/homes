@@ -64,6 +64,8 @@ export default function ListingMarkers({
 }: ListingMarkersProps) {
   if (!showListings) return null;
 
+  const shouldRenderClusterItems = useClusteredListingLayers && clusterRenderItems.length > 0;
+
   return (
     <>
       {shouldUseClusterDataSource && useClusteredListingLayers && clusteredListingData.features.length > 0 && (
@@ -82,7 +84,7 @@ export default function ListingMarkers({
         </Source>
       )}
 
-      {useClusteredListingLayers
+      {shouldRenderClusterItems
         ? clusterRenderItems.map((item) => {
             if (item.type === 'cluster') {
               return (
