@@ -46,6 +46,7 @@ export default function CollectionListingCard({
         onLikeToggle={() => onToggleLike()}
         onSavedToCollection={onSavedToCollection}
         excludedCollectionIds={pendingRemoval ? [currentCollectionId] : []}
+        showSoldBadge={false}
         topRightSlot={(
           <button
             type="button"

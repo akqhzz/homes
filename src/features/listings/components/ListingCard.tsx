@@ -39,6 +39,7 @@ interface ListingCardProps {
   onSavedToCollection?: (collectionId: string) => void;
   onOpenListing?: () => void;
   excludedCollectionIds?: string[];
+  showSoldBadge?: boolean;
   carouselWidth?: number;
   carouselImageHeight?: number;
   carouselTotalHeight?: number;
@@ -57,6 +58,7 @@ export default function ListingCard({
   onSavedToCollection,
   onOpenListing,
   excludedCollectionIds,
+  showSoldBadge = true,
   carouselWidth,
   carouselImageHeight: carouselImageHeightOverride,
   carouselTotalHeight: carouselTotalHeightOverride,
@@ -270,7 +272,7 @@ export default function ListingCard({
         >
           <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-[var(--color-surface)]">
           <ListingImage src={displayImages[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
-            {isSold && <SoldListingBadge />}
+            {showSoldBadge && isSold && <SoldListingBadge />}
             <Button
               variant="overlay"
               shape="circle"
@@ -303,7 +305,7 @@ export default function ListingCard({
         <div className={cn('flex flex-col bg-white rounded-[24px] overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
           <div className="relative aspect-video overflow-hidden bg-[var(--color-surface)]">
             <ListingImage src={displayImages[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
-            {isSold && <SoldListingBadge />}
+            {showSoldBadge && isSold && <SoldListingBadge />}
             <Button
               variant="overlay"
               shape="circle"
@@ -378,7 +380,7 @@ export default function ListingCard({
           }}
           onWheel={handleImageWheel}
         >
-          {isSold && <SoldListingBadge />}
+          {showSoldBadge && isSold && <SoldListingBadge />}
           {/* Horizontal strip — all images laid out side-by-side; translateX drives the slide */}
           <div
             ref={stripRef}
@@ -391,22 +393,22 @@ export default function ListingCard({
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Image dots */}
-        {displayImages.length > 1 && (
-          <div className="absolute top-3 left-0 right-0 flex justify-center gap-1 pointer-events-none z-10">
-            {getVisibleDotIndexes(displayImages.length, imgIndex).map((i) => (
-              <div
-                key={i}
-                className={cn(
-                  'h-1 rounded-full transition-all duration-200',
-                  i === imgIndex ? 'w-4 bg-white' : 'w-1 bg-white/55'
-                )}
-              />
-            ))}
-          </div>
-        )}
+          {/* Image dots */}
+          {displayImages.length > 1 && (
+            <div className="pointer-events-none absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-1">
+              {getVisibleDotIndexes(displayImages.length, imgIndex).map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'h-1 rounded-full transition-all duration-200',
+                    i === imgIndex ? 'w-4 bg-white' : 'w-1 bg-white/55'
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {displayImages.length > 1 && (
           <div

@@ -722,7 +722,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 )}
 
                 {desktopImages.length > 1 && (
-                  <div className="pointer-events-none absolute left-0 right-0 top-3 z-20 flex flex-col items-center gap-1.5">
+                  <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-20 flex flex-col items-center gap-1.5">
                     <div className="flex justify-center gap-1.5">
                       {Array.from({ length: Math.min(desktopImages.length, 8) }, (_, index) => (
                         <span
@@ -739,7 +739,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 )}
 
                 {desktopImages.length > 1 && (
-                  <div className="pointer-events-none absolute left-4 top-4 z-20 rounded-full bg-white/68 px-2.5 py-1 type-caption font-semibold text-[var(--color-text-primary)] shadow-[0_8px_20px_rgba(15,23,41,0.12)] backdrop-blur">
+                  <div className="pointer-events-none absolute right-4 top-4 z-20 rounded-full bg-white/68 px-2.5 py-1 type-caption font-semibold text-[var(--color-text-primary)] shadow-[0_8px_20px_rgba(15,23,41,0.12)] backdrop-blur">
                     {desktopImageIndex + 1}/{desktopImages.length}
                   </div>
                 )}

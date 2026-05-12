@@ -15,11 +15,14 @@ export function normalizeAreaBoundaries(boundary: AreaBoundaryInput = []) {
 
 export function applyFilters(listings: Listing[], filters: SearchFilters) {
   return listings.filter((listing) => {
-    if (filters.searchType === 'sold' && (listing.listingStatus ?? 'active') !== 'sold') return false;
+    const listingStatus = listing.listingStatus ?? 'active';
+    const soldIsExplicitlySelected = filters.searchType === 'sold' || filters.listingStatus === 'sold';
+    if (!soldIsExplicitlySelected && listingStatus === 'sold') return false;
+    if (filters.searchType === 'sold' && listingStatus !== 'sold') return false;
     if (filters.searchType === 'buy' && (listing.listingMode ?? 'buy') !== 'buy') return false;
     if (filters.searchType === 'rent' && (listing.listingMode ?? 'buy') !== 'rent') return false;
     if (filters.listingMode && (listing.listingMode ?? 'buy') !== filters.listingMode) return false;
-    if (filters.searchType !== 'sold' && filters.listingStatus && (listing.listingStatus ?? 'active') !== filters.listingStatus) return false;
+    if (filters.searchType !== 'sold' && filters.listingStatus && listingStatus !== filters.listingStatus) return false;
     if (filters.minPrice && listing.price < filters.minPrice) return false;
     if (filters.maxPrice && listing.price > filters.maxPrice) return false;
     if (filters.minBeds && listing.beds < filters.minBeds) return false;
