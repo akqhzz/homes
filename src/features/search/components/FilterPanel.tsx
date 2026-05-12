@@ -1,7 +1,7 @@
 'use client';
 import { useMemo, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
-import { Building2, ChevronDown, DoorOpen, Droplets, Flame, Home, Hotel, ImageOff, LandPlot, Store, Tractor, Warehouse, Waves } from 'lucide-react';
+import { Building2, CalendarClock, ChevronDown, DoorOpen, Droplets, Flame, Home, Hotel, ImageOff, LandPlot, Store, Tractor, Warehouse, Waves } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/ui/Button';
@@ -368,28 +368,35 @@ export function FilterPanelBody() {
         </Section>
       )}
 
-      <Section title="Photos">
-        <ToggleRow
-          label="Hide listings without images"
-          icon={<ImageOff size={15} />}
-          checked={Boolean(filters.hideNoImages)}
-          onChange={(checked) => setFilters({ hideNoImages: checked ? true : undefined })}
-        />
-      </Section>
-
       <Section title="Listing Status">
-        <SegmentedControl
-          value={selectedListingStatus}
-          options={LISTING_STATUS_OPTIONS}
-          onChange={(value) => setFilters({
-            listingStatus: value,
-            searchType: value === 'sold' ? 'sold' : filters.searchType === 'sold' ? 'buy' : filters.searchType,
-          })}
-          className="w-full shadow-none ring-1 ring-[#E5E7EB]"
-          activeItemClassName="text-white"
-          inactiveItemClassName="text-[#0F1729] hover:bg-[var(--color-surface)]"
-          indicatorClassName="bg-[var(--color-brand-600)]"
-        />
+        <div className="space-y-4">
+          <SegmentedControl
+            value={selectedListingStatus}
+            options={LISTING_STATUS_OPTIONS}
+            onChange={(value) => setFilters({
+              listingStatus: value,
+              searchType: value === 'sold' ? 'sold' : filters.searchType === 'sold' ? 'buy' : filters.searchType,
+            })}
+            className="w-full shadow-none ring-1 ring-[#E5E7EB]"
+            activeItemClassName="text-white"
+            inactiveItemClassName="text-[#0F1729] hover:bg-[var(--color-surface)]"
+            indicatorClassName="bg-[var(--color-brand-600)]"
+          />
+          <div className="space-y-2">
+            <ToggleRow
+              label="Hide listings without images"
+              icon={<ImageOff size={15} />}
+              checked={filters.hideNoImages !== false}
+              onChange={(checked) => setFilters({ hideNoImages: checked })}
+            />
+            <ToggleRow
+              label="Show coming soon listings"
+              icon={<CalendarClock size={15} />}
+              checked={filters.showComingSoonListings !== false}
+              onChange={(checked) => setFilters({ showComingSoonListings: checked })}
+            />
+          </div>
+        </div>
       </Section>
     </>
   );
@@ -554,11 +561,18 @@ function getSelectedFilterChips(
       onRemove: () => setFilters({ maxMaintenanceFee: undefined }),
     });
   }
-  if (filters.hideNoImages) {
+  if (filters.hideNoImages === false) {
     chips.push({
       key: 'images',
-      label: 'Images only',
-      onRemove: () => setFilters({ hideNoImages: undefined }),
+      label: 'Includes no-image listings',
+      onRemove: () => setFilters({ hideNoImages: true }),
+    });
+  }
+  if (filters.showComingSoonListings === false) {
+    chips.push({
+      key: 'coming-soon',
+      label: 'Hides coming soon',
+      onRemove: () => setFilters({ showComingSoonListings: true }),
     });
   }
   return chips;
@@ -615,7 +629,7 @@ function ToggleRow({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="flex min-h-11 w-full items-center justify-between gap-4 rounded-2xl border border-[#E5E7EB] bg-white px-3.5 py-2.5 text-left transition-colors hover:border-[#0F1729]"
+      className="flex min-h-9 w-full items-center justify-between gap-4 rounded-xl bg-transparent py-1.5 text-left transition-colors hover:text-[#0F1729]"
       aria-pressed={checked}
     >
       <span className="flex min-w-0 items-center gap-2.5 type-label text-[var(--color-text-primary)]">

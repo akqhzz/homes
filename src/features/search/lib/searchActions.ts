@@ -17,7 +17,8 @@ export const DEFAULT_FILTERS: SearchFilters = {
   amenities: [],
   locker: undefined,
   maxMaintenanceFee: undefined,
-  hideNoImages: undefined,
+  hideNoImages: true,
+  showComingSoonListings: true,
 };
 
 export function addLocation(locations: Location[], location: Location) {
@@ -51,7 +52,8 @@ export function getActiveFilterCount(filters: SearchFilters) {
   if ((filters.amenities?.length ?? 0) > 0) count++;
   if (filters.locker) count++;
   if (filters.maxMaintenanceFee) count++;
-  if (filters.hideNoImages) count++;
+  if ((filters.hideNoImages ?? DEFAULT_FILTERS.hideNoImages) !== DEFAULT_FILTERS.hideNoImages) count++;
+  if ((filters.showComingSoonListings ?? DEFAULT_FILTERS.showComingSoonListings) !== DEFAULT_FILTERS.showComingSoonListings) count++;
   return count;
 }
 

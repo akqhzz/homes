@@ -72,6 +72,7 @@ export interface SearchFilters {
   locker?: LockerFilter;
   maxMaintenanceFee?: number;
   hideNoImages?: boolean;
+  showComingSoonListings?: boolean;
   hasParking?: boolean;
   hasMaintenance?: boolean;
 }

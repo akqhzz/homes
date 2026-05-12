@@ -1,6 +1,7 @@
 import { MOCK_NEIGHBORHOODS } from '@/lib/mock-data/neighborhoods';
 import { getBoundsFromPoints, getLocationBounds, getNeighborhoodBounds, listingMatchesLocation, mergeBounds, pointInPolygon } from '@/lib/geo';
 import { Coordinates, Listing, SavedSearch, SearchFilters } from '@/lib/types';
+import { hasComingSoonFeatureLabel } from '@/lib/listing-feature-labels';
 
 export type AreaBoundaryInput = Coordinates[] | Coordinates[][];
 
@@ -36,7 +37,8 @@ export function applyFilters(listings: Listing[], filters: SearchFilters) {
     if (filters.locker === 'has' && listing.hasLocker !== true) return false;
     if (filters.locker === 'none' && listing.hasLocker === true) return false;
     if (filters.maxMaintenanceFee && (listing.maintenanceFee == null || listing.maintenanceFee > filters.maxMaintenanceFee)) return false;
-    if (filters.hideNoImages && listing.images.length === 0) return false;
+    if (filters.hideNoImages !== false && listing.images.length === 0) return false;
+    if (filters.showComingSoonListings === false && hasComingSoonFeatureLabel(listing)) return false;
     return true;
   });
 }

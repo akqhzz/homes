@@ -211,7 +211,8 @@ export function getSearchFilterLabels(filters: SearchFilters) {
   if ((filters.amenities?.length ?? 0) > 0) labels.push(filters.amenities!.map(formatAmenityFilter).join(', '));
   if (filters.locker) labels.push(filters.locker === 'has' ? 'Has locker' : 'No locker');
   if (filters.maxMaintenanceFee) labels.push(`Max ${formatCompactPriceValue(filters.maxMaintenanceFee)} maintenance`);
-  if (filters.hideNoImages) labels.push('Images only');
+  if (filters.hideNoImages === false) labels.push('Includes listings without images');
+  if (filters.showComingSoonListings === false) labels.push('Hides coming soon');
 
   return labels;
 }

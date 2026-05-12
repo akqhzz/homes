@@ -63,6 +63,7 @@ test('getActiveFilterCount groups paired range filters by category', () => {
   assert.equal(getActiveFilterCount({ ...DEFAULT_FILTERS, minPrice: 500000, maxPrice: 900000 }), 1);
   assert.equal(getActiveFilterCount({ ...DEFAULT_FILTERS, minBeds: 2, minBaths: 2 }), 2);
   assert.equal(getActiveFilterCount({ ...DEFAULT_FILTERS, propertyTypes: ['house'], minSqft: 800, maxDaysOnMarket: 14 }), 3);
+  assert.equal(getActiveFilterCount({ ...DEFAULT_FILTERS, hideNoImages: false, showComingSoonListings: false }), 2);
 });
 
 test('cloneBoundaries drops invalid boundaries and clones points', () => {
