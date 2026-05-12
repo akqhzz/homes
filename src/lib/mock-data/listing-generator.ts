@@ -39,7 +39,7 @@ interface GeneratorOptions {
 export function generateTorontoMockListings(
   baseListings: Listing[],
   { count, neighborhoods, seed = 20260426 }: GeneratorOptions
-) {
+): Listing[] {
   if (count <= 0 || baseListings.length === 0 || neighborhoods.length === 0) return [];
 
   const random = createSeededRandom(seed);
@@ -69,8 +69,29 @@ export function generateTorontoMockListings(
       mlsNumber: `C9${String(1200000 + index).padStart(7, '0')}`,
       taxes: Math.round(price * (0.0052 + random() * 0.0036)),
       maintenanceFee: buildMaintenanceFee(baseListing, random),
+      listingMode: index % 7 === 0 ? 'rent' : 'buy',
+      listingStatus: buildListingStatus(index),
+      amenities: buildAmenities(baseListing, index),
+      hasLocker: UNIT_ELIGIBLE_PROPERTY_TYPES.has(baseListing.propertyType) ? index % 3 !== 0 : false,
     };
   });
+}
+
+function buildListingStatus(index: number): Listing['listingStatus'] {
+  if (index % 17 === 0) return 'sold';
+  if (index % 23 === 0) return 'expired';
+  if (index % 11 === 0) return 'pending';
+  return 'active';
+}
+
+function buildAmenities(baseListing: Listing, index: number): NonNullable<Listing['amenities']> {
+  const amenities = new Set<NonNullable<Listing['amenities']>[number]>();
+  if (baseListing.parkingSpaces > 0) amenities.add('garage');
+  if (baseListing.features.some((feature) => /pool/i.test(feature)) || index % 13 === 0) amenities.add('pool');
+  if (baseListing.features.some((feature) => /ravine|water/i.test(feature)) || index % 19 === 0) amenities.add('waterfront');
+  if (baseListing.features.some((feature) => /fireplace/i.test(feature)) || index % 5 === 0) amenities.add('fireplace');
+  if (index % 9 === 0) amenities.add('open-house');
+  return [...amenities];
 }
 
 function buildGeneratedPrice(basePrice: number, averageNeighborhoodPrice: number, random: () => number) {

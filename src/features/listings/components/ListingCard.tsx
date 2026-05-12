@@ -13,6 +13,7 @@ import { ListingAddressRow } from '@/features/listings/components/ListingParts';
 import PriceText from '@/features/listings/components/PriceText';
 import Button from '@/components/ui/Button';
 import HeartDelight from '@/components/ui/HeartDelight';
+import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 252;
@@ -253,6 +254,7 @@ export default function ListingCard({
     router.push(`/listings/${listing.id}`);
   };
   const mlsLine = formatMlsLine(listing.mlsNumber, listing.brokerage);
+  const isSold = listing.listingStatus === 'sold';
 
   if (variant === 'grid') {
     return (
@@ -268,6 +270,7 @@ export default function ListingCard({
         >
           <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-[var(--color-surface)]">
           <ListingImage src={displayImages[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
+            {isSold && <SoldListingBadge />}
             <Button
               variant="overlay"
               shape="circle"
@@ -300,6 +303,7 @@ export default function ListingCard({
         <div className={cn('flex flex-col bg-white rounded-[24px] overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
           <div className="relative aspect-video overflow-hidden bg-[var(--color-surface)]">
             <ListingImage src={displayImages[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
+            {isSold && <SoldListingBadge />}
             <Button
               variant="overlay"
               shape="circle"
@@ -374,6 +378,7 @@ export default function ListingCard({
           }}
           onWheel={handleImageWheel}
         >
+          {isSold && <SoldListingBadge />}
           {/* Horizontal strip — all images laid out side-by-side; translateX drives the slide */}
           <div
             ref={stripRef}

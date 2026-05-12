@@ -6,11 +6,13 @@ import styles from './MapClusterMarker.module.css';
 interface MapClusterMarkerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   count: number;
   highlighted?: boolean;
+  tone?: 'default' | 'sold';
 }
 
 export default function MapClusterMarker({
   count,
   highlighted = false,
+  tone = 'default',
   className,
   type = 'button',
   ...props
@@ -18,7 +20,7 @@ export default function MapClusterMarker({
   return (
     <button
       type={type}
-      className={cn(styles.clusterMarker, highlighted && styles.highlighted, className)}
+      className={cn(styles.clusterMarker, tone === 'sold' && styles.sold, highlighted && styles.highlighted, className)}
       {...props}
     >
       {count}

@@ -23,8 +23,23 @@
   box-shadow: 0 6px 16px color-mix(in srgb, var(--color-brand-700) 26%, transparent);
 }
 
+.clusterMarker.sold {
+  background: color-mix(in srgb, var(--color-sold) 96%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-sold) 24%, transparent);
+}
+
+.clusterMarker.sold:hover {
+  background: color-mix(in srgb, var(--color-sold-hover) 98%, transparent);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-sold) 30%, transparent);
+}
+
 .clusterMarker.highlighted {
   background: rgba(15, 23, 41, 0.98);
   transform: scale(1.08);
   box-shadow: 0 6px 18px rgba(15, 23, 41, 0.24);
+}
+
+.clusterMarker.sold.highlighted {
+  background: var(--color-sold-hover);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-sold) 34%, transparent);
 }

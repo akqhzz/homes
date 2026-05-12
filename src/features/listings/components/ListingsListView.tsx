@@ -2,7 +2,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Grid2X2, List, Mail, Map as MapIcon, Phone } from 'lucide-react';
+import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Grid2X2, List, Map as MapIcon } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { useMapStore } from '@/store/mapStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -55,7 +55,6 @@ interface ListingsListViewProps {
 
 export default function ListingsListView({
   listings,
-  useMapAreaLabel = false,
   areaTitleLabel,
   variant = 'desktop',
   onShowMap,
@@ -88,20 +87,14 @@ export default function ListingsListView({
   const pageEnd = pageStart + PAGE_SIZE;
   const visibleListings = useMemo(() => sorted.slice(pageStart, pageEnd), [pageEnd, pageStart, sorted]);
   const pageButtons = useMemo(() => buildPaginationItems(currentPage, totalPages), [currentPage, totalPages]);
-  const locationLabel =
-    useMapAreaLabel
-      ? 'Map Area'
-      : areaTitleLabel
-      ? getListingsAreaTitleLabel(areaTitleLabel)
-      : selectedLocations.length === 0
-      ? 'Selected Area'
+  const selectedLocationLabel =
+    selectedLocations.length === 0
+      ? null
       : selectedLocations.length === 1
       ? getPrimaryLocationLabel(selectedLocations[0].name)
-      : `${getPrimaryLocationLabel(selectedLocations[0].name)} + ${selectedLocations.length - 1} more`;
-  const title =
-    locationLabel === 'Map Area' || locationLabel === 'Selected Area'
-      ? `${listings.length}+ Listings in ${locationLabel}`
-      : `${listings.length}+ Real Estate & Homes For Sale In ${locationLabel}`;
+      : `${getPrimaryLocationLabel(selectedLocations[0].name)}, +${selectedLocations.length - 1}`;
+  const locationLabel = selectedLocationLabel ?? (areaTitleLabel ? getListingsAreaTitleLabel(areaTitleLabel) : 'Toronto');
+  const title = `${listings.length}+ Real Estate & Homes For Sale in ${locationLabel}`;
   const latestListingLabels = useMemo(() => getLatestListingLabels(listings, locationLabel), [listings, locationLabel]);
   const breadcrumbLocation = locationLabel === 'Selected Area' || locationLabel === 'Map Area' ? 'Toronto' : locationLabel;
 
@@ -206,11 +199,11 @@ export default function ListingsListView({
     <div className={cn('h-full flex flex-col bg-white', isMobile && 'relative')}>
       <div className={cn(
         'flex flex-shrink-0 items-center justify-between',
-        isMobile ? 'px-5 pb-2 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)]' : 'px-5 py-1.5'
+        isMobile ? 'hidden' : 'px-5 py-1.5'
       )}>
         <p className={cn(
-          'text-[var(--color-text-primary)]',
-          isMobile ? 'type-heading min-w-0 pr-3' : 'type-subtitle'
+          'normal-case text-[var(--color-text-primary)]',
+          isMobile ? 'type-heading-sm min-w-0 pr-3' : 'type-subtitle'
         )}>
           {title}
         </p>
@@ -291,6 +284,24 @@ export default function ListingsListView({
             : 'px-4 pt-4 pb-1.5'
         )}
       >
+        {isMobile && (
+          <div className="flex items-center justify-between px-1 pb-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)]">
+            <p className="type-heading-sm min-w-0 pr-3 normal-case text-[var(--color-text-primary)]">
+              {title}
+            </p>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSort((value) => !value)}
+                className="flex h-8 items-center gap-1.5 rounded-full px-2.5 type-btn text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
+              >
+                <ArrowDownWideNarrow size={15} />
+                Sort
+              </button>
+            </div>
+          </div>
+        )}
+
         {!isMobile && desktopView === 'rows' ? (
           <div className="mx-auto flex w-full max-w-[1360px] flex-col gap-6">
             {visibleListings.map((listing) => (
@@ -495,7 +506,7 @@ function ListingsSeoInformation({
 function SeoLinkGroup({ title, items }: { title: string; items: string[] }) {
   return (
     <section className="min-w-0">
-      <h2 className="type-body font-[550] text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-heading)' }}>{title}</h2>
+      <h2 className="type-body text-[var(--color-text-primary)]" style={{ fontFamily: 'var(--font-heading)', fontWeight: 450, lineHeight: 1.25 }}>{title}</h2>
       <ul className="mt-3.5 space-y-2.5">
         {items.map((item) => (
           <li key={item} className="min-w-0">
@@ -543,8 +554,8 @@ function ListingsFooter() {
         <section>
           <h2 className="type-heading-sm text-[var(--color-text-primary)]">Stay Connected</h2>
           <div className="mt-4 space-y-3 type-caption text-[var(--color-text-secondary)]">
-            <p className="flex items-center gap-2"><Phone size={14} /> 1-844-683-4663</p>
-            <p className="flex items-center gap-2"><Mail size={14} /> INFO@ZOOCASA.COM</p>
+            <p>1-844-683-4663</p>
+            <p>INFO@ZOOCASA.COM</p>
             <p>52 Church St Suite 464<br />Toronto, ON M5C 2B5</p>
           </div>
           <div className="mt-4 flex gap-2">

@@ -1,11 +1,12 @@
 'use client';
 import { useMemo, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
-import { Building2, ChevronDown, Home, Hotel, Rows3, Warehouse } from 'lucide-react';
+import { Building2, ChevronDown, DoorOpen, Droplets, Flame, Home, Hotel, ImageOff, LandPlot, Store, Tractor, Warehouse, Waves } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
 import Button from '@/components/ui/Button';
-import { PropertyType } from '@/lib/types';
+import SegmentedControl from '@/components/ui/SegmentedControl';
+import { AmenityFilter, ListingStatus, LockerFilter, PropertyType, SearchType } from '@/lib/types';
 import { cn } from '@/lib/utils/cn';
 import MobileDrawer from '@/components/ui/MobileDrawer';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
@@ -14,15 +15,40 @@ import { applyFilters } from '@/lib/search/filters';
 import { formatPriceRangeLabel, formatCompactPriceValue, parseCompactPriceValue } from '@/lib/utils/search-display';
 
 const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Home }[] = [
-  { value: 'condo', label: 'Condo', icon: Building2 },
   { value: 'house', label: 'House', icon: Home },
   { value: 'townhouse', label: 'Townhouse', icon: Hotel },
-  { value: 'semi-detached', label: 'Semi-Det.', icon: Rows3 },
-  { value: 'detached', label: 'Detached', icon: Warehouse },
+  { value: 'condo', label: 'Condo', icon: Building2 },
+  { value: 'land', label: 'Land', icon: LandPlot },
+  { value: 'commercial', label: 'Commercial', icon: Store },
+  { value: 'farm', label: 'Farm', icon: Tractor },
 ];
 
 const BED_OPTIONS = [1, 2, 3, 4, 5];
 const BATH_OPTIONS = [1, 2, 3, 4];
+const PARKING_OPTIONS = [1, 2, 3, 4];
+const SEARCH_TYPE_OPTIONS: Array<{ value: SearchType; label: string }> = [
+  { value: 'buy', label: 'Buy' },
+  { value: 'rent', label: 'Rent' },
+  { value: 'sold', label: 'Sold' },
+];
+const LISTING_STATUS_OPTIONS: Array<{ value: ListingStatus; label: string }> = [
+  { value: 'active', label: 'Active' },
+  { value: 'sold', label: 'Sold' },
+  { value: 'expired', label: 'Expired' },
+  { value: 'pending', label: 'Pending' },
+];
+const AMENITY_OPTIONS: Array<{ value: AmenityFilter; label: string; icon: typeof Home }> = [
+  { value: 'garage', label: 'Garage', icon: Warehouse },
+  { value: 'pool', label: 'Pool', icon: Droplets },
+  { value: 'waterfront', label: 'Waterfront', icon: Waves },
+  { value: 'fireplace', label: 'Fireplace', icon: Flame },
+  { value: 'open-house', label: 'Open House', icon: DoorOpen },
+];
+const LOCKER_OPTIONS: Array<{ value: LockerFilter | undefined; label: string }> = [
+  { value: undefined, label: 'Any' },
+  { value: 'has', label: 'Has Locker' },
+  { value: 'none', label: "Doesn't Have" },
+];
 const DAYS_OPTIONS = [
   { value: 1, label: '1 day' },
   { value: 3, label: '3 days' },
@@ -55,6 +81,9 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
 
 export function FilterPanelBody() {
   const { filters, setFilters } = useSearchStore();
+  const selectedSearchType = filters.searchType ?? 'buy';
+  const selectedListingStatus = filters.listingStatus ?? 'active';
+  const showCondoTownhouseFilters = filters.propertyTypes.includes('condo') || filters.propertyTypes.includes('townhouse');
 
   const togglePropertyType = (type: PropertyType) => {
     const current = filters.propertyTypes;
@@ -85,8 +114,36 @@ export function FilterPanelBody() {
     });
   };
 
+  const handleSearchTypeChange = (value: SearchType) => {
+    setFilters({
+      searchType: value,
+      listingStatus: value === 'sold' ? 'sold' : filters.listingStatus === 'sold' ? 'active' : filters.listingStatus,
+    });
+  };
+
+  const toggleAmenity = (amenity: AmenityFilter) => {
+    const current = filters.amenities ?? [];
+    if (current.includes(amenity)) {
+      setFilters({ amenities: current.filter((item) => item !== amenity) });
+    } else {
+      setFilters({ amenities: [...current, amenity] });
+    }
+  };
+
   return (
     <>
+      <Section title="Search Type">
+        <SegmentedControl
+          value={selectedSearchType}
+          options={SEARCH_TYPE_OPTIONS}
+          onChange={handleSearchTypeChange}
+          className="w-full shadow-none ring-1 ring-[#E5E7EB]"
+          activeItemClassName="text-white"
+          inactiveItemClassName="text-[#0F1729] hover:bg-[var(--color-surface)]"
+          indicatorClassName="bg-[var(--color-brand-600)]"
+        />
+      </Section>
+
       <Section title="Price Range">
         <div>
           <div className="pointer-events-none flex h-12 items-end gap-1 px-1">
@@ -148,7 +205,7 @@ export function FilterPanelBody() {
         </div>
       </Section>
 
-      <Section title="Property Type">
+      <Section title="Home Type">
         <div className="flex flex-wrap gap-2">
           {PROPERTY_TYPES.map(({ value, label, icon: Icon }) => (
             <FilterChip
@@ -174,6 +231,7 @@ export function FilterPanelBody() {
                 key={opt}
                 active={active}
                 onClick={() => setFilters({ minBeds: val })}
+                selectedTone="filled"
                 className="min-w-12 px-3"
               >
                 {opt}
@@ -193,6 +251,7 @@ export function FilterPanelBody() {
                 key={opt}
                 active={active}
                 onClick={() => setFilters({ minBaths: val })}
+                selectedTone="filled"
                 className="min-w-12 px-3"
               >
                 {opt}
@@ -202,19 +261,23 @@ export function FilterPanelBody() {
         </div>
       </Section>
 
-      <Section title="Listed Within">
-        <div className="relative">
-          <select
-            value={selectedListedWithin}
-            onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
-            className="h-11 w-full cursor-pointer appearance-none rounded-full border border-[#E5E7EB] bg-white px-4 pr-11 type-btn text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
-          >
-            <option value="">Any Time</option>
-            {DAYS_OPTIONS.map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-          <ChevronDown size={16} className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+      <Section title="Parking">
+        <div className="flex gap-2">
+          {['Any', ...PARKING_OPTIONS.map((value) => `${value}+`)].map((opt) => {
+            const val = opt === 'Any' ? undefined : parseInt(opt);
+            const active = opt === 'Any' ? !filters.minParking : filters.minParking === val;
+            return (
+              <FilterChip
+                key={opt}
+                active={active}
+                onClick={() => setFilters({ minParking: val })}
+                selectedTone="filled"
+                className="min-w-12 px-3"
+              >
+                {opt}
+              </FilterChip>
+            );
+          })}
         </div>
       </Section>
 
@@ -241,6 +304,92 @@ export function FilterPanelBody() {
             />
           </div>
         </div>
+      </Section>
+
+      <Section title="Amenities">
+        <div className="flex flex-wrap gap-2">
+          {AMENITY_OPTIONS.map(({ value, label, icon: Icon }) => (
+            <FilterChip
+              key={value}
+              active={(filters.amenities ?? []).includes(value)}
+              onClick={() => toggleAmenity(value)}
+              className="px-4"
+            >
+              <Icon size={14} />
+              {label}
+            </FilterChip>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Listed Within">
+        <div className="relative">
+          <select
+            value={selectedListedWithin}
+            onChange={(event) => setFilters({ maxDaysOnMarket: event.target.value ? Number(event.target.value) : undefined })}
+            className="h-11 w-full cursor-pointer appearance-none rounded-full border border-[#E5E7EB] bg-white px-4 pr-11 type-btn text-[#0F1729] outline-none transition-colors hover:border-[#0F1729] focus:border-[#0F1729]"
+          >
+            <option value="">Any Time</option>
+            {DAYS_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <ChevronDown size={16} className="pointer-events-none absolute right-6 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+        </div>
+      </Section>
+
+      {showCondoTownhouseFilters && (
+        <Section title="Condo & Townhouse">
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block type-caption text-[#9CA3AF]">Locker</label>
+              <div className="flex flex-wrap gap-2">
+                {LOCKER_OPTIONS.map(({ value, label }) => (
+                  <FilterChip
+                    key={value ?? 'any'}
+                    active={filters.locker === value}
+                    onClick={() => setFilters({ locker: value })}
+                    className="px-4"
+                  >
+                    {label}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block type-caption text-[#9CA3AF]">Max maintenance fee</label>
+              <PriceInput
+                value={filters.maxMaintenanceFee}
+                placeholder="No max"
+                onChange={(v) => setFilters({ maxMaintenanceFee: v })}
+              />
+            </div>
+          </div>
+        </Section>
+      )}
+
+      <Section title="Photos">
+        <ToggleRow
+          label="Hide listings without images"
+          icon={<ImageOff size={15} />}
+          checked={Boolean(filters.hideNoImages)}
+          onChange={(checked) => setFilters({ hideNoImages: checked ? true : undefined })}
+        />
+      </Section>
+
+      <Section title="Listing Status">
+        <SegmentedControl
+          value={selectedListingStatus}
+          options={LISTING_STATUS_OPTIONS}
+          onChange={(value) => setFilters({
+            listingStatus: value,
+            searchType: value === 'sold' ? 'sold' : filters.searchType === 'sold' ? 'buy' : filters.searchType,
+          })}
+          className="w-full shadow-none ring-1 ring-[#E5E7EB]"
+          activeItemClassName="text-white"
+          inactiveItemClassName="text-[#0F1729] hover:bg-[var(--color-surface)]"
+          indicatorClassName="bg-[var(--color-brand-600)]"
+        />
       </Section>
     </>
   );
@@ -305,6 +454,27 @@ function getSelectedFilterChips(
   setFilters: ReturnType<typeof useSearchStore.getState>['setFilters']
 ) {
   const chips: Array<{ key: string; label: string; onRemove: () => void }> = [];
+  if (filters.searchType === 'rent') {
+    chips.push({
+      key: 'mode',
+      label: 'Rent',
+      onRemove: () => setFilters({ searchType: 'buy' }),
+    });
+  }
+  if (filters.searchType === 'sold') {
+    chips.push({
+      key: 'mode',
+      label: 'Sold',
+      onRemove: () => setFilters({ searchType: 'buy', listingStatus: 'active' }),
+    });
+  }
+  if (filters.searchType !== 'sold' && filters.listingStatus && filters.listingStatus !== 'active') {
+    chips.push({
+      key: 'status',
+      label: LISTING_STATUS_OPTIONS.find((option) => option.value === filters.listingStatus)?.label ?? filters.listingStatus,
+      onRemove: () => setFilters({ listingStatus: 'active' }),
+    });
+  }
   if (filters.minPrice || filters.maxPrice) {
     chips.push({
       key: 'price',
@@ -335,6 +505,13 @@ function getSelectedFilterChips(
       onRemove: () => setFilters({ minBaths: undefined }),
     });
   }
+  if (filters.minParking) {
+    chips.push({
+      key: 'parking',
+      label: `${filters.minParking}+ parking`,
+      onRemove: () => setFilters({ minParking: undefined }),
+    });
+  }
   if (filters.maxDaysOnMarket) {
     chips.push({
       key: 'days',
@@ -354,6 +531,36 @@ function getSelectedFilterChips(
       onRemove: () => setFilters({ minSqft: undefined, maxSqft: undefined }),
     });
   }
+  if ((filters.amenities?.length ?? 0) > 0) {
+    chips.push(
+      ...filters.amenities!.map((value) => ({
+        key: `amenity-${value}`,
+        label: AMENITY_OPTIONS.find((item) => item.value === value)?.label ?? value,
+        onRemove: () => setFilters({ amenities: filters.amenities?.filter((item) => item !== value) ?? [] }),
+      }))
+    );
+  }
+  if (filters.locker) {
+    chips.push({
+      key: 'locker',
+      label: filters.locker === 'has' ? 'Has locker' : 'No locker',
+      onRemove: () => setFilters({ locker: undefined }),
+    });
+  }
+  if (filters.maxMaintenanceFee) {
+    chips.push({
+      key: 'maintenance',
+      label: `Max ${formatCompactPriceValue(filters.maxMaintenanceFee)} maintenance`,
+      onRemove: () => setFilters({ maxMaintenanceFee: undefined }),
+    });
+  }
+  if (filters.hideNoImages) {
+    chips.push({
+      key: 'images',
+      label: 'Images only',
+      onRemove: () => setFilters({ hideNoImages: undefined }),
+    });
+  }
   return chips;
 }
 
@@ -368,10 +575,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function FilterChip({
   active,
+  selectedTone = 'subtle',
   className,
   children,
   ...props
-}: React.ComponentProps<typeof Button> & { active: boolean }) {
+}: React.ComponentProps<typeof Button> & { active: boolean; selectedTone?: 'filled' | 'subtle' }) {
   return (
     <Button
       variant="secondary"
@@ -379,14 +587,55 @@ function FilterChip({
       className={cn(
         'h-10 gap-1.5 border shadow-none',
         active
-          ? 'border-[var(--color-brand-600)] bg-[var(--color-brand-600)] text-white hover:bg-[var(--color-brand-600)]'
-          : 'border-[#E5E7EB] bg-white text-[#0F1729] hover:border-[var(--color-brand-600)] hover:bg-white',
+          ? selectedTone === 'filled'
+            ? 'border-[var(--color-brand-600)] bg-[var(--color-brand-600)] text-white hover:bg-[var(--color-brand-600)]'
+            : 'border-[var(--color-brand-300)] bg-[var(--color-brand-50)] text-[var(--color-brand-900)] hover:border-[#0F1729] hover:bg-[var(--color-brand-50)]'
+          : 'border-[#E5E7EB] bg-white text-[#0F1729] hover:border-[#0F1729] hover:bg-white',
         className
       )}
       {...props}
     >
       {children}
     </Button>
+  );
+}
+
+function ToggleRow({
+  label,
+  icon,
+  checked,
+  onChange,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="flex min-h-11 w-full items-center justify-between gap-4 rounded-2xl border border-[#E5E7EB] bg-white px-3.5 py-2.5 text-left transition-colors hover:border-[#0F1729]"
+      aria-pressed={checked}
+    >
+      <span className="flex min-w-0 items-center gap-2.5 type-label text-[var(--color-text-primary)]">
+        <span className="text-[var(--color-text-secondary)]">{icon}</span>
+        {label}
+      </span>
+      <span
+        className={cn(
+          'relative h-6 w-11 shrink-0 rounded-full transition-colors',
+          checked ? 'bg-[var(--color-brand-600)]' : 'bg-[#E5E7EB]'
+        )}
+      >
+        <span
+          className={cn(
+            'absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform',
+            checked ? 'translate-x-6' : 'translate-x-1'
+          )}
+        />
+      </span>
+    </button>
   );
 }
 

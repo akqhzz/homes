@@ -7,6 +7,7 @@ import type { Collection } from '@/lib/types';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { DEFAULT_COLLECTION_ID } from '@/store/savedStore';
 import Avatar from '@/components/ui/Avatar';
+import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
 
 interface SavedCollectionCardProps {
   collection: Collection;
@@ -30,6 +31,10 @@ export default function SavedCollectionCard({
   onOpenMenu,
 }: SavedCollectionCardProps) {
   const coverImages = getCollectionCoverImages(collection);
+  const hasSoldListing = collection.listings.some((collectionListing) => {
+    const listing = MOCK_LISTINGS.find((item) => item.id === collectionListing.listingId);
+    return listing?.listingStatus === 'sold';
+  });
   const isDefaultCollection = collection.id === DEFAULT_COLLECTION_ID;
 
   return (
@@ -46,7 +51,7 @@ export default function SavedCollectionCard({
           if (event.key === 'Enter' || event.key === ' ') onOpen();
         }}
       >
-        <CollectionCoverGrid images={coverImages} />
+        <CollectionCoverGrid images={coverImages} showSoldBadge={hasSoldListing} />
 
         <div className="flex items-start gap-2 px-4 pb-3.5 pt-2 pr-12">
           <div className="min-w-0 flex-1">
@@ -125,9 +130,10 @@ function getCollectionCoverImages(collection: Collection) {
     .slice(0, 3);
 }
 
-function CollectionCoverGrid({ images }: { images: string[] }) {
+function CollectionCoverGrid({ images, showSoldBadge }: { images: string[]; showSoldBadge: boolean }) {
   return (
-    <div className="grid aspect-[16/9] grid-cols-[2fr_1fr] gap-[3px] overflow-hidden bg-white">
+    <div className="relative grid aspect-[16/9] grid-cols-[2fr_1fr] gap-[3px] overflow-hidden bg-white">
+      {showSoldBadge && <SoldListingBadge />}
       <CollectionCoverSlot image={images[0]} className="h-full" sizes="(max-width: 768px) 66vw, 360px" />
       <div className="grid min-h-0 grid-rows-2 gap-[3px]">
         <CollectionCoverSlot image={images[1]} sizes="(max-width: 768px) 33vw, 180px" />

@@ -2,6 +2,7 @@ import type { Coordinates, Location, SavedSearch, SearchFilters } from '@/lib/ty
 
 const EMPTY_FILTERS: SearchFilters = {
   propertyTypes: [],
+  amenities: [],
 };
 
 const DEFAULT_THUMBNAIL = 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&q=80';
@@ -21,6 +22,7 @@ export function normalizeSavedSearchFilters(filters: Partial<SearchFilters> | un
     ...EMPTY_FILTERS,
     ...filters,
     propertyTypes: [...(filters?.propertyTypes ?? [])],
+    amenities: [...(filters?.amenities ?? [])],
   };
 }
 

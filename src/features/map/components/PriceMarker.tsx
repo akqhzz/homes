@@ -10,12 +10,13 @@ interface PriceMarkerProps {
   isHighlighted?: boolean;
   isSaved?: boolean;
   isHovered?: boolean;
+  isSold?: boolean;
   isVisited?: boolean;
   minimized?: boolean;
   onClick?: () => void;
 }
 
-type MarkerTone = 'default' | 'visited' | 'saved';
+type MarkerTone = 'default' | 'visited' | 'saved' | 'sold';
 
 const MINIMIZED_BASE_STYLES: Record<MarkerTone, string> = {
   default:
@@ -24,6 +25,8 @@ const MINIMIZED_BASE_STYLES: Record<MarkerTone, string> = {
     'h-3 w-3 border-white bg-[var(--color-brand-200)] text-[var(--color-brand-700)] shadow-[0_1px_3px_rgba(0,0,0,0.08)]',
   saved:
     'h-4.5 w-4.5 border-white bg-white text-[var(--color-accent)] shadow-[0_1px_4px_rgba(0,0,0,0.1)]',
+  sold:
+    'h-3 w-3 border-white bg-[var(--color-sold)] text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
 };
 
 const EXPANDED_BASE_STYLES: Record<MarkerTone, string> = {
@@ -33,6 +36,8 @@ const EXPANDED_BASE_STYLES: Record<MarkerTone, string> = {
     'border-white bg-[var(--color-brand-100)] text-[var(--color-brand-700)] shadow-[0_1px_4px_rgba(0,0,0,0.08)]',
   saved:
     'border-[var(--color-border)] bg-white text-[var(--color-text-primary)] shadow-[0_1px_4px_rgba(0,0,0,0.10)]',
+  sold:
+    'border-[var(--color-sold)] bg-[var(--color-sold)] text-white shadow-[0_1px_4px_rgba(0,0,0,0.10)]',
 };
 
 const EXPANDED_HOVER_STYLES: Record<MarkerTone, string> = {
@@ -42,10 +47,14 @@ const EXPANDED_HOVER_STYLES: Record<MarkerTone, string> = {
     'border-white bg-[var(--color-brand-100)] text-[var(--color-brand-700)] -translate-y-px shadow-[0_3px_10px_rgba(54,113,149,0.12)]',
   saved:
     'border-white bg-[var(--color-surface)] text-[var(--color-text-primary)] -translate-y-px shadow-[0_3px_10px_rgba(15,23,41,0.12)]',
+  sold:
+    'border-[var(--color-sold-hover)] bg-[var(--color-sold-hover)] text-white -translate-y-px shadow-[0_3px_10px_rgba(221,112,80,0.18)]',
 };
 
 const SELECTED_STYLE =
   'border-[#0F1729] bg-[#0F1729] text-white shadow-[0_3px_10px_rgba(0,0,0,0.22)]';
+const SOLD_SELECTED_STYLE =
+  'border-[var(--color-sold-hover)] bg-[var(--color-sold-hover)] text-white shadow-[0_3px_10px_rgba(221,112,80,0.24)]';
 
 export default function PriceMarker({
   price,
@@ -53,6 +62,7 @@ export default function PriceMarker({
   isHighlighted,
   isSaved,
   isHovered,
+  isSold,
   isVisited,
   minimized,
   onClick,
@@ -64,7 +74,7 @@ export default function PriceMarker({
     onClick?.();
   };
 
-  const tone: MarkerTone = isSaved ? 'saved' : isVisited ? 'visited' : 'default';
+  const tone: MarkerTone = isSaved ? 'saved' : isSold ? 'sold' : isVisited ? 'visited' : 'default';
   const isActive = isSelected || isHighlighted;
   const isHoverActive = !isSelected && (isHovered || isPointerHovered);
   const isExpanded = isActive || isHoverActive || !minimized;
@@ -102,7 +112,7 @@ export default function PriceMarker({
         'type-micro inline-flex cursor-pointer items-center gap-1 rounded-full border py-[0.3125rem] leading-none transition-[transform,box-shadow,background-color,border-color,color] duration-150 no-select',
         isSaved ? 'px-1.5' : 'px-2',
         isActive
-          ? SELECTED_STYLE
+          ? isSold && !isSaved ? SOLD_SELECTED_STYLE : SELECTED_STYLE
           : isHoverActive
           ? EXPANDED_HOVER_STYLES[tone]
           : EXPANDED_BASE_STYLES[tone]

@@ -104,8 +104,8 @@ export default function DesktopHeader({
       if (!searchRef.current?.contains(target)) setShowSearch(false);
       if (!menuRef.current?.contains(target)) setShowMenu(false);
     };
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true);
   }, [showFilter, showSearch, showMenu]);
 
   useEffect(() => {

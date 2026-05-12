@@ -160,7 +160,7 @@ export default function DesktopSidebar() {
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
                       <item.icon size={15} className="text-[#0F1729]" />
                     </div>
-                    <span className="flex-1 type-body font-medium text-[#0F1729]">{item.label}</span>
+                    <span className="flex-1 type-heading-sm text-[#0F1729]">{item.label}</span>
                     {item.sections && <ChevronDown size={15} className="-rotate-90" />}
                   </ActionRow>
                   {item.sections && hoveredMenu === item.label && (
@@ -185,13 +185,13 @@ export default function DesktopSidebar() {
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(145deg,#F8D8C8,#D9EEF6_55%,#EAE4FF)] type-caption font-semibold text-[var(--color-text-primary)]">
                   JZ
                 </div>
-                <span className="flex-1 type-body font-medium text-[#0F1729]">Profile</span>
+                <span className="flex-1 type-heading-sm text-[#0F1729]">Profile</span>
               </ActionRow>
               <ActionRow tone="danger" size="md" className="mt-1 font-normal">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
                   <LogOut size={15} className="text-[var(--color-accent)]" />
                 </div>
-                <span className="type-label flex-1 text-[var(--color-accent)]">Sign Out</span>
+                <span className="type-heading-sm flex-1 text-[var(--color-accent)]">Sign Out</span>
               </ActionRow>
             </div>
           </>

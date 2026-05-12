@@ -28,6 +28,9 @@ export function formatPropertyType(type: string): string {
     condo: 'Condo',
     house: 'House',
     townhouse: 'Townhouse',
+    land: 'Land',
+    commercial: 'Commercial',
+    farm: 'Farm',
     'semi-detached': 'Semi-Detached',
     detached: 'Detached',
   };

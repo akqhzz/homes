@@ -8,6 +8,7 @@ import { formatBedBathSqftLine, formatMlsLine } from '@/lib/utils/listing-displa
 import ListingSaveButton from '@/features/listings/components/ListingSaveButton';
 import PriceText from '@/features/listings/components/PriceText';
 import Button from '@/components/ui/Button';
+import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
 
 const ROW_IMAGE_FALLBACKS = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
@@ -27,6 +28,7 @@ export default function DesktopListingRow({ listing, onHoverStart, onHoverEnd, o
   const images = getRowImages(listing.images);
   const [imageIndex, setImageIndex] = useState(0);
   const imageRailRef = useRef<HTMLDivElement>(null);
+  const isSold = listing.listingStatus === 'sold';
 
   const scrollToImage = (index: number) => {
     const nextIndex = Math.max(0, Math.min(images.length - 1, index));
@@ -117,6 +119,7 @@ export default function DesktopListingRow({ listing, onHoverStart, onHoverEnd, o
               onClick={onOpenListing}
               aria-label={`Open ${listing.address} image ${index + 1}`}
             >
+              {isSold && index === 0 && <SoldListingBadge />}
               <Image
                 src={src}
                 alt={index === 0 ? listing.address : ''}

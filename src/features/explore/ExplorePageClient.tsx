@@ -1,11 +1,11 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Pencil, SquareDashedMousePointer } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
-import { useSearchStore } from '@/store/searchStore';
+import { hydrateSearchStore, useSearchStore } from '@/store/searchStore';
 import { useMapStore } from '@/store/mapStore';
 import { useAreaScopeStore } from '@/store/areaScopeStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
@@ -24,6 +24,8 @@ import { useExploreListings } from '@/features/explore/hooks/useExploreListings'
 import { useExplorePageEffects } from '@/features/explore/hooks/useExplorePageEffects';
 import { useSavedSearchSession } from '@/features/explore/hooks/useSavedSearchSession';
 import { getSearchViewState } from '@/features/explore/lib/searchViewState';
+import { MOCK_LISTINGS } from '@/lib/mock-data';
+import { applyFilters, filterListingsBySearchArea } from '@/lib/search/filters';
 
 const MapView = dynamic(() => import('@/features/map/MapView'), { ssr: false });
 const SearchPanel = dynamic(() => import('@/features/search/components/SearchPanel'), { ssr: false });
@@ -176,8 +178,22 @@ export default function ExplorePageClient() {
   const compactAreaChipLabel = getCompactAreaChipLabel(activeAreaChips);
   const areaSelectHasVisibleBoundary =
     selectedNeighborhoods.size > 0 || visibleDraftBoundaries.length > 0 || hasSearchBoundary;
+  const areaSelectionListingCount = useMemo(() => {
+    const draftBoundaries = visibleDraftBoundaries.filter((boundary) => boundary.length >= 3);
+    if (selectedNeighborhoods.size === 0 && draftBoundaries.length === 0) return null;
+    return filterListingsBySearchArea(
+      applyFilters(MOCK_LISTINGS, filters),
+      [],
+      draftBoundaries,
+      selectedNeighborhoods
+    ).length;
+  }, [filters, selectedNeighborhoods, visibleDraftBoundaries]);
   const isMobileListingsList = mobileListingsView === 'list' && !isAreaSelect;
   const useCompactDesktopMapControls = desktopListingsView === 'rows';
+
+  useEffect(() => {
+    void hydrateSearchStore();
+  }, []);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -366,6 +382,7 @@ export default function ExplorePageClient() {
                 showDrawControls={isDrawingArea && (drawnBoundary.length > 0 || hasEditedDrawSession)}
                 canUndoBoundary={canUndoBoundary}
                 canRedoBoundary={canRedoBoundary}
+                listingCount={areaSelectionListingCount}
                 onBack={cancelAreaSelect}
                 onApply={applyAreaSelect}
                 onAddShape={addDrawnBoundaryShape}

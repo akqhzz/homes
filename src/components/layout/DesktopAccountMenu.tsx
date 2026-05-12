@@ -77,13 +77,13 @@ export default function DesktopAccountMenu() {
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(145deg,#F8D8C8,#D9EEF6_55%,#EAE4FF)] type-caption font-semibold text-[var(--color-text-primary)]">
           JZ
         </div>
-        <span className="type-label flex-1 text-[var(--color-text-primary)]">Profile</span>
+        <span className="type-heading-sm flex-1 text-[var(--color-text-primary)]">Profile</span>
       </ActionRow>
       <ActionRow tone="danger" size="md" className="mt-1 font-normal">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
           <LogOut size={15} className="text-[var(--color-accent)]" />
         </div>
-        <span className="type-label flex-1 text-[var(--color-accent)]">Sign Out</span>
+        <span className="type-heading-sm flex-1 text-[var(--color-accent)]">Sign Out</span>
       </ActionRow>
     </div>
   );
@@ -107,7 +107,7 @@ function DesktopMenuItem({
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--color-surface)]">
         <Icon size={15} className="text-[var(--color-text-primary)]" />
       </div>
-      <span className="type-label flex-1 text-[var(--color-text-primary)]">{label}</span>
+      <span className="type-heading-sm flex-1 text-[var(--color-text-primary)]">{label}</span>
       {hasChildren && (open ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
     </ActionRow>
   );

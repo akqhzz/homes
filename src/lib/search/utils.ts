@@ -24,7 +24,7 @@ export function createSearchSnapshot(
 ): SearchSnapshot {
   return {
     locations: locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
-    filters: { ...filters, propertyTypes: [...filters.propertyTypes] },
+    filters: { ...filters, propertyTypes: [...filters.propertyTypes], amenities: [...(filters.amenities ?? [])] },
     areaBoundaries: areaBoundaries.map(cloneBoundary),
     neighborhoodIds: [...neighborhoods].sort(),
   };
@@ -33,7 +33,7 @@ export function createSearchSnapshot(
 export function searchToSnapshot(search: SavedSearch): SearchSnapshot {
   return {
     locations: search.locations.map((location) => ({ ...location, coordinates: { ...location.coordinates } })),
-    filters: { ...search.filters, propertyTypes: [...search.filters.propertyTypes] },
+    filters: { ...search.filters, propertyTypes: [...search.filters.propertyTypes], amenities: [...(search.filters.amenities ?? [])] },
     areaBoundaries: getSearchBoundaries(search),
     neighborhoodIds: [...(search.neighborhoodIds ?? [])].sort(),
   };

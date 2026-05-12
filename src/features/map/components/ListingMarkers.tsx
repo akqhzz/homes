@@ -65,6 +65,7 @@ export default function ListingMarkers({
   if (!showListings) return null;
 
   const shouldRenderClusterItems = useClusteredListingLayers && clusterRenderItems.length > 0;
+  const useSoldTone = orderedListings.length > 0 && orderedListings.every(({ listing }) => listing.listingStatus === 'sold');
 
   return (
     <>
@@ -99,6 +100,7 @@ export default function ListingMarkers({
                   <MapClusterMarker
                     count={item.count}
                     highlighted={item.clusterId === highlightedClusterId}
+                    tone={useSoldTone ? 'sold' : 'default'}
                     onClick={() => onClusterExpand(item.clusterId, [item.coordinates.lng, item.coordinates.lat])}
                     aria-label={`Expand ${item.count} listings`}
                   />
@@ -203,6 +205,7 @@ function ListingMapMarker({
           isSelected={isSelected}
           isHighlighted={isHighlighted}
           isSaved={isSaved}
+          isSold={listing.listingStatus === 'sold'}
           isVisited={isVisited}
           minimized={minimized}
           onClick={() => context.onMarkerClick(listing.id)}

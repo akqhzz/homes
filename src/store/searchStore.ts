@@ -48,6 +48,7 @@ export const useSearchStore = create<SearchStore>()(
     }),
     {
       name: 'homes-search-v1',
+      skipHydration: true,
       partialize: (state) => ({
         selectedLocations: state.selectedLocations,
         filters: state.filters,
@@ -55,3 +56,7 @@ export const useSearchStore = create<SearchStore>()(
     }
   )
 );
+
+export function hydrateSearchStore() {
+  return useSearchStore.persist.rehydrate();
+}

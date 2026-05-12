@@ -9,6 +9,7 @@ import { formatDaysOnMarket } from '@/lib/utils/format';
 import { getMapboxToken, getStaticMapPreviewUrl } from '@/lib/mapbox';
 import MapListingPin from '@/features/listings/components/MapListingPin';
 import PriceText from '@/features/listings/components/PriceText';
+import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
 import {
   FALLBACK_LISTING_IMAGES,
   getCardsModeListingImages,
@@ -65,6 +66,7 @@ export default function CardModeListingCard({
 }: CardModeListingCardProps) {
   const [dragX, setDragX] = useState(0);
   const images = getCardsModeListingImages(listing);
+  const isSold = listing.listingStatus === 'sold';
   const mapPreviewSrc = getStaticMapPreviewUrl(listing.coordinates, MAPBOX_TOKEN);
   const imagePullStartRef = useRef<{ x: number; y: number } | null>(null);
   const suppressClickRef = useRef(false);
@@ -215,9 +217,10 @@ export default function CardModeListingCard({
             {images.map((src, index) => (
               <div
                 key={`${listing.id}-${src}-${index}`}
-                className="overflow-hidden bg-[var(--color-surface)] first:rounded-t-[26px] last:rounded-b-[26px]"
+                className="relative overflow-hidden bg-[var(--color-surface)] first:rounded-t-[26px] last:rounded-b-[26px]"
                 style={{ height: CARD_MODE_IMAGE_HEIGHT }}
               >
+                {isSold && index === 0 && <SoldListingBadge />}
                 <ListingImage src={src} fallbackIndex={index} alt={index === 0 ? listing.address : ''} eager={active || index < 2} />
               </div>
             ))}

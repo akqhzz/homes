@@ -191,11 +191,15 @@ export function getSearchFilterLabels(filters: SearchFilters) {
   const priceLabel = formatPriceRangeLabel(filters.minPrice, filters.maxPrice);
 
   if (priceLabel) labels.push(priceLabel);
+  if (filters.searchType === 'rent') labels.push('For rent');
+  if (filters.searchType === 'sold') labels.push('Sold');
+  if (filters.searchType !== 'sold' && filters.listingStatus && filters.listingStatus !== 'active') labels.push(formatListingStatus(filters.listingStatus));
   if (filters.propertyTypes.length > 0) {
     labels.push(filters.propertyTypes.map((type) => formatPropertyType(type)).join(', '));
   }
   if (filters.minBeds) labels.push(`${filters.minBeds}+ bd`);
   if (filters.minBaths) labels.push(`${filters.minBaths}+ ba`);
+  if (filters.minParking) labels.push(`${filters.minParking}+ parking`);
   if (filters.maxDaysOnMarket) {
     labels.push(filters.maxDaysOnMarket === 1 ? '1 day' : `${filters.maxDaysOnMarket} days`);
   }
@@ -204,8 +208,21 @@ export function getSearchFilterLabels(filters: SearchFilters) {
     else if (filters.minSqft) labels.push(`Min ${filters.minSqft} sqft`);
     else labels.push(`Max ${filters.maxSqft} sqft`);
   }
+  if ((filters.amenities?.length ?? 0) > 0) labels.push(filters.amenities!.map(formatAmenityFilter).join(', '));
+  if (filters.locker) labels.push(filters.locker === 'has' ? 'Has locker' : 'No locker');
+  if (filters.maxMaintenanceFee) labels.push(`Max ${formatCompactPriceValue(filters.maxMaintenanceFee)} maintenance`);
+  if (filters.hideNoImages) labels.push('Images only');
 
   return labels;
+}
+
+function formatListingStatus(status: NonNullable<SearchFilters['listingStatus']>) {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function formatAmenityFilter(amenity: NonNullable<SearchFilters['amenities']>[number]) {
+  if (amenity === 'open-house') return 'Open house';
+  return amenity.charAt(0).toUpperCase() + amenity.slice(1);
 }
 
 export function getSavedSearchCriteriaSummary(search: SavedSearch) {

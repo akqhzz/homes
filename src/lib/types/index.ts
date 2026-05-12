@@ -27,9 +27,18 @@ export interface Listing {
   yearBuilt: number;
   taxes: number;
   maintenanceFee?: number;
+  listingMode?: ListingMode;
+  listingStatus?: ListingStatus;
+  amenities?: AmenityFilter[];
+  hasLocker?: boolean;
 }
 
-export type PropertyType = 'condo' | 'house' | 'townhouse' | 'semi-detached' | 'detached';
+export type ListingMode = 'buy' | 'rent';
+export type SearchType = 'buy' | 'rent' | 'sold';
+export type ListingStatus = 'active' | 'sold' | 'expired' | 'pending';
+export type AmenityFilter = 'garage' | 'pool' | 'waterfront' | 'fireplace' | 'open-house';
+export type LockerFilter = 'has' | 'none';
+export type PropertyType = 'condo' | 'house' | 'townhouse' | 'land' | 'commercial' | 'farm' | 'semi-detached' | 'detached';
 
 export interface Neighborhood {
   id: string;
@@ -51,10 +60,18 @@ export interface SearchFilters {
   minBeds?: number;
   maxBeds?: number;
   minBaths?: number;
+  minParking?: number;
   minSqft?: number;
   maxSqft?: number;
   propertyTypes: PropertyType[];
   maxDaysOnMarket?: number;
+  searchType?: SearchType;
+  listingMode?: ListingMode;
+  listingStatus?: ListingStatus;
+  amenities?: AmenityFilter[];
+  locker?: LockerFilter;
+  maxMaintenanceFee?: number;
+  hideNoImages?: boolean;
   hasParking?: boolean;
   hasMaintenance?: boolean;
 }

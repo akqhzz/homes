@@ -15,16 +15,32 @@ export function normalizeAreaBoundaries(boundary: AreaBoundaryInput = []) {
 
 export function applyFilters(listings: Listing[], filters: SearchFilters) {
   return listings.filter((listing) => {
+    if (filters.searchType === 'sold' && (listing.listingStatus ?? 'active') !== 'sold') return false;
+    if (filters.searchType === 'buy' && (listing.listingMode ?? 'buy') !== 'buy') return false;
+    if (filters.searchType === 'rent' && (listing.listingMode ?? 'buy') !== 'rent') return false;
+    if (filters.listingMode && (listing.listingMode ?? 'buy') !== filters.listingMode) return false;
+    if (filters.searchType !== 'sold' && filters.listingStatus && (listing.listingStatus ?? 'active') !== filters.listingStatus) return false;
     if (filters.minPrice && listing.price < filters.minPrice) return false;
     if (filters.maxPrice && listing.price > filters.maxPrice) return false;
     if (filters.minBeds && listing.beds < filters.minBeds) return false;
     if (filters.minBaths && listing.baths < filters.minBaths) return false;
+    if (filters.minParking && listing.parkingSpaces < filters.minParking) return false;
     if (filters.minSqft && listing.sqft < filters.minSqft) return false;
     if (filters.maxSqft && listing.sqft > filters.maxSqft) return false;
-    if (filters.propertyTypes.length > 0 && !filters.propertyTypes.includes(listing.propertyType)) return false;
+    if (filters.propertyTypes.length > 0 && !matchesPropertyTypeFilter(listing.propertyType, filters.propertyTypes)) return false;
     if (filters.maxDaysOnMarket && listing.daysOnMarket > filters.maxDaysOnMarket) return false;
+    if ((filters.amenities?.length ?? 0) > 0 && !filters.amenities?.every((amenity) => listing.amenities?.includes(amenity))) return false;
+    if (filters.locker === 'has' && listing.hasLocker !== true) return false;
+    if (filters.locker === 'none' && listing.hasLocker === true) return false;
+    if (filters.maxMaintenanceFee && (listing.maintenanceFee == null || listing.maintenanceFee > filters.maxMaintenanceFee)) return false;
+    if (filters.hideNoImages && listing.images.length === 0) return false;
     return true;
   });
+}
+
+function matchesPropertyTypeFilter(listingType: Listing['propertyType'], selectedTypes: SearchFilters['propertyTypes']) {
+  if (selectedTypes.includes(listingType)) return true;
+  return selectedTypes.includes('house') && (listingType === 'detached' || listingType === 'semi-detached');
 }
 
 export function filterListingsBySearchArea(

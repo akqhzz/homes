@@ -3,12 +3,10 @@ import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Check, Plus, Redo2, Undo2, X } from 'lucide-react';
 import { Neighborhood } from '@/lib/types';
-import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatAvgPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 import Button from '@/components/ui/Button';
 
-const AREA_NEIGHBORHOODS = MOCK_NEIGHBORHOODS.filter((neighborhood) => neighborhood.id !== 'nbh-king-west');
 const PRIMARY_BUTTON_CLASS =
   'h-11 shrink-0 rounded-full bg-[var(--color-text-primary)]/92 px-5 type-label text-white backdrop-blur-xl transition-colors hover:bg-[var(--color-text-primary)] disabled:opacity-40';
 const MOBILE_FLOATING_BAR_STYLE = { paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)' } as const;
@@ -26,6 +24,7 @@ interface AreaSelectPanelProps {
   showDrawControls?: boolean;
   canUndoBoundary: boolean;
   canRedoBoundary: boolean;
+  listingCount?: number | null;
   onBack: () => void;
   onApply: () => void;
   onAddShape?: () => void;
@@ -49,6 +48,7 @@ export default function AreaSelectPanel({
   showDrawControls: showDrawControlsOverride,
   canUndoBoundary,
   canRedoBoundary,
+  listingCount,
   onBack,
   onApply,
   onAddShape,
@@ -61,10 +61,11 @@ export default function AreaSelectPanel({
 }: AreaSelectPanelProps) {
   const selectedCount = selectedNeighborhoods.size;
   const hasSelection = selectedCount > 0 || pointCount > 0 || shapeCount > 0;
+  const selectedListingCount = listingCount ?? 0;
   const title = hasSelection
     ? selectedCount > 0
-      ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedNeighborhoodCount(selectedNeighborhoods)} listings`
-      : `${MOCK_LISTINGS.length} listings`
+      ? `${selectedCount} area${selectedCount === 1 ? '' : 's'} · ${selectedListingCount} listings`
+      : `${selectedListingCount} listings`
     : 'Tap any area to pick or remove it';
 
   const drawHint = shapeCount > 0
@@ -331,11 +332,4 @@ export default function AreaSelectPanel({
       </AnimatePresence>
     </>
   );
-}
-
-function selectedNeighborhoodCount(selectedNeighborhoods: Set<string>) {
-  return AREA_NEIGHBORHOODS.reduce((total, neighborhood) => {
-    if (!selectedNeighborhoods.has(neighborhood.id)) return total;
-    return total + neighborhood.listingCount;
-  }, 0);
 }
