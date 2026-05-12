@@ -427,8 +427,8 @@ function ListingsSeoInformation({
 }: {
   latestListings: string[];
 }) {
-  const [isTorontoOpen, setIsTorontoOpen] = useState(true);
-  const [isOntarioOpen, setIsOntarioOpen] = useState(true);
+  const [isTorontoOpen, setIsTorontoOpen] = useState(false);
+  const [isOntarioOpen, setIsOntarioOpen] = useState(false);
   const locationLabel = 'Toronto';
   const neighborhoodNames = MOCK_NEIGHBORHOODS.map((neighborhood) => neighborhood.name).slice(0, 10);
   const seoGroups = [
@@ -452,45 +452,58 @@ function ListingsSeoInformation({
     { title: `Recently sold near ${locationLabel}`, items: NEARBY_CITIES.map((city) => `Recently Sold Homes in ${city}`) },
   ];
 
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 640px)');
+    const syncOpenState = () => {
+      setIsTorontoOpen(query.matches);
+      setIsOntarioOpen(query.matches);
+    };
+    syncOpenState();
+    query.addEventListener('change', syncOpenState);
+    return () => query.removeEventListener('change', syncOpenState);
+  }, []);
+
   return (
-    <section className="mx-auto mt-4 w-full max-w-[1360px] border-t border-[#EEF0F2] pt-8 text-[var(--color-text-primary)]">
-      <button
-        type="button"
-        onClick={() => setIsTorontoOpen((value) => !value)}
-        className="flex w-full items-center justify-between gap-3 text-left"
-        aria-expanded={isTorontoOpen}
-      >
-        <span className="type-heading text-[var(--color-text-primary)]">Browse Real Estate Listings in Toronto</span>
-        {isTorontoOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-      </button>
-      {isTorontoOpen && (
-        <div className="mt-7">
-          <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2 2xl:grid-cols-4">
-            {seoGroups.map((group) => (
-              <SeoLinkGroup key={group.title} title={group.title} items={group.items} />
-            ))}
-          </div>
-          <div className="mt-8 border-t border-[#EEF0F2] pt-8">
-            <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2 2xl:grid-cols-4">
-              {nearbyGroups.map((group) => (
+    <section className="mx-auto mt-8 w-full max-w-[1360px] space-y-4 text-[var(--color-text-primary)]">
+      <div className="rounded-[var(--radius-xl)] bg-[var(--color-surface)] px-4 py-6 sm:px-6 sm:py-7">
+        <button
+          type="button"
+          onClick={() => setIsTorontoOpen((value) => !value)}
+          className="flex w-full items-center justify-between gap-3 text-left"
+          aria-expanded={isTorontoOpen}
+        >
+          <span className="type-heading-sm text-[var(--color-text-primary)]">Browse Real Estate Listings in Toronto</span>
+          {isTorontoOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {isTorontoOpen && (
+          <div className="mt-7">
+            <div className="grid grid-cols-2 gap-x-5 gap-y-7 sm:gap-x-8 2xl:grid-cols-4">
+              {seoGroups.map((group) => (
                 <SeoLinkGroup key={group.title} title={group.title} items={group.items} />
               ))}
             </div>
+            <div className="mt-8">
+              <div className="grid grid-cols-2 gap-x-5 gap-y-7 sm:gap-x-8 2xl:grid-cols-4">
+                {nearbyGroups.map((group) => (
+                  <SeoLinkGroup key={group.title} title={group.title} items={group.items} />
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-      <div className="mt-8 border-t border-[#EEF0F2] pt-8">
+        )}
+      </div>
+      <div className="rounded-[var(--radius-xl)] bg-[var(--color-surface)] px-4 py-6 sm:px-6 sm:py-7">
         <button
           type="button"
           onClick={() => setIsOntarioOpen((value) => !value)}
           className="flex w-full items-center justify-between gap-3 text-left"
           aria-expanded={isOntarioOpen}
         >
-          <span className="type-heading text-[var(--color-text-primary)]">Browse Real Estate Listings In Ontario</span>
+          <span className="type-heading-sm text-[var(--color-text-primary)]">Browse Real Estate Listings In Ontario</span>
           {isOntarioOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
         {isOntarioOpen && (
-          <ul className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-2.5 sm:gap-x-8 xl:grid-cols-3 2xl:grid-cols-4">
             {ONTARIO_CITIES.map((city) => (
               <li key={city} className="min-w-0">
                 <PlaceholderLink className="block truncate type-caption text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]">{city} Homes for Sale</PlaceholderLink>
@@ -529,7 +542,7 @@ function ListingsFooter() {
   ];
 
   return (
-    <footer className="mx-auto mb-6 mt-12 w-full max-w-[1360px] rounded-[var(--radius-xl)] bg-[var(--color-surface)] px-4 pb-10 pt-8 text-[var(--color-text-primary)] sm:px-6">
+    <footer className="mx-auto mb-6 mt-4 w-full max-w-[1360px] rounded-[var(--radius-xl)] bg-[var(--color-surface)] px-4 pb-10 pt-8 text-[var(--color-text-primary)] sm:px-6">
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
         <section>
           <h2 className="type-heading-sm text-[var(--color-text-primary)]">Company</h2>

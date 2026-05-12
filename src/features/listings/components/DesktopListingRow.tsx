@@ -9,6 +9,7 @@ import ListingSaveButton from '@/features/listings/components/ListingSaveButton'
 import PriceText from '@/features/listings/components/PriceText';
 import Button from '@/components/ui/Button';
 import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
+import ListingFeatureBadge from '@/features/listings/components/ListingFeatureBadge';
 
 const ROW_IMAGE_FALLBACKS = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
@@ -119,6 +120,7 @@ export default function DesktopListingRow({ listing, onHoverStart, onHoverEnd, o
               onClick={onOpenListing}
               aria-label={`Open ${listing.address} image ${index + 1}`}
             >
+              {index === 0 && <ListingFeatureBadge listing={listing} />}
               {isSold && index === 0 && <SoldListingBadge />}
               <Image
                 src={src}

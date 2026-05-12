@@ -14,6 +14,7 @@ import PriceText from '@/features/listings/components/PriceText';
 import Button from '@/components/ui/Button';
 import HeartDelight from '@/components/ui/HeartDelight';
 import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
+import ListingFeatureBadge from '@/features/listings/components/ListingFeatureBadge';
 
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 252;
@@ -272,6 +273,7 @@ export default function ListingCard({
         >
           <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-[var(--color-surface)]">
           <ListingImage src={displayImages[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
+            <ListingFeatureBadge listing={listing} />
             {showSoldBadge && isSold && <SoldListingBadge />}
             <Button
               variant="overlay"
@@ -305,6 +307,7 @@ export default function ListingCard({
         <div className={cn('flex flex-col bg-white rounded-[24px] overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
           <div className="relative aspect-video overflow-hidden bg-[var(--color-surface)]">
             <ListingImage src={displayImages[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
+            <ListingFeatureBadge listing={listing} />
             {showSoldBadge && isSold && <SoldListingBadge />}
             <Button
               variant="overlay"
@@ -380,6 +383,7 @@ export default function ListingCard({
           }}
           onWheel={handleImageWheel}
         >
+          <ListingFeatureBadge listing={listing} />
           {showSoldBadge && isSold && <SoldListingBadge />}
           {/* Horizontal strip — all images laid out side-by-side; translateX drives the slide */}
           <div

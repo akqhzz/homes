@@ -22,6 +22,7 @@ import SortOptionsDrawer from '@/components/ui/SortOptionsDrawer';
 import MapListingPin from '@/features/listings/components/MapListingPin';
 import PriceText from '@/features/listings/components/PriceText';
 import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
+import ListingFeatureBadge from '@/features/listings/components/ListingFeatureBadge';
 import {
   CARDS_MODE_SORT_OPTIONS,
   FALLBACK_LISTING_IMAGES,
@@ -743,6 +744,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                     {desktopImageIndex + 1}/{desktopImages.length}
                   </div>
                 )}
+                <ListingFeatureBadge listing={listing} />
                 {listing.listingStatus === 'sold' && <SoldListingBadge />}
 
                 <div className="absolute bottom-4 left-1/2 z-10 flex max-w-[84%] -translate-x-1/2 gap-1 overflow-hidden rounded-lg bg-white/62 p-1.5 shadow-[0_10px_28px_rgba(15,23,41,0.16)] backdrop-blur">

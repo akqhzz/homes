@@ -10,6 +10,7 @@ import { getMapboxToken, getStaticMapPreviewUrl } from '@/lib/mapbox';
 import MapListingPin from '@/features/listings/components/MapListingPin';
 import PriceText from '@/features/listings/components/PriceText';
 import SoldListingBadge from '@/features/listings/components/SoldListingBadge';
+import ListingFeatureBadge from '@/features/listings/components/ListingFeatureBadge';
 import {
   FALLBACK_LISTING_IMAGES,
   getCardsModeListingImages,
@@ -220,6 +221,7 @@ export default function CardModeListingCard({
                 className="relative overflow-hidden bg-[var(--color-surface)] first:rounded-t-[26px] last:rounded-b-[26px]"
                 style={{ height: CARD_MODE_IMAGE_HEIGHT }}
               >
+                {index === 0 && <ListingFeatureBadge listing={listing} />}
                 {isSold && index === 0 && <SoldListingBadge />}
                 <ListingImage src={src} fallbackIndex={index} alt={index === 0 ? listing.address : ''} eager={active || index < 2} />
               </div>
