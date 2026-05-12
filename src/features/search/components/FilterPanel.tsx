@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import { Building2, CalendarClock, ChevronDown, DoorOpen, Droplets, Flame, Home, Hotel, ImageOff, LandPlot, Store, Tractor, Warehouse, Waves } from 'lucide-react';
 import { useSearchStore } from '@/store/searchStore';
@@ -81,6 +81,7 @@ export default function FilterPanel({ totalListings = MOCK_LISTINGS.length }: { 
 
 export function FilterPanelBody() {
   const { filters, setFilters } = useSearchStore();
+  const comingSoonToggleRef = useRef<HTMLDivElement | null>(null);
   const selectedSearchType = filters.searchType ?? 'buy';
   const selectedListingStatus = filters.listingStatus ?? 'active';
   const showCondoTownhouseFilters = filters.propertyTypes.includes('condo') || filters.propertyTypes.includes('townhouse');
@@ -128,6 +129,15 @@ export function FilterPanelBody() {
     } else {
       setFilters({ amenities: [...current, amenity] });
     }
+  };
+
+  const handleComingSoonToggle = (checked: boolean) => {
+    setFilters({ showComingSoonListings: checked });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        comingSoonToggleRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      });
+    });
   };
 
   return (
@@ -389,12 +399,14 @@ export function FilterPanelBody() {
               checked={filters.hideNoImages !== false}
               onChange={(checked) => setFilters({ hideNoImages: checked })}
             />
-            <ToggleRow
-              label="Show coming soon listings"
-              icon={<CalendarClock size={15} />}
-              checked={filters.showComingSoonListings !== false}
-              onChange={(checked) => setFilters({ showComingSoonListings: checked })}
-            />
+            <div ref={comingSoonToggleRef}>
+              <ToggleRow
+                label="Show coming soon listings"
+                icon={<CalendarClock size={15} />}
+                checked={filters.showComingSoonListings !== false}
+                onChange={handleComingSoonToggle}
+              />
+            </div>
           </div>
         </div>
       </Section>
