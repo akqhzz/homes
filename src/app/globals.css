@@ -103,13 +103,13 @@ button,
    3     0.75 rem   12    ×1.2 ✓  DM Sans 400  1.33   —           type-caption
    4     0.875rem   14    ×1.17   DM Sans 400  1.6    —           type-body
    5     1 rem      16    ×1.14   DM Sans 400  1.6    —           type-body-lg
-   6     1 rem      16    serif↑  Frank  500  1.5    —           type-heading-sm
-   7     1.125rem   18    ×1.13   Frank  500  1.28   —           type-heading
-   8     1.25 rem   20    ×1.11   Frank  500  1.24   —           type-subtitle
-   9     1.5 rem    24    ×1.2 ✓  Frank  500  1.14  −0.01em     type-title
-   10    1.875rem   30    ×1.25   Frank  500  1.14  −0.01em     type-title-lg
-   11    2.25 rem   36    ×1.2 ✓  Frank  500  1.1   −0.01em     type-hero
-   12    3.75 rem   60    ×1.67   Frank  500  0.96  −0.02em     type-display
+   6     1 rem      16    serif↑  Frank  450  1.5    —           type-heading-sm
+   7     1.125rem   18    ×1.13   Frank  450  1.28   —           type-heading
+   8     1.25 rem   20    ×1.11   Frank  450  1.24   —           type-subtitle
+   9     1.5 rem    24    ×1.2 ✓  Frank  450  1.14  −0.01em     type-title
+   10    1.875rem   30    ×1.25   Frank  450  1.14  −0.01em     type-title-lg
+   11    2.25 rem   36    ×1.2 ✓  Frank  450  1.1   −0.01em     type-hero
+   12    3.75 rem   60    ×1.67   Frank  450  0.96  −0.02em     type-display
    ──────────────────────────────────────────────────────────────────── */
 
 /* Scale tokens + semantic aliases (comma selectors = zero duplication) */
@@ -118,18 +118,20 @@ button,
 .type-3,  .type-caption     { font-family: var(--font-body-sans); font-size: 0.75rem;   font-weight: 500; line-height: 1.33; }
 .type-4,  .type-body        { font-family: var(--font-body-sans); font-size: 0.875rem;  font-weight: 400; line-height: 1.6;  }
 .type-5,  .type-body-lg     { font-family: var(--font-body-sans); font-size: 1rem;      font-weight: 400; line-height: 1.6;  }
-.type-6,  .type-heading-sm  { font-family: var(--font-heading);   font-size: 1rem;      font-weight: 500; line-height: 1.5;  text-transform: capitalize; }
-.type-7,  .type-heading     { font-family: var(--font-heading);   font-size: 1.125rem;  font-weight: 500; line-height: 1.28; text-transform: capitalize; }
-.type-8,  .type-subtitle    { font-family: var(--font-heading);   font-size: 1.25rem;   font-weight: 500; line-height: 1.24; text-transform: capitalize; }
-.type-9,  .type-title       { font-family: var(--font-heading);   font-size: 1.5rem;    font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; text-transform: capitalize; }
-.type-10, .type-title-lg    { font-family: var(--font-heading);   font-size: 1.875rem;  font-weight: 500; line-height: 1.14; letter-spacing: -0.01em; text-transform: capitalize; }
-.type-11, .type-hero        { font-family: var(--font-heading);   font-size: 2.25rem;   font-weight: 500; line-height: 1.1;  letter-spacing: -0.01em; text-transform: capitalize; }
-.type-12, .type-display     { font-family: var(--font-heading);   font-size: 3.75rem;   font-weight: 500; line-height: 0.96; letter-spacing: -0.02em; text-transform: capitalize; }
+.type-6,  .type-heading-sm  { font-family: var(--font-heading);   font-size: 1rem;      font-weight: 450; line-height: 1.5;  text-transform: capitalize; }
+.type-7,  .type-heading     { font-family: var(--font-heading);   font-size: 1.125rem;  font-weight: 450; line-height: 1.28; text-transform: capitalize; }
+.type-8,  .type-subtitle    { font-family: var(--font-heading);   font-size: 1.25rem;   font-weight: 450; line-height: 1.24; text-transform: capitalize; }
+.type-9,  .type-title       { font-family: var(--font-heading);   font-size: 1.5rem;    font-weight: 450; line-height: 1.14; letter-spacing: -0.01em; text-transform: capitalize; }
+.type-10, .type-title-lg    { font-family: var(--font-heading);   font-size: 1.875rem;  font-weight: 450; line-height: 1.14; letter-spacing: -0.01em; text-transform: capitalize; }
+.type-11, .type-hero        { font-family: var(--font-heading);   font-size: 2.25rem;   font-weight: 450; line-height: 1.1;  letter-spacing: -0.01em; text-transform: capitalize; }
+.type-12, .type-display     { font-family: var(--font-heading);   font-size: 3.75rem;   font-weight: 450; line-height: 0.96; letter-spacing: -0.02em; text-transform: capitalize; }
 
 /* UI tokens — weight variants for labels and buttons                */
 .type-label   { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1.25; }
 .type-btn     { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1;    }
 .price-currency { font-family: var(--font-currency), var(--font-heading); }
+.card-price,
+.card-price * { font-family: var(--font-body-sans) !important; font-weight: 650; letter-spacing: 0; }
 
 #__next,
 main {

@@ -10,7 +10,6 @@ const dmSans = DM_Sans({
 
 const frankRuhlLibre = Frank_Ruhl_Libre({
   subsets: ['latin'],
-  weight: ['500'],
   variable: '--font-heading-source',
   display: 'swap',
 });

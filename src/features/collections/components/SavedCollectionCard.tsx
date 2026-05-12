@@ -34,12 +34,12 @@ export default function SavedCollectionCard({
 
   return (
     <motion.article
-      className="relative w-full min-w-0 overflow-visible rounded-2xl bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5"
+      className="relative w-full min-w-0 overflow-visible rounded-[24px] bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5"
       whileTap={{ scale: 0.98 }}
     >
       <div
         onClick={onOpen}
-        className="block w-full overflow-hidden rounded-2xl text-left"
+        className="block w-full overflow-hidden rounded-[24px] text-left"
         role="button"
         tabIndex={0}
         onKeyDown={(event) => {

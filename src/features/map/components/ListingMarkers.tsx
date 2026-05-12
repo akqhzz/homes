@@ -84,7 +84,9 @@ export default function ListingMarkers({
         </Source>
       )}
 
-      {shouldRenderClusterItems
+      {useClusteredListingLayers && !shouldRenderClusterItems
+        ? null
+        : shouldRenderClusterItems
         ? clusterRenderItems.map((item) => {
             if (item.type === 'cluster') {
               return (

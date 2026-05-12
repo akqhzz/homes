@@ -223,7 +223,7 @@ export default function DesktopHeader({
               setShowCollections(false);
               setActivePanel(activePanel === 'saved-searches' ? 'none' : 'saved-searches');
             }}
-            className={cn('max-w-[190px]', activeSearchId && 'pr-4')}
+            className={cn(activeSearch ? 'max-w-[190px] pr-4' : '!h-11 !w-11 !px-0')}
             active={activeSearchDirty}
             badge={activeSearchDirty ? 1 : null}
             aria-label="Saved searches"
@@ -235,7 +235,7 @@ export default function DesktopHeader({
             ) : (
               <Bookmark size={16} className="shrink-0 text-[var(--color-text-primary)]" />
             )}
-            <span className="min-w-0 truncate">{activeSearch ? activeSearch.name : 'Searches'}</span>
+            {activeSearch && <span className="min-w-0 truncate">{activeSearch.name}</span>}
           </ControlPillButton>
         </div>
 

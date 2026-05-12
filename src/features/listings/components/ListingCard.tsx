@@ -266,7 +266,7 @@ export default function ListingCard({
             if (e.key === 'Enter' || e.key === ' ') openListingPage();
           }}
         >
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--color-surface)]">
+          <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden bg-[var(--color-surface)]">
           <ListingImage src={displayImages[0]} alt={listing.address} fallbackIndex={0} className="w-full h-full object-cover" />
             <Button
               variant="overlay"
@@ -285,8 +285,8 @@ export default function ListingCard({
             </Button>
           </div>
           <div className="px-0.5 pb-1">
-            <p className="type-heading leading-tight text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
-            <p className="mt-0.5 type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '   ', spacedSqft: false })}</p>
+            <p className="card-price type-body-lg leading-tight text-[var(--color-text-primary)]"><PriceText price={listing.price} format="full" /></p>
+            <p className="mt-0.5 type-body text-[var(--color-text-primary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '   ', spacedSqft: false })}</p>
           </div>
         </div>
         {saveSheet}
@@ -297,7 +297,7 @@ export default function ListingCard({
   if (variant === 'full') {
     return (
       <>
-        <div className={cn('flex flex-col bg-white rounded-2xl overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
+        <div className={cn('flex flex-col bg-white rounded-[24px] overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]', className)}>
           <div className="relative aspect-video overflow-hidden bg-[var(--color-surface)]">
             <ListingImage src={displayImages[0]} alt="" fallbackIndex={0} className="w-full h-full object-cover" />
             <Button
@@ -314,9 +314,9 @@ export default function ListingCard({
             </Button>
           </div>
           <div className="p-4">
-            <p className="type-subtitle text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
+            <p className="card-price type-heading text-[var(--color-text-primary)]"><PriceText price={listing.price} format="full" /></p>
             <div className="mt-1 flex flex-col gap-[1px]">
-              <p className="type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft)}</p>
+              <p className="type-body text-[var(--color-text-primary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft)}</p>
               <ListingAddressRow className="gap-1 type-caption text-[var(--color-text-secondary)]" iconSize={11}>
                 {listing.address}
               </ListingAddressRow>
@@ -335,8 +335,8 @@ export default function ListingCard({
       <div
         className={cn(
           carouselWidth
-            ? 'group relative flex shrink-0 flex-col rounded-2xl bg-white no-select overflow-hidden'
-            : 'group relative flex w-72 shrink-0 flex-col rounded-2xl bg-white no-select overflow-hidden',
+            ? 'group relative flex shrink-0 flex-col rounded-[24px] bg-white no-select overflow-hidden'
+            : 'group relative flex w-72 shrink-0 flex-col rounded-[24px] bg-white no-select overflow-hidden',
           'shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)]',
           className
         )}
@@ -465,9 +465,9 @@ export default function ListingCard({
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="type-heading text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
+              <p className="card-price type-body-lg text-[var(--color-text-primary)]"><PriceText price={listing.price} format="full" /></p>
               <div className="mt-0.5 flex flex-col gap-[1px]">
-                <p className="truncate type-body text-[var(--color-text-secondary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '\u00a0\u00a0', spacedSqft: false })}</p>
+                <p className="truncate type-body text-[var(--color-text-primary)]">{formatBedBathSqftLine(listing.beds, listing.baths, listing.sqft, { separator: '\u00a0\u00a0', spacedSqft: false })}</p>
                 <p className="pr-2 type-caption text-[var(--color-text-secondary)] line-clamp-2">
                   {listing.address}
                 </p>

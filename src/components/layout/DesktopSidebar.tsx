@@ -1,5 +1,6 @@
 'use client';
-import { Bell, ChevronLeft, Heart, LogOut, Map, Menu, MessageSquare, Shield, Sparkles, User } from 'lucide-react';
+import Image from 'next/image';
+import { Accessibility, Briefcase, ChevronDown, ChevronLeft, DollarSign, Heart, Home, KeyRound, LogOut, Mail, Map, Menu, Newspaper, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils/cn';
@@ -7,11 +8,41 @@ import ActionRow from '@/components/ui/ActionRow';
 import Button from '@/components/ui/Button';
 import { useUIStore } from '@/store/uiStore';
 
-const MENU_ITEMS = [
-  { icon: User, label: 'Profile' },
-  { icon: Bell, label: 'Notification Preference' },
-  { icon: Shield, label: 'Privacy & Security' },
-  { icon: MessageSquare, label: 'Send Feedback' },
+type MenuItem = {
+  icon: typeof Newspaper;
+  label: string;
+  sections?: string[][];
+};
+
+const MENU_ITEMS: MenuItem[] = [
+  {
+    icon: Home,
+    label: 'Buy',
+    sections: [
+      ['Toronto Real Estate', 'Houses for Sale', 'Condos for Sale', 'Townhouses for Sale', 'Open Houses', 'Recently Sold'],
+      ['New Listings', 'New Construction', 'Information about Buying'],
+    ],
+  },
+  {
+    icon: KeyRound,
+    label: 'Rent',
+    sections: [
+      ['Toronto Rentals', 'Houses for Rent', 'Condos for Rent', 'Townhouses for Rent'],
+      ['New Listings', 'Information about Renting'],
+    ],
+  },
+  {
+    icon: DollarSign,
+    label: 'Sell',
+    sections: [
+      ['Toronto Recently Sold', 'Sell with Zoocasa', 'Home Appraisal'],
+      ['Information about Selling'],
+    ],
+  },
+  { icon: Mail, label: 'Newsletter' },
+  { icon: Briefcase, label: 'Careers', sections: [['Headquarters', 'Agents', 'About Us']] },
+  { icon: Accessibility, label: 'Accessibility' },
+  { icon: Map, label: 'Sitemap' },
 ];
 
 const NAV_ITEMS = [
@@ -52,6 +83,7 @@ export default function DesktopSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
+  const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
   const { isDesktopSidebarCollapsed, setDesktopSidebarCollapsed } = useUIStore();
 
   const isActive = (href: string) =>
@@ -70,8 +102,8 @@ export default function DesktopSidebar() {
         className="group relative mt-0 hover:bg-transparent"
         aria-label="Collapse sidebar"
       >
-        <span className="type-title-lg leading-none tracking-[-0.06em] text-[var(--color-text-primary)] transition-opacity group-hover:opacity-0">
-          D.
+        <span className="relative h-4 w-9 transition-opacity group-hover:opacity-0">
+          <Image src="/icons/zoocasa-vector.svg" alt="Zoocasa" fill sizes="36px" className="object-contain" priority />
         </span>
         <ChevronLeft
           size={18}
@@ -95,7 +127,9 @@ export default function DesktopSidebar() {
         })}
       </nav>
 
-      <div className="relative mt-auto">
+      <div
+        className="relative mt-auto flex flex-col items-center gap-3"
+      >
         <NavButton
           active={showMenu}
           icon={Menu}
@@ -110,20 +144,54 @@ export default function DesktopSidebar() {
               className="fixed inset-0 z-40"
               onClick={() => setShowMenu(false)}
             />
-            <div className="absolute bottom-0 left-[3.75rem] z-50 w-72 overflow-hidden rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]">
+            <div
+              className="absolute bottom-0 left-[3.75rem] z-50 w-72 overflow-visible rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+              onMouseLeave={() => setHoveredMenu(null)}
+            >
               {MENU_ITEMS.map((item) => (
-                <ActionRow key={item.label} size="md" className="font-normal">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
-                    <item.icon size={15} className="text-[#0F1729]" />
-                  </div>
-                  <span className="flex-1 type-body font-medium text-[#0F1729]">{item.label}</span>
-                </ActionRow>
+                <div key={item.label} className="relative">
+                  <ActionRow
+                    size="md"
+                    className="font-normal"
+                    onMouseEnter={() => setHoveredMenu(item.sections ? item.label : null)}
+                    onFocus={() => setHoveredMenu(item.sections ? item.label : null)}
+                    aria-expanded={item.sections ? hoveredMenu === item.label : undefined}
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F5F6F7]">
+                      <item.icon size={15} className="text-[#0F1729]" />
+                    </div>
+                    <span className="flex-1 type-body font-medium text-[#0F1729]">{item.label}</span>
+                    {item.sections && <ChevronDown size={15} className="-rotate-90" />}
+                  </ActionRow>
+                  {item.sections && hoveredMenu === item.label && (
+                    <div
+                      className="absolute left-[calc(100%+0.25rem)] top-0 z-50 w-72 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)] before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-['']"
+                      onMouseEnter={() => setHoveredMenu(item.label)}
+                    >
+                      {item.sections.map((section, sectionIndex) => (
+                        <div key={`${item.label}-${sectionIndex}`} className={cn(sectionIndex > 0 && 'mt-1')}>
+                          {section.map((child) => (
+                            <ActionRow key={child} size="md" className="font-normal">
+                              <span className="type-body font-medium text-[#0F1729]">{child}</span>
+                            </ActionRow>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
+              <ActionRow size="md" className="mt-1 font-normal">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(145deg,#F8D8C8,#D9EEF6_55%,#EAE4FF)] type-caption font-semibold text-[var(--color-text-primary)]">
+                  JZ
+                </div>
+                <span className="flex-1 type-body font-medium text-[#0F1729]">Profile</span>
+              </ActionRow>
               <ActionRow tone="danger" size="md" className="mt-1 font-normal">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50">
-                  <LogOut size={15} className="text-[#EF4444]" />
+                  <LogOut size={15} className="text-[var(--color-accent)]" />
                 </div>
-                <span className="flex-1 type-body font-medium text-[#EF4444]">Sign Out</span>
+                <span className="type-label flex-1 text-[var(--color-accent)]">Sign Out</span>
               </ActionRow>
             </div>
           </>

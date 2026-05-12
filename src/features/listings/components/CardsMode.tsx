@@ -781,7 +781,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 <div className="shrink-0">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="type-title-lg text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
+                      <p className="card-price type-title text-[var(--color-text-primary)]"><PriceText price={listing.price} format="full" /></p>
                       <p className="mt-1 type-body text-[var(--color-text-secondary)]">
                         {listing.beds}bd · {listing.baths}ba · {formatSqft(listing.sqft)} sqft
                       </p>
@@ -1235,7 +1235,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               </Button>
             )}
           >
-            <p className="type-title text-[var(--color-text-primary)]"><PriceText price={detailDrawerListing.price} /></p>
+            <p className="card-price type-subtitle text-[var(--color-text-primary)]"><PriceText price={detailDrawerListing.price} format="full" /></p>
             <p className="mt-1 type-body text-[var(--color-text-secondary)]">
               {detailDrawerListing.beds}bd · {detailDrawerListing.baths}ba · {formatSqft(detailDrawerListing.sqft)} sqft
             </p>

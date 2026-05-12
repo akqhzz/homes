@@ -385,7 +385,7 @@ export default function MapView({
       )}
       {isDesktopViewport && (
         <>
-          <div className="pointer-events-auto absolute bottom-3 left-3 z-20 hidden flex-col gap-1.5 lg:flex">
+          <div className="pointer-events-auto absolute bottom-3 right-3 z-20 hidden flex-col gap-1.5 lg:flex">
             <MapControlButton
               onClick={zoomIn}
               shape="circle"

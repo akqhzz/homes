@@ -108,7 +108,7 @@ export default function CardModeListingCard({
   return (
     <motion.article
       className={cn(
-        'h-full flex-shrink-0 overflow-hidden rounded-[22px] bg-white no-select',
+        'h-full flex-shrink-0 overflow-hidden rounded-[26px] bg-white no-select',
         active && 'shadow-[0_14px_30px_rgba(15,23,41,0.14)]',
         className
       )}
@@ -188,7 +188,7 @@ export default function CardModeListingCard({
           if (event.key === 'Enter' || event.key === ' ') handleOpenDetail();
         }}
       >
-        <div className="relative h-full rounded-[22px] bg-white">
+        <div className="relative h-full rounded-[26px] bg-white">
           {swipeExitAction === 'pass' ? (
             <SwipeStamp label="PASS" tone="pass" opacity={1} rotation="-rotate-6" />
           ) : (
@@ -200,7 +200,7 @@ export default function CardModeListingCard({
             activeSaveStampOpacity > 0 && <SwipeStamp label="SAVE" tone="save" opacity={activeSaveStampOpacity} rotation="rotate-6" />
           )}
           <div
-            className="h-full overflow-y-auto rounded-[22px] bg-white"
+            className="h-full overflow-y-auto rounded-[26px] bg-white"
             style={{
               WebkitOverflowScrolling: 'touch',
               overscrollBehavior: 'contain',
@@ -215,7 +215,7 @@ export default function CardModeListingCard({
             {images.map((src, index) => (
               <div
                 key={`${listing.id}-${src}-${index}`}
-                className="overflow-hidden bg-[var(--color-surface)] first:rounded-t-[22px] last:rounded-b-[22px]"
+                className="overflow-hidden bg-[var(--color-surface)] first:rounded-t-[26px] last:rounded-b-[26px]"
                 style={{ height: CARD_MODE_IMAGE_HEIGHT }}
               >
                 <ListingImage src={src} fallbackIndex={index} alt={index === 0 ? listing.address : ''} eager={active || index < 2} />
@@ -227,13 +227,13 @@ export default function CardModeListingCard({
             <div className="flex items-end gap-2">
               <div className="relative flex h-24 min-w-0 flex-1 flex-col justify-center rounded-[24px] bg-[var(--color-background)] px-4 shadow-[0_8px_28px_rgba(15,23,41,0.16)]">
                 <div className="flex w-full min-w-0 items-start justify-between gap-2">
-                  <p className="type-title min-w-0 truncate leading-tight text-[var(--color-text-primary)]"><PriceText price={listing.price} /></p>
+                  <p className="card-price type-subtitle min-w-0 truncate leading-tight text-[var(--color-text-primary)]"><PriceText price={listing.price} format="full" /></p>
                   <span className="shrink-0 pt-0.5 type-caption font-medium text-[var(--color-text-secondary)]">
                     {formatDaysOnMarket(listing.daysOnMarket)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center justify-between gap-2">
-                  <p className="type-body text-[var(--color-text-secondary)]">
+                  <p className="type-body text-[var(--color-text-primary)]">
                     {listing.beds}bd&nbsp;&nbsp;{listing.baths}ba&nbsp;&nbsp;{String(listing.sqft)}sqft
                   </p>
                   <button
