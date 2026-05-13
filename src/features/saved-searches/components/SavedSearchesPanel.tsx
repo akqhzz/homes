@@ -425,7 +425,7 @@ export default function SavedSearchesPanel({
         desktopPosition && (
           <div
             ref={desktopPanelRef}
-            className="fixed z-[60] max-h-[min(640px,calc(100vh-12rem))] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
+            className="fixed z-[90] max-h-[min(640px,calc(100vh-12rem))] w-[420px] overflow-y-auto rounded-3xl bg-white shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
             style={{ top: desktopPosition.top, left: desktopPosition.left }}
           >
             {content}

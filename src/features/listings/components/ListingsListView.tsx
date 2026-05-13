@@ -55,6 +55,7 @@ interface ListingsListViewProps {
 
 export default function ListingsListView({
   listings,
+  useMapAreaLabel = false,
   areaTitleLabel,
   variant = 'desktop',
   onShowMap,
@@ -74,6 +75,7 @@ export default function ListingsListView({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const closeDragStartRef = useRef<{ x: number; y: number; id?: number } | null>(null);
   const { setHoveredListingId } = useMapStore();
+  const hasUserMovedMap = useMapStore((s) => s.hasUserMovedMap);
   const selectedLocations = useSearchStore((s) => s.selectedLocations);
   const router = useRouter();
   const isMobile = variant === 'mobile';
@@ -93,7 +95,9 @@ export default function ListingsListView({
       : selectedLocations.length === 1
       ? getPrimaryLocationLabel(selectedLocations[0].name)
       : `${getPrimaryLocationLabel(selectedLocations[0].name)}, +${selectedLocations.length - 1}`;
-  const locationLabel = selectedLocationLabel ?? (areaTitleLabel ? getListingsAreaTitleLabel(areaTitleLabel) : 'Toronto');
+  const locationLabel =
+    selectedLocationLabel ??
+    (areaTitleLabel ? getListingsAreaTitleLabel(areaTitleLabel) : useMapAreaLabel && hasUserMovedMap ? 'Map Area' : 'Toronto');
   const title = `${listings.length}+ Real Estate & Homes For Sale in ${locationLabel}`;
   const latestListingLabels = useMemo(() => getLatestListingLabels(listings, locationLabel), [listings, locationLabel]);
   const breadcrumbLocation = locationLabel === 'Selected Area' || locationLabel === 'Map Area' ? 'Toronto' : locationLabel;

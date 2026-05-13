@@ -8,9 +8,9 @@ import {
   getNeighborhoodBoundaryFeature,
 } from '@/lib/map/rendering';
 
-const BRAND_300 = '#92c3b2';
-const BRAND_400 = '#61a08b';
-const BRAND_700 = '#255b53';
+const BRAND_300 = '#92c9e3';
+const BRAND_400 = '#70b5d8';
+const BRAND_700 = '#367195';
 
 const ACTIVE_BOUNDARY_STYLE = {
   lineColor: BRAND_700,
@@ -179,7 +179,7 @@ export default function BoundaryLayers({
           latitude={point.lat}
           anchor="center"
         >
-          <div className="h-1.5 w-1.5 rounded-full bg-[#255b53] shadow-[0_1px_2px_rgba(15,23,41,0.24)]" />
+          <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-brand-700)] shadow-[0_1px_2px_rgba(15,23,41,0.24)]" />
         </Marker>
       )))}
 
