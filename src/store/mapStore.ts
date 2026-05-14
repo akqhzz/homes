@@ -16,8 +16,6 @@ interface ViewState {
 interface MapStore {
   viewState: ViewState;
   setViewState: (vs: ViewState) => void;
-  hasUserMovedMap: boolean;
-  setHasUserMovedMap: (hasUserMovedMap: boolean) => void;
   viewportBounds: BoundingBox | null;
   setViewportBounds: (bounds: BoundingBox | null) => void;
   selectedListingId: string | null;
@@ -39,8 +37,6 @@ export const useMapStore = create<MapStore>((set) => ({
     zoom: 13,
   },
   setViewState: (viewState) => set({ viewState }),
-  hasUserMovedMap: false,
-  setHasUserMovedMap: (hasUserMovedMap) => set({ hasUserMovedMap }),
   viewportBounds: null,
   setViewportBounds: (viewportBounds) => set({ viewportBounds }),
   selectedListingId: null,

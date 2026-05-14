@@ -55,7 +55,6 @@ interface ListingsListViewProps {
 
 export default function ListingsListView({
   listings,
-  useMapAreaLabel = false,
   areaTitleLabel,
   variant = 'desktop',
   onShowMap,
@@ -75,7 +74,6 @@ export default function ListingsListView({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const closeDragStartRef = useRef<{ x: number; y: number; id?: number } | null>(null);
   const { setHoveredListingId } = useMapStore();
-  const hasUserMovedMap = useMapStore((s) => s.hasUserMovedMap);
   const selectedLocations = useSearchStore((s) => s.selectedLocations);
   const router = useRouter();
   const isMobile = variant === 'mobile';
@@ -95,12 +93,13 @@ export default function ListingsListView({
       : selectedLocations.length === 1
       ? getPrimaryLocationLabel(selectedLocations[0].name)
       : `${getPrimaryLocationLabel(selectedLocations[0].name)}, +${selectedLocations.length - 1}`;
-  const locationLabel =
-    selectedLocationLabel ??
-    (areaTitleLabel ? getListingsAreaTitleLabel(areaTitleLabel) : useMapAreaLabel && hasUserMovedMap ? 'Map Area' : 'Toronto');
-  const title = `${listings.length}+ Real Estate & Homes For Sale in ${locationLabel}`;
-  const latestListingLabels = useMemo(() => getLatestListingLabels(listings, locationLabel), [listings, locationLabel]);
-  const breadcrumbLocation = locationLabel === 'Selected Area' || locationLabel === 'Map Area' ? 'Toronto' : locationLabel;
+  const areaLocationLabel = areaTitleLabel ? getListingsAreaTitleLabel(areaTitleLabel) : null;
+  const titleLocationLabel = selectedLocationLabel ?? areaLocationLabel;
+  const scopeLabel = titleLocationLabel ?? 'Map Area';
+  const title = `${titleLocationLabel ?? 'Toronto'} Real Estate & Homes For Sale`;
+  const listingCountLabel = `${listings.length.toLocaleString()} Listings in Map Area`;
+  const latestListingLabels = useMemo(() => getLatestListingLabels(listings, scopeLabel), [listings, scopeLabel]);
+  const breadcrumbLocation = scopeLabel === 'Selected Area' || scopeLabel === 'Map Area' ? 'Toronto' : scopeLabel;
 
   useOutsidePointerDown({
     refs: [sortRef],
@@ -201,42 +200,39 @@ export default function ListingsListView({
 
   return (
     <div className={cn('h-full flex flex-col bg-white', isMobile && 'relative')}>
-      <div className={cn(
-        'flex flex-shrink-0 items-center justify-between',
-        isMobile ? 'hidden' : 'px-5 py-1.5'
-      )}>
-        <p className={cn(
-          'normal-case text-[var(--color-text-primary)]',
-          isMobile ? 'type-heading-sm min-w-0 pr-3' : 'type-subtitle'
-        )}>
-          {title}
-        </p>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <div ref={sortRef} className="relative">
-            <button
-              type="button"
-              onClick={() => setShowSort((value) => !value)}
-              className="flex h-8 items-center gap-1.5 rounded-full px-2.5 type-btn text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
-            >
-              <ArrowDownWideNarrow size={15} />
-              Sort
-            </button>
-            {!isMobile && showSort && (
-              <div className="absolute right-0 top-12 z-20">
-                <DesktopSortMenu
-                  options={SORT_OPTIONS}
-                  value={sort}
-                  onChange={(value) => {
-                    setSort(value);
-                    setPage(1);
-                    setShowSort(false);
-                  }}
-                />
-              </div>
-            )}
+      {!isMobile && (
+        <div className="flex flex-shrink-0 items-center justify-between px-5 py-1.5">
+          <div className="min-w-0 pr-3">
+            <p className="type-subtitle normal-case text-[var(--color-text-primary)]">
+              {title}
+            </p>
+            <p className="mt-0.5 type-body text-[var(--color-text-secondary)]">{listingCountLabel}</p>
           </div>
-          {!isMobile && (
+
+          <div className="flex shrink-0 items-center gap-2">
+            <div ref={sortRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSort((value) => !value)}
+                className="flex h-8 items-center gap-1.5 rounded-full px-2.5 type-btn text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text-primary)]"
+              >
+                <ArrowDownWideNarrow size={15} />
+                Sort
+              </button>
+              {showSort && (
+                <div className="absolute right-0 top-12 z-50">
+                  <DesktopSortMenu
+                    options={SORT_OPTIONS}
+                    value={sort}
+                    onChange={(value) => {
+                      setSort(value);
+                      setPage(1);
+                      setShowSort(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
             <div className="flex rounded-full bg-[var(--color-surface)] p-1">
               <button
                 type="button"
@@ -267,9 +263,9 @@ export default function ListingsListView({
                 <List size={15} />
               </button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div
         ref={scrollContainerRef}
@@ -290,9 +286,10 @@ export default function ListingsListView({
       >
         {isMobile && (
           <div className="flex items-center justify-between px-1 pb-3 pt-[calc(env(safe-area-inset-top,0px)+0.75rem)]">
-            <p className="type-heading-sm min-w-0 pr-3 normal-case text-[var(--color-text-primary)]">
-              {title}
-            </p>
+            <div className="min-w-0 pr-3">
+              <p className="type-heading-sm normal-case text-[var(--color-text-primary)]">{title}</p>
+              <p className="mt-0.5 type-body text-[var(--color-text-secondary)]">{listingCountLabel}</p>
+            </div>
             <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"

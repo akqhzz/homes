@@ -77,7 +77,6 @@ export default function MapView({
   const {
     viewState,
     setViewState,
-    setHasUserMovedMap,
     selectedListingId,
     setSelectedListingId,
     hoveredListingId,
@@ -131,7 +130,6 @@ export default function MapView({
 
   const handleMapMoveStart = useCallback(() => {
     if (!showListings) return;
-    setHasUserMovedMap(true);
     const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
     if (!isDesktop) return;
     setSelectedListingId(null);
@@ -139,7 +137,7 @@ export default function MapView({
     setMobileCarouselListingId(null, null);
     setPreviewListingId(null);
     setCarouselVisible(false);
-  }, [setCarouselVisible, setHasUserMovedMap, setHoveredListingId, setMobileCarouselListingId, setPreviewListingId, setSelectedListingId, showListings]);
+  }, [setCarouselVisible, setHoveredListingId, setMobileCarouselListingId, setPreviewListingId, setSelectedListingId, showListings]);
 
   const renderNeighborhoods = getRenderNeighborhoods();
   const boundaryNeighborhoods = showNeighborhoods
