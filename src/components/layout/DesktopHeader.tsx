@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Bookmark, ChevronRight, GalleryHorizontalEnd, Menu, Share2 } from 'lucide-react';
+import { Bookmark, GalleryHorizontalEnd, Menu, Share2 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSearchStore } from '@/store/searchStore';
 import { useUIStore } from '@/store/uiStore';
@@ -138,21 +138,17 @@ export default function DesktopHeader({
                 onClick={() => setDesktopSidebarCollapsed(false)}
                 aria-label="Expand sidebar"
               >
-                <ChevronRight size={18} />
+                <Menu size={18} />
               </Button>
             )}
-            <DesktopCollectionsControl
-              open={showCollections}
-              onOpenChange={(open) => {
-                setShowCollections(open);
-                if (open) {
-                  setShowFilter(false);
-                  setShowSearch(false);
-                  setShowMenu(false);
-                }
-              }}
-              align="left"
-            />
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="relative h-5 w-[96px] transition-opacity hover:opacity-80"
+              aria-label="Zoocasa home"
+            >
+              <Image src="/icons/zoocasa-black.svg" alt="Zoocasa" fill sizes="96px" className="object-contain" priority />
+            </button>
           </div>
         )}
 

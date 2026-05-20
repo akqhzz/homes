@@ -1,12 +1,15 @@
 'use client';
-import Image from 'next/image';
 import { Accessibility, Briefcase, ChevronDown, ChevronLeft, DollarSign, Heart, Home, KeyRound, LogOut, Mail, Map, Menu, Newspaper, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import type { MouseEvent } from 'react';
 import { cn } from '@/lib/utils/cn';
 import ActionRow from '@/components/ui/ActionRow';
 import Button from '@/components/ui/Button';
 import { useUIStore } from '@/store/uiStore';
+import { useSavedStore } from '@/store/savedStore';
+import RenameDeletePopover from '@/components/ui/RenameDeletePopover';
+import DesktopCollectionsMenu from '@/components/layout/DesktopCollectionsMenu';
 
 type MenuItem = {
   icon: typeof Newspaper;
@@ -92,29 +95,31 @@ export default function DesktopSidebar() {
   if (isDesktopSidebarCollapsed) return null;
 
   return (
-    <aside className="relative hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:py-5">
+    <aside className="relative z-[80] hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:py-5">
       <Button
         variant="ghost"
         shape="circle"
         size="control"
         type="button"
         onClick={() => setDesktopSidebarCollapsed(true)}
-        className="group relative mt-0 hover:bg-transparent"
+        className="-mt-1 hover:bg-[var(--color-surface)]"
         aria-label="Collapse sidebar"
       >
-        <span className="relative h-4 w-9 transition-opacity group-hover:opacity-0">
-          <Image src="/icons/zoocasa-vector.svg" alt="Zoocasa" fill sizes="36px" className="object-contain" priority />
-        </span>
-        <ChevronLeft
-          size={18}
-          className="absolute opacity-0 transition-opacity group-hover:opacity-100"
-          aria-hidden="true"
-        />
+        <ChevronLeft size={18} aria-hidden="true" />
       </Button>
 
       <nav className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-6">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const active = isActive(href);
+          if (label === 'Collections') {
+            return (
+              <DesktopSidebarCollectionsNav
+                key={href}
+                active={active}
+                onClick={() => router.push(href)}
+              />
+            );
+          }
           return (
             <NavButton
               key={href}
@@ -198,5 +203,125 @@ export default function DesktopSidebar() {
         )}
       </div>
     </aside>
+  );
+}
+
+function DesktopSidebarCollectionsNav({ active, onClick }: { active: boolean; onClick: () => void }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [creatingCollection, setCreatingCollection] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState('');
+  const [collectionMenuState, setCollectionMenuState] = useState<{ collectionId: string; right: number; bottom: number } | null>(null);
+  const [renamingCollectionId, setRenamingCollectionId] = useState<string | null>(null);
+  const [renameCollectionName, setRenameCollectionName] = useState('');
+  const [confirmDeleteCollectionId, setConfirmDeleteCollectionId] = useState<string | null>(null);
+  const { collections, createCollection, renameCollection, deleteCollection } = useSavedStore();
+
+  const closeCollectionMenu = () => {
+    setCollectionMenuState(null);
+    setConfirmDeleteCollectionId(null);
+  };
+
+  const handleCreateCollection = () => {
+    const name = newCollectionName.trim();
+    if (!name) return;
+    createCollection(name);
+    setNewCollectionName('');
+    setCreatingCollection(false);
+  };
+
+  const openCollectionMenu = (event: MouseEvent<HTMLButtonElement>, collectionId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (collectionMenuState?.collectionId === collectionId) {
+      closeCollectionMenu();
+      return;
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    setCollectionMenuState({
+      collectionId,
+      right: window.innerWidth - rect.right,
+      bottom: window.innerHeight - rect.top + 4,
+    });
+    setConfirmDeleteCollectionId(null);
+  };
+
+  const startCollectionRename = (collectionId: string, name: string) => {
+    closeCollectionMenu();
+    setRenamingCollectionId(collectionId);
+    setRenameCollectionName(name);
+  };
+
+  const finishCollectionRename = () => {
+    const name = renameCollectionName.trim();
+    if (!renamingCollectionId) return;
+    if (!name) {
+      setRenamingCollectionId(null);
+      setRenameCollectionName('');
+      return;
+    }
+    renameCollection(renamingCollectionId, name);
+    setRenamingCollectionId(null);
+    setRenameCollectionName('');
+  };
+
+  const confirmDeleteCollection = () => {
+    if (!confirmDeleteCollectionId) return;
+    deleteCollection(confirmDeleteCollectionId);
+    if (renamingCollectionId === confirmDeleteCollectionId) {
+      setRenamingCollectionId(null);
+      setRenameCollectionName('');
+    }
+    closeCollectionMenu();
+  };
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <NavButton active={active} icon={Heart} label="Collections" onClick={onClick} />
+      {open && (
+        <DesktopCollectionsMenu
+          collections={collections}
+          creatingCollection={creatingCollection}
+          newCollectionName={newCollectionName}
+          renamingCollectionId={renamingCollectionId}
+          renameCollectionName={renameCollectionName}
+          onCreatingCollectionChange={setCreatingCollection}
+          onNewCollectionNameChange={setNewCollectionName}
+          onRenameCollectionNameChange={setRenameCollectionName}
+          onCreateCollection={handleCreateCollection}
+          onFinishCollectionRename={finishCollectionRename}
+          onCancelCollectionRename={() => {
+            setRenamingCollectionId(null);
+            setRenameCollectionName('');
+          }}
+          onOpenCollection={(collectionId) => router.push(`/saved/${collectionId}`)}
+          onOpenCollectionMenu={openCollectionMenu}
+          onShowAllCollections={() => router.push('/saved')}
+          placement="side-center"
+        />
+      )}
+      {collectionMenuState && (
+        <RenameDeletePopover
+          open
+          confirmOpen={!!confirmDeleteCollectionId}
+          right={collectionMenuState.right}
+          bottom={collectionMenuState.bottom}
+          deleteTitle="Delete collection?"
+          deleteDescription="This will remove the collection and its saved listing references."
+          onClose={closeCollectionMenu}
+          onRename={() => {
+            const activeCollection = collections.find((collection) => collection.id === collectionMenuState.collectionId);
+            if (activeCollection) startCollectionRename(activeCollection.id, activeCollection.name);
+          }}
+          onRequestDelete={() => setConfirmDeleteCollectionId(collectionMenuState.collectionId)}
+          onCancelDelete={() => setConfirmDeleteCollectionId(null)}
+          onConfirmDelete={confirmDeleteCollection}
+        />
+      )}
+    </div>
   );
 }

@@ -27,6 +27,7 @@ interface DesktopCollectionsMenuProps {
   onOpenCollectionMenu: (event: MouseEvent<HTMLButtonElement>, collectionId: string) => void;
   onShowAllCollections: () => void;
   align?: 'left' | 'right';
+  placement?: 'below' | 'side' | 'side-center';
 }
 
 export default function DesktopCollectionsMenu({
@@ -45,9 +46,21 @@ export default function DesktopCollectionsMenu({
   onOpenCollectionMenu,
   onShowAllCollections,
   align = 'right',
+  placement = 'below',
 }: DesktopCollectionsMenuProps) {
   return (
-    <div className={cn('absolute top-12 z-40 w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]', align === 'left' ? 'left-0' : 'right-0')}>
+    <div
+      className={cn(
+        'absolute z-[90] w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]',
+        placement === 'side-center'
+          ? "left-[calc(100%+0.25rem)] top-1/2 -translate-y-1/2 before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-['']"
+          : placement === 'side'
+          ? "left-[calc(100%+0.25rem)] top-0 before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-['']"
+          : align === 'left'
+          ? 'left-0 top-12'
+          : 'right-0 top-12'
+      )}
+    >
       <CreateInlineField
         open={creatingCollection}
         onOpenChange={onCreatingCollectionChange}
