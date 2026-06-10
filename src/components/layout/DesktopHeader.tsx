@@ -128,27 +128,17 @@ export default function DesktopHeader({
           </button>
         ) : null}
 
-        {isMapPage && (
+        {isMapPage && isDesktopSidebarCollapsed && (
           <div className="absolute left-6 top-1/2 flex -translate-y-1/2 items-center gap-2">
-            {isDesktopSidebarCollapsed && (
-              <Button
-                variant="surface"
-                shape="circle"
-                size="control"
-                onClick={() => setDesktopSidebarCollapsed(false)}
-                aria-label="Expand sidebar"
-              >
-                <Menu size={18} />
-              </Button>
-            )}
-            <button
-              type="button"
-              onClick={() => router.push('/')}
-              className="relative h-5 w-[96px] transition-opacity hover:opacity-80"
-              aria-label="Zoocasa home"
+            <Button
+              variant="surface"
+              shape="circle"
+              size="control"
+              onClick={() => setDesktopSidebarCollapsed(false)}
+              aria-label="Expand sidebar"
             >
-              <Image src="/icons/zoocasa-black.svg" alt="Zoocasa" fill sizes="96px" className="object-contain" priority />
-            </button>
+              <Menu size={18} />
+            </Button>
           </div>
         )}
 

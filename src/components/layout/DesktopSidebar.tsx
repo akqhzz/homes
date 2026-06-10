@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { Accessibility, Briefcase, ChevronDown, ChevronLeft, DollarSign, Heart, Home, KeyRound, LogOut, Mail, Map, Menu, Newspaper, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -102,10 +103,17 @@ export default function DesktopSidebar() {
         size="control"
         type="button"
         onClick={() => setDesktopSidebarCollapsed(true)}
-        className="-mt-1 hover:bg-[var(--color-surface)]"
+        className="group relative -mt-1 hover:bg-[var(--color-surface)]"
         aria-label="Collapse sidebar"
       >
-        <ChevronLeft size={18} aria-hidden="true" />
+        <span className="relative h-3.5 w-8 transition-opacity group-hover:opacity-0">
+          <Image src="/icons/zoocasa-vector.svg" alt="Zoocasa" fill sizes="32px" className="object-contain" priority />
+        </span>
+        <ChevronLeft
+          size={18}
+          className="absolute opacity-0 transition-opacity group-hover:opacity-100"
+          aria-hidden="true"
+        />
       </Button>
 
       <nav className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-6">
