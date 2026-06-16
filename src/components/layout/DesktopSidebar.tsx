@@ -299,6 +299,7 @@ function DesktopSidebarCollectionsNav({ active, onClick }: { active: boolean; on
         <RenameDeletePopover
           open
           confirmOpen={!!confirmDeleteCollectionId}
+          closeOnPointerLeave
           right={collectionMenuState.right}
           bottom={collectionMenuState.bottom}
           deleteTitle="Delete collection?"

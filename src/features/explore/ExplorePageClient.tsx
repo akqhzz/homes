@@ -15,6 +15,7 @@ import DesktopSidebar from '@/components/layout/DesktopSidebar';
 import TopBar from '@/components/layout/TopBar';
 import ListingsCarousel from '@/features/listings/components/ListingsCarousel';
 import ListingsListView from '@/features/listings/components/ListingsListView';
+import { SavePromptViewProvider } from '@/features/listings/components/SavePromptPlacementContext';
 import DesktopHeader from '@/components/layout/DesktopHeader';
 import MapControlButton from '@/components/ui/MapControlButton';
 import { getAreaChips, getCompactAreaChipLabel } from '@/lib/utils/search-display';
@@ -361,7 +362,9 @@ export default function ExplorePageClient() {
                   pointer-events-auto
                 "
               >
-                <ListingsCarousel listings={scopedListings} />
+                <SavePromptViewProvider value="map">
+                  <ListingsCarousel listings={scopedListings} />
+                </SavePromptViewProvider>
               </motion.div>
             )}
           </AnimatePresence>

@@ -2,23 +2,18 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { Check, Ellipsis, Plus } from 'lucide-react';
-import { DEFAULT_COLLECTION_ID, useSavedStore } from '@/store/savedStore';
+import { Check, Plus } from 'lucide-react';
+import { useSavedStore } from '@/store/savedStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 import MobileDrawer from '@/components/ui/MobileDrawer';
 import CreateInlineField from '@/components/ui/CreateInlineField';
-import RenameDeletePopover from '@/components/ui/RenameDeletePopover';
-
-interface MenuState {
-  collectionId: string;
-  right: number;
-  bottom: number;
-}
+import { cn } from '@/lib/utils/cn';
 
 interface SaveToCollectionSheetProps {
   listingId: string;
   onClose: () => void;
-  onSaved?: (collectionId: string) => void;
+  onSaved?: (collectionId: string, collectionName: string) => void;
+  onRemoved?: (collectionId: string) => void;
   anchorRect?: DOMRect | null;
   placement?: 'above' | 'below';
   excludedCollectionIds?: string[];
@@ -32,90 +27,48 @@ export default function SaveToCollectionSheet({
   listingId,
   onClose,
   onSaved,
+  onRemoved,
   anchorRect,
   placement = 'below',
   excludedCollectionIds = [],
 }: SaveToCollectionSheetProps) {
   const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
-  const [menuState, setMenuState] = useState<MenuState | null>(null);
-  const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [renameName, setRenameName] = useState('');
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const collections = useSavedStore((s) => s.collections);
   const addToCollection = useSavedStore((s) => s.addToCollection);
+  const removeFromCollection = useSavedStore((s) => s.removeFromCollection);
   const createCollection = useSavedStore((s) => s.createCollection);
-  const renameCollection = useSavedStore((s) => s.renameCollection);
-  const deleteCollection = useSavedStore((s) => s.deleteCollection);
   const saveListing = useSavedStore((s) => s.saveListing);
+  const unsaveListing = useSavedStore((s) => s.unsaveListing);
   const isLiked = useSavedStore((s) => s.isLiked(listingId));
 
-  const finishSave = (collectionId: string) => {
+  // A listing can live in many collections; each row is a checkbox that toggles
+  // membership in that collection. The sheet stays open so users can pick several.
+  const toggleCollection = (collectionId: string, collectionName: string, isMember: boolean) => {
+    if (isMember) {
+      removeFromCollection(collectionId, listingId);
+      // Unchecking the last collection fully unsaves the listing.
+      const stillInACollection = useSavedStore
+        .getState()
+        .collections.some((collection) => collection.listings.some((item) => item.listingId === listingId));
+      if (!stillInACollection) unsaveListing(listingId);
+      onRemoved?.(collectionId);
+      return;
+    }
     if (!isLiked) saveListing(listingId);
     addToCollection(collectionId, listingId);
-    onSaved?.(collectionId);
-    onClose();
+    onSaved?.(collectionId, collectionName);
   };
 
   const createAndSave = () => {
     const name = newName.trim();
     if (!name) return;
     const collectionId = createCollection(name);
-    finishSave(collectionId);
-  };
-
-  const closeMenu = () => {
-    setMenuState(null);
-    setConfirmDeleteId(null);
-  };
-
-  const openMenu = (event: React.MouseEvent<HTMLButtonElement>, collectionId: string) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (menuState?.collectionId === collectionId) {
-      closeMenu();
-      return;
-    }
-    const rect = event.currentTarget.getBoundingClientRect();
-    setMenuState({
-      collectionId,
-      right: window.innerWidth - rect.right,
-      bottom: window.innerHeight - rect.top + 4,
-    });
-    setConfirmDeleteId(null);
-  };
-
-  const startRename = (collectionId: string, name: string) => {
-    closeMenu();
-    setRenamingId(collectionId);
-    setRenameName(name);
-  };
-
-  const finishRename = () => {
-    const name = renameName.trim();
-    if (!renamingId) return;
-    if (!name) {
-      setRenamingId(null);
-      setRenameName('');
-      return;
-    }
-    renameCollection(renamingId, name);
-    setRenamingId(null);
-    setRenameName('');
-  };
-
-  const requestDelete = (collectionId: string) => {
-    setConfirmDeleteId(collectionId);
-  };
-
-  const confirmDelete = () => {
-    if (!confirmDeleteId) return;
-    deleteCollection(confirmDeleteId);
-    if (renamingId === confirmDeleteId) {
-      setRenamingId(null);
-      setRenameName('');
-    }
-    closeMenu();
+    if (!isLiked) saveListing(listingId);
+    addToCollection(collectionId, listingId);
+    onSaved?.(collectionId, name);
+    setCreating(false);
+    setNewName('');
   };
 
   const content = (
@@ -136,91 +89,44 @@ export default function SaveToCollectionSheet({
 
       <div className="flex flex-col gap-2.5">
         {collections.map((collection) => {
-          const isDefaultCollection = collection.id === DEFAULT_COLLECTION_ID;
-          const alreadySaved =
+          const checked =
             !excludedCollectionIds.includes(collection.id) &&
             collection.listings.some((item) => item.listingId === listingId);
           const thumbnailListing = MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId);
           return (
-            <div
+            <button
               key={collection.id}
-              className="flex min-h-[84px] items-center gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
+              type="button"
+              role="checkbox"
+              aria-checked={checked}
+              onClick={() => toggleCollection(collection.id, collection.name, checked)}
+              className="flex min-h-[84px] w-full items-center gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3 text-left transition-colors hover:bg-[var(--color-surface-hover)]"
             >
               <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-[var(--color-text-primary)]">
                 {thumbnailListing?.images[0] ? (
                   <Image src={thumbnailListing.images[0]} alt="" width={56} height={56} className="h-full w-full object-cover" draggable={false} />
-                ) : alreadySaved ? (
-                  <Check size={16} />
                 ) : (
                   <Plus size={16} />
                 )}
               </span>
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => finishSave(collection.id)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    finishSave(collection.id);
-                  }
-                }}
-                className="min-w-0 flex flex-1 items-start gap-3"
-              >
-                <span className="min-w-0 flex-1">
-                  {renamingId === collection.id ? (
-                    <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
-                      <input
-                        value={renameName}
-                        onChange={(event) => setRenameName(event.target.value)}
-                        onClick={(event) => event.stopPropagation()}
-                        onKeyDown={(event) => {
-                          event.stopPropagation();
-                          if (event.key === 'Enter') finishRename();
-                          if (event.key === 'Escape') {
-                            setRenamingId(null);
-                            setRenameName('');
-                          }
-                        }}
-                        onBlur={finishRename}
-                        className="type-body min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none"
-                        autoFocus
-                      />
-                      <button
-                        type="button"
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          finishRename();
-                        }}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
-                        aria-label="Finish rename"
-                      >
-                        <Check size={13} />
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
-                  )}
-                  <span className="block type-caption text-[var(--color-text-tertiary)]">
-                    {alreadySaved ? 'Already Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
-                  </span>
+              <span className="min-w-0 flex-1">
+                <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">{collection.name}</span>
+                <span className="block type-caption text-[var(--color-text-tertiary)]">
+                  {checked ? 'Saved Here' : `${collection.listings.length} Listing${collection.listings.length === 1 ? '' : 's'}`}
                 </span>
-                {!isDefaultCollection && (
-                  <button
-                    type="button"
-                    onClick={(event) => openMenu(event, collection.id)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
-                    aria-label="Collection options"
-                  >
-                    <Ellipsis size={16} />
-                  </button>
+              </span>
+              <span
+                aria-hidden
+                className={cn(
+                  'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors',
+                  checked
+                    ? 'border-[var(--color-text-primary)] bg-[var(--color-text-primary)] text-white'
+                    : 'border-[var(--color-border-strong)] bg-white text-transparent'
                 )}
-              </div>
-            </div>
+              >
+                <Check size={12} strokeWidth={3} />
+              </span>
+            </button>
           );
         })}
       </div>
@@ -259,7 +165,8 @@ export default function SaveToCollectionSheet({
 
   const drawer = (
     <>
-      <div className="lg:hidden">
+      {/* Stop clicks bubbling through the portal to a clickable card row behind it. */}
+      <div className="lg:hidden" onClick={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
         <MobileDrawer
           title="Save To Collection"
           onClose={onClose}
@@ -288,6 +195,7 @@ export default function SaveToCollectionSheet({
         <div
           className="fixed z-[120] w-80 overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
           style={dropdownStyle}
+          onMouseLeave={onClose}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           onWheel={(event) => event.stopPropagation()}
@@ -302,28 +210,7 @@ export default function SaveToCollectionSheet({
 
   if (typeof document === 'undefined') return null;
   return createPortal(
-    <>
-      {drawer}
-      {menuState && (
-        <RenameDeletePopover
-          open
-          confirmOpen={!!confirmDeleteId}
-          right={menuState.right}
-          bottom={menuState.bottom}
-          zIndex={140}
-          deleteTitle="Delete collection?"
-          deleteDescription="This will remove the collection and its saved listing references."
-          onClose={closeMenu}
-          onRename={() => {
-            const active = collections.find((collection) => collection.id === menuState.collectionId);
-            if (active) startRename(active.id, active.name);
-          }}
-          onRequestDelete={() => requestDelete(menuState.collectionId)}
-          onCancelDelete={() => setConfirmDeleteId(null)}
-          onConfirmDelete={confirmDelete}
-        />
-      )}
-    </>,
+    drawer,
     document.body
   );
 }

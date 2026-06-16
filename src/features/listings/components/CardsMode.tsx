@@ -7,8 +7,10 @@ import { ArrowDownWideNarrow, ArrowLeftRight, ChevronLeft, ChevronRight, Externa
 import MapGL, { AttributionControl, Marker } from 'react-map-gl/mapbox';
 import { Listing } from '@/lib/types';
 import { formatSqft } from '@/lib/utils/format';
-import { DEFAULT_COLLECTION_ID, useSavedStore } from '@/store/savedStore';
+import { useSavedStore } from '@/store/savedStore';
 import { useListingSave } from '@/features/listings/hooks/useListingSave';
+import { useQuickSaveCollection } from '@/features/collections/hooks/useQuickSaveCollection';
+import { describeListingSave, getListingCollectionIds } from '@/features/collections/lib/collectionActions';
 import { cn } from '@/lib/utils/cn';
 import { getMapboxToken } from '@/lib/mapbox';
 import Button from '@/components/ui/Button';
@@ -18,6 +20,7 @@ import AnchoredPopover from '@/components/ui/AnchoredPopover';
 import DesktopSortMenu from '@/components/ui/DesktopSortMenu';
 import HeartDelight from '@/components/ui/HeartDelight';
 import SaveToCollectionSheet from '@/features/collections/components/SaveToCollectionSheet';
+import QuickSavePrompt from '@/features/listings/components/QuickSavePrompt';
 import SortOptionsDrawer from '@/components/ui/SortOptionsDrawer';
 import MapListingPin from '@/features/listings/components/MapListingPin';
 import PriceText from '@/features/listings/components/PriceText';
@@ -40,7 +43,6 @@ const DESKTOP_IMAGE_SWIPE_THRESHOLD = 34;
 const DESKTOP_IMAGE_WHEEL_LOCK_MS = 720;
 const CARD_MODE_ONBOARDING_STORAGE_KEY = 'homes-card-mode-onboarding-seen';
 const CARD_MODE_DESKTOP_TIP_STORAGE_KEY = 'homes-card-mode-desktop-tip-seen';
-const CARD_MODE_LAST_COLLECTION_STORAGE_KEY = 'homes-card-mode-last-collection-id';
 const ACTION_BUTTON_CLASS =
   'flex h-12 items-center gap-2 rounded-full bg-white px-6 type-label shadow-[var(--shadow-control)] transition-all outline-none no-select hover:-translate-y-0.5 hover:bg-[var(--color-surface)] hover:shadow-[0_10px_28px_rgba(15,23,41,0.14)] active:scale-95';
 const DESKTOP_ACTION_BUTTON_LABEL_CLASS = 'text-[18px] leading-none xl:text-[19px] 2xl:text-[20px]';
@@ -72,7 +74,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const [savePickerListing, setSavePickerListing] = useState<Listing | null>(null);
   const [savePickerAnchorRect, setSavePickerAnchorRect] = useState<DOMRect | null>(null);
   const [savePickerMode, setSavePickerMode] = useState<'commit' | 'change'>('commit');
-  const [quickSavePrompt, setQuickSavePrompt] = useState<{ listing: Listing; collectionName: string } | null>(null);
+  const [quickSavePrompt, setQuickSavePrompt] = useState<{ listing: Listing; collectionName: string; extraCount: number } | null>(null);
   const [desktopImageIndex, setDesktopImageIndex] = useState(0);
   const [desktopImageAutoplay, setDesktopImageAutoplay] = useState(true);
   const [desktopImageZoomKey, setDesktopImageZoomKey] = useState('');
@@ -89,10 +91,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(CARD_MODE_ONBOARDING_STORAGE_KEY) !== 'true';
   });
-  const [preferredCollectionId, setPreferredCollectionId] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return window.localStorage.getItem(CARD_MODE_LAST_COLLECTION_STORAGE_KEY);
-  });
   const wheelLockRef = useRef(false);
   const imageWheelLockRef = useRef(false);
   const desktopImagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
@@ -107,7 +105,6 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
   const stackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const collections = useSavedStore((state) => state.collections);
   const saveListing = useSavedStore((state) => state.saveListing);
   const addToCollection = useSavedStore((state) => state.addToCollection);
   const swipeDislike = useSavedStore((state) => state.swipeDislike);
@@ -123,14 +120,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     () => sortedListings.slice(activeIndex, activeIndex + STACK_VISIBLE_COUNT),
     [activeIndex, sortedListings]
   );
-  const fallbackCollection = useMemo(
-    () => collections.find((collection) => collection.id !== DEFAULT_COLLECTION_ID) ?? collections[0],
-    [collections]
-  );
-  const quickSaveCollection = useMemo(
-    () => collections.find((collection) => collection.id === preferredCollectionId) ?? fallbackCollection,
-    [collections, fallbackCollection, preferredCollectionId]
-  );
+  const { quickSaveCollections, rememberCollections } = useQuickSaveCollection();
 
   const getActiveDesktopImageElements = useCallback(() => {
     if (typeof document === 'undefined' || !listing) {
@@ -268,6 +258,13 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     }, 120);
   };
 
+  // Build the confirmation from current memberships (headline collection + "+n").
+  // Returns null when the listing is in no collection, dismissing the prompt.
+  const buildQuickSavePrompt = (targetListing: Listing, preferredCollectionId?: string) => {
+    const summary = describeListingSave(useSavedStore.getState().collections, targetListing.id, preferredCollectionId);
+    return summary ? { listing: targetListing, ...summary } : null;
+  };
+
   const openChangeCollectionPicker = (targetListing: Listing) => {
     dismissOnboarding();
     dismissDesktopTip();
@@ -280,34 +277,25 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
     setSavePickerListing(targetListing);
   };
 
-  const rememberCollection = (collectionId: string) => {
-    setPreferredCollectionId(collectionId);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(CARD_MODE_LAST_COLLECTION_STORAGE_KEY, collectionId);
-    }
-  };
-
   const quickSaveListing = (targetListing = listing, startX = 0, exitDelay = 520) => {
-    if (!targetListing || !quickSaveCollection || swipeLockRef.current) return;
+    if (!targetListing || quickSaveCollections.length === 0 || swipeLockRef.current) return;
     dismissOnboarding();
     dismissDesktopTip();
-    rememberCollection(quickSaveCollection.id);
+    const headline = quickSaveCollections[quickSaveCollections.length - 1];
     setHeartDelightKey((key) => key + 1);
     if (exitDelay <= 0) {
       setActiveSwipePreview(null);
       commitCardExitRef.current?.('save', targetListing, startX);
       window.setTimeout(() => {
-        setQuickSavePrompt({ listing: targetListing, collectionName: quickSaveCollection.name });
-      }, 180);
-      window.setTimeout(() => {
         saveListing(targetListing.id);
-        addToCollection(quickSaveCollection.id, targetListing.id);
+        quickSaveCollections.forEach((collection) => addToCollection(collection.id, targetListing.id));
+        setQuickSavePrompt(buildQuickSavePrompt(targetListing, headline.id));
       }, SWIPE_EXIT_DURATION);
       return;
     }
     saveListing(targetListing.id);
-    addToCollection(quickSaveCollection.id, targetListing.id);
-    setQuickSavePrompt({ listing: targetListing, collectionName: quickSaveCollection.name });
+    quickSaveCollections.forEach((collection) => addToCollection(collection.id, targetListing.id));
+    setQuickSavePrompt(buildQuickSavePrompt(targetListing, headline.id));
     setActiveSwipePreview('save');
     window.setTimeout(() => {
       setActiveSwipePreview(null);
@@ -899,8 +887,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 {quickSavePrompt && (
                   <QuickSavePrompt
                     collectionName={quickSavePrompt.collectionName}
+                    extraCount={quickSavePrompt.extraCount}
                     onChangeCollection={() => openChangeCollectionPicker(quickSavePrompt.listing)}
-                    desktop
+                    placement="inline"
                   />
                 )}
               </AnimatePresence>
@@ -937,16 +926,16 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 setSavePickerAnchorRect(null);
               }}
               onSaved={(collectionId) => {
-                rememberCollection(collectionId);
                 const savedListing = savePickerListing;
+                if (savedListing) {
+                  rememberCollections(getListingCollectionIds(useSavedStore.getState().collections, savedListing.id));
+                }
                 setSavePickerListing(null);
                 setSavePickerAnchorRect(null);
                 setHeartDelightKey((key) => key + 1);
                 if (savePickerMode === 'change') {
-                  const collectionName =
-                    collections.find((collection) => collection.id === collectionId)?.name ?? 'Collection';
                   if (savedListing) {
-                    setQuickSavePrompt({ listing: savedListing, collectionName });
+                    setQuickSavePrompt(buildQuickSavePrompt(savedListing, collectionId));
                   }
                   return;
                 }
@@ -955,6 +944,12 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                   setActiveSwipePreview(null);
                   commitCardExit('save', savedListing);
                 }, 520);
+              }}
+              onRemoved={() => {
+                if (!savePickerListing) return;
+                const memberIds = getListingCollectionIds(useSavedStore.getState().collections, savePickerListing.id);
+                if (memberIds.length > 0) rememberCollections(memberIds);
+                setQuickSavePrompt(buildQuickSavePrompt(savePickerListing));
               }}
             />
           )}
@@ -1124,7 +1119,9 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
         {quickSavePrompt && (
           <QuickSavePrompt
             collectionName={quickSavePrompt.collectionName}
+            extraCount={quickSavePrompt.extraCount}
             onChangeCollection={() => openChangeCollectionPicker(quickSavePrompt.listing)}
+            placement="top"
           />
         )}
       </AnimatePresence>
@@ -1139,16 +1136,16 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
               setSavePickerAnchorRect(null);
             }}
             onSaved={(collectionId) => {
-              rememberCollection(collectionId);
               const savedListing = savePickerListing;
+              if (savedListing) {
+                rememberCollections(getListingCollectionIds(useSavedStore.getState().collections, savedListing.id));
+              }
               setSavePickerListing(null);
               setSavePickerAnchorRect(null);
               setHeartDelightKey((key) => key + 1);
               if (savePickerMode === 'change') {
-                const collectionName =
-                  collections.find((collection) => collection.id === collectionId)?.name ?? 'Collection';
                 if (savedListing) {
-                  setQuickSavePrompt({ listing: savedListing, collectionName });
+                  setQuickSavePrompt(buildQuickSavePrompt(savedListing, collectionId));
                 }
                 return;
               }
@@ -1157,6 +1154,12 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
                 setActiveSwipePreview(null);
                 commitCardExit('save', savedListing);
               }, 520);
+            }}
+            onRemoved={() => {
+              if (!savePickerListing) return;
+              const memberIds = getListingCollectionIds(useSavedStore.getState().collections, savePickerListing.id);
+              if (memberIds.length > 0) rememberCollections(memberIds);
+              setQuickSavePrompt(buildQuickSavePrompt(savePickerListing));
             }}
           />
         )}
@@ -1348,45 +1351,6 @@ function DesktopListingImage({
       decoding="async"
       onError={() => setFailedSrc(src)}
     />
-  );
-}
-
-function QuickSavePrompt({
-  collectionName,
-  desktop = false,
-  onChangeCollection,
-}: {
-  collectionName: string;
-  desktop?: boolean;
-  onChangeCollection: () => void;
-}) {
-  return (
-    <motion.div
-      data-card-overlay-control="true"
-      data-quick-save-prompt="true"
-      className={cn(
-        'z-[130] flex items-center justify-between gap-3 rounded-md border border-white/70 bg-white/58 shadow-[0_12px_34px_rgba(15,23,41,0.16)] backdrop-blur-2xl',
-        desktop
-          ? 'relative h-14 w-full max-w-[320px] py-3 pl-6 pr-3'
-          : 'fixed left-1/2 top-[calc(env(safe-area-inset-top,0px)+0.75rem)] h-11 w-[min(calc(100vw-7.25rem),292px)] -translate-x-1/2 py-1.5 pl-4 pr-1.5'
-      )}
-      initial={{ y: desktop ? 10 : -10, opacity: 0, scale: 0.98 }}
-      animate={{ y: 0, opacity: 1, scale: 1 }}
-      exit={{ y: desktop ? 8 : -8, opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <p className="min-w-0 truncate type-label text-[var(--color-text-primary)]">
-        Saved to &quot;{collectionName}&quot;
-      </p>
-      <Button
-        variant="primary"
-        size="sm"
-        onClick={onChangeCollection}
-        className="h-8 shrink-0 px-3 type-label"
-      >
-        Change
-      </Button>
-    </motion.div>
   );
 }
 

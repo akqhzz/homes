@@ -1,14 +1,21 @@
 'use client';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { Listing } from '@/lib/types';
 import { formatDaysOnMarket } from '@/lib/utils/format';
 import { formatBedBathSqftLine, formatMlsLine } from '@/lib/utils/listing-display';
+import { useSavedStore } from '@/store/savedStore';
 import { useListingSave } from '@/features/listings/hooks/useListingSave';
+import { useQuickSaveCollection } from '@/features/collections/hooks/useQuickSaveCollection';
+import { describeListingSave, getListingCollectionIds } from '@/features/collections/lib/collectionActions';
 import { cn } from '@/lib/utils/cn';
 import SaveToCollectionSheet from '@/features/collections/components/SaveToCollectionSheet';
+import QuickSavePrompt, { type QuickSavePromptPlacement } from '@/features/listings/components/QuickSavePrompt';
+import { useSavePromptView } from '@/features/listings/components/SavePromptPlacementContext';
 import { ListingAddressRow } from '@/features/listings/components/ListingParts';
 import PriceText from '@/features/listings/components/PriceText';
 import Button from '@/components/ui/Button';
@@ -68,9 +75,16 @@ export default function ListingCard({
   const [imgIndex, setImgIndex] = useState(0);
   const [showSavePicker, setShowSavePicker] = useState(false);
   const [saveAnchorRect, setSaveAnchorRect] = useState<DOMRect | null>(null);
+  const [savePickerPlacement, setSavePickerPlacement] = useState<'above' | 'below'>('below');
+  const [quickSavePrompt, setQuickSavePrompt] = useState<{ collectionName: string; extraCount: number } | null>(null);
   const [heartDelightKey, setHeartDelightKey] = useState(0);
   const router = useRouter();
   const { isSaved, unsave } = useListingSave(listing.id);
+  const saveListing = useSavedStore((state) => state.saveListing);
+  const addToCollection = useSavedStore((state) => state.addToCollection);
+  const { quickSaveCollections, rememberCollections } = useQuickSaveCollection();
+  const savePromptView = useSavePromptView();
+  const [isDesktop, setIsDesktop] = useState(false);
   const imagePointerStart = useRef<{ x: number; y: number; id: number } | null>(null);
   const imagePointerMoved = useRef(false);
   const imageTouchStart = useRef<{ x: number; y: number } | null>(null);
@@ -223,6 +237,36 @@ export default function ListingCard({
     }
   };
 
+  // Rebuild the confirmation from current memberships so it stays accurate as
+  // collections are checked and unchecked. Dismisses when in no collection.
+  const refreshQuickSavePrompt = useCallback((preferredCollectionId?: string) => {
+    setQuickSavePrompt(describeListingSave(useSavedStore.getState().collections, listing.id, preferredCollectionId));
+  }, [listing.id]);
+
+  // Auto-dismiss the confirmation, but keep it visible while the change picker
+  // is open — mirrors card mode.
+  useEffect(() => {
+    if (!quickSavePrompt || showSavePicker) return;
+    const timer = window.setTimeout(() => setQuickSavePrompt(null), 2600);
+    return () => window.clearTimeout(timer);
+  }, [quickSavePrompt, showSavePicker]);
+
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  // Desktop anchors the toast bottom center; mobile keeps it top center, dropping
+  // below the toolbar in map views so it doesn't collide with the top controls.
+  const savePromptPlacement: QuickSavePromptPlacement = isDesktop
+    ? 'bottom'
+    : savePromptView === 'map'
+      ? 'top-below-toolbar'
+      : 'top';
+
   const handleSaveClick = (event?: React.MouseEvent) => {
     event?.stopPropagation();
     if (event && onLikeToggle && resolvedLiked) {
@@ -234,9 +278,22 @@ export default function ListingCard({
     }
     if (resolvedLiked) {
       unsave();
+      setQuickSavePrompt(null);
       return;
     }
-    setShowSavePicker(true);
+    // Quick-save to the same collection(s) the user last saved to, then confirm
+    // with a prompt that lets them change collection — mirrors card mode.
+    if (quickSaveCollections.length === 0) {
+      setSavePickerPlacement('below');
+      setShowSavePicker(true);
+      return;
+    }
+    saveListing(listing.id);
+    quickSaveCollections.forEach((collection) => addToCollection(collection.id, listing.id));
+    const headline = quickSaveCollections[quickSaveCollections.length - 1];
+    quickSaveCollections.forEach((collection) => onSavedToCollection?.(collection.id));
+    setHeartDelightKey((key) => key + 1);
+    refreshQuickSavePrompt(headline.id);
   };
 
   const saveSheet = showSavePicker ? (
@@ -245,12 +302,47 @@ export default function ListingCard({
       onClose={() => setShowSavePicker(false)}
       onSaved={(collectionId) => {
         setHeartDelightKey((key) => key + 1);
+        rememberCollections(getListingCollectionIds(useSavedStore.getState().collections, listing.id));
         onSavedToCollection?.(collectionId);
+        refreshQuickSavePrompt(collectionId);
+      }}
+      onRemoved={() => {
+        const memberIds = getListingCollectionIds(useSavedStore.getState().collections, listing.id);
+        if (memberIds.length > 0) rememberCollections(memberIds);
+        refreshQuickSavePrompt();
       }}
       anchorRect={saveAnchorRect}
+      placement={savePickerPlacement}
       excludedCollectionIds={excludedCollectionIds}
     />
   ) : null;
+
+  const savePrompt =
+    typeof document === 'undefined'
+      ? null
+      : createPortal(
+          <AnimatePresence>
+            {quickSavePrompt && (
+              <QuickSavePrompt
+                collectionName={quickSavePrompt.collectionName}
+                extraCount={quickSavePrompt.extraCount}
+                placement={savePromptPlacement}
+                onChangeCollection={() => {
+                  // Open the picker anchored above the prompt, leaving the prompt
+                  // in place — like card mode.
+                  const promptRect =
+                    typeof document === 'undefined'
+                      ? null
+                      : document.querySelector('[data-quick-save-prompt="true"]')?.getBoundingClientRect() ?? null;
+                  setSaveAnchorRect(promptRect);
+                  setSavePickerPlacement('above');
+                  setShowSavePicker(true);
+                }}
+              />
+            )}
+          </AnimatePresence>,
+          document.body
+        );
 
   const openListingPage = () => {
     onOpenListing?.();
@@ -297,6 +389,7 @@ export default function ListingCard({
           </div>
         </div>
         {saveSheet}
+        {savePrompt}
       </>
     );
   }
@@ -334,6 +427,7 @@ export default function ListingCard({
           </div>
         </div>
         {saveSheet}
+        {savePrompt}
       </>
     );
   }
@@ -494,6 +588,7 @@ export default function ListingCard({
         </button>
       </div>
       {saveSheet}
+        {savePrompt}
     </>
   );
 }

@@ -14,6 +14,7 @@ import CollectionWorkspaceHeader from '@/features/collections/components/Collect
 import CollectionListingsGrid from '@/features/collections/components/CollectionListingsGrid';
 import CollectionListingsCarousel from '@/features/collections/components/CollectionListingsCarousel';
 import BackButton from '@/components/navigation/BackButton';
+import { SavePromptViewProvider } from '@/features/listings/components/SavePromptPlacementContext';
 import ControlPillButton from '@/components/ui/ControlPillButton';
 import OverlayCloseButton from '@/components/navigation/OverlayCloseButton';
 import DesktopSortMenu from '@/components/ui/DesktopSortMenu';
@@ -323,15 +324,17 @@ export default function CollectionPageClient({ collectionId }: CollectionPageCli
                       style={{ touchAction: 'none' }}
                       className="pointer-events-none absolute inset-x-0 bottom-14 z-20"
                     >
-                    <CollectionListingsCarousel
-                      listings={sortedListings}
-                      currentCollectionId={collection.id}
-                      pendingRemovalIds={pendingRemovalIds}
-                      onToggleListingLike={handleCollectionLikeToggle}
-                      onSavedListing={handleCollectionResave}
-                      onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
-                      className="pointer-events-auto pb-2"
-                    />
+                    <SavePromptViewProvider value="map">
+                      <CollectionListingsCarousel
+                        listings={sortedListings}
+                        currentCollectionId={collection.id}
+                        pendingRemovalIds={pendingRemovalIds}
+                        onToggleListingLike={handleCollectionLikeToggle}
+                        onSavedListing={handleCollectionResave}
+                        onTagClick={(listingId) => setTagPanelState({ mode: 'assign', listingId, anchorRect: null })}
+                        className="pointer-events-auto pb-2"
+                      />
+                    </SavePromptViewProvider>
                     </motion.div>
                   )}
                 </AnimatePresence>

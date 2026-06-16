@@ -20,6 +20,8 @@ interface RenameDeletePopoverProps {
   onCancelDelete: () => void;
   onConfirmDelete: () => void;
   zIndex?: number;
+  /** Close the options menu when the cursor leaves it (for hover-opened popovers). */
+  closeOnPointerLeave?: boolean;
 }
 
 // Shared overflow menu system for collection/search cards: same menu, same delete confirmation, same portal layering.
@@ -38,6 +40,7 @@ export default function RenameDeletePopover({
   onCancelDelete,
   onConfirmDelete,
   zIndex = 100,
+  closeOnPointerLeave = false,
 }: RenameDeletePopoverProps) {
   if (typeof document === 'undefined' || !open) return null;
   const viewportWidth = window.innerWidth;
@@ -63,6 +66,9 @@ export default function RenameDeletePopover({
           event.stopPropagation();
         }}
       />
+      {/* Wraps both popovers so swapping menu <-> confirm doesn't count as a
+          pointer-leave; only leaving the whole popover (onto the backdrop) closes it. */}
+      <div onMouseLeave={closeOnPointerLeave ? onClose : undefined}>
       <AnimatePresence>
         {!confirmOpen && (
           <motion.div
@@ -144,6 +150,7 @@ export default function RenameDeletePopover({
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </>,
     document.body
   );

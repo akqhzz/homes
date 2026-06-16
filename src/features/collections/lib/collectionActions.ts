@@ -12,6 +12,28 @@ export const DEFAULT_COLLECTION: Collection = {
   updatedAt: '2026-04-27T00:00:00.000Z',
 };
 
+/** Ids of every collection a listing currently belongs to, in collection order. */
+export function getListingCollectionIds(collections: Collection[], listingId: string) {
+  return collections
+    .filter((collection) => collection.listings.some((item) => item.listingId === listingId))
+    .map((collection) => collection.id);
+}
+
+/**
+ * Summarizes a listing's collection memberships for the quick-save confirmation:
+ * a headline collection name plus how many *other* collections it's in ("+n").
+ * If `preferredId` is still a member, it becomes the headline; otherwise the most
+ * recently added remaining membership is used. Returns null when in no collection.
+ */
+export function describeListingSave(collections: Collection[], listingId: string, preferredId?: string) {
+  const members = collections.filter((collection) =>
+    collection.listings.some((item) => item.listingId === listingId)
+  );
+  if (members.length === 0) return null;
+  const headline = members.find((collection) => collection.id === preferredId) ?? members[members.length - 1];
+  return { collectionName: headline.name, extraCount: members.length - 1 };
+}
+
 export function withDefaultCollection(collections: Collection[]) {
   const defaultCollection = collections.find((collection) => collection.id === DEFAULT_COLLECTION_ID);
   const otherCollections = collections.filter((collection) => collection.id !== DEFAULT_COLLECTION_ID);

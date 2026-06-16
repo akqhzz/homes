@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import PageShell from '@/components/layout/PageShell';
+import BackButton from '@/components/navigation/BackButton';
 import { cn } from '@/lib/utils/cn';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -525,7 +526,10 @@ export default function InsightsPage() {
 
         {/* ── Desktop masonry ── */}
         <div className="hidden lg:block h-full overflow-y-auto px-6 py-6">
-          <h1 className="type-title-lg text-center text-[var(--color-text-primary)] mb-8">Insights</h1>
+          <div className="relative mb-8 flex items-center justify-center">
+            <BackButton iconOnly className="absolute left-0 hidden shrink-0 lg:flex" />
+            <h1 className="type-title-lg text-center text-[var(--color-text-primary)]">Insights</h1>
+          </div>
           <div style={{ columnCount: 3, columnGap: '1.25rem' }} className="3xl:columns-4">
             {CARDS.map(card => (
               <div key={card.id} className="mb-5">
