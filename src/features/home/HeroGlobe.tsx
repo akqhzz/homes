@@ -76,10 +76,9 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
-        // Default is the most zoomed-out size; zoom-in can grow the globe well
-        // past the section (it bleeds off the edges rather than into a box).
+        // Default is the most zoomed-out size; allow only a small zoom-in.
         controls.maxDistance = 250;
-        controls.minDistance = 130;
+        controls.minDistance = 218;
 
         globe.pointOfView({ lat: 54, lng: -96, altitude: 1.5 }, 0);
 

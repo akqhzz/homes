@@ -1,8 +1,8 @@
 'use client';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Map as MapIcon, Search } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Map as MapIcon, Search } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
@@ -55,6 +55,16 @@ export default function HomePageClient() {
     return (sold.length >= 5 ? sold : MOCK_LISTINGS.slice(20, 30)).slice(0, 8);
   })();
 
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 1024px)');
+    const update = () => setIsDesktop(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+  const cardWidth = isDesktop ? 332 : 288;
+
   const openSearch = () => setActivePanel('search');
   const goToMap = () => router.push('/');
 
@@ -67,25 +77,28 @@ export default function HomePageClient() {
     <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
-        <section className="relative overflow-hidden bg-[radial-gradient(60%_55%_at_50%_42%,#e1ebf5_0%,#eef4f9_46%,#ffffff_80%)] min-h-[460px] sm:min-h-[560px] lg:min-h-[660px]">
+        <section className="relative overflow-hidden bg-[radial-gradient(96%_62%_at_50%_38%,#c7dcf1_0%,#dceafa_40%,#eef5fb_64%,#ffffff_84%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(58%_60%_at_50%_42%,#cfe1f3_0%,#e4eff9_48%,#ffffff_82%)] lg:min-h-[640px]">
           {/* Globe fills the hero; the blue glow lives in the background behind it */}
-          <div className="absolute inset-0 -translate-y-[5%]">
+          <div className="absolute inset-0 translate-y-[4%]">
             <HeroGlobe />
           </div>
 
-          {/* Search bar crossing the globe */}
-          <div className="absolute inset-x-0 top-[55%] z-10 -translate-y-1/2 px-4 sm:px-5">
+          {/* Soft white fade so the globe's bottom edge isn't a hard cut */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-32 bg-gradient-to-t from-white via-white/80 to-transparent lg:h-44" />
+
+          {/* Search bar crossing the lower half of the globe */}
+          <div className="absolute inset-x-0 top-[64%] z-10 -translate-y-1/2 px-4 sm:px-5">
             <div className="mx-auto w-full max-w-[760px]">
-              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-3 sm:pl-8">
+              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-2.5 sm:pl-8">
                 <Search size={22} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
                 <button
                   onClick={openSearch}
-                  className="min-w-0 flex-1 truncate py-4 text-left text-[1rem] text-[var(--color-text-tertiary)] sm:py-5 sm:text-[1.15rem]"
+                  className="min-w-0 flex-1 truncate py-4 text-left text-[1rem] text-[var(--color-text-tertiary)] sm:py-4 sm:text-[1.1rem]"
                 >
                   Enter a city, neighbourhood, address, MLS® number or school
                 </button>
-                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-12 w-12 shrink-0 sm:h-16 sm:w-16">
-                  <Search size={22} />
+                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-12 w-12 shrink-0 sm:h-[3.1rem] sm:w-[3.1rem]">
+                  <Search size={20} />
                 </Button>
               </div>
             </div>
@@ -93,19 +106,18 @@ export default function HomePageClient() {
         </section>
 
         {/* ── Listings carousel ──────────────────────────────── */}
-        <section className="w-full px-5 pt-12 lg:px-12 lg:pt-16">
+        <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <h2 className="type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem]">5,400+ listings in</h2>
+              <h2 className="type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]">5,400+ listings in</h2>
               <button
-                onClick={openSearch}
-                className="flex items-center gap-2 rounded-full bg-[var(--color-surface)] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-[var(--color-surface-hover)]"
+                onClick={goToMap}
+                className="flex items-center gap-2 rounded-full bg-[var(--color-surface)] py-1.5 pl-1.5 pr-4 transition-colors hover:bg-[var(--color-surface-hover)]"
               >
-                <span className="relative h-7 w-7 overflow-hidden rounded-full">
-                  <Image src={TORONTO_AVATAR} alt="" fill sizes="28px" className="object-cover" />
+                <span className="relative h-8 w-8 overflow-hidden rounded-full">
+                  <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
                 </span>
-                <span className="type-heading-sm text-[var(--color-text-primary)]">Toronto, ON</span>
-                <ChevronDown size={16} className="text-[var(--color-text-secondary)]" />
+                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
               </button>
             </div>
             <div className="flex items-center gap-2">
@@ -125,8 +137,8 @@ export default function HomePageClient() {
             className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {featured.map((listing) => (
-              <div key={listing.id} className="w-[288px] shrink-0 snap-start">
-                <ListingCard listing={listing} variant="carousel" />
+              <div key={listing.id} className="shrink-0 snap-start">
+                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} desktopTall={isDesktop} />
               </div>
             ))}
           </div>
@@ -142,7 +154,7 @@ export default function HomePageClient() {
         {/* ── Market Insights ────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem]">Market Insights</h2>
+            <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">Market Insights</h2>
             <Button variant="surface" size="md" className="hidden gap-1.5 type-label sm:flex">
               Read more
               <ArrowRight size={16} />
@@ -194,7 +206,7 @@ export default function HomePageClient() {
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem]">Sold Prices</h2>
+              <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">Sold Prices</h2>
               <p className="mt-1.5 type-body text-[var(--color-text-secondary)]">Search sold data from 2003 – 2026.</p>
             </div>
             <div className="flex items-center gap-2">
@@ -213,8 +225,8 @@ export default function HomePageClient() {
             className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {soldListings.map((listing) => (
-              <div key={listing.id} className="w-[288px] shrink-0 snap-start">
-                <ListingCard listing={listing} variant="carousel" />
+              <div key={listing.id} className="shrink-0 snap-start">
+                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} desktopTall={isDesktop} />
               </div>
             ))}
           </div>
