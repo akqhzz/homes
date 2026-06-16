@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Accessibility, Briefcase, ChevronDown, ChevronUp, DollarSign, Home, KeyRound, LogOut, Mail, Map, Newspaper } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import ActionRow from '@/components/ui/ActionRow';
@@ -49,15 +50,21 @@ const MENU_ITEMS: MenuItem[] = [
 
 export default function MenuPage() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const router = useRouter();
 
   return (
     <PageShell>
       <div className="h-full flex flex-col overflow-hidden bg-white">
         <div className="flex-shrink-0 bg-white px-4 pt-4 pb-0">
           <div className="mb-1 flex items-center justify-center">
-            <div className="relative h-[22px] w-32">
+            <button
+              type="button"
+              onClick={() => router.push('/home')}
+              className="relative h-[22px] w-32 transition-opacity hover:opacity-75"
+              aria-label="Zoocasa home"
+            >
               <Image src="/icons/zoocasa-black.svg" alt="Zoocasa" fill sizes="128px" className="object-contain" priority />
-            </div>
+            </button>
           </div>
         </div>
 

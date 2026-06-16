@@ -93,7 +93,7 @@ export default function DesktopSidebar() {
     <aside className="relative z-[80] hidden h-full w-[84px] shrink-0 border-r border-[#F1F3F5] bg-white lg:flex lg:flex-col lg:items-center lg:py-5">
       <button
         type="button"
-        onClick={() => router.push('/')}
+        onClick={() => router.push('/home')}
         className="relative -mt-1 flex h-10 w-10 items-center justify-center rounded-full transition-opacity hover:opacity-75"
         aria-label="Zoocasa home"
       >
