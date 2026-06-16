@@ -52,9 +52,7 @@ export default function HeroGlobe() {
         globe = new Globe(el)
           .backgroundColor('rgba(0,0,0,0)')
           .showGlobe(true)
-          .showAtmosphere(true)
-          .atmosphereColor('#cfe0ee')
-          .atmosphereAltitude(0.16)
+          .showAtmosphere(false)
           .htmlElementsData(PINS)
           .htmlLat((d) => (d as Pin).lat)
           .htmlLng((d) => (d as Pin).lng)
@@ -78,17 +76,16 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
-        // Default is the most zoomed-out (smallest) size; zoom-in stays well
-        // within the canvas so the globe is never cropped into a square.
-        controls.maxDistance = 290;
-        controls.minDistance = 255;
+        // Default is the most zoomed-out size; zoom-in can grow the globe well
+        // past the section (it bleeds off the edges rather than into a box).
+        controls.maxDistance = 250;
+        controls.minDistance = 130;
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.9 }, 0);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.5 }, 0);
 
         const resize = () => {
           if (!globe) return;
-          const size = el.clientWidth;
-          globe.width(size).height(size);
+          globe.width(el.clientWidth).height(el.clientHeight);
         };
         resize();
         resizeObserver = new ResizeObserver(resize);
@@ -125,7 +122,7 @@ export default function HeroGlobe() {
   return (
     <div
       ref={containerRef}
-      className="mx-auto aspect-square w-full max-w-[720px] cursor-grab touch-none active:cursor-grabbing"
+      className="h-full w-full cursor-grab touch-none active:cursor-grabbing"
     />
   );
 }

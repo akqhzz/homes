@@ -67,12 +67,15 @@ export default function HomePageClient() {
     <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
-        <section className="relative overflow-hidden bg-[radial-gradient(72%_58%_at_50%_40%,#e1ebf5_0%,#eef4f9_42%,#ffffff_74%)]">
-          <div className="relative flex w-full flex-col items-center px-4 pb-16 pt-6 sm:px-5 lg:px-12 lg:pb-20 lg:pt-10">
+        <section className="relative overflow-hidden bg-[radial-gradient(60%_55%_at_50%_42%,#e1ebf5_0%,#eef4f9_46%,#ffffff_80%)] min-h-[460px] sm:min-h-[560px] lg:min-h-[660px]">
+          {/* Globe fills the hero; the blue glow lives in the background behind it */}
+          <div className="absolute inset-0 -translate-y-[5%]">
             <HeroGlobe />
+          </div>
 
-            {/* Search bar overlapping the globe */}
-            <div className="relative z-10 -mt-20 w-full max-w-[760px] sm:-mt-32 lg:-mt-40">
+          {/* Search bar crossing the globe */}
+          <div className="absolute inset-x-0 top-[55%] z-10 -translate-y-1/2 px-4 sm:px-5">
+            <div className="mx-auto w-full max-w-[760px]">
               <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-3 sm:pl-8">
                 <Search size={22} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
                 <button
