@@ -61,14 +61,11 @@ export default function HeroGlobe() {
           .htmlAltitude(0.02)
           .htmlElement((d) => createPinElement(d as Pin));
 
-        // Flat, even lighting so the globe reads as a bright white sphere with
-        // no dark/shaded hemisphere.
+        // Pure-white, unlit sphere (no shaded hemisphere) + soft ambient so the
+        // light-grey continents stay readable.
         const THREE = await import('three');
-        globe.lights([new THREE.AmbientLight(0xffffff, 1.15)]);
-
-        const material = globe.globeMaterial() as unknown as { color: { set: (c: string) => void }; shininess?: number };
-        material.color.set('#ffffff');
-        if ('shininess' in material) material.shininess = 0;
+        globe.globeMaterial(new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        globe.lights([new THREE.AmbientLight(0xffffff, 1.1)]);
 
         const controls = globe.controls() as unknown as {
           autoRotate: boolean;
@@ -81,12 +78,12 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
-        // Default is the most zoomed-out (smallest) size; allow only a modest
-        // zoom-in that still fits inside the canvas (no box-cropping).
-        controls.maxDistance = 270;
-        controls.minDistance = 215;
+        // Default is the most zoomed-out (smallest) size; zoom-in stays well
+        // within the canvas so the globe is never cropped into a square.
+        controls.maxDistance = 290;
+        controls.minDistance = 255;
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.7 }, 0);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.9 }, 0);
 
         const resize = () => {
           if (!globe) return;
@@ -103,9 +100,9 @@ export default function HeroGlobe() {
           if (!destroyed && globe) {
             globe
               .polygonsData(geo.features)
-              .polygonCapColor(() => '#dfe7f0')
-              .polygonSideColor(() => 'rgba(170,188,210,0.12)')
-              .polygonStrokeColor(() => '#c6d0dd')
+              .polygonCapColor(() => '#e8eef4')
+              .polygonSideColor(() => 'rgba(180,198,218,0.08)')
+              .polygonStrokeColor(() => '#cfd8e3')
               .polygonAltitude(0.008);
           }
         } catch {
@@ -128,7 +125,7 @@ export default function HeroGlobe() {
   return (
     <div
       ref={containerRef}
-      className="mx-auto aspect-square w-full max-w-[600px] cursor-grab touch-none active:cursor-grabbing"
+      className="mx-auto aspect-square w-full max-w-[720px] cursor-grab touch-none active:cursor-grabbing"
     />
   );
 }

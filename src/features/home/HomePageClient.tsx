@@ -67,12 +67,12 @@ export default function HomePageClient() {
     <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
-        <section className="relative overflow-hidden bg-[linear-gradient(180deg,#eaf1f8_0%,#f4f8fb_46%,#ffffff_100%)]">
+        <section className="relative overflow-hidden bg-[radial-gradient(72%_58%_at_50%_40%,#e1ebf5_0%,#eef4f9_42%,#ffffff_74%)]">
           <div className="relative flex w-full flex-col items-center px-4 pb-16 pt-6 sm:px-5 lg:px-12 lg:pb-20 lg:pt-10">
             <HeroGlobe />
 
             {/* Search bar overlapping the globe */}
-            <div className="relative z-10 -mt-14 w-full max-w-[760px] sm:-mt-24 lg:-mt-28">
+            <div className="relative z-10 -mt-20 w-full max-w-[760px] sm:-mt-32 lg:-mt-40">
               <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-3 sm:pl-8">
                 <Search size={22} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
                 <button
