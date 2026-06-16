@@ -110,7 +110,7 @@ export default function HomePageClient() {
                 <CarouselArrow direction="left" onClick={() => scrollRow(listingsRef, -1)} />
                 <CarouselArrow direction="right" onClick={() => scrollRow(listingsRef, 1)} />
               </div>
-              <Button variant="surface" size="md" onClick={goToMap} className="gap-1.5 type-label">
+              <Button variant="surface" size="md" onClick={goToMap} className="hidden gap-1.5 type-label sm:flex">
                 <MapIcon size={16} />
                 Map View
               </Button>
@@ -126,6 +126,13 @@ export default function HomePageClient() {
                 <ListingCard listing={listing} variant="carousel" />
               </div>
             ))}
+          </div>
+
+          <div className="mt-2 flex justify-center sm:hidden">
+            <Button variant="surface" size="md" onClick={goToMap} className="gap-1.5 type-label">
+              <MapIcon size={16} />
+              Map View
+            </Button>
           </div>
         </section>
 
@@ -192,7 +199,7 @@ export default function HomePageClient() {
                 <CarouselArrow direction="left" onClick={() => scrollRow(soldRef, -1)} />
                 <CarouselArrow direction="right" onClick={() => scrollRow(soldRef, 1)} />
               </div>
-              <Button variant="surface" size="md" onClick={goToMap} className="type-label">
+              <Button variant="surface" size="md" onClick={goToMap} className="hidden type-label sm:flex">
                 View sold properties
               </Button>
             </div>
@@ -208,11 +215,17 @@ export default function HomePageClient() {
               </div>
             ))}
           </div>
+
+          <div className="mt-2 flex justify-center sm:hidden">
+            <Button variant="surface" size="md" onClick={goToMap} className="type-label">
+              View sold properties
+            </Button>
+          </div>
         </section>
 
         {/* ── Footer (matches the map listing view) ──────────── */}
         <div className="mt-14 px-5 pb-28 lg:px-12 lg:pb-6">
-          <ListingsFooter />
+          <ListingsFooter fullWidth />
         </div>
       </div>
     </PageShell>

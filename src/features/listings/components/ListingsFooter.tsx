@@ -17,7 +17,7 @@ export function PlaceholderLink({ children, className }: { children: ReactNode; 
   );
 }
 
-export default function ListingsFooter() {
+export default function ListingsFooter({ fullWidth = false }: { fullWidth?: boolean }) {
   const companyLinks = ['Terms of Use', 'Privacy Policy', 'Careers', 'About Us', 'Accessibility'];
   const exploreLinks = ['Sitemap', 'US Real Estate Listings', 'Canada Real Estate Listings'];
   const legalCopy = [
@@ -28,7 +28,10 @@ export default function ListingsFooter() {
   ];
 
   return (
-    <footer className="mx-auto mb-6 mt-4 w-full max-w-[1360px] rounded-[var(--radius-xl)] bg-[var(--color-surface)] px-4 pb-10 pt-8 text-[var(--color-text-primary)] sm:px-6">
+    <footer className={cn(
+      'mx-auto mb-6 mt-4 w-full rounded-[var(--radius-xl)] bg-[var(--color-surface)] px-4 pb-10 pt-8 text-[var(--color-text-primary)] sm:px-6',
+      fullWidth ? 'max-w-none' : 'max-w-[1360px]'
+    )}>
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
         <section>
           <h2 className="type-heading-sm text-[var(--color-text-primary)]">Company</h2>

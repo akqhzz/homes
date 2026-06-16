@@ -17,8 +17,7 @@ const PINS: Pin[] = [
   { label: 'NL', lat: 54, lng: -59, image: 'https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?w=160&q=80' },
 ];
 
-const COUNTRIES_GEOJSON =
-  'https://vasturiano.github.io/globe.gl/example/datasets/ne_110m_admin_0_countries.geojson';
+const COUNTRIES_GEOJSON = '/data/countries.geojson';
 
 function createPinElement(pin: Pin): HTMLElement {
   const el = document.createElement('div');
@@ -98,10 +97,10 @@ export default function HeroGlobe() {
           if (!destroyed && globe) {
             globe
               .polygonsData(geo.features)
-              .polygonCapColor(() => '#dde6f0')
-              .polygonSideColor(() => 'rgba(150,170,195,0.12)')
-              .polygonStrokeColor(() => '#c2cedd')
-              .polygonAltitude(0.008);
+              .polygonCapColor(() => '#cbd6e3')
+              .polygonSideColor(() => 'rgba(140,160,185,0.25)')
+              .polygonStrokeColor(() => '#a7b4c5')
+              .polygonAltitude(0.01);
           }
         } catch {
           // Globe still renders (white sphere + pins) without continents.
