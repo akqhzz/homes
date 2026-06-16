@@ -2,7 +2,7 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, LogIn, Map as MapIcon, Search } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Map as MapIcon, Search } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
@@ -13,8 +13,6 @@ import { MOCK_LISTINGS } from '@/lib/mock-data';
 import { cn } from '@/lib/utils/cn';
 
 const TORONTO_AVATAR = 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=80&q=80';
-
-const NAV_LINKS = ['Buy', 'Rent', 'Sell'] as const;
 
 const INSIGHTS = [
   {
@@ -67,44 +65,24 @@ export default function HomePageClient() {
 
   return (
     <PageShell desktopWide showDesktopHeader={false}>
-      <div className="h-full overflow-y-auto bg-white">
+      <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
         <section className="relative overflow-hidden bg-[linear-gradient(180deg,#eaf1f8_0%,#f4f8fb_46%,#ffffff_100%)]">
-          {/* Top nav row */}
-          <div className="flex w-full items-center justify-end gap-1 px-5 pt-5 lg:px-12">
-            <nav className="hidden items-center gap-1 sm:flex">
-              {NAV_LINKS.map((link) => (
-                <button
-                  key={link}
-                  onClick={goToMap}
-                  className="flex items-center gap-1 rounded-full px-3.5 py-2 type-label text-[var(--color-text-primary)] transition-colors hover:bg-white/70"
-                >
-                  {link}
-                  <ChevronDown size={15} className="text-[var(--color-text-tertiary)]" />
-                </button>
-              ))}
-            </nav>
-            <button className="ml-1 flex items-center gap-1.5 rounded-full px-3.5 py-2 type-label text-[var(--color-text-primary)] transition-colors hover:bg-white/70">
-              <LogIn size={16} />
-              Login
-            </button>
-          </div>
-
-          <div className="relative flex w-full flex-col items-center px-5 pb-20 pt-2 lg:px-12">
+          <div className="relative flex w-full flex-col items-center px-4 pb-16 pt-6 sm:px-5 lg:px-12 lg:pb-20 lg:pt-10">
             <HeroGlobe />
 
             {/* Search bar overlapping the globe */}
-            <div className="relative z-10 -mt-28 w-full max-w-[760px] lg:-mt-32">
-              <div className="flex items-center gap-2 rounded-full bg-white p-2.5 pl-7 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60">
+            <div className="relative z-10 -mt-14 w-full max-w-[760px] sm:-mt-24 lg:-mt-28">
+              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-2.5 sm:pl-7">
                 <Search size={20} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
                 <button
                   onClick={openSearch}
-                  className="min-w-0 flex-1 truncate py-4 text-left type-body-lg text-[var(--color-text-tertiary)]"
+                  className="min-w-0 flex-1 truncate py-3 text-left text-[0.95rem] text-[var(--color-text-tertiary)] sm:py-4 sm:text-[1.05rem]"
                 >
                   Enter a city, neighbourhood, address, MLS® number or school
                 </button>
-                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-14 w-14 shrink-0">
-                  <Search size={21} />
+                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-11 w-11 shrink-0 sm:h-14 sm:w-14">
+                  <Search size={20} />
                 </Button>
               </div>
             </div>
@@ -115,7 +93,7 @@ export default function HomePageClient() {
         <section className="w-full px-5 pt-12 lg:px-12 lg:pt-16">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <h2 className="type-title text-[var(--color-text-primary)]">5,400+ listings in</h2>
+              <h2 className="type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem]">5,400+ listings in</h2>
               <button
                 onClick={openSearch}
                 className="flex items-center gap-2 rounded-full bg-[var(--color-surface)] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-[var(--color-surface-hover)]"
@@ -154,8 +132,8 @@ export default function HomePageClient() {
         {/* ── Market Insights ────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="type-title-lg text-[var(--color-text-primary)]">Market Insights</h2>
-            <Button variant="surface" size="md" className="gap-1.5 type-label">
+            <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem]">Market Insights</h2>
+            <Button variant="surface" size="md" className="hidden gap-1.5 type-label sm:flex">
               Read more
               <ArrowRight size={16} />
             </Button>
@@ -206,7 +184,7 @@ export default function HomePageClient() {
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="type-title-lg text-[var(--color-text-primary)]">Sold Prices</h2>
+              <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem]">Sold Prices</h2>
               <p className="mt-1.5 type-body text-[var(--color-text-secondary)]">Search sold data from 2003 – 2026.</p>
             </div>
             <div className="flex items-center gap-2">
