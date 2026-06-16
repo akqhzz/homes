@@ -6,6 +6,7 @@ import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, LogIn, Map as MapIc
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
+import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
@@ -44,25 +45,6 @@ const INSIGHTS = [
   },
 ];
 
-const FOOTER_COLUMNS = [
-  {
-    title: 'Popular Cities',
-    links: ['Toronto Real Estate', 'Vancouver Real Estate', 'Calgary Real Estate', 'Edmonton Real Estate', 'Ottawa Real Estate', 'Mississauga Real Estate', 'Winnipeg Real Estate', 'Hamilton Real Estate', 'Brampton Real Estate', 'London Real Estate'],
-  },
-  {
-    title: 'Condos for Sale in Canada',
-    links: ['Toronto Condos for Sale', 'Vancouver Condos for Sale', 'Calgary Condos for Sale', 'Ottawa Condos for Sale', 'Mississauga Condos for Sale', 'Brampton Condos for Sale', 'Hamilton Condos for Sale', 'London Condos for Sale', 'Halifax Condos for Sale', 'Victoria Condos for Sale'],
-  },
-  {
-    title: 'Popular Ontario Cities',
-    links: ['Toronto Homes for Sale', 'Ottawa Homes for Sale', 'Mississauga Homes for Sale', 'Brampton Homes for Sale', 'Hamilton Homes for Sale', 'London Homes for Sale', 'Vaughan Homes for Sale', 'Markham Homes for Sale', 'Kitchener Homes for Sale', 'Oakville Homes for Sale'],
-  },
-  {
-    title: 'Popular Searches',
-    links: ['MLS® Listings in Canada', 'Houses for Sale in Canada', 'First-Time Home Buyer', 'Sold Prices in Canada', 'Real Estate Market Trends', 'Calgary Houses for Sale', 'Toronto Rentals', 'Pre-Construction Homes', 'New Houses for Sale', 'Luxury Homes in Toronto'],
-  },
-];
-
 export default function HomePageClient() {
   const router = useRouter();
   const setActivePanel = useUIStore((s) => s.setActivePanel);
@@ -89,7 +71,7 @@ export default function HomePageClient() {
         {/* ── Hero with interactive globe ────────────────────── */}
         <section className="relative overflow-hidden bg-[linear-gradient(180deg,#eaf1f8_0%,#f4f8fb_46%,#ffffff_100%)]">
           {/* Top nav row */}
-          <div className="mx-auto flex max-w-[1180px] items-center justify-end gap-1 px-5 pt-5 lg:px-8">
+          <div className="flex w-full items-center justify-end gap-1 px-5 pt-5 lg:px-12">
             <nav className="hidden items-center gap-1 sm:flex">
               {NAV_LINKS.map((link) => (
                 <button
@@ -108,21 +90,21 @@ export default function HomePageClient() {
             </button>
           </div>
 
-          <div className="relative mx-auto flex max-w-[1180px] flex-col items-center px-5 pb-24 pt-2 lg:px-8">
+          <div className="relative flex w-full flex-col items-center px-5 pb-20 pt-2 lg:px-12">
             <HeroGlobe />
 
             {/* Search bar overlapping the globe */}
-            <div className="relative z-10 -mt-20 w-full max-w-[720px] lg:-mt-24">
-              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-6 shadow-[0_20px_50px_-12px_rgba(43,82,107,0.4),0_4px_14px_rgba(15,23,41,0.08)]">
+            <div className="relative z-10 -mt-28 w-full max-w-[760px] lg:-mt-32">
+              <div className="flex items-center gap-2 rounded-full bg-white p-2.5 pl-7 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60">
                 <Search size={20} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
                 <button
                   onClick={openSearch}
-                  className="min-w-0 flex-1 truncate py-2.5 text-left type-body-lg text-[var(--color-text-tertiary)]"
+                  className="min-w-0 flex-1 truncate py-4 text-left type-body-lg text-[var(--color-text-tertiary)]"
                 >
                   Enter a city, neighbourhood, address, MLS® number or school
                 </button>
-                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="shrink-0">
-                  <Search size={20} />
+                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-14 w-14 shrink-0">
+                  <Search size={21} />
                 </Button>
               </div>
             </div>
@@ -130,7 +112,7 @@ export default function HomePageClient() {
         </section>
 
         {/* ── Listings carousel ──────────────────────────────── */}
-        <section className="mx-auto max-w-[1180px] px-5 pt-12 lg:px-8 lg:pt-16">
+        <section className="w-full px-5 pt-12 lg:px-12 lg:pt-16">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <h2 className="type-title text-[var(--color-text-primary)]">5,400+ listings in</h2>
@@ -170,7 +152,7 @@ export default function HomePageClient() {
         </section>
 
         {/* ── Market Insights ────────────────────────────────── */}
-        <section className="mx-auto max-w-[1180px] px-5 pt-14 lg:px-8 lg:pt-20">
+        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <div className="flex items-center justify-between gap-4">
             <h2 className="type-title-lg text-[var(--color-text-primary)]">Market Insights</h2>
             <Button variant="surface" size="md" className="gap-1.5 type-label">
@@ -221,7 +203,7 @@ export default function HomePageClient() {
         </section>
 
         {/* ── Sold Prices ────────────────────────────────────── */}
-        <section className="mx-auto max-w-[1180px] px-5 pt-14 lg:px-8 lg:pt-20">
+        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="type-title-lg text-[var(--color-text-primary)]">Sold Prices</h2>
@@ -250,36 +232,10 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* ── Footer link directory ──────────────────────────── */}
-        <footer className="mt-16 border-t border-[var(--color-border)] bg-[var(--color-surface)]">
-          <div className="mx-auto max-w-[1180px] px-5 pb-28 pt-12 lg:px-8 lg:pb-14">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-10 lg:grid-cols-4">
-              {FOOTER_COLUMNS.map((column) => (
-                <div key={column.title}>
-                  <p className="type-label text-[var(--color-text-primary)]">{column.title}</p>
-                  <ul className="mt-4 flex flex-col gap-3">
-                    {column.links.map((link) => (
-                      <li key={link}>
-                        <button
-                          onClick={goToMap}
-                          className="text-left type-body text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-brand-700)]"
-                        >
-                          {link}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--color-border)] pt-7 sm:flex-row">
-              <span className="relative h-5 w-28">
-                <Image src="/icons/zoocasa-black.svg" alt="Zoocasa" fill sizes="112px" className="object-contain object-left" />
-              </span>
-              <p className="type-caption text-[var(--color-text-tertiary)]">© 2026 Homes. Demo project — not affiliated with Zoocasa.</p>
-            </div>
-          </div>
-        </footer>
+        {/* ── Footer (matches the map listing view) ──────────── */}
+        <div className="mt-14 px-5 pb-28 lg:px-12 lg:pb-6">
+          <ListingsFooter />
+        </div>
       </div>
     </PageShell>
   );

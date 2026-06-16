@@ -201,16 +201,3 @@ main {
     margin-inline: auto;
   }
 }
-
-/* ── Hero globe (homepage) ─────────────────────────────────────── */
-@keyframes globe-spin {
-  from { transform: rotateY(0deg); }
-  to   { transform: rotateY(360deg); }
-}
-@keyframes globe-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-7px); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .globe-spin, .globe-float { animation: none !important; }
-}
