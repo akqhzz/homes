@@ -61,12 +61,16 @@ export default function HeroGlobe() {
           .htmlAltitude(0.02)
           .htmlElement((d) => createPinElement(d as Pin));
 
-        // White sphere with light-grey filled continents.
-        const material = globe.globeMaterial() as { color: { set: (c: string) => void }; shininess?: number };
-        material.color.set('#ffffff');
-        if ('shininess' in material) material.shininess = 2;
+        // Flat, even lighting so the globe reads as a bright white sphere with
+        // no dark/shaded hemisphere.
+        const THREE = await import('three');
+        globe.lights([new THREE.AmbientLight(0xffffff, 1.15)]);
 
-        const controls = globe.controls() as {
+        const material = globe.globeMaterial() as unknown as { color: { set: (c: string) => void }; shininess?: number };
+        material.color.set('#ffffff');
+        if ('shininess' in material) material.shininess = 0;
+
+        const controls = globe.controls() as unknown as {
           autoRotate: boolean;
           autoRotateSpeed: number;
           enableZoom: boolean;
@@ -77,10 +81,12 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
-        controls.minDistance = 160;
-        controls.maxDistance = 520;
+        // Default is the most zoomed-out (smallest) size; allow only a modest
+        // zoom-in that still fits inside the canvas (no box-cropping).
+        controls.maxDistance = 270;
+        controls.minDistance = 215;
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.55 }, 0);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.7 }, 0);
 
         const resize = () => {
           if (!globe) return;
@@ -97,10 +103,10 @@ export default function HeroGlobe() {
           if (!destroyed && globe) {
             globe
               .polygonsData(geo.features)
-              .polygonCapColor(() => '#cbd6e3')
-              .polygonSideColor(() => 'rgba(140,160,185,0.25)')
-              .polygonStrokeColor(() => '#a7b4c5')
-              .polygonAltitude(0.01);
+              .polygonCapColor(() => '#dfe7f0')
+              .polygonSideColor(() => 'rgba(170,188,210,0.12)')
+              .polygonStrokeColor(() => '#c6d0dd')
+              .polygonAltitude(0.008);
           }
         } catch {
           // Globe still renders (white sphere + pins) without continents.

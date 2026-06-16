@@ -73,16 +73,16 @@ export default function HomePageClient() {
 
             {/* Search bar overlapping the globe */}
             <div className="relative z-10 -mt-14 w-full max-w-[760px] sm:-mt-24 lg:-mt-28">
-              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-2.5 sm:pl-7">
-                <Search size={20} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
+              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-3 sm:pl-8">
+                <Search size={22} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
                 <button
                   onClick={openSearch}
-                  className="min-w-0 flex-1 truncate py-3 text-left text-[0.95rem] text-[var(--color-text-tertiary)] sm:py-4 sm:text-[1.05rem]"
+                  className="min-w-0 flex-1 truncate py-4 text-left text-[1rem] text-[var(--color-text-tertiary)] sm:py-5 sm:text-[1.15rem]"
                 >
                   Enter a city, neighbourhood, address, MLS® number or school
                 </button>
-                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-11 w-11 shrink-0 sm:h-14 sm:w-14">
-                  <Search size={20} />
+                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-12 w-12 shrink-0 sm:h-16 sm:w-16">
+                  <Search size={22} />
                 </Button>
               </div>
             </div>

@@ -32,6 +32,7 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
       'mx-auto mb-6 mt-4 w-full rounded-[var(--radius-xl)] bg-[var(--color-surface)] px-4 pb-10 pt-8 text-[var(--color-text-primary)] sm:px-6',
       fullWidth ? 'max-w-none' : 'max-w-[1360px]'
     )}>
+      <div className={cn('mx-auto w-full', fullWidth && 'max-w-[1180px]')}>
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
         <section>
           <h2 className="type-heading-sm text-[var(--color-text-primary)]">Company</h2>
@@ -92,6 +93,7 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
             <p key={copy}>{copy}</p>
           ))}
         </div>
+      </div>
       </div>
     </footer>
   );
