@@ -323,7 +323,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           } else {
             el2.style.zIndex = '2';
             el2.dataset.z = '2';
-            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="background:#fff;border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => {
               if (onCityClickRef.current) onCityClickRef.current(marker.city.name);
               else routerRef.current.push('/');

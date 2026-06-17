@@ -1,19 +1,34 @@
 'use client';
-import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+
+// City name that slides in whenever it changes (used in section titles).
+export function AnimatedCity({ city }: { city: string }) {
+  return (
+    <motion.span
+      key={city}
+      initial={{ opacity: 0, x: 18 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="inline-block"
+    >
+      {city}
+    </motion.span>
+  );
+}
 
 export function SectionHeader({
   title,
+  city,
   onArrow,
   onPrev,
   onNext,
-  cityImage,
 }: {
   title: string;
+  city?: string;
   onArrow: () => void;
   onPrev?: () => void;
   onNext?: () => void;
-  cityImage?: string;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -27,15 +42,13 @@ export function SectionHeader({
             onArrow();
           }
         }}
-        aria-label={`${title} — see more`}
+        aria-label={`${title}${city ? ` ${city}` : ''} — see more`}
         className="group flex flex-1 cursor-pointer items-center justify-between gap-3 sm:flex-none sm:justify-start"
       >
-        {cityImage && (
-          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-[var(--color-border)] sm:h-9 sm:w-9">
-            <Image src={cityImage} alt="" fill sizes="36px" className="object-cover" />
-          </span>
-        )}
-        <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">{title}</h2>
+        <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
+          {title}
+          {city && <> <AnimatedCity city={city} /></>}
+        </h2>
         <span
           aria-hidden
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"

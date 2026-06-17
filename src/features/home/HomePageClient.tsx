@@ -9,9 +9,13 @@ import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
-import { SectionHeader } from '@/features/home/SectionHeader';
-import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY, getCityData, cityImageUrl } from '@/features/home/MarketSections';
+import { SectionHeader, AnimatedCity } from '@/features/home/SectionHeader';
+import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY, getCityData } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
+import { useSearchStore } from '@/store/searchStore';
+import { useLocationSearch } from '@/features/search/hooks/useLocationSearch';
+import SearchLocationResultItem from '@/features/search/components/SearchLocationResultItem';
+import type { Location } from '@/lib/types';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 
 const INSIGHTS = [
@@ -83,6 +87,51 @@ export default function HomePageClient() {
   const openSearch = () => setActivePanel('search');
   const goToMap = () => router.push('/');
 
+  // Desktop: search inline (dropdown below the bar) instead of the overlay.
+  const addLocation = useSearchStore((s) => s.addLocation);
+  const selectedLocations = useSearchStore((s) => s.selectedLocations);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  const searchDropRef = useRef<HTMLDivElement>(null);
+  const [searchRect, setSearchRect] = useState<{ left: number; top: number; width: number } | null>(null);
+  const { results: searchResults, isLoading: searchLoading } = useLocationSearch(
+    searchQuery,
+    selectedLocations,
+    isDesktop && searchOpen
+  );
+
+  const positionDropdown = () => {
+    const r = searchBoxRef.current?.getBoundingClientRect();
+    if (r) setSearchRect({ left: r.left, top: r.bottom + 8, width: r.width });
+  };
+  const openDesktopSearch = () => {
+    positionDropdown();
+    setSearchOpen(true);
+  };
+  const selectSearchResult = (loc: Location) => {
+    addLocation(loc);
+    setSearchQuery('');
+    setSearchOpen(false);
+    router.push('/');
+  };
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (searchBoxRef.current?.contains(t) || searchDropRef.current?.contains(t)) return;
+      setSearchOpen(false);
+    };
+    const reposition = () => positionDropdown();
+    window.addEventListener('pointerdown', onDown);
+    window.addEventListener('resize', reposition);
+    return () => {
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('resize', reposition);
+    };
+  }, [searchOpen]);
+
   const newestRef = useRef<HTMLDivElement>(null);
   const soldRef = useRef<HTMLDivElement>(null);
   const featuredRef = useRef<HTMLDivElement>(null);
@@ -137,48 +186,86 @@ export default function HomePageClient() {
 
           {/* Search bar crossing the lower half of the globe (above every pin) */}
           <div className="absolute inset-x-0 top-[74%] z-20 -translate-y-1/2 px-4 sm:px-5">
-            <div className="mx-auto w-full max-w-[760px]">
+            <div ref={searchBoxRef} className="mx-auto w-full max-w-[760px]">
               <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-3 sm:pl-8">
                 <Search size={22} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
-                <button
-                  onClick={openSearch}
-                  className="min-w-0 flex-1 truncate py-5 text-left text-[1rem] text-[var(--color-text-tertiary)] sm:py-[1.4rem] sm:text-[1.1rem]"
+                {isDesktop ? (
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); if (!searchOpen) openDesktopSearch(); }}
+                    onFocus={openDesktopSearch}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && searchResults[0]) selectSearchResult(searchResults[0]); }}
+                    placeholder="Enter a city, neighbourhood, address, MLS® number or school"
+                    className="min-w-0 flex-1 bg-transparent py-[1.4rem] text-left text-[1.1rem] text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-tertiary)]"
+                  />
+                ) : (
+                  <button
+                    onClick={openSearch}
+                    className="min-w-0 flex-1 truncate py-5 text-left text-[1rem] text-[var(--color-text-tertiary)]"
+                  >
+                    Enter a city, neighbourhood, address, MLS® number or school
+                  </button>
+                )}
+                <Button
+                  shape="circle"
+                  size="lg"
+                  onClick={() => { if (isDesktop) { if (searchResults[0]) selectSearchResult(searchResults[0]); else router.push('/'); } else openSearch(); }}
+                  aria-label="Search"
+                  className="h-12 w-12 shrink-0 sm:h-[3.4rem] sm:w-[3.4rem]"
                 >
-                  Enter a city, neighbourhood, address, MLS® number or school
-                </button>
-                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-12 w-12 shrink-0 sm:h-[3.4rem] sm:w-[3.4rem]">
                   <Search size={20} />
                 </Button>
               </div>
             </div>
           </div>
+
+          {/* Desktop: inline results dropdown anchored below the bar (fixed so
+              the hero's overflow-hidden doesn't clip it) */}
+          {isDesktop && searchOpen && searchRect && (
+            <div
+              ref={searchDropRef}
+              style={{ position: 'fixed', left: searchRect.left, top: searchRect.top, width: searchRect.width }}
+              className="z-[60] max-h-[380px] overflow-y-auto rounded-3xl bg-white p-2 shadow-[0_18px_48px_rgba(15,23,41,0.18)]"
+            >
+              {searchResults.map((loc, i) => (
+                <SearchLocationResultItem
+                  key={loc.id}
+                  location={loc}
+                  onSelect={() => selectSearchResult(loc)}
+                  highlighted={i === 0 && Boolean(searchQuery.trim())}
+                />
+              ))}
+              {searchLoading && (
+                <div className="px-3 py-3 type-caption text-[var(--color-text-tertiary)]">Searching locations…</div>
+              )}
+              {!searchLoading && searchResults.length === 0 && searchQuery.trim() && (
+                <div className="px-3 py-3 type-caption text-[var(--color-text-tertiary)]">No matches found</div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* City-dependent content re-animates whenever the selected city changes */}
         <motion.div
           key={city}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.15, ease: [0.4, 0, 0.2, 1] }}
+          initial={{ opacity: 0, scale: 0.985 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          style={{ transformOrigin: '50% 0%' }}
         >
         {/* ── At a glance (city + stats strip) ───────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
-          <div className="flex items-center gap-3">
-            <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-[var(--color-border)] sm:h-9 sm:w-9">
-              <Image src={cityImageUrl(city)} alt="" fill sizes="36px" className="object-cover" />
-            </span>
-            <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
-              {city} At A Glance
-            </h2>
-          </div>
+          <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
+            <AnimatedCity city={city} /> At A Glance
+          </h2>
         </section>
         <MarketStatsStrip city={city} />
 
         {/* ── New listings ───────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader
-            title={`${cityData.newListingsLabel} New Listings in ${city}`}
-            cityImage={cityImageUrl(city)}
+            title={`${cityData.newListingsLabel} New Listings in`}
+            city={city}
             onArrow={goToMap}
             onPrev={() => scrollRow(newestRef, -1)}
             onNext={() => scrollRow(newestRef, 1)}
@@ -239,7 +326,7 @@ export default function HomePageClient() {
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title={`Sold Prices in ${city}`} cityImage={cityImageUrl(city)} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
+          <SectionHeader title="Sold Prices in" city={city} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
           {renderCarousel(soldListings, soldRef)}
         </section>
 
@@ -248,7 +335,7 @@ export default function HomePageClient() {
 
         {/* ── Featured listings ──────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title={`Featured Listings in ${city}`} cityImage={cityImageUrl(city)} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
+          <SectionHeader title="Featured Listings in" city={city} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
           {renderCarousel(featuredListings, featuredRef)}
         </section>
         </motion.div>
@@ -281,7 +368,7 @@ function ViewAllCard({ images, total, width, height, onClick }: { images: string
       style={{ width }}
     >
       <div
-        className="flex flex-col items-center justify-center rounded-[24px] bg-white shadow-[0_6px_24px_rgba(15,23,41,0.10)] ring-1 ring-[var(--color-border)]/45 transition-shadow group-hover:shadow-[0_14px_34px_rgba(15,23,41,0.16)]"
+        className="flex flex-col items-center justify-center rounded-[24px] border border-[var(--color-border)]/60 bg-white"
         style={{ height }}
       >
         <div className="relative h-[150px] w-[224px]">
@@ -295,7 +382,7 @@ function ViewAllCard({ images, total, width, height, onClick }: { images: string
             </div>
           ))}
         </div>
-        <span className="mt-5 type-heading text-[var(--color-text-primary)]">See all {total.toLocaleString()}</span>
+        <span className="mt-5 type-heading text-[var(--color-text-primary)]">See all {total.toLocaleString()} listings</span>
       </div>
     </button>
   );

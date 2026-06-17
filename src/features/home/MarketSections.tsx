@@ -40,20 +40,6 @@ function rand(str: string, salt: number) {
 
 export const CITY = MOCK_NEIGHBORHOODS[0]?.city ?? 'Toronto';
 
-// Small representative thumbnail for a city (used as a chip in section titles).
-const CITY_THUMBS = [
-  'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=96&q=80',
-  'https://images.unsplash.com/photo-1560814304-4f05b62af116?w=96&q=80',
-  'https://images.unsplash.com/photo-1609825488888-3a766db05542?w=96&q=80',
-  'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=96&q=80',
-  'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=96&q=80',
-  'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=96&q=80',
-];
-export function cityImageUrl(city: string) {
-  if (city === CITY) return CITY_THUMBS[0];
-  return CITY_THUMBS[Math.floor(rand(city, 99) * CITY_THUMBS.length) % CITY_THUMBS.length];
-}
-
 const TYPE_META = [
   { key: 'house', label: 'House', color: 'var(--color-success)' },
   { key: 'condo', label: 'Condo Apt', color: 'var(--color-brand-400)' },
@@ -282,8 +268,8 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
-        title={`Market Insights in ${city}`}
-        cityImage={cityImageUrl(city)}
+        title="Market Insights in"
+        city={city}
         onArrow={() => router.push('/for-you')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
@@ -305,7 +291,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
             <p className="type-title !text-[1.75rem] !leading-none text-[var(--color-text-primary)]">
               {volumeTotal.toLocaleString()} <span className="type-body font-medium text-[var(--color-text-tertiary)]">Total Listings</span>
             </p>
-            <span className="shrink-0 rounded-full bg-[var(--color-primary)] px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-white">
+            <span className="shrink-0 rounded-full bg-[var(--color-brand-100)] px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--color-brand-700)]">
               {mostActiveBand.label}
             </span>
           </div>
@@ -354,12 +340,12 @@ export function DeepDive({ city = CITY }: { city?: string }) {
   const scroll = (dir: 1 | -1) =>
     ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
   const { commute } = useMemo(() => getCityData(city), [city]);
-  const CARD = 'shrink-0 snap-start min-h-[360px]';
+  const CARD = 'shrink-0 snap-start min-h-[312px]';
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
-        title={`Deep Dive into ${city}`}
-        cityImage={cityImageUrl(city)}
+        title="Deep Dive into"
+        city={city}
         onArrow={() => router.push('/for-you')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
@@ -373,9 +359,10 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-gradient-to-b from-[var(--color-brand-50)] to-white p-6')}>
           <h3 className="type-subtitle !text-[1.3rem] leading-tight text-[var(--color-text-primary)]">The World in One City</h3>
           <p className="mt-3 type-body text-[var(--color-text-secondary)]">
-            A global powerhouse of culture defined by safe, connected, and vibrant neighbourhoods.
+            A global powerhouse of culture, food, and finance — defined by safe, connected, endlessly
+            walkable and proudly diverse neighbourhoods.
           </p>
-          <div className="mt-auto flex flex-wrap gap-2 pt-6">
+          <div className="mt-6 flex flex-wrap gap-2">
             {WORLD_TAGS.map((t, i) => (
               <span key={t} className={cn('rounded-full px-3 py-1.5 type-caption font-semibold uppercase tracking-wide',
                 ['bg-[var(--color-brand-100)] text-[var(--color-brand-700)]', 'bg-[#e1f6ec] text-[var(--color-success)]', 'bg-[#ece7ff] text-[#7c5cff]'][i % 3])}>
@@ -387,7 +374,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Commute facts */}
         <Panel title="Commute Facts" className={cn(CARD, 'w-[330px]')}>
-          <div className="flex flex-1 flex-col justify-center gap-5">
+          <div className="flex flex-1 flex-col justify-center gap-7">
             {commute.map(({ label, sub, value, color, icon: Icon }) => (
               <div key={label} className="flex items-center gap-3.5">
                 <ScoreRing value={value} color={color} size={54} />
@@ -405,7 +392,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Top amenities */}
         <Panel title="Top Amenities" className={cn(CARD, 'w-[320px]')}>
-          <div className="flex flex-1 flex-col justify-center gap-3.5">
+          <div className="flex flex-1 flex-col justify-center gap-4">
             {AMENITIES.map(({ label, count, icon: Icon, color, tint }) => (
               <div key={label} className="flex items-center justify-between gap-3 rounded-full bg-[var(--color-surface)] py-2.5 pl-2.5 pr-5">
                 <span className="flex items-center gap-3">
@@ -493,8 +480,8 @@ export function AreaFinder({ city = CITY, onSelect }: { city?: string; onSelect?
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
-        title={`Find your area in ${city}`}
-        cityImage={cityImageUrl(city)}
+        title="Find your area in"
+        city={city}
         onArrow={() => router.push('/')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
