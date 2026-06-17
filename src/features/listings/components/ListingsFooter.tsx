@@ -26,7 +26,10 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
     'For listings in Canada, the trademarks REALTOR®, REALTORS®, and the REALTOR® logo are controlled by CREA and identify real estate professionals who are members of CREA.',
     'eXp Realty® is committed to adhering to the guidelines of The New York State Fair Housing Regulations. Fair Housing and Reasonable Accommodations. DMCA Notice.',
   ];
-  const sectionTitleClass = cn('text-[var(--color-text-primary)]', fullWidth ? 'type-subtitle' : 'type-heading-sm');
+  const sectionTitleClass = cn(
+    'text-[var(--color-text-primary)]',
+    fullWidth ? 'type-subtitle !text-[1.05rem] sm:!text-[1.25rem]' : 'type-heading-sm'
+  );
 
   return (
     <footer className={cn(

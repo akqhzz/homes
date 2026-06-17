@@ -58,7 +58,7 @@ const OVERVIEW_PROVINCES = ['BC', 'AB', 'ON', 'QC'];
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
 // Spread each province's cities apart from their centroid so the bubbles
 // don't overlap (exact map position isn't important here).
-const SPREAD = 1.6;
+const SPREAD = 2.3;
 const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
   const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
   const cLng = p.cities.reduce((s, c) => s + c.lng, 0) / p.cities.length;
@@ -199,7 +199,7 @@ export default function HeroGlobe() {
           if (marker.type === 'province') {
             el2.style.zIndex = '3';
             el2.dataset.z = '3';
-            el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 10px 24px rgba(15,23,41,0.25);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
+            el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 4px 12px rgba(15,23,41,0.16);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
             el2.__activate = () => {
               mode = 'detail';
               const cities = ALL_CITIES.filter((c) => c.province === marker.province.code);
@@ -211,7 +211,7 @@ export default function HeroGlobe() {
           } else if (marker.type === 'pcluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
-            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 8px 20px rgba(15,23,41,0.28);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
+            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
             el2.__activate = () => {
               mode = 'detail';
               forced = new Set();
@@ -221,7 +221,7 @@ export default function HeroGlobe() {
           } else if (marker.type === 'ccluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
-            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 8px 20px rgba(15,23,41,0.28);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
+            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
             el2.__activate = () => {
               mode = 'detail';
               marker.cities.forEach((c) => forced.add(c.name));
@@ -232,7 +232,7 @@ export default function HeroGlobe() {
           } else {
             el2.style.zIndex = '2';
             el2.dataset.z = '2';
-            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 8px 18px rgba(15,23,41,0.22);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 4px 12px rgba(15,23,41,0.16);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => routerRef.current.push('/');
           }
           return el2;
@@ -347,9 +347,9 @@ export default function HeroGlobe() {
           globe
             .polygonsData(features)
             .polygonCapColor(() => '#e9eff6')
-            .polygonSideColor(() => 'rgba(175,193,214,0.28)')
-            .polygonStrokeColor(() => '#c2cdda')
-            .polygonAltitude((d) => ((d as { __province?: boolean }).__province ? 0.006 : 0.0015));
+            .polygonSideColor(() => 'rgba(150,170,198,0.45)')
+            .polygonStrokeColor(() => '#d2dbe6')
+            .polygonAltitude((d) => ((d as { __province?: boolean }).__province ? 0.004 : 0.001));
         };
 
         try {

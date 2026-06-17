@@ -18,6 +18,8 @@ const INSIGHTS = [
     title: "Canada's Housing Market Heats Up for Summer, Sales Rise 5.5% in May 2026: CREA",
     date: 'Jun 16, 2026',
     image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80',
+    description:
+      'Home sales picked up across most major markets last month as buyers returned, with prices holding steady and new listings climbing.',
   },
   {
     title: 'Do You Have Over $100K for a Down Payment? What It Takes to Own a Detached Home',
@@ -103,11 +105,6 @@ export default function HomePageClient() {
           {/* Globe fills the hero; the blue glow lives in the background behind it.
               z-0 creates a stacking context so the fade/search bar layer above its pins. */}
           <div className="absolute inset-x-0 -top-[3%] bottom-0 z-0">
-            {/* Soft placeholder so the hero isn't blank while the globe loads */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[min(78%,540px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_36%_30%,#ffffff,#eef3f8_68%,#e1e9f1)] opacity-70 shadow-[0_30px_80px_-40px_rgba(43,82,107,0.35)]"
-            />
             <HeroGlobe />
           </div>
 
@@ -140,7 +137,7 @@ export default function HomePageClient() {
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
           <div className="flex items-center justify-between gap-3">
             {/* group: hovering the title also highlights the Toronto chip */}
-            <div className="group flex flex-wrap items-center gap-x-3 gap-y-2">
+            <div className="group flex min-w-0 flex-nowrap items-center gap-x-2.5 sm:gap-x-3">
               <h2
                 role="link"
                 tabIndex={0}
@@ -151,19 +148,19 @@ export default function HomePageClient() {
                     goToMap();
                   }
                 }}
-                className="cursor-pointer type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]"
+                className="shrink-0 cursor-pointer whitespace-nowrap type-title !text-[1.15rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]"
               >
                 5,400+ listings in
               </h2>
               <button
                 onClick={goToMap}
-                className="flex items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)] group-hover:bg-[var(--color-brand-surface-strong)]"
+                className="flex min-w-0 shrink items-center gap-1.5 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-[var(--color-brand-surface-strong)] group-hover:bg-[var(--color-brand-surface-strong)] sm:gap-2 sm:pr-3.5"
               >
-                <span className="relative h-8 w-8 overflow-hidden rounded-full">
+                <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full sm:h-8 sm:w-8">
                   <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
                 </span>
-                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
-                <ArrowRight size={17} className="text-[var(--color-text-secondary)]" />
+                <span className="truncate type-heading-sm !text-[1.05rem] text-[var(--color-text-primary)] sm:!text-[1.2rem] lg:!text-[1.35rem]">Toronto, ON</span>
+                <ArrowRight size={16} className="shrink-0 text-[var(--color-text-secondary)]" />
               </button>
             </div>
             <CarouselNav onPrev={() => scrollRow(newestRef, -1)} onNext={() => scrollRow(newestRef, 1)} />
@@ -175,14 +172,31 @@ export default function HomePageClient() {
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader title="Market Insights" onArrow={() => router.push('/for-you')} />
 
-          <div className="mt-4 grid gap-5 sm:mt-7 lg:grid-cols-2">
+          {/* Mobile: horizontal carousel, like the listing cards */}
+          <div className="mt-3 flex gap-5 overflow-x-auto pb-4 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {INSIGHTS.map((article) => (
+              <button key={article.title} className="group flex w-[290px] shrink-0 flex-col overflow-hidden rounded-[20px] border border-[var(--color-border)] text-left">
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image src={article.image} alt="" fill sizes="290px" className="object-cover" />
+                </div>
+                <div className="flex flex-1 flex-col p-4">
+                  <h3 className="type-heading-sm leading-snug text-[var(--color-text-primary)] line-clamp-3">{article.title}</h3>
+                  <p className="mt-auto pt-2 type-caption text-[var(--color-text-tertiary)]">{article.date}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop: featured article + grid */}
+          <div className="mt-7 hidden gap-5 sm:grid lg:grid-cols-2">
             <button className="group flex flex-col overflow-hidden rounded-[24px] border border-[var(--color-border)] text-left">
-              <div className="relative aspect-[16/10] overflow-hidden">
+              <div className="relative aspect-[16/9] overflow-hidden">
                 <Image src={featuredArticle.image} alt="" fill sizes="(min-width:1024px) 560px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
-              <div className="p-5">
+              <div className="flex flex-1 flex-col p-5">
                 <h3 className="type-subtitle text-[var(--color-text-primary)]">{featuredArticle.title}</h3>
-                <p className="mt-2 type-caption text-[var(--color-text-tertiary)]">{featuredArticle.date}</p>
+                <p className="mt-2 type-body text-[var(--color-text-secondary)] line-clamp-2">{featuredArticle.description}</p>
+                <p className="mt-auto pt-3 type-caption text-[var(--color-text-tertiary)]">{featuredArticle.date}</p>
               </div>
             </button>
 
