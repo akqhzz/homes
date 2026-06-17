@@ -150,12 +150,14 @@ function clusterCities(list: City[], thresholdDeg: number, forced: Set<string>):
 
 type PinEl = HTMLElement & { __activate?: () => void };
 
-export default function HeroGlobe() {
+export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string) => void }) {
   const router = useRouter();
   const routerRef = useRef(router);
+  const onCityClickRef = useRef(onCityClick);
   useEffect(() => {
     routerRef.current = router;
-  }, [router]);
+    onCityClickRef.current = onCityClick;
+  }, [router, onCityClick]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -320,7 +322,10 @@ export default function HeroGlobe() {
             el2.style.zIndex = '2';
             el2.dataset.z = '2';
             el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
-            el2.__activate = () => routerRef.current.push('/');
+            el2.__activate = () => {
+              if (onCityClickRef.current) onCityClickRef.current(marker.city.name);
+              else routerRef.current.push('/');
+            };
           }
           // Animate the pin in (fade + scale). globe.gl positions el2 itself via
           // a transform, so we animate the inner content to avoid clashing.

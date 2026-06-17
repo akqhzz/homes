@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
@@ -27,60 +27,116 @@ const pricesOfType = (type: string) => MOCK_LISTINGS.filter((l) => l.propertyTyp
 
 const fmtFull = (n: number) => formatPriceFull(Math.round(n));
 const fmtCount = (n: number) => Math.round(n).toLocaleString();
-const STATS = [
-  { label: 'Avg. Listing Price', value: mean(MOCK_LISTINGS.map((l) => l.price)), format: fmtFull, icon: DollarSign, tint: 'text-[var(--color-brand-700)] bg-[var(--color-brand-50)]' },
-  { label: 'Active Listings', value: MOCK_LISTINGS.filter((l) => l.listingStatus !== 'sold').length, format: fmtCount, icon: LayoutGrid, tint: 'text-[var(--color-brand-700)] bg-[var(--color-brand-50)]' },
-  { label: 'Avg. House Price', value: mean(pricesOfType('house')), format: fmtFull, icon: Home, tint: 'text-[var(--color-success)] bg-[#e9f9f2]' },
-  { label: 'Avg. Condo Price', value: mean(pricesOfType('condo')), format: fmtFull, icon: Building2, tint: 'text-[#7c5cff] bg-[#f0edff]' },
-  { label: 'Avg. Townhouse Price', value: mean(pricesOfType('townhouse')), format: fmtFull, icon: Warehouse, tint: 'text-[#d9930b] bg-[#fdf3df]' },
+const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+
+// Deterministic 0..1 from a city name + salt — lets each city get its own
+// (stable) set of numbers without any randomness at render time.
+function rand(str: string, salt: number) {
+  let h = (2166136261 ^ salt) >>> 0;
+  for (let i = 0; i < str.length; i += 1) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15;
+  return ((h >>> 0) % 100000) / 100000;
+}
+
+export const CITY = MOCK_NEIGHBORHOODS[0]?.city ?? 'Toronto';
+
+const TYPE_META = [
+  { key: 'house', label: 'House', color: 'var(--color-success)' },
+  { key: 'condo', label: 'Condo Apt', color: 'var(--color-brand-400)' },
+  { key: 'townhouse', label: 'Townhouse', color: 'var(--color-primary)' },
 ];
-
-const TYPE_SLICES = [
-  { label: 'House', type: 'house', color: 'var(--color-success)' },
-  { label: 'Condo Apt', type: 'condo', color: 'var(--color-brand-400)' },
-  { label: 'Townhouse', type: 'townhouse', color: 'var(--color-primary)' },
-].map((s) => ({ label: s.label, color: s.color, value: MOCK_LISTINGS.filter((l) => l.propertyType === s.type).length || 1 }));
-
-const VOLUME_BANDS = [
+const BAND_META = [
   { label: '$500k - $1M', min: 500_000, max: 1_000_000 },
   { label: '$1M - $1.5M', min: 1_000_000, max: 1_500_000 },
   { label: '$1.5M - $2.5M', min: 1_500_000, max: 2_500_000 },
   { label: '$2.5M - $5M', min: 2_500_000, max: 5_000_000 },
-].map((b) => ({ ...b, count: MOCK_LISTINGS.filter((l) => l.price >= b.min && l.price < b.max).length }));
-const VOLUME_TOTAL = VOLUME_BANDS.reduce((s, b) => s + b.count, 0) || 1;
-const VOLUME_ROWS = VOLUME_BANDS.map((b) => {
-  const pct = Math.round((b.count / VOLUME_TOTAL) * 100);
-  return { label: b.label, value: pct, sub: `${pct}%` };
-});
-const MOST_ACTIVE_BAND = [...VOLUME_BANDS].sort((a, b) => b.count - a.count)[0];
+];
+const STAT_META = [
+  { key: 'avgListing', label: 'Avg. Listing Price', format: fmtFull, icon: DollarSign, tint: 'text-[var(--color-brand-700)] bg-[var(--color-brand-50)]' },
+  { key: 'active', label: 'Active Listings', format: fmtCount, icon: LayoutGrid, tint: 'text-[var(--color-brand-700)] bg-[var(--color-brand-50)]' },
+  { key: 'avgHouse', label: 'Avg. House Price', format: fmtFull, icon: Home, tint: 'text-[var(--color-success)] bg-[#e9f9f2]' },
+  { key: 'avgCondo', label: 'Avg. Condo Price', format: fmtFull, icon: Building2, tint: 'text-[#7c5cff] bg-[#f0edff]' },
+  { key: 'avgTown', label: 'Avg. Townhouse Price', format: fmtFull, icon: Warehouse, tint: 'text-[#d9930b] bg-[#fdf3df]' },
+] as const;
 
-// 12 evenly-sized chronological buckets → median price per bucket (a real-ish trend).
-const TREND_POINTS = (() => {
-  const sorted = [...MOCK_LISTINGS].sort((a, b) => a.listingDate.localeCompare(b.listingDate));
-  const n = 12, size = Math.max(1, Math.floor(sorted.length / n));
-  const pts: number[] = [];
-  for (let i = 0; i < n; i += 1) {
-    const chunk = sorted.slice(i * size, (i + 1) * size).map((l) => l.price);
-    if (chunk.length) pts.push(median(chunk));
-  }
-  return pts.length >= 2 ? pts : MOCK_LISTINGS.map((l) => l.price).slice(0, 12);
-})();
-const MEDIAN_PRICE = median(MOCK_LISTINGS.map((l) => l.price));
+const walkLabel = (v: number) => (v >= 90 ? 'Walker’s Paradise' : v >= 70 ? 'Very Walkable' : v >= 50 ? 'Somewhat Walkable' : 'Car-Dependent');
+const transitLabel = (v: number) => (v >= 90 ? 'Rider’s Paradise' : v >= 70 ? 'Excellent Transit' : v >= 50 ? 'Good Transit' : 'Some Transit');
+const bikeLabel = (v: number) => (v >= 90 ? 'Biker’s Paradise' : v >= 70 ? 'Very Bikeable' : v >= 50 ? 'Bikeable' : 'Somewhat Bikeable');
 
-const HEALTH = {
+// Toronto baseline, computed from the real mock data.
+const BASE = {
+  avgListing: mean(MOCK_LISTINGS.map((l) => l.price)),
+  avgHouse: mean(pricesOfType('house')),
+  avgCondo: mean(pricesOfType('condo')),
+  avgTown: mean(pricesOfType('townhouse')),
+  active: 5439,
+  typeCounts: TYPE_META.map((t) => MOCK_LISTINGS.filter((l) => l.propertyType === t.key).length || 1),
+  bandCounts: BAND_META.map((b) => MOCK_LISTINGS.filter((l) => l.price >= b.min && l.price < b.max).length || 1),
+  trend: (() => {
+    const sorted = [...MOCK_LISTINGS].sort((a, b) => a.listingDate.localeCompare(b.listingDate));
+    const n = 12, size = Math.max(1, Math.floor(sorted.length / n));
+    const pts: number[] = [];
+    for (let i = 0; i < n; i += 1) {
+      const chunk = sorted.slice(i * size, (i + 1) * size).map((l) => l.price);
+      if (chunk.length) pts.push(median(chunk));
+    }
+    return pts.length >= 2 ? pts : MOCK_LISTINGS.map((l) => l.price).slice(0, 12);
+  })(),
+  median: median(MOCK_LISTINGS.map((l) => l.price)),
   daysOnMarket: Math.round(mean(MOCK_LISTINGS.map((l) => l.daysOnMarket))),
-  sellToList: 97.5,
   pricePerSqft: Math.round(mean(MOCK_LISTINGS.filter((l) => l.sqft).map((l) => l.price / l.sqft))),
-  medianRent: 2500,
+  walk: Math.round(mean(MOCK_NEIGHBORHOODS.map((n) => n.walkScore))),
+  transit: Math.round(mean(MOCK_NEIGHBORHOODS.map((n) => n.transitScore))),
 };
 
-const COMMUTE = [
-  { label: 'Walk Score', sub: 'Very Walkable', value: Math.round(mean(MOCK_NEIGHBORHOODS.map((n) => n.walkScore))), color: 'var(--color-success)', icon: Footprints },
-  { label: 'Transit Score', sub: 'Excellent Transit', value: Math.round(mean(MOCK_NEIGHBORHOODS.map((n) => n.transitScore))), color: 'var(--color-brand-600)', icon: TrainFront },
-  { label: 'Bike Score', sub: 'Very Bikeable', value: Math.round(mean(MOCK_NEIGHBORHOODS.map((n) => n.walkScore)) * 0.72), color: 'var(--color-accent-orange)', icon: Bike },
-];
+// Toronto returns the real figures; every other city gets a stable variation.
+export function getCityData(city: string) {
+  const isBase = city === CITY;
+  const pf = isBase ? 1 : 0.62 + rand(city, 1) * 0.72; // price factor
+  const cf = isBase ? 1 : 0.5 + rand(city, 2) * 0.95; // count factor
+  const values: Record<string, number> = {
+    avgListing: BASE.avgListing * pf,
+    active: Math.round(BASE.active * cf),
+    avgHouse: BASE.avgHouse * pf,
+    avgCondo: BASE.avgCondo * pf,
+    avgTown: BASE.avgTown * pf,
+  };
+  const stats = STAT_META.map((s) => ({ label: s.label, value: values[s.key], format: s.format, icon: s.icon, tint: s.tint }));
 
-export const CITY = MOCK_NEIGHBORHOODS[0]?.city ?? 'Toronto';
+  const newListings = Math.round(BASE.active * cf);
+  const newListingsLabel = `${(Math.round(newListings / 100) * 100).toLocaleString()}+`;
+
+  const typeCounts = BASE.typeCounts.map((c, i) => Math.max(1, Math.round(c * (isBase ? 1 : 0.6 + rand(city, 20 + i) * 0.9))));
+  const typeSlices = TYPE_META.map((t, i) => ({ label: t.label, color: t.color, value: typeCounts[i] }));
+
+  const bandCounts = BASE.bandCounts.map((c, i) => Math.max(1, Math.round(c * (isBase ? 1 : 0.5 + rand(city, 30 + i) * 1.1))));
+  const volumeTotal = bandCounts.reduce((s, n) => s + n, 0) || 1;
+  const volumeRows = BAND_META.map((b, i) => { const pct = Math.round((bandCounts[i] / volumeTotal) * 100); return { label: b.label, value: pct, sub: `${pct}%` }; });
+  const mostActiveBand = BAND_META[bandCounts.indexOf(Math.max(...bandCounts))];
+
+  const trend = BASE.trend.map((p, i) => p * pf * (isBase ? 1 : 0.9 + rand(city, 40 + i) * 0.2));
+  const medianPrice = BASE.median * pf;
+  const trendDelta = trend.length >= 2 ? ((trend[trend.length - 1] - trend[0]) / (trend[0] || 1)) * 100 : 0;
+
+  const health = {
+    daysOnMarket: clamp(Math.round(BASE.daysOnMarket * (isBase ? 1 : 0.6 + rand(city, 4))), 4, 60),
+    sellToList: isBase ? 97.5 : Math.round((94 + rand(city, 5) * 6) * 10) / 10,
+    pricePerSqft: Math.round(BASE.pricePerSqft * pf),
+    medianRent: Math.round((2500 * pf) / 50) * 50,
+  };
+
+  const walk = clamp(Math.round(BASE.walk * (isBase ? 1 : 0.7 + rand(city, 6) * 0.5)), 30, 99);
+  const transit = clamp(Math.round(BASE.transit * (isBase ? 1 : 0.6 + rand(city, 7) * 0.6)), 25, 99);
+  const bike = clamp(Math.round(BASE.walk * 0.72 * (isBase ? 1 : 0.7 + rand(city, 8) * 0.6)), 25, 99);
+  const commute = [
+    { label: 'Walk Score', sub: walkLabel(walk), value: walk, color: 'var(--color-success)', icon: Footprints },
+    { label: 'Transit Score', sub: transitLabel(transit), value: transit, color: 'var(--color-brand-600)', icon: TrainFront },
+    { label: 'Bike Score', sub: bikeLabel(bike), value: bike, color: 'var(--color-accent-orange)', icon: Bike },
+  ];
+
+  const imageOffset = Math.floor(rand(city, 9) * 5);
+  return { city, stats, newListingsLabel, typeSlices, volumeRows, volumeTotal, mostActiveBand, trend, medianPrice, trendDelta, health, commute, imageOffset };
+}
 
 // "Deep dive" city facts (representative figures for the city overview).
 const WORLD_TAGS = ['Urban', 'Global', 'Vibrant'];
@@ -112,22 +168,24 @@ const SCHOOLS = { total: '800+', items: [
 // Counts up to `value` (eased) the first time it scrolls into view.
 function CountUp({ value, format, className }: { value: number; format: (n: number) => string; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const [shown, setShown] = useState(0);
+  const [shown, setShown] = useState(value);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     let raf = 0;
     let started = false;
+    const from = value * 0.86; // start partway, not from zero
     const animate = () => {
       const begin = performance.now();
-      const dur = 1100;
+      const dur = 1700;
       const step = (now: number) => {
         const t = Math.min(1, (now - begin) / dur);
         const eased = 1 - Math.pow(1 - t, 3);
-        setShown(value * eased);
+        setShown(from + (value - from) * eased);
         if (t < 1) raf = requestAnimationFrame(step);
         else setShown(value);
       };
+      setShown(from);
       raf = requestAnimationFrame(step);
     };
     const io = new IntersectionObserver(
@@ -171,11 +229,12 @@ function MiniStat({ value, unit, label }: { value: string; unit?: string; label:
    1. KPI stats strip
 ══════════════════════════════════════════════════════════════════ */
 
-export function MarketStatsStrip() {
+export function MarketStatsStrip({ city = CITY }: { city?: string }) {
+  const { stats } = useMemo(() => getCityData(city), [city]);
   return (
     <section className="w-full px-5 pt-4 lg:px-12 lg:pt-5">
       <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5 lg:gap-5 lg:overflow-visible">
-        {STATS.map(({ label, value, format, icon: Icon, tint }) => (
+        {stats.map(({ label, value, format, icon: Icon, tint }) => (
           <div key={label} className="flex min-w-[230px] items-center gap-3.5 rounded-[20px] border border-[var(--color-border)]/55 bg-white px-5 py-4 lg:min-w-0">
             <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]', tint)}>
               <Icon className="h-5 w-5" strokeWidth={2.2} />
@@ -195,19 +254,17 @@ export function MarketStatsStrip() {
    2. Market insights dashboard + commute
 ══════════════════════════════════════════════════════════════════ */
 
-export function MarketBoard() {
+export function MarketBoard({ city = CITY }: { city?: string }) {
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const scroll = (dir: 1 | -1) =>
     ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
-  const trendDelta = TREND_POINTS.length >= 2
-    ? ((TREND_POINTS[TREND_POINTS.length - 1] - TREND_POINTS[0]) / (TREND_POINTS[0] || 1)) * 100
-    : 0;
+  const { typeSlices, volumeRows, volumeTotal, mostActiveBand, trend, medianPrice, trendDelta, health } = useMemo(() => getCityData(city), [city]);
   const CARD = 'shrink-0 snap-start min-h-[320px]';
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
-        title={`Market Insights in ${CITY}`}
+        title={`Market Insights in ${city}`}
         onArrow={() => router.push('/for-you')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
@@ -220,31 +277,31 @@ export function MarketBoard() {
       >
         <Panel title="Property Type Distribution" className={cn(CARD, 'w-[330px]')}>
           <div className="flex flex-1 items-center">
-            <PieChart slices={TYPE_SLICES} />
+            <PieChart slices={typeSlices} legendFontSize={15} />
           </div>
         </Panel>
 
         <Panel title="Market Volume" className={cn(CARD, 'w-[360px]')}>
           <div className="mb-5 flex items-start justify-between gap-2">
             <p className="text-[1.7rem] font-bold leading-none text-[var(--color-text-primary)]">
-              {VOLUME_TOTAL.toLocaleString()} <span className="type-body font-medium text-[var(--color-text-tertiary)]">Total Listings</span>
+              {volumeTotal.toLocaleString()} <span className="type-body font-medium text-[var(--color-text-tertiary)]">Total Listings</span>
             </p>
             <span className="shrink-0 rounded-full bg-[var(--color-primary)] px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-white">
-              {MOST_ACTIVE_BAND.label}
+              {mostActiveBand.label}
             </span>
           </div>
-          <HBarChart rows={VOLUME_ROWS} color="var(--color-primary)" />
+          <HBarChart rows={volumeRows} color="var(--color-primary)" />
         </Panel>
 
         <Panel title="Median Price Trend" className={cn(CARD, 'w-[360px]')}>
           <div className="mb-3 flex items-center gap-2.5">
-            <p className="text-[1.7rem] font-bold leading-none text-[var(--color-text-primary)]">{formatPrice(MEDIAN_PRICE)}</p>
+            <p className="text-[1.7rem] font-bold leading-none text-[var(--color-text-primary)]">{formatPrice(medianPrice)}</p>
             <span className="inline-flex items-center gap-1 rounded-full bg-[#e9f9f2] px-2.5 py-1 text-[0.8rem] font-semibold text-[var(--color-success)]">
               <TrendingUp className="h-3.5 w-3.5" />{Math.abs(trendDelta).toFixed(1)}%
             </span>
           </div>
           <div className="flex flex-1 flex-col justify-end">
-            <AreaSparkline points={TREND_POINTS} color="var(--color-success)" height={104} />
+            <AreaSparkline points={trend} color="var(--color-success)" height={104} />
             <div className="mt-1.5 flex justify-between text-[0.8rem] text-[var(--color-text-tertiary)]">
               <span>Jul ’25</span><span>Jun ’26</span>
             </div>
@@ -253,10 +310,10 @@ export function MarketBoard() {
 
         <Panel title="Market Health" className={cn(CARD, 'w-[370px]')}>
           <div className="grid flex-1 grid-cols-2 gap-3">
-            <MiniStat value={`${HEALTH.daysOnMarket}`} unit="days" label="Avg. days on market" />
-            <MiniStat value={`${HEALTH.sellToList}%`} label="Sell-to-list ratio" />
-            <MiniStat value={`$${HEALTH.pricePerSqft}`} unit="/sqft" label="Avg. price per sq.ft" />
-            <MiniStat value={`$${HEALTH.medianRent.toLocaleString()}`} unit="/mo" label="Median rent" />
+            <MiniStat value={`${health.daysOnMarket}`} unit="days" label="Avg. days on market" />
+            <MiniStat value={`${health.sellToList}%`} label="Sell-to-list ratio" />
+            <MiniStat value={`$${health.pricePerSqft}`} unit="/sqft" label="Avg. price per sq.ft" />
+            <MiniStat value={`$${health.medianRent.toLocaleString()}`} unit="/mo" label="Median rent" />
           </div>
         </Panel>
       </div>
@@ -272,16 +329,17 @@ function CountPill({ children }: { children: React.ReactNode }) {
   return <span className="inline-block rounded-full bg-[var(--color-primary)] px-3 py-1 type-caption font-semibold text-white">{children}</span>;
 }
 
-export function DeepDive() {
+export function DeepDive({ city = CITY }: { city?: string }) {
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const scroll = (dir: 1 | -1) =>
     ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
+  const { commute } = useMemo(() => getCityData(city), [city]);
   const CARD = 'shrink-0 snap-start min-h-[360px]';
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
-        title={`Deep Dive into ${CITY}`}
+        title={`Deep Dive into ${city}`}
         onArrow={() => router.push('/for-you')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
@@ -310,12 +368,12 @@ export function DeepDive() {
         {/* Commute facts */}
         <Panel title="Commute Facts" className={cn(CARD, 'w-[330px]')}>
           <div className="flex flex-1 flex-col justify-center gap-4">
-            {COMMUTE.map(({ label, sub, value, color, icon: Icon }) => (
+            {commute.map(({ label, sub, value, color, icon: Icon }) => (
               <div key={label} className="flex items-center gap-3.5">
                 <ScoreRing value={value} color={color} size={54} />
                 <div className="min-w-0 flex-1">
-                  <p className="type-heading-sm text-[var(--color-text-primary)]">{label}</p>
-                  <p className="type-caption text-[var(--color-text-secondary)]">{sub}</p>
+                  <p className="type-body-lg font-medium leading-tight text-[var(--color-text-primary)]">{label}</p>
+                  <p className="type-caption text-[var(--color-text-tertiary)]">{sub}</p>
                 </div>
                 <Icon className="h-6 w-6 shrink-0 text-[var(--color-text-tertiary)]" strokeWidth={1.8} />
               </div>
@@ -402,10 +460,10 @@ export function DeepDive() {
    3. "Find your area in <city>" — neighbourhoods + listing counts
 ══════════════════════════════════════════════════════════════════ */
 
-export function AreaFinder({ onSelect }: { onSelect?: (name: string) => void }) {
+export function AreaFinder({ city = CITY, onSelect }: { city?: string; onSelect?: (name: string) => void }) {
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-      <h2 className="mb-7 type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">Find your area in {CITY}</h2>
+      <h2 className="mb-7 type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">Find your area in {city}</h2>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {MOCK_NEIGHBORHOODS.map((n) => (
@@ -416,7 +474,7 @@ export function AreaFinder({ onSelect }: { onSelect?: (name: string) => void }) 
           >
             <Image src={n.thumbnail} alt={n.name} fill sizes="(min-width:1024px) 280px, 45vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
             <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-            <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[0.8rem] font-semibold text-[var(--color-text-primary)]">
+            <span className="absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[0.72rem] font-semibold text-[var(--color-text-primary)]">
               {n.listingCount} listings
             </span>
             <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4">

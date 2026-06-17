@@ -9,7 +9,7 @@ import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
 import { SectionHeader } from '@/features/home/SectionHeader';
-import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY } from '@/features/home/MarketSections';
+import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY, getCityData } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 
@@ -47,8 +47,20 @@ export default function HomePageClient() {
   const router = useRouter();
   const setActivePanel = useUIStore((s) => s.setActivePanel);
 
+  // The selected city drives every section's copy + numbers. Clicking a city
+  // pin on the globe sets it (instead of navigating to the map).
+  const [city, setCity] = useState(CITY);
+  const cityData = getCityData(city);
+
   const activeListings = MOCK_LISTINGS.filter((l) => l.listingStatus !== 'sold');
-  const newest = [...activeListings].sort((a, b) => a.daysOnMarket - b.daysOnMarket).slice(0, 10);
+  const baseNewest = [...activeListings].sort((a, b) => a.daysOnMarket - b.daysOnMarket).slice(0, 10);
+  // Rotate each card's photos by a per-city offset so the new-listings row
+  // looks different for each city (we only have one real listing set).
+  const newest = baseNewest.map((l, i) => {
+    const imgs = l.images ?? [];
+    const k = imgs.length ? (cityData.imageOffset + i) % imgs.length : 0;
+    return imgs.length ? { ...l, images: [...imgs.slice(k), ...imgs.slice(0, k)] } : l;
+  });
   const featuredListings = [...activeListings].sort((a, b) => b.price - a.price).slice(0, 10);
   const soldListings = (() => {
     const sold = MOCK_LISTINGS.filter((l) => l.listingStatus === 'sold');
@@ -94,6 +106,12 @@ export default function HomePageClient() {
           />
         </div>
       ))}
+      <ViewAllCard
+        images={listings.slice(0, 3).map((l) => l.images?.[0]).filter((s): s is string => Boolean(s))}
+        width={cardWidth}
+        height={cardTotalHeight}
+        onClick={goToMap}
+      />
     </div>
   );
 
@@ -105,7 +123,7 @@ export default function HomePageClient() {
           {/* Globe fills the hero; the blue glow lives in the background behind it.
               z-0 creates a stacking context so the fade/search bar layer above its pins. */}
           <div className="absolute inset-x-0 -top-[3%] bottom-0 z-0">
-            <HeroGlobe />
+            <HeroGlobe onCityClick={setCity} />
           </div>
 
           {/* Tall, soft white fade so the globe's bottom melts smoothly into the page */}
@@ -136,15 +154,15 @@ export default function HomePageClient() {
         {/* ── At a glance (city + stats strip) ───────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
           <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
-            <span className="font-semibold" style={{ fontFamily: 'var(--font-body-sans)' }}>{CITY}, ON</span> At A Glance
+            {city} At A Glance
           </h2>
         </section>
-        <MarketStatsStrip />
+        <MarketStatsStrip city={city} />
 
         {/* ── New listings ───────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader
-            title={`5,400+ New Listings in ${CITY}`}
+            title={`${cityData.newListingsLabel} New Listings in ${city}`}
             onArrow={goToMap}
             onPrev={() => scrollRow(newestRef, -1)}
             onNext={() => scrollRow(newestRef, 1)}
@@ -153,8 +171,8 @@ export default function HomePageClient() {
         </section>
 
         {/* ── Market insights dashboard + deep dive ──────────── */}
-        <MarketBoard />
-        <DeepDive />
+        <MarketBoard city={city} />
+        <DeepDive city={city} />
 
         {/* ── News & Guides ──────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
@@ -205,16 +223,16 @@ export default function HomePageClient() {
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title={`Sold Prices in ${CITY}`} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
+          <SectionHeader title={`Sold Prices in ${city}`} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
           {renderCarousel(soldListings, soldRef)}
         </section>
 
         {/* ── Find your area (neighbourhoods) ────────────────── */}
-        <AreaFinder onSelect={goToMap} />
+        <AreaFinder city={city} onSelect={goToMap} />
 
         {/* ── Featured listings ──────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title={`Featured Listings in ${CITY}`} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
+          <SectionHeader title={`Featured Listings in ${city}`} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
           {renderCarousel(featuredListings, featuredRef)}
         </section>
 
@@ -224,6 +242,34 @@ export default function HomePageClient() {
         </div>
       </div>
     </PageShell>
+  );
+}
+
+// Trailing carousel card: a little stack of photos + "See all" → the map.
+function ViewAllCard({ images, width, height, onClick }: { images: string[]; width: number; height: number; onClick: () => void }) {
+  const pics = images.slice(0, 3);
+  const transforms = ['rotate(-9deg) translate(-46px,8px)', 'rotate(8deg) translate(46px,2px)', 'rotate(0deg) translate(0,22px)'];
+  const z = [10, 10, 20];
+  return (
+    <button onClick={onClick} aria-label="See all listings" className="group shrink-0 snap-start" style={{ width }}>
+      <div
+        className="flex flex-col items-center justify-center rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
+        style={{ height }}
+      >
+        <div className="relative h-[148px] w-[214px]">
+          {pics.map((src, i) => (
+            <div
+              key={i}
+              className="absolute left-1/2 top-1 h-[116px] w-[116px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_8px_20px_rgba(15,23,41,0.16)]"
+              style={{ transform: `translateX(-50%) ${transforms[i]}`, zIndex: z[i] }}
+            >
+              <Image src={src} alt="" fill sizes="116px" className="object-cover" />
+            </div>
+          ))}
+        </div>
+        <span className="mt-5 type-heading text-[var(--color-text-primary)]">See all</span>
+      </div>
+    </button>
   );
 }
 

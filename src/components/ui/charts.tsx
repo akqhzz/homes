@@ -71,7 +71,7 @@ export function HBarChart({ rows, color }: { rows: { label: string; value: numbe
 }
 
 // SVG pie chart with an inline legend on the right.
-export function PieChart({ slices }: { slices: { label: string; value: number; color: string }[] }) {
+export function PieChart({ slices, legendFontSize = 11.5 }: { slices: { label: string; value: number; color: string }[]; legendFontSize?: number }) {
   const cx = 100, cy = 100, r = 86;
   const total = slices.reduce((s, sl) => s + sl.value, 0);
   const paths = slices.map((sl, index) => {
@@ -90,19 +90,21 @@ export function PieChart({ slices }: { slices: { label: string; value: number; c
       sweep, pct, ...sl,
     };
   });
-  const legendY0 = 100 - ((slices.length - 1) * 28) / 2;
+  const rowGap = Math.max(28, legendFontSize * 2.1);
+  const legendY0 = 100 - ((slices.length - 1) * rowGap) / 2;
+  const swatch = Math.max(10, legendFontSize * 0.9);
   return (
     <svg viewBox="0 0 420 200" style={{ width: '100%', height: 'auto' }}>
       {paths.map((p, i) => (
         <path key={i} d={p.d} fill={p.color} stroke="white" strokeWidth="2" />
       ))}
       {paths.map((p, i) => {
-        const y = legendY0 + i * 28;
+        const y = legendY0 + i * rowGap;
         return (
           <g key={`l${i}`}>
-            <rect x="215" y={y - 5} width="10" height="10" rx="2" fill={p.color} />
-            <text x="233" y={y + 1} fontSize="11.5" fill="rgba(0,0,0,0.55)" fontFamily="system-ui" dominantBaseline="central">{p.label}</text>
-            <text x="415" y={y + 1} textAnchor="end" fontSize="12" fontWeight="600" fill="rgba(0,0,0,0.8)" fontFamily="system-ui" dominantBaseline="central">{p.pct}%</text>
+            <rect x="215" y={y - swatch / 2} width={swatch} height={swatch} rx="2" fill={p.color} />
+            <text x={221 + swatch} y={y + 1} fontSize={legendFontSize} fill="rgba(0,0,0,0.6)" fontFamily="system-ui" dominantBaseline="central">{p.label}</text>
+            <text x="415" y={y + 1} textAnchor="end" fontSize={legendFontSize + 0.5} fontWeight="600" fill="rgba(0,0,0,0.82)" fontFamily="system-ui" dominantBaseline="central">{p.pct}%</text>
           </g>
         );
       })}
