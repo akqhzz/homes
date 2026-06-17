@@ -119,10 +119,12 @@ function frameOf(cities: { lat: number; lng: number }[]): { lat: number; lng: nu
   return { lat, lng, altitude: Math.min(0.5, Math.max(0.16, maxD * 0.06)) };
 }
 
-function cityMarkers(thresholdDeg: number, forced: Set<string>): Marker[] {
+// Cluster a set of cities at the given angular threshold. Cities in `forced`
+// always render individually (used when a cluster is tapped open).
+function clusterCities(list: City[], thresholdDeg: number, forced: Set<string>): Marker[] {
   const groups: { lat: number; lng: number; items: City[] }[] = [];
   const forcedCities: Marker[] = [];
-  for (const city of ALL_CITIES) {
+  for (const city of list) {
     if (forced.has(city.name)) {
       forcedCities.push({ type: 'city', lat: city.lat, lng: city.lng, city });
       continue;
@@ -185,25 +187,27 @@ export default function HeroGlobe() {
         const CLUSTER_OPEN_ALT = 1.05;
         const markerCache = new Map<string, Marker>();
 
-        // A province renders as its cities when expanded, otherwise as a bubble.
-        const pushProvince = (markers: Marker[], code: string) => {
+        // A province renders as its (clustered) cities when expanded, otherwise
+        // as a bubble. The expanded province uses the same clustering as cities
+        // mode at the current zoom, so a city that belongs to a cluster shows as
+        // a cluster straight away — and splits out as you keep zooming in.
+        const pushProvince = (markers: Marker[], code: string, thresholdDeg: number) => {
           if (code === expanded) {
-            ALL_CITIES.filter((c) => c.province === code).forEach((city) =>
-              markers.push({ type: 'city', lat: city.lat, lng: city.lng, city })
-            );
+            const cities = ALL_CITIES.filter((c) => c.province === code);
+            clusterCities(cities, thresholdDeg, forced).forEach((m) => markers.push(m));
           } else {
             const p = byCode(code);
             markers.push({ type: 'province', lat: p.lat, lng: p.lng, province: p });
           }
         };
 
-        const provinceModeMarkers = (): Marker[] => {
+        const provinceModeMarkers = (thresholdDeg: number): Marker[] => {
           const markers: Marker[] = [];
-          OVERVIEW_PROVINCES.forEach((code) => pushProvince(markers, code));
+          OVERVIEW_PROVINCES.forEach((code) => pushProvince(markers, code, thresholdDeg));
           const atlantic = CLUSTERS[0];
           if (clusterOpen) {
             // Cluster opened: its members become individual province bubbles.
-            atlantic.members.forEach((code) => pushProvince(markers, code));
+            atlantic.members.forEach((code) => pushProvince(markers, code, thresholdDeg));
           } else {
             markers.push({ type: 'pcluster', lat: atlantic.lat, lng: atlantic.lng, cluster: atlantic });
           }
@@ -236,14 +240,12 @@ export default function HeroGlobe() {
 
         const renderMarkers = (altOverride?: number) => {
           if (!globe) return;
-          let raw: Marker[];
-          if (mode === 'cities') {
-            const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
-            bucket = Math.round(thresholdFor(alt) * 8);
-            raw = cityMarkers(thresholdFor(alt), forced);
-          } else {
-            raw = provinceModeMarkers();
-          }
+          const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
+          const thr = thresholdFor(alt);
+          bucket = Math.round(thr * 8);
+          const raw = mode === 'cities'
+            ? clusterCities(ALL_CITIES, thr, forced)
+            : provinceModeMarkers(thr);
           globe.htmlElementsData(withStableIdentity(raw));
         };
 
@@ -269,7 +271,9 @@ export default function HeroGlobe() {
           const cities = ALL_CITIES.filter((c) => c.province === code);
           const cLat = cities.reduce((s, c) => s + c.lat, 0) / cities.length;
           const cLng = cities.reduce((s, c) => s + c.lng, 0) / cities.length;
-          renderMarkers();
+          // Render with the target zoom's threshold so the clustering matches
+          // where we're about to land (not the current, zoomed-out view).
+          renderMarkers(PROVINCE_ZOOM_ALT);
           goTo(cLat, cLng, PROVINCE_ZOOM_ALT);
         };
 
@@ -280,7 +284,7 @@ export default function HeroGlobe() {
           mode = 'province';
           clusterOpen = true;
           expanded = null;
-          renderMarkers();
+          renderMarkers(0.9);
           goTo(atlantic.lat, atlantic.lng, 0.9);
         };
 
@@ -329,7 +333,7 @@ export default function HeroGlobe() {
           .backgroundColor('rgba(0,0,0,0)')
           .showGlobe(true)
           .showAtmosphere(false)
-          .htmlElementsData(provinceModeMarkers())
+          .htmlElementsData(provinceModeMarkers(thresholdFor(1.86)))
           .htmlLat((d) => (d as Marker).lat)
           .htmlLng((d) => (d as Marker).lng)
           .htmlAltitude(0.015)
@@ -409,6 +413,9 @@ export default function HeroGlobe() {
               renderMarkers();
             } else if (clusterOpen !== wantOpen) {
               clusterOpen = wantOpen;
+              renderMarkers();
+            } else if (expanded !== null && Math.round(thresholdFor(alt) * 8) !== bucket) {
+              // Re-cluster the expanded province's cities as the zoom changes.
               renderMarkers();
             }
           }

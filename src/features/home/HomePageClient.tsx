@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
+import { MarketStatsStrip, MarketBoard, AreaFinder } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 
@@ -133,6 +134,9 @@ export default function HomePageClient() {
           </div>
         </section>
 
+        {/* ── Market stats strip ─────────────────────────────── */}
+        <MarketStatsStrip />
+
         {/* ── Newest listings ────────────────────────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
           <div className="flex items-center justify-between gap-3">
@@ -168,9 +172,12 @@ export default function HomePageClient() {
           {renderCarousel(newest, newestRef)}
         </section>
 
-        {/* ── Market Insights ────────────────────────────────── */}
+        {/* ── Market insights dashboard ──────────────────────── */}
+        <MarketBoard />
+
+        {/* ── News & Guides ──────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title="Market Insights" onArrow={() => router.push('/for-you')} />
+          <SectionHeader title="News & Guides" onArrow={() => router.push('/for-you')} />
 
           {/* Mobile: horizontal carousel, like the listing cards */}
           <div className="mt-3 flex gap-5 overflow-x-auto pb-4 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -220,6 +227,9 @@ export default function HomePageClient() {
           <SectionHeader title="Sold Prices" onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
           {renderCarousel(soldListings, soldRef)}
         </section>
+
+        {/* ── Find your area (neighbourhoods) ────────────────── */}
+        <AreaFinder onSelect={goToMap} />
 
         {/* ── Featured listings ──────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
