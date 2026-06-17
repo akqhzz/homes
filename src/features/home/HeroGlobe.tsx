@@ -18,6 +18,7 @@ const PINS: Pin[] = [
 ];
 
 const COUNTRIES_GEOJSON = '/data/countries.geojson';
+const PROVINCES_GEOJSON = '/data/provinces.geojson';
 
 function createPinElement(pin: Pin): HTMLElement {
   const el = document.createElement('div');
@@ -77,10 +78,10 @@ export default function HeroGlobe() {
         controls.enableZoom = true;
         controls.enablePan = false;
         // Default is the most zoomed-out size; zoom-in can grow it a lot.
-        controls.maxDistance = 296;
+        controls.maxDistance = 286;
         controls.minDistance = 120;
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.96 }, 0);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.86 }, 0);
 
         const resize = () => {
           if (!globe) return;
@@ -91,15 +92,25 @@ export default function HeroGlobe() {
         resizeObserver.observe(el);
 
         try {
-          const response = await fetch(COUNTRIES_GEOJSON);
-          const geo = await response.json();
+          const [countriesRes, provincesRes] = await Promise.all([
+            fetch(COUNTRIES_GEOJSON),
+            fetch(PROVINCES_GEOJSON),
+          ]);
+          const countries = await countriesRes.json();
+          const provinces = await provincesRes.json();
           if (!destroyed && globe) {
+            // Countries fill the world; province/state polygons sit a hair higher
+            // so their borders (US states, Canadian provinces, …) show through.
+            const features = [
+              ...countries.features.map((f: object) => ({ ...f, __province: false })),
+              ...provinces.features.map((f: object) => ({ ...f, __province: true })),
+            ];
             globe
-              .polygonsData(geo.features)
-              .polygonCapColor(() => '#e6edf4')
-              .polygonSideColor(() => 'rgba(150,170,196,0.45)')
-              .polygonStrokeColor(() => '#aeb9c9')
-              .polygonAltitude(0.02);
+              .polygonsData(features)
+              .polygonCapColor(() => '#e9eff6')
+              .polygonSideColor(() => 'rgba(175,193,214,0.28)')
+              .polygonStrokeColor(() => '#c2cdda')
+              .polygonAltitude((d) => ((d as { __province?: boolean }).__province ? 0.0025 : 0.001));
           }
         } catch {
           // Globe still renders (white sphere + pins) without continents.
