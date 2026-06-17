@@ -101,17 +101,6 @@ function frameOf(cities: { lat: number; lng: number }[]): { lat: number; lng: nu
   return { lat, lng, altitude: Math.min(0.5, Math.max(0.16, maxD * 0.06)) };
 }
 
-function overviewMarkers(): Marker[] {
-  // Clusters first (rendered underneath), province bubbles on top.
-  return [
-    ...CLUSTERS.map((cluster) => ({ type: 'pcluster' as const, lat: cluster.lat, lng: cluster.lng, cluster })),
-    ...OVERVIEW_PROVINCES.map((code) => {
-      const province = byCode(code);
-      return { type: 'province' as const, lat: province.lat, lng: province.lng, province };
-    }),
-  ];
-}
-
 function cityMarkers(thresholdDeg: number, forced: Set<string>): Marker[] {
   const groups: { lat: number; lng: number; items: City[] }[] = [];
   const forcedCities: Marker[] = [];
@@ -166,20 +155,45 @@ export default function HeroGlobe() {
       if (destroyed) return;
 
       try {
-        let mode: 'overview' | 'detail' = 'overview';
+        // 'province' = province bubbles (with at most one expanded into its
+        // cities); 'cities' = every province shown as cities (deep zoom).
+        let mode: 'province' | 'cities' = 'province';
+        let expanded: string | null = null; // expanded province / cluster code
         let bucket = -1;
         let suppressUntil = 0;
-        let forced = new Set<string>();
+
+        const provinceModeMarkers = (): Marker[] => {
+          const markers: Marker[] = [];
+          for (const code of OVERVIEW_PROVINCES) {
+            if (code === expanded) {
+              ALL_CITIES.filter((c) => c.province === code).forEach((city) =>
+                markers.push({ type: 'city', lat: city.lat, lng: city.lng, city })
+              );
+            } else {
+              const p = byCode(code);
+              markers.push({ type: 'province', lat: p.lat, lng: p.lng, province: p });
+            }
+          }
+          const atlantic = CLUSTERS[0];
+          if (expanded === atlantic.code) {
+            ALL_CITIES.filter((c) => atlantic.members.includes(c.province)).forEach((city) =>
+              markers.push({ type: 'city', lat: city.lat, lng: city.lng, city })
+            );
+          } else {
+            markers.push({ type: 'pcluster', lat: atlantic.lat, lng: atlantic.lng, cluster: atlantic });
+          }
+          return markers;
+        };
 
         const renderMarkers = (altOverride?: number) => {
           if (!globe) return;
-          if (mode === 'overview') {
-            globe.htmlElementsData(overviewMarkers());
-            return;
+          if (mode === 'cities') {
+            const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
+            bucket = Math.round(thresholdFor(alt));
+            globe.htmlElementsData(cityMarkers(thresholdFor(alt), new Set()));
+          } else {
+            globe.htmlElementsData(provinceModeMarkers());
           }
-          const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
-          bucket = Math.round(thresholdFor(alt));
-          globe.htmlElementsData(cityMarkers(thresholdFor(alt), forced));
         };
 
         const goTo = (lat: number, lng: number, altitude: number) => {
@@ -191,6 +205,17 @@ export default function HeroGlobe() {
           }, 950);
         };
 
+        // Expand one province (or the Atlantic group) into its cities while the
+        // other provinces stay as bubbles; centre on it with a moderate zoom.
+        const expand = (code: string, cities: City[]) => {
+          mode = 'province';
+          expanded = code;
+          const cLat = cities.reduce((s, c) => s + c.lat, 0) / cities.length;
+          const cLng = cities.reduce((s, c) => s + c.lng, 0) / cities.length;
+          renderMarkers();
+          goTo(cLat, cLng, 0.95);
+        };
+
         const buildMarker = (marker: Marker): PinEl => {
           const el2 = document.createElement('div') as PinEl;
           el2.dataset.pin = '1';
@@ -199,36 +224,19 @@ export default function HeroGlobe() {
             el2.style.zIndex = '3';
             el2.dataset.z = '3';
             el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 4px 12px rgba(15,23,41,0.16);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
-            el2.__activate = () => {
-              mode = 'detail';
-              const cities = ALL_CITIES.filter((c) => c.province === marker.province.code);
-              forced = new Set(cities.map((c) => c.name));
-              const f = frameOf(cities);
-              renderMarkers(f.altitude);
-              goTo(f.lat, f.lng, f.altitude);
-            };
+            el2.__activate = () => expand(marker.province.code, ALL_CITIES.filter((c) => c.province === marker.province.code));
           } else if (marker.type === 'pcluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
             el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
-            el2.__activate = () => {
-              mode = 'detail';
-              const cities = ALL_CITIES.filter((c) => marker.cluster.members.includes(c.province));
-              forced = new Set(cities.map((c) => c.name));
-              const f = frameOf(cities);
-              renderMarkers(f.altitude);
-              goTo(f.lat, f.lng, f.altitude);
-            };
+            el2.__activate = () => expand(marker.cluster.code, ALL_CITIES.filter((c) => marker.cluster.members.includes(c.province)));
           } else if (marker.type === 'ccluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
             el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
             el2.__activate = () => {
-              mode = 'detail';
-              marker.cities.forEach((c) => forced.add(c.name));
               const f = frameOf(marker.cities);
-              renderMarkers(f.altitude);
-              goTo(f.lat, f.lng, f.altitude);
+              goTo(f.lat, f.lng, Math.max(0.3, f.altitude * 0.7));
             };
           } else {
             el2.style.zIndex = '2';
@@ -243,7 +251,7 @@ export default function HeroGlobe() {
           .backgroundColor('rgba(0,0,0,0)')
           .showGlobe(true)
           .showAtmosphere(false)
-          .htmlElementsData(overviewMarkers())
+          .htmlElementsData(provinceModeMarkers())
           .htmlLat((d) => (d as Marker).lat)
           .htmlLng((d) => (d as Marker).lng)
           .htmlAltitude(0.015)
@@ -253,6 +261,12 @@ export default function HeroGlobe() {
         globe.globeMaterial(new THREE.MeshBasicMaterial({ color: 0xffffff }));
         globe.lights([new THREE.AmbientLight(0xffffff, 1.1)]);
 
+        // globe.gl's own init runs after this and overwrites maxDistance with
+        // globeR*100 (10000), which is why the globe used to shrink away on
+        // zoom-out. We keep zoomToCursor on and re-assert the clamp on every
+        // change event below so the zoom-out reliably locks.
+        const MAX_DISTANCE = 310; // → max altitude ≈ 2.1 (globe still fully visible)
+        const MIN_DISTANCE = 78;
         const controls = globe.controls() as unknown as {
           autoRotate: boolean;
           enableZoom: boolean;
@@ -262,7 +276,6 @@ export default function HeroGlobe() {
           zoomToCursor: boolean;
           minDistance: number;
           maxDistance: number;
-          target: { length: () => number; setLength: (n: number) => void };
           addEventListener: (type: string, cb: () => void) => void;
         };
         controls.autoRotate = false;
@@ -271,32 +284,36 @@ export default function HeroGlobe() {
         controls.rotateSpeed = 2.1;
         controls.zoomSpeed = 2.7;
         controls.zoomToCursor = true;
-        controls.maxDistance = 290;
-        controls.minDistance = 78;
+        controls.maxDistance = MAX_DISTANCE;
+        controls.minDistance = MIN_DISTANCE;
 
         controls.addEventListener('change', () => {
           if (!globe) return;
-          // Hard-lock the zoom-out so the globe never shrinks away / disappears.
-          const pov = globe.pointOfView();
-          if (pov.altitude > 1.9) {
-            globe.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: 1.9 }, 0);
-            return;
-          }
+          // Re-assert the clamp every change — globe.gl resets maxDistance to
+          // 10000 on init, so this is what actually locks the zoom-out.
+          controls.maxDistance = MAX_DISTANCE;
+          controls.minDistance = MIN_DISTANCE;
           if (Date.now() < suppressUntil) return;
-          // zoomToCursor pans the orbit target; keep it near the centre so the
-          // globe can't drift off-screen when zooming.
-          if (controls.target.length() > 26) controls.target.setLength(26);
-          const alt = pov.altitude ?? 1.86;
-          if (alt > 1.5) {
-            if (mode !== 'overview') {
-              mode = 'overview';
-              forced = new Set();
+          const alt = globe.pointOfView().altitude ?? 1.86;
+          if (alt > 1.45) {
+            // Zoomed out: province bubbles, nothing expanded.
+            if (mode !== 'province' || expanded !== null) {
+              mode = 'province';
+              expanded = null;
               renderMarkers();
             }
-          } else if (mode !== 'detail') {
-            mode = 'detail';
-            renderMarkers();
-          } else if (Math.round(thresholdFor(alt)) !== bucket) {
+          } else if (alt < 0.62) {
+            // Zoomed in a lot: every province shown as its cities, clustered.
+            if (mode !== 'cities') {
+              mode = 'cities';
+              renderMarkers();
+            } else if (Math.round(thresholdFor(alt)) !== bucket) {
+              renderMarkers();
+            }
+          } else if (mode !== 'province') {
+            // Mid zoom returning from cities mode: back to province bubbles.
+            mode = 'province';
+            expanded = null;
             renderMarkers();
           }
         });
