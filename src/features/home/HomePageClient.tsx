@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
@@ -108,6 +109,7 @@ export default function HomePageClient() {
       ))}
       <ViewAllCard
         images={listings.slice(0, 3).map((l) => l.images?.[0]).filter((s): s is string => Boolean(s))}
+        total={cityData.active}
         width={cardWidth}
         height={cardTotalHeight}
         onClick={goToMap}
@@ -151,6 +153,13 @@ export default function HomePageClient() {
           </div>
         </section>
 
+        {/* City-dependent content re-animates whenever the selected city changes */}
+        <motion.div
+          key={city}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
         {/* ── At a glance (city + stats strip) ───────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
           <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
@@ -235,6 +244,7 @@ export default function HomePageClient() {
           <SectionHeader title={`Featured Listings in ${city}`} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
           {renderCarousel(featuredListings, featuredRef)}
         </section>
+        </motion.div>
 
         {/* ── Footer (matches the map listing view) ──────────── */}
         <div className="mt-14 px-5 pb-28 lg:px-12 lg:pb-6">
@@ -245,29 +255,36 @@ export default function HomePageClient() {
   );
 }
 
-// Trailing carousel card: a little stack of photos + "See all" → the map.
-function ViewAllCard({ images, width, height, onClick }: { images: string[]; width: number; height: number; onClick: () => void }) {
+// Trailing carousel card: a little stack of photos + "See all <count>" → the
+// map. Matches the listing-card chrome (white, softly elevated); on hover the
+// photo stack fans out a touch.
+function ViewAllCard({ images, total, width, height, onClick }: { images: string[]; total: number; width: number; height: number; onClick: () => void }) {
   const pics = images.slice(0, 3);
-  const transforms = ['rotate(-9deg) translate(-46px,8px)', 'rotate(8deg) translate(46px,2px)', 'rotate(0deg) translate(0,22px)'];
+  // [resting transform, hover transform] per thumbnail
+  const transforms = [
+    { base: 'rotate(-9deg) translate(-46px,8px)', hover: 'rotate(-13deg) translate(-62px,2px)' },
+    { base: 'rotate(8deg) translate(46px,2px)', hover: 'rotate(12deg) translate(62px,-4px)' },
+    { base: 'rotate(0deg) translate(0,22px)', hover: 'rotate(0deg) translate(0,14px) scale(1.05)' },
+  ];
   const z = [10, 10, 20];
   return (
-    <button onClick={onClick} aria-label="See all listings" className="group shrink-0 snap-start" style={{ width }}>
+    <button onClick={onClick} aria-label={`See all ${total.toLocaleString()} listings`} className="group shrink-0 snap-start" style={{ width }}>
       <div
-        className="flex flex-col items-center justify-center rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
+        className="va-card flex flex-col items-center justify-center rounded-[20px] bg-white shadow-[0_6px_24px_rgba(15,23,41,0.10)] ring-1 ring-[var(--color-border)]/50 transition-shadow group-hover:shadow-[0_12px_32px_rgba(15,23,41,0.16)]"
         style={{ height }}
       >
         <div className="relative h-[148px] w-[214px]">
           {pics.map((src, i) => (
             <div
               key={i}
-              className="absolute left-1/2 top-1 h-[116px] w-[116px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_8px_20px_rgba(15,23,41,0.16)]"
-              style={{ transform: `translateX(-50%) ${transforms[i]}`, zIndex: z[i] }}
+              className="va-thumb absolute left-1/2 top-1 h-[116px] w-[116px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_8px_20px_rgba(15,23,41,0.16)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{ ['--va-t' as string]: transforms[i].base, ['--va-th' as string]: transforms[i].hover, zIndex: z[i] }}
             >
               <Image src={src} alt="" fill sizes="116px" className="object-cover" />
             </div>
           ))}
         </div>
-        <span className="mt-5 type-heading text-[var(--color-text-primary)]">See all</span>
+        <span className="mt-5 type-heading text-[var(--color-text-primary)]">See all {total.toLocaleString()}</span>
       </div>
     </button>
   );

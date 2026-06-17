@@ -156,6 +156,10 @@ main {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* Homepage "See all" card — photo stack fans out on hover */
+.va-thumb { transform: translateX(-50%) var(--va-t); }
+.va-card:hover .va-thumb { transform: translateX(-50%) var(--va-th); }
+
 /* Mapbox overrides */
 .mapboxgl-map {
   font-family: var(--font-body-sans);

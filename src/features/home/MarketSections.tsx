@@ -135,7 +135,7 @@ export function getCityData(city: string) {
   ];
 
   const imageOffset = Math.floor(rand(city, 9) * 5);
-  return { city, stats, newListingsLabel, typeSlices, volumeRows, volumeTotal, mostActiveBand, trend, medianPrice, trendDelta, health, commute, imageOffset };
+  return { city, stats, active: values.active, newListingsLabel, typeSlices, volumeRows, volumeTotal, mostActiveBand, trend, medianPrice, trendDelta, health, commute, imageOffset };
 }
 
 // "Deep dive" city facts (representative figures for the city overview).
@@ -241,7 +241,7 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
             </span>
             <div className="min-w-0">
               <CountUp value={value} format={format} className="block truncate text-[1.4rem] font-bold leading-tight text-[var(--color-text-primary)]" />
-              <p className="text-[0.8rem] font-medium uppercase tracking-[0.045em] text-[var(--color-text-tertiary)]">{label}</p>
+              <p className="mt-0.5 type-heading-sm !text-[0.92rem] text-[var(--color-text-secondary)]">{label}</p>
             </div>
           </div>
         ))}
@@ -260,7 +260,9 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
   const scroll = (dir: 1 | -1) =>
     ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
   const { typeSlices, volumeRows, volumeTotal, mostActiveBand, trend, medianPrice, trendDelta, health } = useMemo(() => getCityData(city), [city]);
-  const CARD = 'shrink-0 snap-start min-h-[320px]';
+  // flex-1 + a min width: the four cards stretch to fill the row on wide
+  // screens, and fall back to a horizontal scroll when they no longer fit.
+  const CARD = 'snap-start min-h-[320px] min-w-[262px] flex-1';
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
@@ -270,18 +272,18 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
         onNext={() => scroll(1)}
       />
 
-      {/* One-line, horizontally scrollable row of insight cards */}
+      {/* Cards fill the full width when they fit, scroll one line when they don't */}
       <div
         ref={ref}
         className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        <Panel title="Property Type Distribution" className={cn(CARD, 'w-[330px]')}>
+        <Panel title="Property Type Distribution" className={CARD}>
           <div className="flex flex-1 items-center">
-            <PieChart slices={typeSlices} legendFontSize={15} />
+            <PieChart slices={typeSlices} legendFontSize={18} />
           </div>
         </Panel>
 
-        <Panel title="Market Volume" className={cn(CARD, 'w-[360px]')}>
+        <Panel title="Market Volume" className={CARD}>
           <div className="mb-5 flex items-start justify-between gap-2">
             <p className="text-[1.7rem] font-bold leading-none text-[var(--color-text-primary)]">
               {volumeTotal.toLocaleString()} <span className="type-body font-medium text-[var(--color-text-tertiary)]">Total Listings</span>
@@ -293,7 +295,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
           <HBarChart rows={volumeRows} color="var(--color-primary)" />
         </Panel>
 
-        <Panel title="Median Price Trend" className={cn(CARD, 'w-[360px]')}>
+        <Panel title="Median Price Trend" className={CARD}>
           <div className="mb-3 flex items-center gap-2.5">
             <p className="text-[1.7rem] font-bold leading-none text-[var(--color-text-primary)]">{formatPrice(medianPrice)}</p>
             <span className="inline-flex items-center gap-1 rounded-full bg-[#e9f9f2] px-2.5 py-1 text-[0.8rem] font-semibold text-[var(--color-success)]">
@@ -308,7 +310,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
           </div>
         </Panel>
 
-        <Panel title="Market Health" className={cn(CARD, 'w-[370px]')}>
+        <Panel title="Market Health" className={CARD}>
           <div className="grid flex-1 grid-cols-2 gap-3">
             <MiniStat value={`${health.daysOnMarket}`} unit="days" label="Avg. days on market" />
             <MiniStat value={`${health.sellToList}%`} label="Sell-to-list ratio" />
@@ -372,7 +374,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
               <div key={label} className="flex items-center gap-3.5">
                 <ScoreRing value={value} color={color} size={54} />
                 <div className="min-w-0 flex-1">
-                  <p className="type-body-lg font-medium leading-tight text-[var(--color-text-primary)]">{label}</p>
+                  <p className="type-heading-sm leading-tight text-[var(--color-text-primary)]">{label}</p>
                   <p className="type-caption text-[var(--color-text-tertiary)]">{sub}</p>
                 </div>
                 <Icon className="h-6 w-6 shrink-0 text-[var(--color-text-tertiary)]" strokeWidth={1.8} />
@@ -388,7 +390,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
               <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3.5">
                 <span className="flex items-center gap-3">
                   <Icon className="h-5 w-5 text-[var(--color-brand-700)]" strokeWidth={1.9} />
-                  <span className="type-body-lg font-medium text-[var(--color-text-primary)]">{label}</span>
+                  <span className="type-heading-sm text-[var(--color-text-primary)]">{label}</span>
                 </span>
                 <span className="type-subtitle !text-[1.15rem] text-[var(--color-text-primary)]">{count}</span>
               </div>
@@ -406,7 +408,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
                   {g.name[0]}
                 </span>
                 <div>
-                  <p className="type-body-lg font-medium leading-tight text-[var(--color-text-primary)]">{g.name}</p>
+                  <p className="type-heading-sm leading-tight text-[var(--color-text-primary)]">{g.name}</p>
                   <p className="type-caption text-[var(--color-text-tertiary)]">{g.sub}</p>
                 </div>
               </div>
@@ -424,7 +426,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
                   <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                 </span>
                 <div>
-                  <p className="type-body-lg font-medium leading-tight text-[var(--color-text-primary)]">{name}</p>
+                  <p className="type-heading-sm leading-tight text-[var(--color-text-primary)]">{name}</p>
                   <p className="flex items-center gap-1 type-caption text-[var(--color-text-tertiary)]">
                     {rating} <Star className="h-3 w-3 fill-[var(--color-accent-orange)] text-[var(--color-accent-orange)]" /> · {sub}
                   </p>
@@ -441,7 +443,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
             {SCHOOLS.items.map((s) => (
               <div key={s.name} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate type-body-lg font-medium leading-tight text-[var(--color-text-primary)]">{s.name}</p>
+                  <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{s.name}</p>
                   <p className="type-caption text-[var(--color-text-tertiary)]">{s.sub}</p>
                 </div>
                 <span className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-[#e9f9f2] px-2 type-caption font-bold text-[var(--color-success)]">
@@ -461,18 +463,30 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 ══════════════════════════════════════════════════════════════════ */
 
 export function AreaFinder({ city = CITY, onSelect }: { city?: string; onSelect?: (name: string) => void }) {
+  const router = useRouter();
+  const ref = useRef<HTMLDivElement>(null);
+  const scroll = (dir: 1 | -1) =>
+    ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-      <h2 className="mb-7 type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">Find your area in {city}</h2>
+      <SectionHeader
+        title={`Find your area in ${city}`}
+        onArrow={() => router.push('/')}
+        onPrev={() => scroll(-1)}
+        onNext={() => scroll(1)}
+      />
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div
+        ref={ref}
+        className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {MOCK_NEIGHBORHOODS.map((n) => (
           <button
             key={n.id}
             onClick={() => onSelect?.(n.name)}
-            className="group relative aspect-[5/4] overflow-hidden rounded-[20px] text-left"
+            className="group relative aspect-[5/4] w-[280px] shrink-0 snap-start overflow-hidden rounded-[20px] text-left"
           >
-            <Image src={n.thumbnail} alt={n.name} fill sizes="(min-width:1024px) 280px, 45vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+            <Image src={n.thumbnail} alt={n.name} fill sizes="280px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
             <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <span className="absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[0.72rem] font-semibold text-[var(--color-text-primary)]">
               {n.listingCount} listings
