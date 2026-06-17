@@ -1,16 +1,16 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronLeft, ChevronRight, Map as MapIcon, Search } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
+import HomeSeoSection from '@/features/home/HomeSeoSection';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
-import { cn } from '@/lib/utils/cn';
 
 const TORONTO_AVATAR = 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=80&q=80';
 
@@ -19,7 +19,6 @@ const INSIGHTS = [
     title: "Canada's Housing Market Heats Up for Summer, Sales Rise 5.5% in May 2026: CREA",
     date: 'Jun 16, 2026',
     image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80',
-    featured: true,
   },
   {
     title: 'Do You Have Over $100K for a Down Payment? What It Takes to Own a Detached Home',
@@ -46,13 +45,10 @@ const INSIGHTS = [
 export default function HomePageClient() {
   const router = useRouter();
   const setActivePanel = useUIStore((s) => s.setActivePanel);
-  const listingsRef = useRef<HTMLDivElement>(null);
-  const soldRef = useRef<HTMLDivElement>(null);
 
-  const featured = [...MOCK_LISTINGS]
-    .filter((l) => l.listingStatus !== 'sold')
-    .sort((a, b) => a.daysOnMarket - b.daysOnMarket)
-    .slice(0, 10);
+  const activeListings = MOCK_LISTINGS.filter((l) => l.listingStatus !== 'sold');
+  const newest = [...activeListings].sort((a, b) => a.daysOnMarket - b.daysOnMarket).slice(0, 10);
+  const featuredListings = [...activeListings].sort((a, b) => b.price - a.price).slice(0, 10);
   const soldListings = (() => {
     const sold = MOCK_LISTINGS.filter((l) => l.listingStatus === 'sold');
     return (sold.length >= 5 ? sold : MOCK_LISTINGS.slice(20, 30)).slice(0, 8);
@@ -73,27 +69,39 @@ export default function HomePageClient() {
   const openSearch = () => setActivePanel('search');
   const goToMap = () => router.push('/');
 
-  const scrollRow = (ref: React.RefObject<HTMLDivElement | null>, dir: 1 | -1) =>
-    ref.current?.scrollBy({ left: dir * Math.min(720, ref.current.clientWidth * 0.85), behavior: 'smooth' });
-
   const [featuredArticle, ...restArticles] = INSIGHTS;
+
+  const renderCarousel = (listings: typeof MOCK_LISTINGS) => (
+    <div className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {listings.map((listing) => (
+        <div key={listing.id} className="shrink-0 snap-start">
+          <ListingCard
+            listing={listing}
+            variant="carousel"
+            carouselWidth={cardWidth}
+            carouselImageHeight={cardImageHeight}
+            carouselTotalHeight={cardTotalHeight}
+          />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
-        <section className="relative overflow-hidden bg-[radial-gradient(98%_80%_at_50%_36%,#c7dcf1_0%,#dceafa_42%,#eef5fb_70%,#ffffff_94%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(62%_78%_at_50%_40%,#cfe1f3_0%,#e4eff9_50%,#f4f9fc_72%,#ffffff_92%)] lg:min-h-[640px]">
+        <section className="relative overflow-hidden bg-[radial-gradient(98%_80%_at_50%_41%,#c7dcf1_0%,#dceafa_42%,#eef5fb_70%,#ffffff_94%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(62%_78%_at_50%_45%,#cfe1f3_0%,#e4eff9_50%,#f4f9fc_72%,#ffffff_92%)] lg:min-h-[640px]">
           {/* Globe fills the hero; the blue glow lives in the background behind it */}
-          <div className="absolute inset-x-0 -top-[8%] bottom-0">
+          <div className="absolute inset-x-0 -top-[3%] bottom-0">
             <HeroGlobe />
           </div>
 
           {/* Tall, soft white fade so the globe's bottom melts smoothly into the page */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-44 bg-gradient-to-t from-white via-white/30 to-transparent lg:h-72" />
+          <div className="pointer-events-none absolute inset-x-0 -bottom-5 z-[5] h-44 bg-gradient-to-t from-white via-white/30 to-transparent lg:h-72" />
 
-          {/* Below the interactive zone, let swipes/scrolls pass to the page
-              instead of rotating the globe (the globe still shows through) */}
-          <div className="absolute inset-x-0 bottom-0 top-[66%] z-[6]" />
+          {/* Let swipes/scrolls near the bottom pass to the page */}
+          <div className="absolute inset-x-0 bottom-0 top-[82%] z-[6]" />
 
           {/* Search bar crossing the lower half of the globe */}
           <div className="absolute inset-x-0 top-[74%] z-10 -translate-y-1/2 px-4 sm:px-5">
@@ -114,73 +122,32 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* ── Listings carousel ──────────────────────────────── */}
+        {/* ── Newest listings ────────────────────────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <h2 className="type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]">5,400+ listings in</h2>
-              <button
-                onClick={goToMap}
-                className="flex items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-4 transition-colors hover:bg-[var(--color-brand-surface-strong)]"
-              >
-                <span className="relative h-8 w-8 overflow-hidden rounded-full">
-                  <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
-                </span>
-                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden items-center gap-1.5 sm:flex">
-                <CarouselArrow direction="left" onClick={() => scrollRow(listingsRef, -1)} />
-                <CarouselArrow direction="right" onClick={() => scrollRow(listingsRef, 1)} />
-              </div>
-              <Button variant="secondary" size="md" onClick={goToMap} className="hidden gap-1.5 type-label sm:flex">
-                <MapIcon size={16} />
-                Map View
-              </Button>
-            </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <h2 className="type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]">5,400+ listings in</h2>
+            <button
+              onClick={goToMap}
+              className="flex items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)]"
+            >
+              <span className="relative h-8 w-8 overflow-hidden rounded-full">
+                <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
+              </span>
+              <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
+              <ArrowRight size={17} className="text-[var(--color-text-secondary)]" />
+            </button>
           </div>
-
-          <div
-            ref={listingsRef}
-            className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {featured.map((listing) => (
-              <div key={listing.id} className="shrink-0 snap-start">
-                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} carouselImageHeight={cardImageHeight} carouselTotalHeight={cardTotalHeight} />
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-2 flex justify-center sm:hidden">
-            <Button variant="secondary" size="md" onClick={goToMap} className="gap-1.5 type-label">
-              <MapIcon size={16} />
-              Map View
-            </Button>
-          </div>
+          {renderCarousel(newest)}
         </section>
 
         {/* ── Market Insights ────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">Market Insights</h2>
-            <Button variant="secondary" size="md" className="hidden gap-1.5 type-label sm:flex">
-              Read more
-              <ArrowRight size={16} />
-            </Button>
-          </div>
+          <SectionHeader title="Market Insights" onArrow={() => router.push('/for-you')} />
 
           <div className="mt-4 grid gap-5 sm:mt-7 lg:grid-cols-2">
-            {/* Featured article */}
             <button className="group flex flex-col overflow-hidden rounded-[24px] border border-[var(--color-border)] text-left">
               <div className="relative aspect-[16/10] overflow-hidden">
-                <Image
-                  src={featuredArticle.image}
-                  alt=""
-                  fill
-                  sizes="(min-width:1024px) 560px, 100vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                <Image src={featuredArticle.image} alt="" fill sizes="(min-width:1024px) 560px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
               <div className="p-5">
                 <h3 className="type-subtitle text-[var(--color-text-primary)]">{featuredArticle.title}</h3>
@@ -188,18 +155,11 @@ export default function HomePageClient() {
               </div>
             </button>
 
-            {/* 2x2 grid of smaller articles */}
             <div className="grid gap-5 sm:grid-cols-2">
               {restArticles.map((article) => (
                 <button key={article.title} className="group flex flex-col overflow-hidden rounded-[20px] border border-[var(--color-border)] text-left">
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image
-                      src={article.image}
-                      alt=""
-                      fill
-                      sizes="(min-width:1024px) 270px, 50vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
+                    <Image src={article.image} alt="" fill sizes="(min-width:1024px) 270px, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="flex flex-1 flex-col p-4">
                     <h3 className="type-heading-sm leading-snug text-[var(--color-text-primary)] line-clamp-3">{article.title}</h3>
@@ -213,39 +173,18 @@ export default function HomePageClient() {
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">Sold Prices</h2>
-              <p className="mt-1.5 type-body text-[var(--color-text-secondary)]">Search sold data from 2003 – 2026.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="hidden items-center gap-1.5 sm:flex">
-                <CarouselArrow direction="left" onClick={() => scrollRow(soldRef, -1)} />
-                <CarouselArrow direction="right" onClick={() => scrollRow(soldRef, 1)} />
-              </div>
-              <Button variant="secondary" size="md" onClick={goToMap} className="hidden type-label sm:flex">
-                View sold properties
-              </Button>
-            </div>
-          </div>
-
-          <div
-            ref={soldRef}
-            className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {soldListings.map((listing) => (
-              <div key={listing.id} className="shrink-0 snap-start">
-                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} carouselImageHeight={cardImageHeight} carouselTotalHeight={cardTotalHeight} />
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-2 flex justify-center sm:hidden">
-            <Button variant="secondary" size="md" onClick={goToMap} className="type-label">
-              View sold properties
-            </Button>
-          </div>
+          <SectionHeader title="Sold Prices" onArrow={goToMap} />
+          {renderCarousel(soldListings)}
         </section>
+
+        {/* ── Featured listings ──────────────────────────────── */}
+        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
+          <SectionHeader title="Featured listings" onArrow={goToMap} />
+          {renderCarousel(featuredListings)}
+        </section>
+
+        {/* ── Search by keywords + link directory ────────────── */}
+        <HomeSeoSection />
 
         {/* ── Footer (matches the map listing view) ──────────── */}
         <div className="mt-14 px-5 pb-28 lg:px-12 lg:pb-6">
@@ -256,17 +195,13 @@ export default function HomePageClient() {
   );
 }
 
-function CarouselArrow({ direction, onClick }: { direction: 'left' | 'right'; onClick: () => void }) {
-  const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
+function SectionHeader({ title, onArrow }: { title: string; onArrow: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      aria-label={direction === 'left' ? 'Previous' : 'Next'}
-      className={cn(
-        'flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]'
-      )}
-    >
-      <Icon size={18} />
-    </button>
+    <div className="flex items-center justify-between gap-3 sm:justify-start">
+      <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">{title}</h2>
+      <Button variant="secondary" shape="circle" size="md" onClick={onArrow} aria-label={`${title} — see more`}>
+        <ArrowRight size={18} />
+      </Button>
+    </div>
   );
 }

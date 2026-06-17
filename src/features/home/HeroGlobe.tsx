@@ -100,11 +100,12 @@ type View = { kind: 'overview' } | { kind: 'cluster'; code: string } | { kind: '
 type Marker =
   | { type: 'province'; lat: number; lng: number; province: Province }
   | { type: 'cluster'; lat: number; lng: number; cluster: Cluster }
-  | { type: 'city'; lat: number; lng: number; city: City };
+  | { type: 'city'; lat: number; lng: number; city: City; image: string };
 
 function markersFor(view: View): Marker[] {
   if (view.kind === 'province') {
-    return byCode(view.code).cities.map((city) => ({ type: 'city' as const, lat: city.lat, lng: city.lng, city }));
+    const province = byCode(view.code);
+    return province.cities.map((city) => ({ type: 'city' as const, lat: city.lat, lng: city.lng, city, image: province.image }));
   }
   if (view.kind === 'cluster') {
     const cluster = CLUSTERS.find((c) => c.code === view.code);
@@ -145,10 +146,10 @@ export default function HeroGlobe() {
     if (!globe) return;
     if (next.kind === 'province') {
       const p = byCode(next.code);
-      globe.pointOfView({ lat: p.lat - 4, lng: p.lng, altitude: 0.9 }, 900);
+      globe.pointOfView({ lat: p.lat - 3, lng: p.lng, altitude: 1.2 }, 850);
     } else if (next.kind === 'cluster') {
       const c = CLUSTERS.find((cl) => cl.code === next.code);
-      if (c) globe.pointOfView({ lat: c.lat - 2, lng: c.lng, altitude: 1.2 }, 900);
+      if (c) globe.pointOfView({ lat: c.lat - 1, lng: c.lng, altitude: 1.45 }, 850);
     } else {
       globe.pointOfView({ lat: 54, lng: -96, altitude: 1.86 }, 900);
     }
@@ -162,8 +163,8 @@ export default function HeroGlobe() {
   const buildMarker = useCallback(
     (marker: Marker): HTMLElement => {
       const el = document.createElement('div');
-      el.style.transform = 'translate(-50%, -50%)';
       el.style.cursor = 'pointer';
+      el.style.pointerEvents = 'auto';
 
       if (marker.type === 'province') {
         el.innerHTML = `
@@ -183,9 +184,9 @@ export default function HeroGlobe() {
         });
       } else {
         el.innerHTML = `
-          <div style="display:flex;align-items:center;gap:7px;background:#fff;border-radius:9999px;padding:5px 12px 5px 7px;box-shadow:0 8px 20px rgba(15,23,41,0.22);white-space:nowrap;">
-            <span style="width:9px;height:9px;border-radius:9999px;background:var(--color-brand-600,#438ab6);box-shadow:0 0 0 3px rgba(67,138,182,0.18);"></span>
-            <span style="font-family:var(--font-body-sans);font-size:13px;font-weight:600;color:#0F1729;">${marker.city.name}</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+            <span style="display:block;width:38px;height:38px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 8px 18px rgba(15,23,41,0.22);background-image:url('${marker.image}');background-size:cover;background-position:center;"></span>
+            <span style="background:#fff;border-radius:9999px;padding:3px 10px;box-shadow:0 4px 12px rgba(15,23,41,0.16);font-family:var(--font-body-sans);font-size:11px;font-weight:600;line-height:1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span>
           </div>`;
         el.addEventListener('click', (event) => {
           event.stopPropagation();
