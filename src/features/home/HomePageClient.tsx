@@ -9,11 +9,9 @@ import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
 import { SectionHeader } from '@/features/home/SectionHeader';
-import { MarketStatsStrip, MarketBoard, AreaFinder } from '@/features/home/MarketSections';
+import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
-
-const TORONTO_AVATAR = 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=80&q=80';
 
 const INSIGHTS = [
   {
@@ -103,7 +101,7 @@ export default function HomePageClient() {
     <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
-        <section className="relative overflow-hidden bg-[radial-gradient(96%_64%_at_50%_56%,#c7dcf1_0%,#dceafa_44%,#eef5fb_72%,#ffffff_96%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(60%_64%_at_50%_58%,#cfe1f3_0%,#e4eff9_52%,#f4f9fc_74%,#ffffff_94%)] lg:min-h-[640px]">
+        <section className="relative overflow-hidden bg-[radial-gradient(96%_64%_at_50%_56%,#c7dcf1_0%,#dceafa_44%,#eef5fb_72%,#ffffff_96%)] min-h-[420px] sm:min-h-[510px] lg:bg-[radial-gradient(60%_64%_at_50%_58%,#cfe1f3_0%,#e4eff9_52%,#f4f9fc_74%,#ffffff_94%)] lg:min-h-[580px]">
           {/* Globe fills the hero; the blue glow lives in the background behind it.
               z-0 creates a stacking context so the fade/search bar layer above its pins. */}
           <div className="absolute inset-x-0 -top-[3%] bottom-0 z-0">
@@ -135,27 +133,18 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* ── At a glance (Toronto, ON + stats strip) ────────── */}
-        <section className="w-full px-5 pt-10 lg:px-12 lg:pt-12">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <button
-              onClick={goToMap}
-              className="flex min-w-0 items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)] sm:pr-4"
-            >
-              <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full sm:h-8 sm:w-8">
-                <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
-              </span>
-              <span className="truncate type-heading-sm !text-[1.05rem] text-[var(--color-text-primary)] sm:!text-[1.2rem] lg:!text-[1.35rem]">Toronto, ON</span>
-            </button>
-            <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">At A Glance</h2>
-          </div>
+        {/* ── At a glance (city + stats strip) ───────────────── */}
+        <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
+          <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
+            <span className="font-semibold" style={{ fontFamily: 'var(--font-body-sans)' }}>{CITY}, ON</span> At A Glance
+          </h2>
         </section>
         <MarketStatsStrip />
 
         {/* ── New listings ───────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader
-            title="5,400+ New Listings"
+            title={`5,400+ New Listings in ${CITY}`}
             onArrow={goToMap}
             onPrev={() => scrollRow(newestRef, -1)}
             onNext={() => scrollRow(newestRef, 1)}
@@ -163,8 +152,9 @@ export default function HomePageClient() {
           {renderCarousel(newest, newestRef)}
         </section>
 
-        {/* ── Market insights dashboard ──────────────────────── */}
+        {/* ── Market insights dashboard + deep dive ──────────── */}
         <MarketBoard />
+        <DeepDive />
 
         {/* ── News & Guides ──────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
@@ -215,7 +205,7 @@ export default function HomePageClient() {
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title="Sold Prices" onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
+          <SectionHeader title={`Sold Prices in ${CITY}`} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
           {renderCarousel(soldListings, soldRef)}
         </section>
 
@@ -224,7 +214,7 @@ export default function HomePageClient() {
 
         {/* ── Featured listings ──────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title="Featured listings" onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
+          <SectionHeader title={`Featured Listings in ${CITY}`} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
           {renderCarousel(featuredListings, featuredRef)}
         </section>
 
