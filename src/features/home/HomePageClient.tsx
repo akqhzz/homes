@@ -89,11 +89,11 @@ export default function HomePageClient() {
           </div>
 
           {/* Soft white fade so the globe's bottom edge isn't a hard cut */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-32 bg-gradient-to-t from-white via-white/80 to-transparent lg:h-44" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-16 bg-gradient-to-t from-white via-white/50 to-transparent lg:h-24" />
 
           {/* Below the interactive zone, let swipes/scrolls pass to the page
               instead of rotating the globe (the globe still shows through) */}
-          <div className="absolute inset-x-0 bottom-0 top-[56%] z-[6]" />
+          <div className="absolute inset-x-0 bottom-0 top-[66%] z-[6]" />
 
           {/* Search bar crossing the lower half of the globe */}
           <div className="absolute inset-x-0 top-[74%] z-10 -translate-y-1/2 px-4 sm:px-5">
@@ -126,7 +126,7 @@ export default function HomePageClient() {
                 <span className="relative h-8 w-8 overflow-hidden rounded-full">
                   <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
                 </span>
-                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-brand-text)] lg:!text-[1.35rem]">Toronto, ON</span>
+                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
               </button>
             </div>
             <div className="flex items-center gap-2">

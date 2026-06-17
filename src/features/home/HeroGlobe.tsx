@@ -76,11 +76,11 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
-        // Default is the most zoomed-out size; allow only a small zoom-in.
-        controls.maxDistance = 264;
-        controls.minDistance = 232;
+        // Default is the most zoomed-out size; zoom-in can grow it noticeably.
+        controls.maxDistance = 276;
+        controls.minDistance = 192;
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.64 }, 0);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.76 }, 0);
 
         const resize = () => {
           if (!globe) return;
