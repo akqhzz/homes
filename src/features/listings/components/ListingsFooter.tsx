@@ -26,6 +26,7 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
     'For listings in Canada, the trademarks REALTOR®, REALTORS®, and the REALTOR® logo are controlled by CREA and identify real estate professionals who are members of CREA.',
     'eXp Realty® is committed to adhering to the guidelines of The New York State Fair Housing Regulations. Fair Housing and Reasonable Accommodations. DMCA Notice.',
   ];
+  const sectionTitleClass = cn('text-[var(--color-text-primary)]', fullWidth ? 'type-heading' : 'type-heading-sm');
 
   return (
     <footer className={cn(
@@ -35,7 +36,7 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
       <div className={cn('mx-auto w-full', fullWidth && 'max-w-[1180px]')}>
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
         <section>
-          <h2 className="type-heading-sm text-[var(--color-text-primary)]">Company</h2>
+          <h2 className={sectionTitleClass}>Company</h2>
           <ul className="mt-4 space-y-2.5">
             {companyLinks.map((link) => (
               <li key={link}>
@@ -45,7 +46,7 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
           </ul>
         </section>
         <section>
-          <h2 className="type-heading-sm text-[var(--color-text-primary)]">Explore</h2>
+          <h2 className={sectionTitleClass}>Explore</h2>
           <ul className="mt-4 space-y-2.5">
             {exploreLinks.map((link) => (
               <li key={link}>
@@ -55,7 +56,7 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
           </ul>
         </section>
         <section>
-          <h2 className="type-heading-sm text-[var(--color-text-primary)]">Stay Connected</h2>
+          <h2 className={sectionTitleClass}>Stay Connected</h2>
           <div className="mt-4 space-y-3 type-caption text-[var(--color-text-secondary)]">
             <p>1-844-683-4663</p>
             <p>INFO@ZOOCASA.COM</p>
@@ -75,7 +76,7 @@ export default function ListingsFooter({ fullWidth = false }: { fullWidth?: bool
           </div>
         </section>
         <section>
-          <h2 className="type-heading-sm text-[var(--color-text-primary)]">Download Our App</h2>
+          <h2 className={sectionTitleClass}>Download Our App</h2>
           <div className="mt-4 flex flex-wrap gap-2 xl:flex-col">
             <StoreBadge store="apple" />
             <StoreBadge store="google" />

@@ -49,7 +49,10 @@ export default function HomePageClient() {
   const listingsRef = useRef<HTMLDivElement>(null);
   const soldRef = useRef<HTMLDivElement>(null);
 
-  const featured = [...MOCK_LISTINGS].sort((a, b) => a.daysOnMarket - b.daysOnMarket).slice(0, 10);
+  const featured = [...MOCK_LISTINGS]
+    .filter((l) => l.listingStatus !== 'sold')
+    .sort((a, b) => a.daysOnMarket - b.daysOnMarket)
+    .slice(0, 10);
   const soldListings = (() => {
     const sold = MOCK_LISTINGS.filter((l) => l.listingStatus === 'sold');
     return (sold.length >= 5 ? sold : MOCK_LISTINGS.slice(20, 30)).slice(0, 8);
@@ -63,7 +66,9 @@ export default function HomePageClient() {
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
-  const cardWidth = isDesktop ? 332 : 288;
+  const cardWidth = isDesktop ? 352 : 300;
+  const cardImageHeight = isDesktop ? 212 : 190;
+  const cardTotalHeight = isDesktop ? 302 : 278;
 
   const openSearch = () => setActivePanel('search');
   const goToMap = () => router.push('/');
@@ -86,18 +91,22 @@ export default function HomePageClient() {
           {/* Soft white fade so the globe's bottom edge isn't a hard cut */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-32 bg-gradient-to-t from-white via-white/80 to-transparent lg:h-44" />
 
+          {/* Below the interactive zone, let swipes/scrolls pass to the page
+              instead of rotating the globe (the globe still shows through) */}
+          <div className="absolute inset-x-0 bottom-0 top-[56%] z-[6]" />
+
           {/* Search bar crossing the lower half of the globe */}
-          <div className="absolute inset-x-0 top-[64%] z-10 -translate-y-1/2 px-4 sm:px-5">
+          <div className="absolute inset-x-0 top-[74%] z-10 -translate-y-1/2 px-4 sm:px-5">
             <div className="mx-auto w-full max-w-[760px]">
-              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-2.5 sm:pl-8">
+              <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-3 sm:pl-8">
                 <Search size={22} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
                 <button
                   onClick={openSearch}
-                  className="min-w-0 flex-1 truncate py-4 text-left text-[1rem] text-[var(--color-text-tertiary)] sm:py-4 sm:text-[1.1rem]"
+                  className="min-w-0 flex-1 truncate py-5 text-left text-[1rem] text-[var(--color-text-tertiary)] sm:py-[1.4rem] sm:text-[1.1rem]"
                 >
                   Enter a city, neighbourhood, address, MLS® number or school
                 </button>
-                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-12 w-12 shrink-0 sm:h-[3.1rem] sm:w-[3.1rem]">
+                <Button shape="circle" size="lg" onClick={openSearch} aria-label="Search" className="h-12 w-12 shrink-0 sm:h-[3.4rem] sm:w-[3.4rem]">
                   <Search size={20} />
                 </Button>
               </div>
@@ -112,12 +121,12 @@ export default function HomePageClient() {
               <h2 className="type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]">5,400+ listings in</h2>
               <button
                 onClick={goToMap}
-                className="flex items-center gap-2 rounded-full bg-[var(--color-surface)] py-1.5 pl-1.5 pr-4 transition-colors hover:bg-[var(--color-surface-hover)]"
+                className="flex items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-4 transition-colors hover:bg-[var(--color-brand-surface-strong)]"
               >
                 <span className="relative h-8 w-8 overflow-hidden rounded-full">
                   <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
                 </span>
-                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
+                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-brand-text)] lg:!text-[1.35rem]">Toronto, ON</span>
               </button>
             </div>
             <div className="flex items-center gap-2">
@@ -125,7 +134,7 @@ export default function HomePageClient() {
                 <CarouselArrow direction="left" onClick={() => scrollRow(listingsRef, -1)} />
                 <CarouselArrow direction="right" onClick={() => scrollRow(listingsRef, 1)} />
               </div>
-              <Button variant="surface" size="md" onClick={goToMap} className="hidden gap-1.5 type-label sm:flex">
+              <Button variant="secondary" size="md" onClick={goToMap} className="hidden gap-1.5 type-label sm:flex">
                 <MapIcon size={16} />
                 Map View
               </Button>
@@ -134,17 +143,17 @@ export default function HomePageClient() {
 
           <div
             ref={listingsRef}
-            className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {featured.map((listing) => (
               <div key={listing.id} className="shrink-0 snap-start">
-                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} desktopTall={isDesktop} />
+                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} carouselImageHeight={cardImageHeight} carouselTotalHeight={cardTotalHeight} />
               </div>
             ))}
           </div>
 
           <div className="mt-2 flex justify-center sm:hidden">
-            <Button variant="surface" size="md" onClick={goToMap} className="gap-1.5 type-label">
+            <Button variant="secondary" size="md" onClick={goToMap} className="gap-1.5 type-label">
               <MapIcon size={16} />
               Map View
             </Button>
@@ -161,7 +170,7 @@ export default function HomePageClient() {
             </Button>
           </div>
 
-          <div className="mt-7 grid gap-5 lg:grid-cols-2">
+          <div className="mt-4 grid gap-5 sm:mt-7 lg:grid-cols-2">
             {/* Featured article */}
             <button className="group flex flex-col overflow-hidden rounded-[24px] border border-[var(--color-border)] text-left">
               <div className="relative aspect-[16/10] overflow-hidden">
@@ -214,7 +223,7 @@ export default function HomePageClient() {
                 <CarouselArrow direction="left" onClick={() => scrollRow(soldRef, -1)} />
                 <CarouselArrow direction="right" onClick={() => scrollRow(soldRef, 1)} />
               </div>
-              <Button variant="surface" size="md" onClick={goToMap} className="hidden type-label sm:flex">
+              <Button variant="secondary" size="md" onClick={goToMap} className="hidden type-label sm:flex">
                 View sold properties
               </Button>
             </div>
@@ -222,17 +231,17 @@ export default function HomePageClient() {
 
           <div
             ref={soldRef}
-            className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {soldListings.map((listing) => (
               <div key={listing.id} className="shrink-0 snap-start">
-                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} desktopTall={isDesktop} />
+                <ListingCard listing={listing} variant="carousel" carouselWidth={cardWidth} carouselImageHeight={cardImageHeight} carouselTotalHeight={cardTotalHeight} />
               </div>
             ))}
           </div>
 
           <div className="mt-2 flex justify-center sm:hidden">
-            <Button variant="surface" size="md" onClick={goToMap} className="type-label">
+            <Button variant="secondary" size="md" onClick={goToMap} className="type-label">
               View sold properties
             </Button>
           </div>
