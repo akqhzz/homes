@@ -37,7 +37,7 @@ const PROVINCES: Province[] = [
     { name: 'Montréal', lat: 45.5, lng: -73.57 }, { name: 'Québec City', lat: 46.81, lng: -71.21 }, { name: 'Laval', lat: 45.6, lng: -73.71 }, { name: 'Gatineau', lat: 45.48, lng: -75.7 } ] },
   { code: 'SK', name: 'Saskatchewan', lat: 54, lng: -106, image: 'https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?w=160&q=80', cities: [
     { name: 'Saskatoon', lat: 52.13, lng: -106.67 }, { name: 'Regina', lat: 50.45, lng: -104.61 } ] },
-  { code: 'MB', name: 'Manitoba', lat: 54, lng: -97.5, image: 'https://images.unsplash.com/photo-1597006438013-0f0cc8b5b8c0?w=160&q=80', cities: [
+  { code: 'MB', name: 'Manitoba', lat: 54, lng: -97.5, image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=160&q=80', cities: [
     { name: 'Winnipeg', lat: 49.9, lng: -97.14 }, { name: 'Brandon', lat: 49.85, lng: -99.95 } ] },
   { code: 'NB', name: 'New Brunswick', lat: 46.6, lng: -66.5, image: 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=160&q=80', cities: [
     { name: 'Moncton', lat: 46.09, lng: -64.77 }, { name: 'Fredericton', lat: 45.96, lng: -66.64 }, { name: 'Saint John', lat: 45.27, lng: -66.06 } ] },
@@ -98,7 +98,7 @@ function frameOf(cities: { lat: number; lng: number }[]): { lat: number; lng: nu
       maxD = Math.max(maxD, angularDist(cities[i].lat, cities[i].lng, cities[j].lat, cities[j].lng));
     }
   }
-  return { lat, lng, altitude: Math.min(0.6, Math.max(0.22, maxD * 0.08)) };
+  return { lat, lng, altitude: Math.min(0.95, Math.max(0.45, maxD * 0.11)) };
 }
 
 function overviewMarkers(): Marker[] {
@@ -270,7 +270,7 @@ export default function HeroGlobe() {
         controls.enablePan = false;
         controls.rotateSpeed = 2.1;
         controls.zoomSpeed = 2.7;
-        controls.zoomToCursor = true;
+        controls.zoomToCursor = false;
         controls.maxDistance = 290;
         controls.minDistance = 78;
 
@@ -294,7 +294,10 @@ export default function HeroGlobe() {
           }
         });
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.86 }, 0);
+        // Subtle intro: the globe spins + zooms in to the default view on load.
+        suppressUntil = Date.now() + 1900;
+        globe.pointOfView({ lat: 40, lng: -123, altitude: 3 }, 0);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.86 }, 1700);
 
         const resize = () => {
           if (!globe) return;
