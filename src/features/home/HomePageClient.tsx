@@ -91,8 +91,9 @@ export default function HomePageClient() {
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
         <section className="relative overflow-hidden bg-[radial-gradient(98%_80%_at_50%_41%,#c7dcf1_0%,#dceafa_42%,#eef5fb_70%,#ffffff_94%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(62%_78%_at_50%_45%,#cfe1f3_0%,#e4eff9_50%,#f4f9fc_72%,#ffffff_92%)] lg:min-h-[640px]">
-          {/* Globe fills the hero; the blue glow lives in the background behind it */}
-          <div className="absolute inset-x-0 -top-[3%] bottom-0">
+          {/* Globe fills the hero; the blue glow lives in the background behind it.
+              z-0 creates a stacking context so the fade/search bar layer above its pins. */}
+          <div className="absolute inset-x-0 -top-[3%] bottom-0 z-0">
             <HeroGlobe />
           </div>
 
@@ -102,8 +103,8 @@ export default function HomePageClient() {
           {/* Let swipes/scrolls near the bottom pass to the page */}
           <div className="absolute inset-x-0 bottom-0 top-[82%] z-[6]" />
 
-          {/* Search bar crossing the lower half of the globe */}
-          <div className="absolute inset-x-0 top-[74%] z-10 -translate-y-1/2 px-4 sm:px-5">
+          {/* Search bar crossing the lower half of the globe (above every pin) */}
+          <div className="absolute inset-x-0 top-[74%] z-20 -translate-y-1/2 px-4 sm:px-5">
             <div className="mx-auto w-full max-w-[760px]">
               <div className="flex items-center gap-2 rounded-full bg-white p-2 pl-5 shadow-[0_6px_20px_rgba(15,23,41,0.07)] ring-1 ring-[var(--color-border)]/60 sm:p-3 sm:pl-8">
                 <Search size={22} className="hidden shrink-0 text-[var(--color-text-tertiary)] sm:block" />
@@ -124,7 +125,20 @@ export default function HomePageClient() {
         {/* ── Newest listings ────────────────────────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h2 className="type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]">5,400+ listings in</h2>
+            <h2
+              role="link"
+              tabIndex={0}
+              onClick={goToMap}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  goToMap();
+                }
+              }}
+              className="cursor-pointer type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]"
+            >
+              5,400+ listings in
+            </h2>
             <button
               onClick={goToMap}
               className="flex items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)]"
