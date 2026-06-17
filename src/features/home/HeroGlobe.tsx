@@ -2,8 +2,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-type City = { name: string; lat: number; lng: number; image: string };
-type Province = { code: string; name: string; lat: number; lng: number; image: string; cities: Omit<City, 'image'>[] };
+type City = { name: string; lat: number; lng: number; image: string; province: string };
+type Province = { code: string; name: string; lat: number; lng: number; image: string; cities: Omit<City, 'image' | 'province'>[] };
 type Cluster = { code: string; label: string; lat: number; lng: number };
 
 const CITY_IMAGES = [
@@ -56,7 +56,20 @@ const CLUSTERS: Cluster[] = [
 const OVERVIEW_PROVINCES = ['BC', 'AB', 'ON', 'QC'];
 
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
-const ALL_CITIES: City[] = PROVINCES.flatMap((p) => p.cities.map((c) => ({ ...c, image: cityImage(c.name) })));
+// Spread each province's cities apart from their centroid so the bubbles
+// don't overlap (exact map position isn't important here).
+const SPREAD = 1.6;
+const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
+  const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
+  const cLng = p.cities.reduce((s, c) => s + c.lng, 0) / p.cities.length;
+  return p.cities.map((c) => ({
+    name: c.name,
+    lat: cLat + (c.lat - cLat) * SPREAD,
+    lng: cLng + (c.lng - cLng) * SPREAD,
+    image: cityImage(c.name),
+    province: p.code,
+  }));
+});
 
 type Marker =
   | { type: 'province'; lat: number; lng: number; province: Province }
@@ -86,7 +99,7 @@ function frameOf(cities: { lat: number; lng: number }[]): { lat: number; lng: nu
       maxD = Math.max(maxD, angularDist(cities[i].lat, cities[i].lng, cities[j].lat, cities[j].lng));
     }
   }
-  return { lat, lng, altitude: Math.min(0.95, Math.max(0.32, maxD * 0.16)) };
+  return { lat, lng, altitude: Math.min(0.85, Math.max(0.3, maxD * 0.11)) };
 }
 
 function overviewMarkers(): Marker[] {
@@ -147,6 +160,7 @@ export default function HeroGlobe() {
     let wheelHandler: ((event: WheelEvent) => void) | undefined;
     let downHandler: ((event: PointerEvent) => void) | undefined;
     let upHandler: ((event: PointerEvent) => void) | undefined;
+    let moveHandler: ((event: PointerEvent) => void) | undefined;
 
     (async () => {
       const Globe = (await import('globe.gl')).default;
@@ -188,8 +202,9 @@ export default function HeroGlobe() {
             el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 10px 24px rgba(15,23,41,0.25);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
             el2.__activate = () => {
               mode = 'detail';
-              forced = new Set(marker.province.cities.map((c) => c.name));
-              const f = frameOf(marker.province.cities);
+              const cities = ALL_CITIES.filter((c) => c.province === marker.province.code);
+              forced = new Set(cities.map((c) => c.name));
+              const f = frameOf(cities);
               renderMarkers(f.altitude);
               goTo(f.lat, f.lng, f.altitude);
             };
@@ -223,7 +238,7 @@ export default function HeroGlobe() {
           return el2;
         };
 
-        globe = new Globe(el, { animateIn: false })
+        globe = new Globe(el, { animateIn: false, rendererConfig: { antialias: true } })
           .backgroundColor('rgba(0,0,0,0)')
           .showGlobe(true)
           .showAtmosphere(false)
@@ -243,6 +258,7 @@ export default function HeroGlobe() {
           enablePan: boolean;
           rotateSpeed: number;
           zoomSpeed: number;
+          zoomToCursor: boolean;
           minDistance: number;
           maxDistance: number;
           addEventListener: (type: string, cb: () => void) => void;
@@ -250,8 +266,9 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
-        controls.rotateSpeed = 1.55;
-        controls.zoomSpeed = 1.9;
+        controls.rotateSpeed = 2.1;
+        controls.zoomSpeed = 2.7;
+        controls.zoomToCursor = true;
         controls.maxDistance = 290;
         controls.minDistance = 78;
 
@@ -287,20 +304,13 @@ export default function HeroGlobe() {
 
         // Pins are pointer-events:none so the globe can be dragged/zoomed over them;
         // a tap that doesn't move hit-tests the pins and activates the top-most one.
-        let downX = 0;
-        let downY = 0;
-        downHandler = (event: PointerEvent) => {
-          downX = event.clientX;
-          downY = event.clientY;
-        };
-        upHandler = (event: PointerEvent) => {
-          if (Math.hypot(event.clientX - downX, event.clientY - downY) > 6) return;
+        const hitTest = (x: number, y: number): PinEl | null => {
           const pins = Array.from(el.querySelectorAll<PinEl>('[data-pin="1"]'));
           let best: PinEl | null = null;
           let bestZ = -1;
           for (const pin of pins) {
             const r = pin.getBoundingClientRect();
-            if (event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom) {
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
               const z = Number(pin.dataset.z ?? '0');
               if (z >= bestZ) {
                 bestZ = z;
@@ -308,32 +318,53 @@ export default function HeroGlobe() {
               }
             }
           }
-          best?.__activate?.();
+          return best;
+        };
+        let downX = 0;
+        let downY = 0;
+        downHandler = (event: PointerEvent) => {
+          downX = event.clientX;
+          downY = event.clientY;
+          el.style.cursor = '';
+        };
+        upHandler = (event: PointerEvent) => {
+          if (Math.hypot(event.clientX - downX, event.clientY - downY) > 6) return;
+          hitTest(event.clientX, event.clientY)?.__activate?.();
+        };
+        moveHandler = (event: PointerEvent) => {
+          if (event.buttons !== 0) return;
+          el.style.cursor = hitTest(event.clientX, event.clientY) ? 'pointer' : 'grab';
         };
         el.addEventListener('pointerdown', downHandler);
         el.addEventListener('pointerup', upHandler);
+        el.addEventListener('pointermove', moveHandler);
+
+        // Reveal the sphere + pins immediately; continents stream in after.
+        if (!destroyed) setReady(true);
+
+        const stylePolygons = (features: object[]) => {
+          if (!globe) return;
+          globe
+            .polygonsData(features)
+            .polygonCapColor(() => '#e9eff6')
+            .polygonSideColor(() => 'rgba(175,193,214,0.28)')
+            .polygonStrokeColor(() => '#c2cdda')
+            .polygonAltitude((d) => ((d as { __province?: boolean }).__province ? 0.006 : 0.0015));
+        };
 
         try {
-          const [countriesRes, provincesRes] = await Promise.all([fetch(COUNTRIES_GEOJSON), fetch(PROVINCES_GEOJSON)]);
-          const countries = await countriesRes.json();
-          const provinces = await provincesRes.json();
+          // Countries first (small file) for fast continents…
+          const countries = await (await fetch(COUNTRIES_GEOJSON)).json();
+          const countryFeatures = countries.features.map((f: object) => ({ ...f, __province: false }));
+          if (!destroyed && globe) stylePolygons(countryFeatures);
+          // …then province/state lines (larger file).
+          const provinces = await (await fetch(PROVINCES_GEOJSON)).json();
           if (!destroyed && globe) {
-            const features = [
-              ...countries.features.map((f: object) => ({ ...f, __province: false })),
-              ...provinces.features.map((f: object) => ({ ...f, __province: true })),
-            ];
-            globe
-              .polygonsData(features)
-              .polygonCapColor(() => '#e9eff6')
-              .polygonSideColor(() => 'rgba(175,193,214,0.28)')
-              .polygonStrokeColor(() => '#c2cdda')
-              .polygonAltitude((d) => ((d as { __province?: boolean }).__province ? 0.0025 : 0.001));
+            stylePolygons([...countryFeatures, ...provinces.features.map((f: object) => ({ ...f, __province: true }))]);
           }
         } catch {
           // Globe still renders without continents.
         }
-
-        if (!destroyed) setReady(true);
       } catch {
         // WebGL unavailable — leave the hero space empty rather than crashing.
       }
@@ -345,6 +376,7 @@ export default function HeroGlobe() {
       if (wheelHandler) el.removeEventListener('wheel', wheelHandler);
       if (downHandler) el.removeEventListener('pointerdown', downHandler);
       if (upHandler) el.removeEventListener('pointerup', upHandler);
+      if (moveHandler) el.removeEventListener('pointermove', moveHandler);
       const instance = globe as unknown as { _destructor?: () => void } | null;
       instance?._destructor?.();
       el.innerHTML = '';

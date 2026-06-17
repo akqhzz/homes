@@ -103,6 +103,11 @@ export default function HomePageClient() {
           {/* Globe fills the hero; the blue glow lives in the background behind it.
               z-0 creates a stacking context so the fade/search bar layer above its pins. */}
           <div className="absolute inset-x-0 -top-[3%] bottom-0 z-0">
+            {/* Soft placeholder so the hero isn't blank while the globe loads */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[min(78%,540px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_36%_30%,#ffffff,#eef3f8_68%,#e1e9f1)] opacity-70 shadow-[0_30px_80px_-40px_rgba(43,82,107,0.35)]"
+            />
             <HeroGlobe />
           </div>
 
@@ -273,7 +278,7 @@ function CarouselArrow({ direction, onClick }: { direction: 'left' | 'right'; on
       type="button"
       onClick={onClick}
       aria-label={direction === 'left' ? 'Scroll left' : 'Scroll right'}
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
     >
       <Icon size={18} />
     </button>
