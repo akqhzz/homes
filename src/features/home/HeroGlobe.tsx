@@ -27,17 +27,17 @@ function cityImage(name: string): string {
 }
 
 const PROVINCES: Province[] = [
-  { code: 'BC', name: 'British Columbia', lat: 53.5, lng: -125, image: 'https://images.unsplash.com/photo-1560814304-4f05b62af116?w=160&q=80', cities: [
+  { code: 'BC', name: 'British Columbia', lat: 55, lng: -128, image: 'https://images.unsplash.com/photo-1560814304-4f05b62af116?w=160&q=80', cities: [
     { name: 'Vancouver', lat: 49.28, lng: -123.12 }, { name: 'Victoria', lat: 48.43, lng: -123.37 }, { name: 'Kelowna', lat: 49.89, lng: -119.5 }, { name: 'Surrey', lat: 49.19, lng: -122.85 } ] },
-  { code: 'AB', name: 'Alberta', lat: 54.5, lng: -114.5, image: 'https://images.unsplash.com/photo-1609825488888-3a766db05542?w=160&q=80', cities: [
+  { code: 'AB', name: 'Alberta', lat: 51, lng: -117, image: 'https://images.unsplash.com/photo-1609825488888-3a766db05542?w=160&q=80', cities: [
     { name: 'Calgary', lat: 51.05, lng: -114.07 }, { name: 'Edmonton', lat: 53.55, lng: -113.49 }, { name: 'Red Deer', lat: 52.27, lng: -113.81 } ] },
   { code: 'ON', name: 'Ontario', lat: 49.5, lng: -86, image: 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=160&q=80', cities: [
     { name: 'Toronto', lat: 43.65, lng: -79.38 }, { name: 'Ottawa', lat: 45.42, lng: -75.7 }, { name: 'Mississauga', lat: 43.59, lng: -79.64 }, { name: 'Hamilton', lat: 43.26, lng: -79.87 }, { name: 'London', lat: 42.98, lng: -81.25 } ] },
   { code: 'QC', name: 'Québec', lat: 52, lng: -72, image: 'https://images.unsplash.com/photo-1519178614-68673b201f36?w=160&q=80', cities: [
     { name: 'Montréal', lat: 45.5, lng: -73.57 }, { name: 'Québec City', lat: 46.81, lng: -71.21 }, { name: 'Laval', lat: 45.6, lng: -73.71 }, { name: 'Gatineau', lat: 45.48, lng: -75.7 } ] },
-  { code: 'SK', name: 'Saskatchewan', lat: 54, lng: -106, image: 'https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?w=160&q=80', cities: [
+  { code: 'SK', name: 'Saskatchewan', lat: 56, lng: -105, image: 'https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?w=160&q=80', cities: [
     { name: 'Saskatoon', lat: 52.13, lng: -106.67 }, { name: 'Regina', lat: 50.45, lng: -104.61 } ] },
-  { code: 'MB', name: 'Manitoba', lat: 54, lng: -97.5, image: 'https://images.unsplash.com/photo-1574721363169-7a92a80a03a9?w=160&q=80', cities: [
+  { code: 'MB', name: 'Manitoba', lat: 50.5, lng: -94, image: 'https://images.unsplash.com/photo-1574721363169-7a92a80a03a9?w=160&q=80', cities: [
     { name: 'Winnipeg', lat: 49.9, lng: -97.14 }, { name: 'Brandon', lat: 49.85, lng: -99.95 } ] },
   { code: 'NB', name: 'New Brunswick', lat: 46.6, lng: -66.5, image: 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=160&q=80', cities: [
     { name: 'Moncton', lat: 46.09, lng: -64.77 }, { name: 'Fredericton', lat: 45.96, lng: -66.64 }, { name: 'Saint John', lat: 45.27, lng: -66.06 } ] },
@@ -160,6 +160,7 @@ export default function HeroGlobe() {
         let mode: 'province' | 'cities' = 'province';
         let expanded: string | null = null; // province expanded into its cities
         let clusterOpen = false; // Atlantic cluster opened into its 4 provinces
+        let forced = new Set<string>(); // city-cluster members forced to show individually
         let bucket = -1;
         let suppressUntil = 0;
 
@@ -193,7 +194,7 @@ export default function HeroGlobe() {
           if (mode === 'cities') {
             const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
             bucket = Math.round(thresholdFor(alt));
-            globe.htmlElementsData(cityMarkers(thresholdFor(alt), new Set()));
+            globe.htmlElementsData(cityMarkers(thresholdFor(alt), forced));
           } else {
             globe.htmlElementsData(provinceModeMarkers());
           }
@@ -209,8 +210,8 @@ export default function HeroGlobe() {
         };
 
         // Expand one province into its cities while the other provinces stay as
-        // bubbles. Centre on it but stay zoomed well out (cities only fill in on
-        // a much deeper zoom).
+        // bubbles. Zoom right in on it; only an even deeper zoom flips into the
+        // all-provinces cities mode.
         const expandProvince = (code: string) => {
           mode = 'province';
           expanded = code;
@@ -218,7 +219,7 @@ export default function HeroGlobe() {
           const cLat = cities.reduce((s, c) => s + c.lat, 0) / cities.length;
           const cLng = cities.reduce((s, c) => s + c.lng, 0) / cities.length;
           renderMarkers();
-          goTo(cLat, cLng, 1.35);
+          goTo(cLat, cLng, 0.55);
         };
 
         // Open the Atlantic cluster into its 4 member provinces (still bubbles).
@@ -250,8 +251,12 @@ export default function HeroGlobe() {
             el2.dataset.z = '1';
             el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
             el2.__activate = () => {
+              // Force this cluster's cities to render individually (don't rely on
+              // the zoom level splitting them), then zoom in to frame them.
+              marker.cities.forEach((c) => forced.add(c.name));
+              renderMarkers();
               const f = frameOf(marker.cities);
-              goTo(f.lat, f.lng, Math.max(0.3, f.altitude * 0.7));
+              goTo(f.lat, f.lng, Math.max(0.18, f.altitude * 0.55));
             };
           } else {
             el2.style.zIndex = '2';
@@ -313,19 +318,21 @@ export default function HeroGlobe() {
           controls.minDistance = MIN_DISTANCE;
           if (Date.now() < suppressUntil) return;
           const alt = globe.pointOfView().altitude ?? 1.86;
-          if (alt > 1.55) {
+          if (alt > 1.45) {
             // Zoomed out to the overview: province bubbles, nothing expanded,
             // Atlantic cluster closed again.
             if (mode !== 'province' || expanded !== null || clusterOpen) {
               mode = 'province';
               expanded = null;
               clusterOpen = false;
+              forced = new Set();
               renderMarkers();
             }
-          } else if (alt < 0.5) {
+          } else if (alt < 0.4) {
             // Zoomed in much further: every province shown as its cities, clustered.
             if (mode !== 'cities') {
               mode = 'cities';
+              forced = new Set();
               renderMarkers();
             } else if (Math.round(thresholdFor(alt)) !== bucket) {
               renderMarkers();
@@ -335,6 +342,7 @@ export default function HeroGlobe() {
             mode = 'province';
             expanded = null;
             clusterOpen = false;
+            forced = new Set();
             renderMarkers();
           }
         });
