@@ -62,31 +62,52 @@ type Marker =
   | { type: 'province'; lat: number; lng: number; province: Province }
   | { type: 'pcluster'; lat: number; lng: number; cluster: Cluster }
   | { type: 'city'; lat: number; lng: number; city: City }
-  | { type: 'ccluster'; lat: number; lng: number; count: number };
+  | { type: 'ccluster'; lat: number; lng: number; count: number; cities: City[] };
 
 const COUNTRIES_GEOJSON = '/data/countries.geojson';
 const PROVINCES_GEOJSON = '/data/provinces.geojson';
 
-// Approximate angular distance (degrees), accounting for longitude convergence.
 function angularDist(aLat: number, aLng: number, bLat: number, bLng: number): number {
   const k = Math.cos(((aLat + bLat) / 2) * (Math.PI / 180));
   return Math.hypot(aLat - bLat, (aLng - bLng) * k);
 }
 
+function thresholdFor(altitude: number): number {
+  return Math.min(4, Math.max(0.8, altitude * 2.5));
+}
+
+// Centre + a fitting altitude for a set of cities.
+function frameOf(cities: { lat: number; lng: number }[]): { lat: number; lng: number; altitude: number } {
+  const lat = cities.reduce((s, c) => s + c.lat, 0) / cities.length;
+  const lng = cities.reduce((s, c) => s + c.lng, 0) / cities.length;
+  let maxD = 0;
+  for (let i = 0; i < cities.length; i += 1) {
+    for (let j = i + 1; j < cities.length; j += 1) {
+      maxD = Math.max(maxD, angularDist(cities[i].lat, cities[i].lng, cities[j].lat, cities[j].lng));
+    }
+  }
+  return { lat, lng, altitude: Math.min(0.95, Math.max(0.32, maxD * 0.16)) };
+}
+
 function overviewMarkers(): Marker[] {
+  // Clusters first (rendered underneath), province bubbles on top.
   return [
+    ...CLUSTERS.map((cluster) => ({ type: 'pcluster' as const, lat: cluster.lat, lng: cluster.lng, cluster })),
     ...OVERVIEW_PROVINCES.map((code) => {
       const province = byCode(code);
       return { type: 'province' as const, lat: province.lat, lng: province.lng, province };
     }),
-    ...CLUSTERS.map((cluster) => ({ type: 'pcluster' as const, lat: cluster.lat, lng: cluster.lng, cluster })),
   ];
 }
 
-// Greedily group nearby cities; threshold shrinks as you zoom in.
-function cityMarkers(thresholdDeg: number): Marker[] {
+function cityMarkers(thresholdDeg: number, forced: Set<string>): Marker[] {
   const groups: { lat: number; lng: number; items: City[] }[] = [];
+  const forcedCities: Marker[] = [];
   for (const city of ALL_CITIES) {
+    if (forced.has(city.name)) {
+      forcedCities.push({ type: 'city', lat: city.lat, lng: city.lng, city });
+      continue;
+    }
     const group = groups.find((g) => angularDist(g.lat, g.lng, city.lat, city.lng) < thresholdDeg);
     if (group) {
       group.items.push(city);
@@ -96,16 +117,17 @@ function cityMarkers(thresholdDeg: number): Marker[] {
       groups.push({ lat: city.lat, lng: city.lng, items: [city] });
     }
   }
-  return groups.map((g) =>
-    g.items.length === 1
-      ? { type: 'city' as const, lat: g.items[0].lat, lng: g.items[0].lng, city: g.items[0] }
-      : { type: 'ccluster' as const, lat: g.lat, lng: g.lng, count: g.items.length }
-  );
+  const clusters: Marker[] = [];
+  const cities: Marker[] = [];
+  for (const g of groups) {
+    if (g.items.length === 1) cities.push({ type: 'city', lat: g.items[0].lat, lng: g.items[0].lng, city: g.items[0] });
+    else clusters.push({ type: 'ccluster', lat: g.lat, lng: g.lng, count: g.items.length, cities: g.items });
+  }
+  // Clusters underneath, individual cities on top.
+  return [...clusters, ...forcedCities, ...cities];
 }
 
-function thresholdFor(altitude: number): number {
-  return Math.min(4, Math.max(0.8, altitude * 2.5));
-}
+type PinEl = HTMLElement & { __activate?: () => void };
 
 export default function HeroGlobe() {
   const router = useRouter();
@@ -123,6 +145,8 @@ export default function HeroGlobe() {
     let globe: InstanceType<typeof import('globe.gl').default> | null = null;
     let resizeObserver: ResizeObserver | undefined;
     let wheelHandler: ((event: WheelEvent) => void) | undefined;
+    let downHandler: ((event: PointerEvent) => void) | undefined;
+    let upHandler: ((event: PointerEvent) => void) | undefined;
 
     (async () => {
       const Globe = (await import('globe.gl')).default;
@@ -132,6 +156,7 @@ export default function HeroGlobe() {
         let mode: 'overview' | 'detail' = 'overview';
         let bucket = -1;
         let suppressUntil = 0;
+        let forced = new Set<string>();
 
         const renderMarkers = (altOverride?: number) => {
           if (!globe) return;
@@ -141,57 +166,61 @@ export default function HeroGlobe() {
           }
           const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
           bucket = Math.round(thresholdFor(alt));
-          globe.htmlElementsData(cityMarkers(thresholdFor(alt)));
+          globe.htmlElementsData(cityMarkers(thresholdFor(alt), forced));
         };
 
         const goTo = (lat: number, lng: number, altitude: number) => {
           if (!globe) return;
           suppressUntil = Date.now() + 950;
-          globe.pointOfView({ lat, lng, altitude }, 850);
-          // Re-cluster once the camera settles (change events are suppressed during the move).
+          globe.pointOfView({ lat, lng, altitude }, 800);
           window.setTimeout(() => {
             if (!destroyed) renderMarkers();
-          }, 1000);
+          }, 950);
         };
 
-        const buildMarker = (marker: Marker): HTMLElement => {
-          const el = document.createElement('div');
-          el.style.cursor = 'pointer';
-          el.style.pointerEvents = 'auto';
+        const buildMarker = (marker: Marker): PinEl => {
+          const el2 = document.createElement('div') as PinEl;
+          el2.dataset.pin = '1';
+          el2.style.pointerEvents = 'none'; // drags/zoom pass through to the globe; clicks via hit-test
           if (marker.type === 'province') {
-            el.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 10px 24px rgba(15,23,41,0.25);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
-            el.addEventListener('click', (event) => {
-              event.stopPropagation();
+            el2.style.zIndex = '3';
+            el2.dataset.z = '3';
+            el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 10px 24px rgba(15,23,41,0.25);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
+            el2.__activate = () => {
               mode = 'detail';
-              renderMarkers(1);
-              goTo(marker.province.lat - 3, marker.province.lng, 1);
-            });
+              forced = new Set(marker.province.cities.map((c) => c.name));
+              const f = frameOf(marker.province.cities);
+              renderMarkers(f.altitude);
+              goTo(f.lat, f.lng, f.altitude);
+            };
           } else if (marker.type === 'pcluster') {
-            el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 8px 20px rgba(15,23,41,0.28);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
-            el.addEventListener('click', (event) => {
-              event.stopPropagation();
+            el2.style.zIndex = '1';
+            el2.dataset.z = '1';
+            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 8px 20px rgba(15,23,41,0.28);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
+            el2.__activate = () => {
               mode = 'detail';
+              forced = new Set();
               renderMarkers(1);
               goTo(marker.cluster.lat - 2, marker.cluster.lng, 1);
-            });
+            };
           } else if (marker.type === 'ccluster') {
-            el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 8px 20px rgba(15,23,41,0.28);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
-            el.addEventListener('click', (event) => {
-              event.stopPropagation();
-              const alt = globe?.pointOfView().altitude ?? 1.1;
-              const target = Math.max(0.4, alt * 0.5);
+            el2.style.zIndex = '1';
+            el2.dataset.z = '1';
+            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 8px 20px rgba(15,23,41,0.28);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
+            el2.__activate = () => {
               mode = 'detail';
-              renderMarkers(target);
-              goTo(marker.lat, marker.lng, target);
-            });
+              marker.cities.forEach((c) => forced.add(c.name));
+              const f = frameOf(marker.cities);
+              renderMarkers(f.altitude);
+              goTo(f.lat, f.lng, f.altitude);
+            };
           } else {
-            el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 8px 18px rgba(15,23,41,0.22);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 4px 12px rgba(15,23,41,0.16);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
-            el.addEventListener('click', (event) => {
-              event.stopPropagation();
-              routerRef.current.push('/');
-            });
+            el2.style.zIndex = '2';
+            el2.dataset.z = '2';
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 8px 18px rgba(15,23,41,0.22);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 4px 12px rgba(15,23,41,0.16);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
+            el2.__activate = () => routerRef.current.push('/');
           }
-          return el;
+          return el2;
         };
 
         globe = new Globe(el, { animateIn: false })
@@ -212,6 +241,8 @@ export default function HeroGlobe() {
           autoRotate: boolean;
           enableZoom: boolean;
           enablePan: boolean;
+          rotateSpeed: number;
+          zoomSpeed: number;
           minDistance: number;
           maxDistance: number;
           addEventListener: (type: string, cb: () => void) => void;
@@ -219,6 +250,8 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
+        controls.rotateSpeed = 1.55;
+        controls.zoomSpeed = 1.9;
         controls.maxDistance = 290;
         controls.minDistance = 78;
 
@@ -228,15 +261,14 @@ export default function HeroGlobe() {
           if (alt > 1.5) {
             if (mode !== 'overview') {
               mode = 'overview';
+              forced = new Set();
               renderMarkers();
             }
-          } else {
-            if (mode !== 'detail') {
-              mode = 'detail';
-              renderMarkers();
-            } else if (Math.round(thresholdFor(alt)) !== bucket) {
-              renderMarkers();
-            }
+          } else if (mode !== 'detail') {
+            mode = 'detail';
+            renderMarkers();
+          } else if (Math.round(thresholdFor(alt)) !== bucket) {
+            renderMarkers();
           }
         });
 
@@ -250,9 +282,36 @@ export default function HeroGlobe() {
         resizeObserver = new ResizeObserver(resize);
         resizeObserver.observe(el);
 
-        // Wheeling over the globe zooms it; never scroll the page (even over pins).
         wheelHandler = (event: WheelEvent) => event.preventDefault();
         el.addEventListener('wheel', wheelHandler, { passive: false });
+
+        // Pins are pointer-events:none so the globe can be dragged/zoomed over them;
+        // a tap that doesn't move hit-tests the pins and activates the top-most one.
+        let downX = 0;
+        let downY = 0;
+        downHandler = (event: PointerEvent) => {
+          downX = event.clientX;
+          downY = event.clientY;
+        };
+        upHandler = (event: PointerEvent) => {
+          if (Math.hypot(event.clientX - downX, event.clientY - downY) > 6) return;
+          const pins = Array.from(el.querySelectorAll<PinEl>('[data-pin="1"]'));
+          let best: PinEl | null = null;
+          let bestZ = -1;
+          for (const pin of pins) {
+            const r = pin.getBoundingClientRect();
+            if (event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom) {
+              const z = Number(pin.dataset.z ?? '0');
+              if (z >= bestZ) {
+                bestZ = z;
+                best = pin;
+              }
+            }
+          }
+          best?.__activate?.();
+        };
+        el.addEventListener('pointerdown', downHandler);
+        el.addEventListener('pointerup', upHandler);
 
         try {
           const [countriesRes, provincesRes] = await Promise.all([fetch(COUNTRIES_GEOJSON), fetch(PROVINCES_GEOJSON)]);
@@ -284,6 +343,8 @@ export default function HeroGlobe() {
       destroyed = true;
       resizeObserver?.disconnect();
       if (wheelHandler) el.removeEventListener('wheel', wheelHandler);
+      if (downHandler) el.removeEventListener('pointerdown', downHandler);
+      if (upHandler) el.removeEventListener('pointerup', upHandler);
       const instance = globe as unknown as { _destructor?: () => void } | null;
       instance?._destructor?.();
       el.innerHTML = '';

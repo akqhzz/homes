@@ -1,8 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
@@ -68,10 +68,19 @@ export default function HomePageClient() {
   const openSearch = () => setActivePanel('search');
   const goToMap = () => router.push('/');
 
+  const newestRef = useRef<HTMLDivElement>(null);
+  const soldRef = useRef<HTMLDivElement>(null);
+  const featuredRef = useRef<HTMLDivElement>(null);
+  const scrollRow = (ref: React.RefObject<HTMLDivElement | null>, dir: 1 | -1) =>
+    ref.current?.scrollBy({ left: dir * Math.min(760, ref.current.clientWidth * 0.85), behavior: 'smooth' });
+
   const [featuredArticle, ...restArticles] = INSIGHTS;
 
-  const renderCarousel = (listings: typeof MOCK_LISTINGS) => (
-    <div className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+  const renderCarousel = (listings: typeof MOCK_LISTINGS, ref: React.RefObject<HTMLDivElement | null>) => (
+    <div
+      ref={ref}
+      className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       {listings.map((listing) => (
         <div key={listing.id} className="shrink-0 snap-start">
           <ListingCard
@@ -124,33 +133,37 @@ export default function HomePageClient() {
 
         {/* ── Newest listings ────────────────────────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <h2
-              role="link"
-              tabIndex={0}
-              onClick={goToMap}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  goToMap();
-                }
-              }}
-              className="cursor-pointer type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]"
-            >
-              5,400+ listings in
-            </h2>
-            <button
-              onClick={goToMap}
-              className="flex items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)]"
-            >
-              <span className="relative h-8 w-8 overflow-hidden rounded-full">
-                <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
-              </span>
-              <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
-              <ArrowRight size={17} className="text-[var(--color-text-secondary)]" />
-            </button>
+          <div className="flex items-center justify-between gap-3">
+            {/* group: hovering the title also highlights the Toronto chip */}
+            <div className="group flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h2
+                role="link"
+                tabIndex={0}
+                onClick={goToMap}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    goToMap();
+                  }
+                }}
+                className="cursor-pointer type-title !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]"
+              >
+                5,400+ listings in
+              </h2>
+              <button
+                onClick={goToMap}
+                className="flex items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)] group-hover:bg-[var(--color-brand-surface-strong)]"
+              >
+                <span className="relative h-8 w-8 overflow-hidden rounded-full">
+                  <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
+                </span>
+                <span className="type-heading-sm !text-[1.2rem] text-[var(--color-text-primary)] lg:!text-[1.35rem]">Toronto, ON</span>
+                <ArrowRight size={17} className="text-[var(--color-text-secondary)]" />
+              </button>
+            </div>
+            <CarouselNav onPrev={() => scrollRow(newestRef, -1)} onNext={() => scrollRow(newestRef, 1)} />
           </div>
-          {renderCarousel(newest)}
+          {renderCarousel(newest, newestRef)}
         </section>
 
         {/* ── Market Insights ────────────────────────────────── */}
@@ -186,14 +199,14 @@ export default function HomePageClient() {
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title="Sold Prices" onArrow={goToMap} />
-          {renderCarousel(soldListings)}
+          <SectionHeader title="Sold Prices" onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
+          {renderCarousel(soldListings, soldRef)}
         </section>
 
         {/* ── Featured listings ──────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title="Featured listings" onArrow={goToMap} />
-          {renderCarousel(featuredListings)}
+          <SectionHeader title="Featured listings" onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
+          {renderCarousel(featuredListings, featuredRef)}
         </section>
 
         {/* ── Footer (matches the map listing view) ──────────── */}
@@ -205,28 +218,64 @@ export default function HomePageClient() {
   );
 }
 
-function SectionHeader({ title, onArrow }: { title: string; onArrow: () => void }) {
+function SectionHeader({
+  title,
+  onArrow,
+  onPrev,
+  onNext,
+}: {
+  title: string;
+  onArrow: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+}) {
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onArrow}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          onArrow();
-        }
-      }}
-      aria-label={`${title} — see more`}
-      className="group flex cursor-pointer items-center justify-between gap-3 sm:justify-start"
-    >
-      <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">{title}</h2>
-      <span
-        aria-hidden
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
+    <div className="flex items-center justify-between gap-3">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onArrow}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onArrow();
+          }
+        }}
+        aria-label={`${title} — see more`}
+        className="group flex flex-1 cursor-pointer items-center justify-between gap-3 sm:flex-none sm:justify-start"
       >
-        <ArrowRight size={18} />
-      </span>
+        <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">{title}</h2>
+        <span
+          aria-hidden
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
+        >
+          <ArrowRight size={18} />
+        </span>
+      </div>
+      {onPrev && onNext && <CarouselNav onPrev={onPrev} onNext={onNext} />}
     </div>
+  );
+}
+
+function CarouselNav({ onPrev, onNext }: { onPrev: () => void; onNext: () => void }) {
+  return (
+    <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+      <CarouselArrow direction="left" onClick={onPrev} />
+      <CarouselArrow direction="right" onClick={onNext} />
+    </div>
+  );
+}
+
+function CarouselArrow({ direction, onClick }: { direction: 'left' | 'right'; onClick: () => void }) {
+  const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={direction === 'left' ? 'Scroll left' : 'Scroll right'}
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+    >
+      <Icon size={18} />
+    </button>
   );
 }
