@@ -290,6 +290,8 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           goTo(atlantic.lat, atlantic.lng, 0.9);
         };
 
+        // Scales only the round bubble with the zoom (label pills stay put).
+        const SCALE = 'transform:scale(var(--pin-scale,1));transform-origin:center bottom;transition:transform 160ms ease-out;';
         const buildMarker = (marker: Marker): PinEl => {
           const el2 = document.createElement('div') as PinEl;
           el2.dataset.pin = '1';
@@ -297,17 +299,17 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           if (marker.type === 'province') {
             el2.style.zIndex = '3';
             el2.dataset.z = '3';
-            el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 4px 12px rgba(15,23,41,0.16);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
+            el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 4px 12px rgba(15,23,41,0.16);background-image:url('${marker.province.image}');background-size:cover;background-position:center;${SCALE}"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
             el2.__activate = () => expandProvince(marker.province.code);
           } else if (marker.type === 'pcluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
-            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
+            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;${SCALE}">${marker.cluster.label}</div>`;
             el2.__activate = () => openCluster();
           } else if (marker.type === 'ccluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
-            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
+            el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;${SCALE}">${marker.count}</div>`;
             el2.__activate = () => {
               // Force this cluster's cities to render individually (don't rely on
               // the zoom level splitting them), then zoom in to frame them —
@@ -321,25 +323,22 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           } else {
             el2.style.zIndex = '2';
             el2.dataset.z = '2';
-            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => {
               if (onCityClickRef.current) onCityClickRef.current(marker.city.name);
               else routerRef.current.push('/');
             };
           }
-          // Wrap the content so we can scale the bubble with the zoom level
-          // (via the --pin-scale custom property on the globe root) without
-          // clashing with the per-pin entrance animation. globe.gl positions
-          // el2 itself with a transform, so neither effect touches el2.
+          // The bubble circle itself scales with the zoom (via --pin-scale on
+          // each circle's inline style); the entrance animation lives on a
+          // wrapper so the two transforms don't clash. globe.gl positions el2
+          // with its own transform, so neither effect touches el2.
           const content = el2.firstElementChild as HTMLElement | null;
           if (content) {
             const wrap = document.createElement('div');
-            wrap.style.transformOrigin = 'center bottom';
-            wrap.style.transform = 'scale(var(--pin-scale, 1))';
-            wrap.style.transition = 'transform 140ms ease-out';
+            wrap.style.animation = 'globePinIn 320ms cubic-bezier(0.16,0.84,0.44,1) both';
             el2.replaceChild(wrap, content);
             wrap.appendChild(content);
-            content.style.animation = 'globePinIn 320ms cubic-bezier(0.16,0.84,0.44,1) both';
           }
           return el2;
         };
@@ -393,9 +392,10 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           // 10000 on init, so this is what actually locks the zoom-out.
           controls.maxDistance = MAX_DISTANCE;
           controls.minDistance = MIN_DISTANCE;
-          // Gently grow the bubbles as you zoom in (and shrink slightly out).
+          // Grow the bubbles as you zoom in (labels stay small). Only the round
+          // bubble uses --pin-scale, so this can be fairly pronounced.
           const altNow = globe.pointOfView().altitude ?? 1.7;
-          el.style.setProperty('--pin-scale', String(Math.max(0.96, Math.min(1.18, 1 + (1.7 - altNow) * 0.12))));
+          el.style.setProperty('--pin-scale', String(Math.max(0.95, Math.min(1.5, 1 + (1.7 - altNow) * 0.4))));
           if (Date.now() < suppressUntil) return;
           const alt = globe.pointOfView().altitude ?? 1.86;
           if (alt > 1.45) {

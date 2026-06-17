@@ -10,7 +10,7 @@ import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
 import { SectionHeader } from '@/features/home/SectionHeader';
-import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY, getCityData } from '@/features/home/MarketSections';
+import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY, getCityData, cityImageUrl } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 
@@ -159,13 +159,18 @@ export default function HomePageClient() {
           key={city}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.85, ease: [0.33, 0, 0.2, 1] }}
+          transition={{ duration: 1.15, ease: [0.4, 0, 0.2, 1] }}
         >
         {/* ── At a glance (city + stats strip) ───────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
-          <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
-            {city} At A Glance
-          </h2>
+          <div className="flex items-center gap-3">
+            <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-[var(--color-border)] sm:h-9 sm:w-9">
+              <Image src={cityImageUrl(city)} alt="" fill sizes="36px" className="object-cover" />
+            </span>
+            <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
+              {city} At A Glance
+            </h2>
+          </div>
         </section>
         <MarketStatsStrip city={city} />
 
@@ -173,6 +178,7 @@ export default function HomePageClient() {
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader
             title={`${cityData.newListingsLabel} New Listings in ${city}`}
+            cityImage={cityImageUrl(city)}
             onArrow={goToMap}
             onPrev={() => scrollRow(newestRef, -1)}
             onNext={() => scrollRow(newestRef, 1)}
@@ -233,7 +239,7 @@ export default function HomePageClient() {
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title={`Sold Prices in ${city}`} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
+          <SectionHeader title={`Sold Prices in ${city}`} cityImage={cityImageUrl(city)} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
           {renderCarousel(soldListings, soldRef)}
         </section>
 
@@ -242,7 +248,7 @@ export default function HomePageClient() {
 
         {/* ── Featured listings ──────────────────────────────── */}
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title={`Featured Listings in ${city}`} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
+          <SectionHeader title={`Featured Listings in ${city}`} cityImage={cityImageUrl(city)} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
           {renderCarousel(featuredListings, featuredRef)}
         </section>
         </motion.div>

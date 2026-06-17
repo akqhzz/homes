@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function SectionHeader({
@@ -6,11 +7,13 @@ export function SectionHeader({
   onArrow,
   onPrev,
   onNext,
+  cityImage,
 }: {
   title: string;
   onArrow: () => void;
   onPrev?: () => void;
   onNext?: () => void;
+  cityImage?: string;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -27,6 +30,11 @@ export function SectionHeader({
         aria-label={`${title} — see more`}
         className="group flex flex-1 cursor-pointer items-center justify-between gap-3 sm:flex-none sm:justify-start"
       >
+        {cityImage && (
+          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-[var(--color-border)] sm:h-9 sm:w-9">
+            <Image src={cityImage} alt="" fill sizes="36px" className="object-cover" />
+          </span>
+        )}
         <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">{title}</h2>
         <span
           aria-hidden

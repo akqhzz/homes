@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   DollarSign, LayoutGrid, Home, Building2, Warehouse, ArrowRight, TrendingUp,
-  Trees, Dumbbell, BookOpen, Utensils, Wine, Coffee, Star, Footprints, TrainFront, Bike, Globe,
+  Trees, Dumbbell, BookOpen, Utensils, Wine, Coffee, Star, Footprints, TrainFront, Bike,
 } from 'lucide-react';
 import { AreaSparkline, HBarChart, PieChart, ScoreRing } from '@/components/ui/charts';
 import { SectionHeader } from '@/features/home/SectionHeader';
@@ -39,6 +39,20 @@ function rand(str: string, salt: number) {
 }
 
 export const CITY = MOCK_NEIGHBORHOODS[0]?.city ?? 'Toronto';
+
+// Small representative thumbnail for a city (used as a chip in section titles).
+const CITY_THUMBS = [
+  'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=96&q=80',
+  'https://images.unsplash.com/photo-1560814304-4f05b62af116?w=96&q=80',
+  'https://images.unsplash.com/photo-1609825488888-3a766db05542?w=96&q=80',
+  'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=96&q=80',
+  'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=96&q=80',
+  'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=96&q=80',
+];
+export function cityImageUrl(city: string) {
+  if (city === CITY) return CITY_THUMBS[0];
+  return CITY_THUMBS[Math.floor(rand(city, 99) * CITY_THUMBS.length) % CITY_THUMBS.length];
+}
 
 const TYPE_META = [
   { key: 'house', label: 'House', color: 'var(--color-success)' },
@@ -143,14 +157,14 @@ export function getCityData(city: string) {
 // "Deep dive" city facts (representative figures for the city overview).
 const WORLD_TAGS = ['Urban', 'Global', 'Vibrant'];
 const AMENITIES = [
-  { label: 'Parks', count: '1500+', icon: Trees },
-  { label: 'Fitness Centres', count: '400+', icon: Dumbbell },
-  { label: 'Libraries', count: '100+', icon: BookOpen },
+  { label: 'Parks', count: '1500+', icon: Trees, color: 'var(--color-success)', tint: '#e9f9f2' },
+  { label: 'Fitness Centres', count: '400+', icon: Dumbbell, color: 'var(--color-accent-orange)', tint: '#fdeee0' },
+  { label: 'Libraries', count: '100+', icon: BookOpen, color: '#7c5cff', tint: '#f0edff' },
 ];
 const GROCERIES = { total: '600+', items: [
-  { name: 'Loblaws', sub: '60+ in total', color: '#e2231a' },
-  { name: 'No Frills', sub: '30+ in total', color: '#fdda24' },
-  { name: 'Farm Boy', sub: '20+ in total', color: '#5b9b3e' },
+  { name: 'Loblaws', sub: '60+ in total', color: '#E03A1B', fg: '#ffffff' },
+  { name: 'No Frills', sub: '30+ in total', color: '#FFDE00', fg: '#1a1a1a' },
+  { name: 'Farm Boy', sub: '20+ in total', color: '#6CB33F', fg: '#ffffff' },
 ] };
 const FOOD = { total: '8000+', items: [
   { name: 'Alo', sub: 'Restaurant', rating: 4.8, icon: Utensils },
@@ -179,7 +193,7 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
     const from = value * 0.86; // start partway, not from zero
     const animate = () => {
       const begin = performance.now();
-      const dur = 1700;
+      const dur = 850;
       const step = (now: number) => {
         const t = Math.min(1, (now - begin) / dur);
         const eased = 1 - Math.pow(1 - t, 3);
@@ -238,8 +252,8 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
       <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5 lg:gap-5 lg:overflow-visible">
         {stats.map(({ label, value, format, icon: Icon, tint }) => (
           <div key={label} className="flex min-w-[230px] items-center gap-3.5 rounded-[20px] border border-[var(--color-border)]/55 bg-white px-5 py-4 lg:min-w-0">
-            <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]', tint)}>
-              <Icon className="h-5 w-5" strokeWidth={2.2} />
+            <span className={cn('flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px]', tint)}>
+              <Icon className="h-6 w-6" strokeWidth={2.1} />
             </span>
             <div className="min-w-0">
               <CountUp value={value} format={format} className="block truncate type-title !text-[1.5rem] !leading-none text-[var(--color-text-primary)]" />
@@ -269,6 +283,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
         title={`Market Insights in ${city}`}
+        cityImage={cityImageUrl(city)}
         onArrow={() => router.push('/for-you')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
@@ -287,7 +302,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
 
         <Panel title="Market Volume" className={CARD}>
           <div className="mb-5 flex items-start justify-between gap-2">
-            <p className="text-[1.7rem] font-bold leading-none text-[var(--color-text-primary)]">
+            <p className="type-title !text-[1.75rem] !leading-none text-[var(--color-text-primary)]">
               {volumeTotal.toLocaleString()} <span className="type-body font-medium text-[var(--color-text-tertiary)]">Total Listings</span>
             </p>
             <span className="shrink-0 rounded-full bg-[var(--color-primary)] px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-white">
@@ -299,7 +314,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
 
         <Panel title="Median Price Trend" className={CARD}>
           <div className="mb-3 flex items-center gap-2.5">
-            <p className="text-[1.7rem] font-bold leading-none text-[var(--color-text-primary)]">{formatPrice(medianPrice)}</p>
+            <p className="type-title !text-[1.75rem] !leading-none text-[var(--color-text-primary)]">{formatPrice(medianPrice)}</p>
             <span className="inline-flex items-center gap-1 rounded-full bg-[#e9f9f2] px-2.5 py-1 text-[0.8rem] font-semibold text-[var(--color-success)]">
               <TrendingUp className="h-3.5 w-3.5" />{Math.abs(trendDelta).toFixed(1)}%
             </span>
@@ -344,6 +359,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
         title={`Deep Dive into ${city}`}
+        cityImage={cityImageUrl(city)}
         onArrow={() => router.push('/for-you')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
@@ -355,11 +371,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
       >
         {/* The world in one city */}
         <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-gradient-to-b from-[var(--color-brand-50)] to-white p-6')}>
-          <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-white text-[var(--color-brand-700)] shadow-[var(--shadow-sm)]">
-            <Globe className="h-6 w-6" strokeWidth={1.8} />
-          </span>
-          <h3 className="mt-4 type-subtitle !text-[1.3rem] leading-tight text-[var(--color-text-primary)]">The World in One City</h3>
-          <p className="mt-2.5 type-body text-[var(--color-text-secondary)]">
+          <h3 className="type-subtitle !text-[1.3rem] leading-tight text-[var(--color-text-primary)]">The World in One City</h3>
+          <p className="mt-3 type-body text-[var(--color-text-secondary)]">
             A global powerhouse of culture defined by safe, connected, and vibrant neighbourhoods.
           </p>
           <div className="mt-auto flex flex-wrap gap-2 pt-6">
@@ -392,11 +405,11 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Top amenities */}
         <Panel title="Top Amenities" className={cn(CARD, 'w-[320px]')}>
-          <div className="flex flex-1 flex-col justify-center gap-3">
-            {AMENITIES.map(({ label, count, icon: Icon }) => (
-              <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--color-surface)] px-3.5 py-3">
+          <div className="flex flex-1 flex-col justify-center gap-3.5">
+            {AMENITIES.map(({ label, count, icon: Icon, color, tint }) => (
+              <div key={label} className="flex items-center justify-between gap-3 rounded-full bg-[var(--color-surface)] py-2.5 pl-2.5 pr-5">
                 <span className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-white text-[var(--color-brand-700)] shadow-[var(--shadow-sm)]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: tint, color }}>
                     <Icon className="h-5 w-5" strokeWidth={1.9} />
                   </span>
                   <span className="type-heading-sm text-[var(--color-text-primary)]">{label}</span>
@@ -409,16 +422,16 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Groceries */}
         <Panel title="Groceries" className={cn(CARD, 'w-[300px]')}>
-          <div className="mb-4"><CountPill>{GROCERIES.total}</CountPill></div>
-          <div className="flex flex-1 flex-col gap-4">
+          <div><CountPill>{GROCERIES.total}</CountPill></div>
+          <div className="flex flex-1 flex-col justify-center gap-5">
             {GROCERIES.items.map((g) => (
               <div key={g.name} className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[0.85rem] font-bold text-white shadow-[var(--shadow-sm)]" style={{ background: g.color }}>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[0.85rem] font-bold shadow-[var(--shadow-sm)]" style={{ background: g.color, color: g.fg }}>
                   {g.name[0]}
                 </span>
                 <div className="min-w-0">
                   <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{g.name}</p>
-                  <p className="type-caption text-[var(--color-text-tertiary)]">{g.sub}</p>
+                  <p className="mt-0.5 type-caption text-[var(--color-text-tertiary)]">{g.sub}</p>
                 </div>
               </div>
             ))}
@@ -427,8 +440,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Food & drinks */}
         <Panel title="Food & Drinks" className={cn(CARD, 'w-[300px]')}>
-          <div className="mb-4"><CountPill>{FOOD.total}</CountPill></div>
-          <div className="flex flex-1 flex-col gap-4">
+          <div><CountPill>{FOOD.total}</CountPill></div>
+          <div className="flex flex-1 flex-col justify-center gap-5">
             {FOOD.items.map(({ name, sub, rating, icon: Icon }) => (
               <div key={name} className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-brand-50)] text-[var(--color-brand-700)]">
@@ -448,13 +461,13 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Top schools */}
         <Panel title="Top Schools" className={cn(CARD, 'w-[320px]')}>
-          <div className="mb-4"><CountPill>{SCHOOLS.total}</CountPill></div>
-          <div className="flex flex-1 flex-col gap-4">
+          <div><CountPill>{SCHOOLS.total}</CountPill></div>
+          <div className="flex flex-1 flex-col justify-center gap-5">
             {SCHOOLS.items.map((s) => (
               <div key={s.name} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{s.name}</p>
-                  <p className="type-caption text-[var(--color-text-tertiary)]">{s.sub}</p>
+                  <p className="mt-0.5 type-caption text-[var(--color-text-tertiary)]">{s.sub}</p>
                 </div>
                 <span className={cn('flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl px-2 type-heading-sm font-semibold', schoolScoreTint(s.score))}>
                   {s.score}
@@ -481,6 +494,7 @@ export function AreaFinder({ city = CITY, onSelect }: { city?: string; onSelect?
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
         title={`Find your area in ${city}`}
+        cityImage={cityImageUrl(city)}
         onArrow={() => router.push('/')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
