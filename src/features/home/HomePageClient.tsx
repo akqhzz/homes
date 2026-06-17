@@ -89,7 +89,7 @@ export default function HomePageClient() {
           </div>
 
           {/* Soft white fade so the globe's bottom edge isn't a hard cut */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-16 bg-gradient-to-t from-white via-white/50 to-transparent lg:h-24" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-10 bg-gradient-to-t from-white/90 via-white/40 to-transparent lg:h-14" />
 
           {/* Below the interactive zone, let swipes/scrolls pass to the page
               instead of rotating the globe (the globe still shows through) */}

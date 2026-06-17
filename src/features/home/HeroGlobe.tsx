@@ -76,11 +76,11 @@ export default function HeroGlobe() {
         controls.autoRotate = false;
         controls.enableZoom = true;
         controls.enablePan = false;
-        // Default is the most zoomed-out size; zoom-in can grow it noticeably.
-        controls.maxDistance = 276;
-        controls.minDistance = 192;
+        // Default is the most zoomed-out size; zoom-in can grow it a lot.
+        controls.maxDistance = 296;
+        controls.minDistance = 120;
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.76 }, 0);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.96 }, 0);
 
         const resize = () => {
           if (!globe) return;
@@ -96,10 +96,10 @@ export default function HeroGlobe() {
           if (!destroyed && globe) {
             globe
               .polygonsData(geo.features)
-              .polygonCapColor(() => '#e8eef4')
-              .polygonSideColor(() => 'rgba(180,198,218,0.08)')
-              .polygonStrokeColor(() => '#cfd8e3')
-              .polygonAltitude(0.008);
+              .polygonCapColor(() => '#e6edf4')
+              .polygonSideColor(() => 'rgba(150,170,196,0.45)')
+              .polygonStrokeColor(() => '#aeb9c9')
+              .polygonAltitude(0.02);
           }
         } catch {
           // Globe still renders (white sphere + pins) without continents.
