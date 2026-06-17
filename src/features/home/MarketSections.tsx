@@ -1,7 +1,10 @@
 'use client';
+import { useRef } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { DollarSign, LayoutGrid, Home, Building2, Warehouse, ArrowRight, TrendingUp } from 'lucide-react';
 import { AreaSparkline, HBarChart, PieChart, ScoreRing } from '@/components/ui/charts';
+import { SectionHeader } from '@/features/home/SectionHeader';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatPriceFull, formatPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
@@ -105,7 +108,7 @@ function MiniStat({ value, unit, label }: { value: string; unit?: string; label:
 
 export function MarketStatsStrip() {
   return (
-    <section className="w-full px-5 pt-10 lg:px-12 lg:pt-12">
+    <section className="w-full px-5 pt-4 lg:px-12 lg:pt-5">
       <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5 lg:gap-5 lg:overflow-visible">
         {STATS.map(({ label, value, icon: Icon, tint }) => (
           <div key={label} className="flex min-w-[220px] items-center gap-3.5 rounded-[20px] border border-[var(--color-border)] bg-white px-5 py-4 lg:min-w-0">
@@ -128,36 +131,47 @@ export function MarketStatsStrip() {
 ══════════════════════════════════════════════════════════════════ */
 
 export function MarketBoard() {
+  const router = useRouter();
+  const ref = useRef<HTMLDivElement>(null);
+  const scroll = (dir: 1 | -1) =>
+    ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
   const trendDelta = TREND_POINTS.length >= 2
     ? ((TREND_POINTS[TREND_POINTS.length - 1] - TREND_POINTS[0]) / (TREND_POINTS[0] || 1)) * 100
     : 0;
+  const CARD = 'shrink-0 snap-start';
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-      <div className="mb-7">
-        <h2 className="type-title-lg !text-[1.7rem] text-[var(--color-text-primary)] sm:!text-[2rem]">{CITY} Market Insights</h2>
-        <p className="mt-1.5 type-body text-[var(--color-text-secondary)]">A snapshot of what’s happening across the city right now.</p>
-      </div>
+      <SectionHeader
+        title="Market Insights"
+        onArrow={() => router.push('/for-you')}
+        onPrev={() => scroll(-1)}
+        onNext={() => scroll(1)}
+      />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Panel title="Property Type Distribution">
+      {/* One-line, horizontally scrollable row of insight cards */}
+      <div
+        ref={ref}
+        className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <Panel title="Property Type Distribution" className={cn(CARD, 'w-[320px]')}>
           <div className="flex flex-1 items-center">
             <PieChart slices={TYPE_SLICES} />
           </div>
         </Panel>
 
-        <Panel title="Market Volume">
-          <div className="mb-4 flex items-end justify-between">
+        <Panel title="Market Volume" className={cn(CARD, 'w-[348px]')}>
+          <div className="mb-4 flex items-start justify-between gap-2">
             <p className="text-[1.6rem] font-bold leading-none text-[var(--color-text-primary)]">
               {VOLUME_TOTAL.toLocaleString()} <span className="type-caption font-medium text-[var(--color-text-tertiary)]">Total Listings</span>
             </p>
-            <span className="rounded-full bg-[var(--color-primary)] px-2.5 py-1 type-nano font-semibold uppercase tracking-wide text-white">
-              Most active · {MOST_ACTIVE_BAND.label}
+            <span className="shrink-0 rounded-full bg-[var(--color-primary)] px-2.5 py-1 type-nano font-semibold uppercase tracking-wide text-white">
+              {MOST_ACTIVE_BAND.label}
             </span>
           </div>
           <HBarChart rows={VOLUME_ROWS} color="var(--color-primary)" />
         </Panel>
 
-        <Panel title="Median Price Trend">
+        <Panel title="Median Price Trend" className={cn(CARD, 'w-[348px]')}>
           <div className="mb-3 flex items-center gap-2.5">
             <p className="text-[1.6rem] font-bold leading-none text-[var(--color-text-primary)]">{formatPrice(MEDIAN_PRICE)}</p>
             <span className="inline-flex items-center gap-1 rounded-full bg-[#e9f9f2] px-2 py-0.5 type-caption font-semibold text-[var(--color-success)]">
@@ -172,7 +186,7 @@ export function MarketBoard() {
           </div>
         </Panel>
 
-        <Panel title="Market Health">
+        <Panel title="Market Health" className={cn(CARD, 'w-[360px]')}>
           <div className="grid flex-1 grid-cols-2 gap-3">
             <MiniStat value={`${HEALTH.daysOnMarket}`} unit="days" label="Avg. days on market" />
             <MiniStat value={`${HEALTH.sellToList}%`} label="Sell-to-list ratio" />
@@ -180,19 +194,20 @@ export function MarketBoard() {
             <MiniStat value={`$${HEALTH.medianRent.toLocaleString()}`} unit="/mo" label="Median rent" />
           </div>
         </Panel>
-      </div>
 
-      {/* Getting around — commute scores from neighbourhood data */}
-      <div className="mt-4 grid gap-4 rounded-[24px] border border-[var(--color-border)] bg-white p-6 sm:grid-cols-3">
-        {COMMUTE.map((c) => (
-          <div key={c.label} className="flex items-center gap-4">
-            <ScoreRing value={c.value} color={c.color} size={58} />
-            <div>
-              <p className="type-heading-sm text-[var(--color-text-primary)]">{c.label}</p>
-              <p className="type-caption text-[var(--color-text-secondary)]">{c.sub}</p>
-            </div>
+        <Panel title="Getting Around" className={cn(CARD, 'w-[300px]')}>
+          <div className="flex flex-1 flex-col justify-center gap-4">
+            {COMMUTE.map((c) => (
+              <div key={c.label} className="flex items-center gap-3.5">
+                <ScoreRing value={c.value} color={c.color} size={52} />
+                <div>
+                  <p className="type-heading-sm text-[var(--color-text-primary)]">{c.label}</p>
+                  <p className="type-caption text-[var(--color-text-secondary)]">{c.sub}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </Panel>
       </div>
     </section>
   );
@@ -205,10 +220,7 @@ export function MarketBoard() {
 export function AreaFinder({ onSelect }: { onSelect?: (name: string) => void }) {
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-      <div className="mb-1 flex items-end justify-between gap-4">
-        <h2 className="type-title-lg !text-[1.7rem] text-[var(--color-text-primary)] sm:!text-[2rem]">Find your area in {CITY}</h2>
-      </div>
-      <p className="mb-7 type-body text-[var(--color-text-secondary)]">Explore neighbourhoods and see how many homes are on the market in each.</p>
+      <h2 className="mb-7 type-title-lg !text-[1.7rem] text-[var(--color-text-primary)] sm:!text-[2rem]">Find your area in {CITY}</h2>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {MOCK_NEIGHBORHOODS.map((n) => (

@@ -2,12 +2,13 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
+import { SectionHeader } from '@/features/home/SectionHeader';
 import { MarketStatsStrip, MarketBoard, AreaFinder } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
@@ -134,41 +135,31 @@ export default function HomePageClient() {
           </div>
         </section>
 
-        {/* ── Market stats strip ─────────────────────────────── */}
+        {/* ── At a glance (Toronto, ON + stats strip) ────────── */}
+        <section className="w-full px-5 pt-10 lg:px-12 lg:pt-12">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <button
+              onClick={goToMap}
+              className="flex min-w-0 items-center gap-2 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)] sm:pr-4"
+            >
+              <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full sm:h-8 sm:w-8">
+                <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
+              </span>
+              <span className="truncate type-heading-sm !text-[1.05rem] text-[var(--color-text-primary)] sm:!text-[1.2rem] lg:!text-[1.35rem]">Toronto, ON</span>
+            </button>
+            <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">At A Glance</h2>
+          </div>
+        </section>
         <MarketStatsStrip />
 
-        {/* ── Newest listings ────────────────────────────────── */}
-        <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
-          <div className="flex items-center justify-between gap-3">
-            {/* group: hovering the title also highlights the Toronto chip */}
-            <div className="group flex min-w-0 flex-nowrap items-center gap-x-2.5 sm:gap-x-3">
-              <h2
-                role="link"
-                tabIndex={0}
-                onClick={goToMap}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    goToMap();
-                  }
-                }}
-                className="shrink-0 cursor-pointer whitespace-nowrap type-title !text-[1.15rem] text-[var(--color-text-primary)] sm:!text-[1.5rem] lg:!text-[1.75rem]"
-              >
-                5,400+ listings in
-              </h2>
-              <button
-                onClick={goToMap}
-                className="flex min-w-0 shrink items-center gap-1.5 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-[var(--color-brand-surface-strong)] group-hover:bg-[var(--color-brand-surface-strong)] sm:gap-2 sm:pr-3.5"
-              >
-                <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full sm:h-8 sm:w-8">
-                  <Image src={TORONTO_AVATAR} alt="" fill sizes="32px" className="object-cover" />
-                </span>
-                <span className="truncate type-heading-sm !text-[1.05rem] text-[var(--color-text-primary)] sm:!text-[1.2rem] lg:!text-[1.35rem]">Toronto, ON</span>
-                <ArrowRight size={16} className="shrink-0 text-[var(--color-text-secondary)]" />
-              </button>
-            </div>
-            <CarouselNav onPrev={() => scrollRow(newestRef, -1)} onNext={() => scrollRow(newestRef, 1)} />
-          </div>
+        {/* ── New listings ───────────────────────────────────── */}
+        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
+          <SectionHeader
+            title="5,400+ New Listings"
+            onArrow={goToMap}
+            onPrev={() => scrollRow(newestRef, -1)}
+            onNext={() => scrollRow(newestRef, 1)}
+          />
           {renderCarousel(newest, newestRef)}
         </section>
 
@@ -246,64 +237,3 @@ export default function HomePageClient() {
   );
 }
 
-function SectionHeader({
-  title,
-  onArrow,
-  onPrev,
-  onNext,
-}: {
-  title: string;
-  onArrow: () => void;
-  onPrev?: () => void;
-  onNext?: () => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onArrow}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onArrow();
-          }
-        }}
-        aria-label={`${title} — see more`}
-        className="group flex flex-1 cursor-pointer items-center justify-between gap-3 sm:flex-none sm:justify-start"
-      >
-        <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">{title}</h2>
-        <span
-          aria-hidden
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
-        >
-          <ArrowRight size={18} />
-        </span>
-      </div>
-      {onPrev && onNext && <CarouselNav onPrev={onPrev} onNext={onNext} />}
-    </div>
-  );
-}
-
-function CarouselNav({ onPrev, onNext }: { onPrev: () => void; onNext: () => void }) {
-  return (
-    <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
-      <CarouselArrow direction="left" onClick={onPrev} />
-      <CarouselArrow direction="right" onClick={onNext} />
-    </div>
-  );
-}
-
-function CarouselArrow({ direction, onClick }: { direction: 'left' | 'right'; onClick: () => void }) {
-  const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={direction === 'left' ? 'Scroll left' : 'Scroll right'}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
-    >
-      <Icon size={18} />
-    </button>
-  );
-}
