@@ -190,12 +190,11 @@ export default function HomePageClient() {
           {/* Desktop: featured article + grid */}
           <div className="mt-7 hidden gap-5 sm:grid lg:grid-cols-2">
             <button className="group flex flex-col overflow-hidden rounded-[24px] border border-[var(--color-border)] text-left">
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-[16/10] overflow-hidden">
                 <Image src={featuredArticle.image} alt="" fill sizes="(min-width:1024px) 560px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
-              <div className="flex flex-1 flex-col p-6">
+              <div className="flex flex-1 flex-col p-5">
                 <h3 className="type-title !text-[1.55rem] leading-tight text-[var(--color-text-primary)]">{featuredArticle.title}</h3>
-                <p className="mt-2.5 type-body text-[var(--color-text-secondary)] line-clamp-2">{featuredArticle.description}</p>
                 <p className="mt-auto pt-3 type-caption text-[var(--color-text-tertiary)]">{featuredArticle.date}</p>
               </div>
             </button>
@@ -203,7 +202,7 @@ export default function HomePageClient() {
             <div className="grid gap-5 sm:grid-cols-2">
               {restArticles.map((article) => (
                 <button key={article.title} className="group flex flex-col overflow-hidden rounded-[20px] border border-[var(--color-border)] text-left">
-                  <div className="relative aspect-[16/10] overflow-hidden">
+                  <div className="relative aspect-[16/9] overflow-hidden">
                     <Image src={article.image} alt="" fill sizes="(min-width:1024px) 270px, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="flex flex-1 flex-col p-4">

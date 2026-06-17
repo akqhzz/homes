@@ -259,14 +259,18 @@ export default function HeroGlobe() {
         // Expand one province into its cities while the other provinces stay as
         // bubbles. Zoom right in on it; only an even deeper zoom flips into the
         // all-provinces cities mode.
+        const PROVINCE_ZOOM_ALT = 0.55;
         const expandProvince = (code: string) => {
           mode = 'province';
           expanded = code;
+          // The click zooms in past the cluster-open threshold, so the Atlantic
+          // cluster splits into its provinces at the same time.
+          clusterOpen = PROVINCE_ZOOM_ALT < CLUSTER_OPEN_ALT;
           const cities = ALL_CITIES.filter((c) => c.province === code);
           const cLat = cities.reduce((s, c) => s + c.lat, 0) / cities.length;
           const cLng = cities.reduce((s, c) => s + c.lng, 0) / cities.length;
           renderMarkers();
-          goTo(cLat, cLng, 0.55);
+          goTo(cLat, cLng, PROVINCE_ZOOM_ALT);
         };
 
         // Open the Atlantic cluster into its 4 member provinces (still bubbles).
