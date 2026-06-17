@@ -76,6 +76,22 @@ type Marker =
   | { type: 'city'; lat: number; lng: number; city: City }
   | { type: 'ccluster'; lat: number; lng: number; count: number; cities: City[] };
 
+// Stable logical id for a marker. globe.gl keys its html elements by object
+// identity, so reusing the same object across renders keeps the same DOM node
+// (no destroy/recreate flicker) — only genuinely new markers animate in.
+function markerKey(m: Marker): string {
+  switch (m.type) {
+    case 'city':
+      return `city:${m.city.name}`;
+    case 'province':
+      return `prov:${m.province.code}`;
+    case 'pcluster':
+      return `pcl:${m.cluster.code}`;
+    case 'ccluster':
+      return `ccl:${m.cities.map((c) => c.name).sort().join('|')}`;
+  }
+}
+
 const COUNTRIES_GEOJSON = '/data/countries.geojson';
 const PROVINCES_GEOJSON = '/data/provinces.geojson';
 
@@ -165,6 +181,9 @@ export default function HeroGlobe() {
         let forced = new Set<string>(); // city-cluster members forced to show individually
         let bucket = -1;
         let suppressUntil = 0;
+        // Below this altitude the Atlantic cluster auto-splits into its provinces.
+        const CLUSTER_OPEN_ALT = 1.05;
+        const markerCache = new Map<string, Marker>();
 
         // A province renders as its cities when expanded, otherwise as a bubble.
         const pushProvince = (markers: Marker[], code: string) => {
@@ -191,15 +210,41 @@ export default function HeroGlobe() {
           return markers;
         };
 
+        // Reuse the cached marker object for any logical marker that is still
+        // present, so its DOM element survives the re-render (only new markers
+        // are created → only they play the entrance animation). Prunes markers
+        // that have left.
+        const withStableIdentity = (raw: Marker[]): Marker[] => {
+          const live = new Set<string>();
+          const result = raw.map((m) => {
+            const key = markerKey(m);
+            live.add(key);
+            const existing = markerCache.get(key);
+            if (existing) {
+              existing.lat = m.lat;
+              existing.lng = m.lng;
+              return existing;
+            }
+            markerCache.set(key, m);
+            return m;
+          });
+          for (const key of Array.from(markerCache.keys())) {
+            if (!live.has(key)) markerCache.delete(key);
+          }
+          return result;
+        };
+
         const renderMarkers = (altOverride?: number) => {
           if (!globe) return;
+          let raw: Marker[];
           if (mode === 'cities') {
             const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
             bucket = Math.round(thresholdFor(alt) * 8);
-            globe.htmlElementsData(cityMarkers(thresholdFor(alt), forced));
+            raw = cityMarkers(thresholdFor(alt), forced);
           } else {
-            globe.htmlElementsData(provinceModeMarkers());
+            raw = provinceModeMarkers();
           }
+          globe.htmlElementsData(withStableIdentity(raw));
         };
 
         const goTo = (lat: number, lng: number, altitude: number) => {
@@ -225,13 +270,14 @@ export default function HeroGlobe() {
         };
 
         // Open the Atlantic cluster into its 4 member provinces (still bubbles).
+        // Zooms in past the auto-open threshold so it stays open.
         const openCluster = () => {
           const atlantic = CLUSTERS[0];
           mode = 'province';
           clusterOpen = true;
           expanded = null;
           renderMarkers();
-          goTo(atlantic.lat, atlantic.lng, 1.2);
+          goTo(atlantic.lat, atlantic.lng, 0.9);
         };
 
         const buildMarker = (marker: Marker): PinEl => {
@@ -268,6 +314,10 @@ export default function HeroGlobe() {
             el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="background:#fff;border-radius:9999px;padding:3px 11px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:12px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => routerRef.current.push('/');
           }
+          // Animate the pin in (fade + scale). globe.gl positions el2 itself via
+          // a transform, so we animate the inner content to avoid clashing.
+          const inner = el2.firstElementChild as HTMLElement | null;
+          if (inner) inner.style.animation = 'globePinIn 320ms cubic-bezier(0.16,0.84,0.44,1) both';
           return el2;
         };
 
@@ -341,13 +391,22 @@ export default function HeroGlobe() {
             } else if (Math.round(thresholdFor(alt) * 8) !== bucket) {
               renderMarkers();
             }
-          } else if (mode !== 'province') {
-            // Mid zoom returning from cities mode: back to province bubbles.
-            mode = 'province';
-            expanded = null;
-            clusterOpen = false;
-            forced = new Set();
-            renderMarkers();
+          } else {
+            // Mid zoom (province mode). The Atlantic cluster auto-splits into
+            // its 4 provinces once zoomed in past CLUSTER_OPEN_ALT, and merges
+            // back into the numbered bubble when zoomed out.
+            const wantOpen = alt < CLUSTER_OPEN_ALT;
+            if (mode !== 'province') {
+              // Returning from cities mode.
+              mode = 'province';
+              expanded = null;
+              forced = new Set();
+              clusterOpen = wantOpen;
+              renderMarkers();
+            } else if (clusterOpen !== wantOpen) {
+              clusterOpen = wantOpen;
+              renderMarkers();
+            }
           }
         });
 
