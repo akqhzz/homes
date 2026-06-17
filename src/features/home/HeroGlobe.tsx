@@ -31,7 +31,7 @@ const PROVINCES: Province[] = [
     { name: 'Vancouver', lat: 49.28, lng: -123.12 }, { name: 'Victoria', lat: 48.43, lng: -123.37 }, { name: 'Kelowna', lat: 49.89, lng: -119.5 }, { name: 'Surrey', lat: 49.19, lng: -122.85 } ] },
   { code: 'AB', name: 'Alberta', lat: 51, lng: -117, image: 'https://images.unsplash.com/photo-1609825488888-3a766db05542?w=160&q=80', cities: [
     { name: 'Calgary', lat: 51.05, lng: -114.07 }, { name: 'Edmonton', lat: 53.55, lng: -113.49 }, { name: 'Red Deer', lat: 52.27, lng: -113.81 } ] },
-  { code: 'ON', name: 'Ontario', lat: 49.5, lng: -86, image: 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=160&q=80', cities: [
+  { code: 'ON', name: 'Ontario', lat: 46, lng: -83, image: 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=160&q=80', cities: [
     { name: 'Toronto', lat: 43.65, lng: -79.38 }, { name: 'Ottawa', lat: 45.42, lng: -75.7 }, { name: 'Mississauga', lat: 43.59, lng: -79.64 }, { name: 'Hamilton', lat: 43.26, lng: -79.87 }, { name: 'London', lat: 42.98, lng: -81.25 } ] },
   { code: 'QC', name: 'Québec', lat: 52, lng: -72, image: 'https://images.unsplash.com/photo-1519178614-68673b201f36?w=160&q=80', cities: [
     { name: 'Montréal', lat: 45.5, lng: -73.57 }, { name: 'Québec City', lat: 46.81, lng: -71.21 }, { name: 'Laval', lat: 45.6, lng: -73.71 }, { name: 'Gatineau', lat: 45.48, lng: -75.7 } ] },
@@ -85,7 +85,9 @@ function angularDist(aLat: number, aLng: number, bLat: number, bLng: number): nu
 }
 
 function thresholdFor(altitude: number): number {
-  return Math.min(4, Math.max(0.8, altitude * 2.5));
+  // No hard floor — as you zoom in the cluster radius keeps shrinking so
+  // numbered clusters auto-split all the way down to individual cities.
+  return Math.min(4, Math.max(0.08, altitude * 2.5));
 }
 
 // Centre + a fitting altitude for a set of cities.
@@ -193,7 +195,7 @@ export default function HeroGlobe() {
           if (!globe) return;
           if (mode === 'cities') {
             const alt = altOverride ?? globe.pointOfView().altitude ?? 1;
-            bucket = Math.round(thresholdFor(alt));
+            bucket = Math.round(thresholdFor(alt) * 8);
             globe.htmlElementsData(cityMarkers(thresholdFor(alt), forced));
           } else {
             globe.htmlElementsData(provinceModeMarkers());
@@ -252,11 +254,13 @@ export default function HeroGlobe() {
             el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.count}</div>`;
             el2.__activate = () => {
               // Force this cluster's cities to render individually (don't rely on
-              // the zoom level splitting them), then zoom in to frame them.
+              // the zoom level splitting them), then zoom in to frame them —
+              // never out: target altitude stays below the current one.
               marker.cities.forEach((c) => forced.add(c.name));
               renderMarkers();
               const f = frameOf(marker.cities);
-              goTo(f.lat, f.lng, Math.max(0.18, f.altitude * 0.55));
+              const cur = globe?.pointOfView().altitude ?? 0.4;
+              goTo(f.lat, f.lng, Math.max(0.12, Math.min(f.altitude, cur * 0.55)));
             };
           } else {
             el2.style.zIndex = '2';
@@ -334,7 +338,7 @@ export default function HeroGlobe() {
               mode = 'cities';
               forced = new Set();
               renderMarkers();
-            } else if (Math.round(thresholdFor(alt)) !== bucket) {
+            } else if (Math.round(thresholdFor(alt) * 8) !== bucket) {
               renderMarkers();
             }
           } else if (mode !== 'province') {
