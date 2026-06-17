@@ -82,14 +82,14 @@ export default function HomePageClient() {
     <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
-        <section className="relative overflow-hidden bg-[radial-gradient(96%_62%_at_50%_38%,#c7dcf1_0%,#dceafa_40%,#eef5fb_64%,#ffffff_84%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(58%_60%_at_50%_42%,#cfe1f3_0%,#e4eff9_48%,#ffffff_82%)] lg:min-h-[640px]">
+        <section className="relative overflow-hidden bg-[radial-gradient(98%_80%_at_50%_36%,#c7dcf1_0%,#dceafa_42%,#eef5fb_70%,#ffffff_94%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(62%_78%_at_50%_40%,#cfe1f3_0%,#e4eff9_50%,#f4f9fc_72%,#ffffff_92%)] lg:min-h-[640px]">
           {/* Globe fills the hero; the blue glow lives in the background behind it */}
-          <div className="absolute inset-0 translate-y-[4%]">
+          <div className="absolute inset-x-0 -top-[8%] bottom-0">
             <HeroGlobe />
           </div>
 
-          {/* Soft white fade so the globe's bottom edge isn't a hard cut */}
-          <div className="pointer-events-none absolute inset-x-0 -bottom-3 z-[5] h-10 bg-gradient-to-t from-white/90 via-white/40 to-transparent lg:h-14" />
+          {/* Tall, soft white fade so the globe's bottom melts smoothly into the page */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-44 bg-gradient-to-t from-white via-white/30 to-transparent lg:h-72" />
 
           {/* Below the interactive zone, let swipes/scrolls pass to the page
               instead of rotating the globe (the globe still shows through) */}
@@ -164,7 +164,7 @@ export default function HomePageClient() {
         <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <div className="flex items-center justify-between gap-4">
             <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">Market Insights</h2>
-            <Button variant="surface" size="md" className="hidden gap-1.5 type-label sm:flex">
+            <Button variant="secondary" size="md" className="hidden gap-1.5 type-label sm:flex">
               Read more
               <ArrowRight size={16} />
             </Button>
