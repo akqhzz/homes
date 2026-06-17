@@ -101,7 +101,7 @@ export default function HomePageClient() {
     <PageShell desktopWide showDesktopHeader={false}>
       <div className="h-full overflow-x-hidden overflow-y-auto bg-white">
         {/* ── Hero with interactive globe ────────────────────── */}
-        <section className="relative overflow-hidden bg-[radial-gradient(98%_80%_at_50%_47%,#c7dcf1_0%,#dceafa_42%,#eef5fb_70%,#ffffff_94%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(62%_78%_at_50%_51%,#cfe1f3_0%,#e4eff9_50%,#f4f9fc_72%,#ffffff_92%)] lg:min-h-[640px]">
+        <section className="relative overflow-hidden bg-[radial-gradient(96%_64%_at_50%_56%,#c7dcf1_0%,#dceafa_44%,#eef5fb_72%,#ffffff_96%)] min-h-[460px] sm:min-h-[560px] lg:bg-[radial-gradient(60%_64%_at_50%_58%,#cfe1f3_0%,#e4eff9_52%,#f4f9fc_74%,#ffffff_94%)] lg:min-h-[640px]">
           {/* Globe fills the hero; the blue glow lives in the background behind it.
               z-0 creates a stacking context so the fade/search bar layer above its pins. */}
           <div className="absolute inset-x-0 -top-[3%] bottom-0 z-0">

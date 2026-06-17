@@ -37,7 +37,7 @@ const PROVINCES: Province[] = [
     { name: 'Montréal', lat: 45.5, lng: -73.57 }, { name: 'Québec City', lat: 46.81, lng: -71.21 }, { name: 'Laval', lat: 45.6, lng: -73.71 }, { name: 'Gatineau', lat: 45.48, lng: -75.7 } ] },
   { code: 'SK', name: 'Saskatchewan', lat: 54, lng: -106, image: 'https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?w=160&q=80', cities: [
     { name: 'Saskatoon', lat: 52.13, lng: -106.67 }, { name: 'Regina', lat: 50.45, lng: -104.61 } ] },
-  { code: 'MB', name: 'Manitoba', lat: 54, lng: -97.5, image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=160&q=80', cities: [
+  { code: 'MB', name: 'Manitoba', lat: 54, lng: -97.5, image: 'https://images.unsplash.com/photo-1574721363169-7a92a80a03a9?w=160&q=80', cities: [
     { name: 'Winnipeg', lat: 49.9, lng: -97.14 }, { name: 'Brandon', lat: 49.85, lng: -99.95 } ] },
   { code: 'NB', name: 'New Brunswick', lat: 46.6, lng: -66.5, image: 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=160&q=80', cities: [
     { name: 'Moncton', lat: 46.09, lng: -64.77 }, { name: 'Fredericton', lat: 45.96, lng: -66.64 }, { name: 'Saint John', lat: 45.27, lng: -66.06 } ] },
@@ -98,7 +98,7 @@ function frameOf(cities: { lat: number; lng: number }[]): { lat: number; lng: nu
       maxD = Math.max(maxD, angularDist(cities[i].lat, cities[i].lng, cities[j].lat, cities[j].lng));
     }
   }
-  return { lat, lng, altitude: Math.min(0.95, Math.max(0.45, maxD * 0.11)) };
+  return { lat, lng, altitude: Math.min(0.5, Math.max(0.16, maxD * 0.06)) };
 }
 
 function overviewMarkers(): Marker[] {
@@ -270,16 +270,23 @@ export default function HeroGlobe() {
         controls.enablePan = false;
         controls.rotateSpeed = 2.1;
         controls.zoomSpeed = 2.7;
-        controls.zoomToCursor = false;
+        controls.zoomToCursor = true;
         controls.maxDistance = 290;
         controls.minDistance = 78;
 
         controls.addEventListener('change', () => {
-          if (!globe || Date.now() < suppressUntil) return;
+          if (!globe) return;
+          // Hard-lock the zoom-out so the globe never shrinks away / disappears.
+          const pov = globe.pointOfView();
+          if (pov.altitude > 1.9) {
+            globe.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: 1.9 }, 0);
+            return;
+          }
+          if (Date.now() < suppressUntil) return;
           // zoomToCursor pans the orbit target; keep it near the centre so the
-          // globe can't drift off-screen / vanish when zooming out a lot.
+          // globe can't drift off-screen when zooming.
           if (controls.target.length() > 26) controls.target.setLength(26);
-          const alt = globe.pointOfView().altitude ?? 1.86;
+          const alt = pov.altitude ?? 1.86;
           if (alt > 1.5) {
             if (mode !== 'overview') {
               mode = 'overview';
@@ -294,10 +301,7 @@ export default function HeroGlobe() {
           }
         });
 
-        // Subtle intro: the globe spins + zooms in to the default view on load.
-        suppressUntil = Date.now() + 1900;
-        globe.pointOfView({ lat: 40, lng: -123, altitude: 3 }, 0);
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.86 }, 1700);
+        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.86 }, 0);
 
         const resize = () => {
           if (!globe) return;
