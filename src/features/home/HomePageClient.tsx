@@ -8,7 +8,6 @@ import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
-import HomeSeoSection from '@/features/home/HomeSeoSection';
 import { useUIStore } from '@/store/uiStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
 
@@ -183,9 +182,6 @@ export default function HomePageClient() {
           {renderCarousel(featuredListings)}
         </section>
 
-        {/* ── Search by keywords + link directory ────────────── */}
-        <HomeSeoSection />
-
         {/* ── Footer (matches the map listing view) ──────────── */}
         <div className="mt-14 px-5 pb-28 lg:px-12 lg:pb-6">
           <ListingsFooter fullWidth />
@@ -197,11 +193,26 @@ export default function HomePageClient() {
 
 function SectionHeader({ title, onArrow }: { title: string; onArrow: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-3 sm:justify-start">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onArrow}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onArrow();
+        }
+      }}
+      aria-label={`${title} — see more`}
+      className="group flex cursor-pointer items-center justify-between gap-3 sm:justify-start"
+    >
       <h2 className="type-title-lg !text-[1.45rem] text-[var(--color-text-primary)] sm:!text-[1.875rem] lg:!text-[2.15rem]">{title}</h2>
-      <Button variant="secondary" shape="circle" size="md" onClick={onArrow} aria-label={`${title} — see more`}>
+      <span
+        aria-hidden
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
+      >
         <ArrowRight size={18} />
-      </Button>
+      </span>
     </div>
   );
 }
