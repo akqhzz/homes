@@ -327,10 +327,20 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
               else routerRef.current.push('/');
             };
           }
-          // Animate the pin in (fade + scale). globe.gl positions el2 itself via
-          // a transform, so we animate the inner content to avoid clashing.
-          const inner = el2.firstElementChild as HTMLElement | null;
-          if (inner) inner.style.animation = 'globePinIn 320ms cubic-bezier(0.16,0.84,0.44,1) both';
+          // Wrap the content so we can scale the bubble with the zoom level
+          // (via the --pin-scale custom property on the globe root) without
+          // clashing with the per-pin entrance animation. globe.gl positions
+          // el2 itself with a transform, so neither effect touches el2.
+          const content = el2.firstElementChild as HTMLElement | null;
+          if (content) {
+            const wrap = document.createElement('div');
+            wrap.style.transformOrigin = 'center bottom';
+            wrap.style.transform = 'scale(var(--pin-scale, 1))';
+            wrap.style.transition = 'transform 140ms ease-out';
+            el2.replaceChild(wrap, content);
+            wrap.appendChild(content);
+            content.style.animation = 'globePinIn 320ms cubic-bezier(0.16,0.84,0.44,1) both';
+          }
           return el2;
         };
 
@@ -383,6 +393,9 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           // 10000 on init, so this is what actually locks the zoom-out.
           controls.maxDistance = MAX_DISTANCE;
           controls.minDistance = MIN_DISTANCE;
+          // Gently grow the bubbles as you zoom in (and shrink slightly out).
+          const altNow = globe.pointOfView().altitude ?? 1.7;
+          el.style.setProperty('--pin-scale', String(Math.max(0.96, Math.min(1.18, 1 + (1.7 - altNow) * 0.12))));
           if (Date.now() < suppressUntil) return;
           const alt = globe.pointOfView().altitude ?? 1.86;
           if (alt > 1.45) {
@@ -426,7 +439,9 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           }
         });
 
-        globe.pointOfView({ lat: 54, lng: -96, altitude: 1.86 }, 0);
+        // Slightly larger globe on desktop (lower altitude = closer/bigger).
+        const initAltitude = window.innerWidth >= 1024 ? 1.68 : 1.86;
+        globe.pointOfView({ lat: 54, lng: -96, altitude: initAltitude }, 0);
 
         const resize = () => {
           if (!globe) return;

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   DollarSign, LayoutGrid, Home, Building2, Warehouse, ArrowRight, TrendingUp,
-  Trees, Dumbbell, BookOpen, Utensils, Wine, Coffee, Star, Footprints, TrainFront, Bike,
+  Trees, Dumbbell, BookOpen, Utensils, Wine, Coffee, Star, Footprints, TrainFront, Bike, Globe,
 } from 'lucide-react';
 import { AreaSparkline, HBarChart, PieChart, ScoreRing } from '@/components/ui/charts';
 import { SectionHeader } from '@/features/home/SectionHeader';
@@ -62,6 +62,8 @@ const STAT_META = [
 const walkLabel = (v: number) => (v >= 90 ? 'Walker’s Paradise' : v >= 70 ? 'Very Walkable' : v >= 50 ? 'Somewhat Walkable' : 'Car-Dependent');
 const transitLabel = (v: number) => (v >= 90 ? 'Rider’s Paradise' : v >= 70 ? 'Excellent Transit' : v >= 50 ? 'Good Transit' : 'Some Transit');
 const bikeLabel = (v: number) => (v >= 90 ? 'Biker’s Paradise' : v >= 70 ? 'Very Bikeable' : v >= 50 ? 'Bikeable' : 'Somewhat Bikeable');
+const schoolScoreTint = (s: number) =>
+  (s >= 9.5 ? 'bg-[#e9f9f2] text-[var(--color-success)]' : s >= 9 ? 'bg-[var(--color-brand-50)] text-[var(--color-brand-700)]' : 'bg-[#fdf3df] text-[#d9930b]');
 
 // Toronto baseline, computed from the real mock data.
 const BASE = {
@@ -206,7 +208,7 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
 
 function Panel({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('flex flex-col rounded-[24px] border border-[var(--color-border)] bg-white p-6', className)}>
+    <div className={cn('flex flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-white p-6', className)}>
       <h3 className="type-subtitle !text-[1.3rem] text-[var(--color-text-primary)]">{title}</h3>
       <div className="mt-5 flex flex-1 flex-col">{children}</div>
     </div>
@@ -240,8 +242,8 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
               <Icon className="h-5 w-5" strokeWidth={2.2} />
             </span>
             <div className="min-w-0">
-              <CountUp value={value} format={format} className="block truncate text-[1.4rem] font-bold leading-tight text-[var(--color-text-primary)]" />
-              <p className="mt-0.5 type-heading-sm !text-[0.92rem] text-[var(--color-text-secondary)]">{label}</p>
+              <CountUp value={value} format={format} className="block truncate type-title !text-[1.5rem] !leading-none text-[var(--color-text-primary)]" />
+              <p className="mt-1.5 text-[0.8rem] font-medium uppercase tracking-[0.045em] text-[var(--color-text-tertiary)]">{label}</p>
             </div>
           </div>
         ))}
@@ -292,7 +294,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
               {mostActiveBand.label}
             </span>
           </div>
-          <HBarChart rows={volumeRows} color="var(--color-primary)" />
+          <HBarChart rows={volumeRows} color="var(--color-brand-500)" />
         </Panel>
 
         <Panel title="Median Price Trend" className={CARD}>
@@ -352,15 +354,18 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {/* The world in one city */}
-        <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] border border-[var(--color-border)] bg-white p-6')}>
-          <h3 className="type-subtitle !text-[1.3rem] leading-tight text-[var(--color-text-primary)]">The World in One City</h3>
-          <p className="mt-4 type-body text-[var(--color-text-secondary)]">
+        <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-gradient-to-b from-[var(--color-brand-50)] to-white p-6')}>
+          <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-white text-[var(--color-brand-700)] shadow-[var(--shadow-sm)]">
+            <Globe className="h-6 w-6" strokeWidth={1.8} />
+          </span>
+          <h3 className="mt-4 type-subtitle !text-[1.3rem] leading-tight text-[var(--color-text-primary)]">The World in One City</h3>
+          <p className="mt-2.5 type-body text-[var(--color-text-secondary)]">
             A global powerhouse of culture defined by safe, connected, and vibrant neighbourhoods.
           </p>
           <div className="mt-auto flex flex-wrap gap-2 pt-6">
             {WORLD_TAGS.map((t, i) => (
-              <span key={t} className={cn('rounded-full px-3 py-1 type-caption font-semibold uppercase tracking-wide',
-                ['bg-[var(--color-brand-50)] text-[var(--color-brand-700)]', 'bg-[#e9f9f2] text-[var(--color-success)]', 'bg-[#f0edff] text-[#7c5cff]'][i % 3])}>
+              <span key={t} className={cn('rounded-full px-3 py-1.5 type-caption font-semibold uppercase tracking-wide',
+                ['bg-[var(--color-brand-100)] text-[var(--color-brand-700)]', 'bg-[#e1f6ec] text-[var(--color-success)]', 'bg-[#ece7ff] text-[#7c5cff]'][i % 3])}>
                 {t}
               </span>
             ))}
@@ -369,7 +374,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Commute facts */}
         <Panel title="Commute Facts" className={cn(CARD, 'w-[330px]')}>
-          <div className="flex flex-1 flex-col justify-center gap-4">
+          <div className="flex flex-1 flex-col justify-center gap-5">
             {commute.map(({ label, sub, value, color, icon: Icon }) => (
               <div key={label} className="flex items-center gap-3.5">
                 <ScoreRing value={value} color={color} size={54} />
@@ -377,7 +382,9 @@ export function DeepDive({ city = CITY }: { city?: string }) {
                   <p className="type-heading-sm leading-tight text-[var(--color-text-primary)]">{label}</p>
                   <p className="type-caption text-[var(--color-text-tertiary)]">{sub}</p>
                 </div>
-                <Icon className="h-6 w-6 shrink-0 text-[var(--color-text-tertiary)]" strokeWidth={1.8} />
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)]" style={{ color }}>
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                </span>
               </div>
             ))}
           </div>
@@ -387,12 +394,14 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         <Panel title="Top Amenities" className={cn(CARD, 'w-[320px]')}>
           <div className="flex flex-1 flex-col justify-center gap-3">
             {AMENITIES.map(({ label, count, icon: Icon }) => (
-              <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--color-surface)] px-4 py-3.5">
+              <div key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--color-surface)] px-3.5 py-3">
                 <span className="flex items-center gap-3">
-                  <Icon className="h-5 w-5 text-[var(--color-brand-700)]" strokeWidth={1.9} />
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-white text-[var(--color-brand-700)] shadow-[var(--shadow-sm)]">
+                    <Icon className="h-5 w-5" strokeWidth={1.9} />
+                  </span>
                   <span className="type-heading-sm text-[var(--color-text-primary)]">{label}</span>
                 </span>
-                <span className="type-subtitle !text-[1.15rem] text-[var(--color-text-primary)]">{count}</span>
+                <span className="type-title !text-[1.2rem] text-[var(--color-text-primary)]">{count}</span>
               </div>
             ))}
           </div>
@@ -401,14 +410,14 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         {/* Groceries */}
         <Panel title="Groceries" className={cn(CARD, 'w-[300px]')}>
           <div className="mb-4"><CountPill>{GROCERIES.total}</CountPill></div>
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-1 flex-col gap-4">
             {GROCERIES.items.map((g) => (
               <div key={g.name} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.8rem] font-bold text-white" style={{ background: g.color }}>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[0.85rem] font-bold text-white shadow-[var(--shadow-sm)]" style={{ background: g.color }}>
                   {g.name[0]}
                 </span>
-                <div>
-                  <p className="type-heading-sm leading-tight text-[var(--color-text-primary)]">{g.name}</p>
+                <div className="min-w-0">
+                  <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{g.name}</p>
                   <p className="type-caption text-[var(--color-text-tertiary)]">{g.sub}</p>
                 </div>
               </div>
@@ -419,16 +428,17 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         {/* Food & drinks */}
         <Panel title="Food & Drinks" className={cn(CARD, 'w-[300px]')}>
           <div className="mb-4"><CountPill>{FOOD.total}</CountPill></div>
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-1 flex-col gap-4">
             {FOOD.items.map(({ name, sub, rating, icon: Icon }) => (
               <div key={name} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-50)] text-[var(--color-brand-700)]">
-                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-brand-50)] text-[var(--color-brand-700)]">
+                  <Icon className="h-5 w-5" strokeWidth={1.9} />
                 </span>
-                <div>
-                  <p className="type-heading-sm leading-tight text-[var(--color-text-primary)]">{name}</p>
-                  <p className="flex items-center gap-1 type-caption text-[var(--color-text-tertiary)]">
-                    {rating} <Star className="h-3 w-3 fill-[var(--color-accent-orange)] text-[var(--color-accent-orange)]" /> · {sub}
+                <div className="min-w-0">
+                  <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{name}</p>
+                  <p className="mt-0.5 flex items-center gap-1 type-caption text-[var(--color-text-tertiary)]">
+                    <Star className="h-3 w-3 fill-[var(--color-accent-orange)] text-[var(--color-accent-orange)]" />
+                    <span className="font-semibold text-[var(--color-text-secondary)]">{rating}</span> · {sub}
                   </p>
                 </div>
               </div>
@@ -439,14 +449,14 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         {/* Top schools */}
         <Panel title="Top Schools" className={cn(CARD, 'w-[320px]')}>
           <div className="mb-4"><CountPill>{SCHOOLS.total}</CountPill></div>
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-1 flex-col gap-4">
             {SCHOOLS.items.map((s) => (
               <div key={s.name} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{s.name}</p>
                   <p className="type-caption text-[var(--color-text-tertiary)]">{s.sub}</p>
                 </div>
-                <span className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full bg-[#e9f9f2] px-2 type-caption font-bold text-[var(--color-success)]">
+                <span className={cn('flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl px-2 type-heading-sm font-semibold', schoolScoreTint(s.score))}>
                   {s.score}
                 </span>
               </div>

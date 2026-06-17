@@ -97,10 +97,11 @@ export default function HomePageClient() {
       className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {listings.map((listing) => (
-        <div key={listing.id} className="shrink-0 snap-start">
+        <div key={listing.id} className="shrink-0 snap-start cursor-pointer rounded-2xl transition-transform hover:-translate-y-0.5">
           <ListingCard
             listing={listing}
             variant="carousel"
+            carouselScrollPriority
             carouselWidth={cardWidth}
             carouselImageHeight={cardImageHeight}
             carouselTotalHeight={cardTotalHeight}
@@ -156,9 +157,9 @@ export default function HomePageClient() {
         {/* City-dependent content re-animates whenever the selected city changes */}
         <motion.div
           key={city}
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.85, ease: [0.33, 0, 0.2, 1] }}
         >
         {/* ── At a glance (city + stats strip) ───────────────── */}
         <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
@@ -255,32 +256,36 @@ export default function HomePageClient() {
   );
 }
 
-// Trailing carousel card: a little stack of photos + "See all <count>" → the
-// map. Matches the listing-card chrome (white, softly elevated); on hover the
-// photo stack fans out a touch.
+// Trailing carousel card: a stack of photos + "See all <count>" → the map.
+// Matches the listing-card chrome (white, softly elevated, lifts on hover);
+// the photo stack fans out on hover.
 function ViewAllCard({ images, total, width, height, onClick }: { images: string[]; total: number; width: number; height: number; onClick: () => void }) {
+  const [hover, setHover] = useState(false);
   const pics = images.slice(0, 3);
-  // [resting transform, hover transform] per thumbnail
-  const transforms = [
-    { base: 'rotate(-9deg) translate(-46px,8px)', hover: 'rotate(-13deg) translate(-62px,2px)' },
-    { base: 'rotate(8deg) translate(46px,2px)', hover: 'rotate(12deg) translate(62px,-4px)' },
-    { base: 'rotate(0deg) translate(0,22px)', hover: 'rotate(0deg) translate(0,14px) scale(1.05)' },
-  ];
+  const base = ['rotate(-5deg) translate(-20px,2px)', 'rotate(5deg) translate(20px,2px)', 'rotate(0deg) translate(0,0)'];
+  const fan = ['rotate(-13deg) translate(-64px,4px)', 'rotate(13deg) translate(64px,4px)', 'rotate(0deg) translate(0,-8px) scale(1.05)'];
   const z = [10, 10, 20];
   return (
-    <button onClick={onClick} aria-label={`See all ${total.toLocaleString()} listings`} className="group shrink-0 snap-start" style={{ width }}>
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      aria-label={`See all ${total.toLocaleString()} listings`}
+      className="group shrink-0 snap-start cursor-pointer rounded-2xl transition-transform hover:-translate-y-0.5"
+      style={{ width }}
+    >
       <div
-        className="va-card flex flex-col items-center justify-center rounded-[20px] bg-white shadow-[0_6px_24px_rgba(15,23,41,0.10)] ring-1 ring-[var(--color-border)]/50 transition-shadow group-hover:shadow-[0_12px_32px_rgba(15,23,41,0.16)]"
+        className="flex flex-col items-center justify-center rounded-[24px] bg-white shadow-[0_6px_24px_rgba(15,23,41,0.10)] ring-1 ring-[var(--color-border)]/45 transition-shadow group-hover:shadow-[0_14px_34px_rgba(15,23,41,0.16)]"
         style={{ height }}
       >
-        <div className="relative h-[148px] w-[214px]">
+        <div className="relative h-[150px] w-[224px]">
           {pics.map((src, i) => (
             <div
               key={i}
-              className="va-thumb absolute left-1/2 top-1 h-[116px] w-[116px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_8px_20px_rgba(15,23,41,0.16)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-              style={{ ['--va-t' as string]: transforms[i].base, ['--va-th' as string]: transforms[i].hover, zIndex: z[i] }}
+              className="absolute left-1/2 top-2 h-[120px] w-[120px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_10px_22px_rgba(15,23,41,0.18)]"
+              style={{ transform: `translateX(-50%) ${hover ? fan[i] : base[i]}`, zIndex: z[i], transition: 'transform 380ms cubic-bezier(0.22,1,0.36,1)' }}
             >
-              <Image src={src} alt="" fill sizes="116px" className="object-cover" />
+              <Image src={src} alt="" fill sizes="120px" className="object-cover" />
             </div>
           ))}
         </div>

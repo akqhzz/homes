@@ -41,6 +41,9 @@ interface ListingCardProps {
   desktopTall?: boolean;
   imageTouchMode?: 'locked' | 'vertical-scroll';
   contentTouchMode?: 'locked' | 'vertical-scroll';
+  /** On desktop, let swipes/scrolls over the image bubble to a horizontal
+   *  carousel instead of changing the card's photo. */
+  carouselScrollPriority?: boolean;
   topRightSlot?: ReactNode;
   likedOverride?: boolean;
   onLikeToggle?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -60,6 +63,7 @@ export default function ListingCard({
   desktopTall = false,
   imageTouchMode = 'locked',
   contentTouchMode = 'locked',
+  carouselScrollPriority = false,
   topRightSlot,
   likedOverride,
   onLikeToggle,
@@ -139,7 +143,11 @@ export default function ListingCard({
     setImgIndex((index) => Math.max(index - 1, 0));
   };
 
+  // When the parent carousel should win on desktop, let wheel/drag bubble.
+  const passThrough = carouselScrollPriority && isDesktop;
+
   const handleImageWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (passThrough) return;
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || Math.abs(e.deltaX) < 18) return;
     e.preventDefault();
     e.stopPropagation();
@@ -153,6 +161,7 @@ export default function ListingCard({
   };
 
   const handleImagePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (passThrough) return;
     e.stopPropagation();
     imagePointerStart.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
     imagePointerMoved.current = false;
@@ -452,7 +461,7 @@ export default function ListingCard({
           className="relative overflow-hidden bg-[var(--color-surface)]"
           style={{
             height: carouselImageHeight,
-            touchAction: imageTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'none',
+            touchAction: passThrough ? 'pan-x pan-y' : imageTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'none',
           }}
           onClick={(e) => {
             e.stopPropagation();
