@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 
 type City = { name: string; lat: number; lng: number; image: string; province: string };
 type Province = { code: string; name: string; lat: number; lng: number; image: string; cities: Omit<City, 'image' | 'province'>[] };
-type Cluster = { code: string; label: string; lat: number; lng: number };
+type Cluster = { code: string; label: string; lat: number; lng: number; members: string[] };
 
 const CITY_IMAGES = [
   'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=120&q=80',
@@ -50,15 +50,14 @@ const PROVINCES: Province[] = [
 ];
 
 const CLUSTERS: Cluster[] = [
-  { code: 'PRAIRIES', label: '2', lat: 53.8, lng: -101.5 },
-  { code: 'ATLANTIC', label: '4', lat: 47.6, lng: -62 },
+  { code: 'ATLANTIC', label: '4', lat: 47.6, lng: -62, members: ['NB', 'NS', 'PE', 'NL'] },
 ];
-const OVERVIEW_PROVINCES = ['BC', 'AB', 'ON', 'QC'];
+const OVERVIEW_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC'];
 
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
 // Spread each province's cities apart from their centroid so the bubbles
 // don't overlap (exact map position isn't important here).
-const SPREAD = 2.3;
+const SPREAD = 2.6;
 const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
   const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
   const cLng = p.cities.reduce((s, c) => s + c.lng, 0) / p.cities.length;
@@ -99,7 +98,7 @@ function frameOf(cities: { lat: number; lng: number }[]): { lat: number; lng: nu
       maxD = Math.max(maxD, angularDist(cities[i].lat, cities[i].lng, cities[j].lat, cities[j].lng));
     }
   }
-  return { lat, lng, altitude: Math.min(0.85, Math.max(0.3, maxD * 0.11)) };
+  return { lat, lng, altitude: Math.min(0.6, Math.max(0.22, maxD * 0.08)) };
 }
 
 function overviewMarkers(): Marker[] {
@@ -214,9 +213,11 @@ export default function HeroGlobe() {
             el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
             el2.__activate = () => {
               mode = 'detail';
-              forced = new Set();
-              renderMarkers(1);
-              goTo(marker.cluster.lat - 2, marker.cluster.lng, 1);
+              const cities = ALL_CITIES.filter((c) => marker.cluster.members.includes(c.province));
+              forced = new Set(cities.map((c) => c.name));
+              const f = frameOf(cities);
+              renderMarkers(f.altitude);
+              goTo(f.lat, f.lng, f.altitude);
             };
           } else if (marker.type === 'ccluster') {
             el2.style.zIndex = '1';
@@ -261,6 +262,7 @@ export default function HeroGlobe() {
           zoomToCursor: boolean;
           minDistance: number;
           maxDistance: number;
+          target: { length: () => number; setLength: (n: number) => void };
           addEventListener: (type: string, cb: () => void) => void;
         };
         controls.autoRotate = false;
@@ -274,6 +276,9 @@ export default function HeroGlobe() {
 
         controls.addEventListener('change', () => {
           if (!globe || Date.now() < suppressUntil) return;
+          // zoomToCursor pans the orbit target; keep it near the centre so the
+          // globe can't drift off-screen / vanish when zooming out a lot.
+          if (controls.target.length() > 26) controls.target.setLength(26);
           const alt = globe.pointOfView().altitude ?? 1.86;
           if (alt > 1.5) {
             if (mode !== 'overview') {
@@ -342,25 +347,31 @@ export default function HeroGlobe() {
         // Reveal the sphere + pins immediately; continents stream in after.
         if (!destroyed) setReady(true);
 
-        const stylePolygons = (features: object[]) => {
-          if (!globe) return;
-          globe
-            .polygonsData(features)
-            .polygonCapColor(() => '#e9eff6')
-            .polygonSideColor(() => 'rgba(150,170,198,0.45)')
-            .polygonStrokeColor(() => '#d2dbe6')
-            .polygonAltitude((d) => ((d as { __province?: boolean }).__province ? 0.004 : 0.001));
-        };
-
         try {
-          // Countries first (small file) for fast continents…
-          const countries = await (await fetch(COUNTRIES_GEOJSON)).json();
-          const countryFeatures = countries.features.map((f: object) => ({ ...f, __province: false }));
-          if (!destroyed && globe) stylePolygons(countryFeatures);
-          // …then province/state lines (larger file).
-          const provinces = await (await fetch(PROVINCES_GEOJSON)).json();
+          const [countriesRes, provincesRes] = await Promise.all([fetch(COUNTRIES_GEOJSON), fetch(PROVINCES_GEOJSON)]);
+          const countries = await countriesRes.json();
+          const provinces = await provincesRes.json();
           if (!destroyed && globe) {
-            stylePolygons([...countryFeatures, ...provinces.features.map((f: object) => ({ ...f, __province: true }))]);
+            // Where a country is subdivided into provinces, drop the country
+            // polygon so the two layers don't overlap & z-fight (white flashes).
+            const provincedAdmins = new Set<string>(
+              provinces.features
+                .map((f: { properties?: { admin?: string } }) => f.properties?.admin)
+                .filter((a: string | undefined): a is string => Boolean(a))
+            );
+            const countryFeatures = countries.features
+              .filter((f: { properties?: { ADMIN?: string; NAME?: string } }) =>
+                !provincedAdmins.has(f.properties?.ADMIN ?? f.properties?.NAME ?? '')
+              )
+              .map((f: object) => ({ ...f, __province: false }));
+            const provinceFeatures = provinces.features.map((f: object) => ({ ...f, __province: true }));
+            globe
+              .polygonsTransitionDuration(1100)
+              .polygonsData([...countryFeatures, ...provinceFeatures])
+              .polygonCapColor(() => '#e9eff6')
+              .polygonSideColor(() => 'rgba(150,170,198,0.45)')
+              .polygonStrokeColor(() => '#d2dbe6')
+              .polygonAltitude(() => 0.0025);
           }
         } catch {
           // Globe still renders without continents.
