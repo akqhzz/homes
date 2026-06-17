@@ -158,27 +158,30 @@ export default function HeroGlobe() {
         // 'province' = province bubbles (with at most one expanded into its
         // cities); 'cities' = every province shown as cities (deep zoom).
         let mode: 'province' | 'cities' = 'province';
-        let expanded: string | null = null; // expanded province / cluster code
+        let expanded: string | null = null; // province expanded into its cities
+        let clusterOpen = false; // Atlantic cluster opened into its 4 provinces
         let bucket = -1;
         let suppressUntil = 0;
 
-        const provinceModeMarkers = (): Marker[] => {
-          const markers: Marker[] = [];
-          for (const code of OVERVIEW_PROVINCES) {
-            if (code === expanded) {
-              ALL_CITIES.filter((c) => c.province === code).forEach((city) =>
-                markers.push({ type: 'city', lat: city.lat, lng: city.lng, city })
-              );
-            } else {
-              const p = byCode(code);
-              markers.push({ type: 'province', lat: p.lat, lng: p.lng, province: p });
-            }
-          }
-          const atlantic = CLUSTERS[0];
-          if (expanded === atlantic.code) {
-            ALL_CITIES.filter((c) => atlantic.members.includes(c.province)).forEach((city) =>
+        // A province renders as its cities when expanded, otherwise as a bubble.
+        const pushProvince = (markers: Marker[], code: string) => {
+          if (code === expanded) {
+            ALL_CITIES.filter((c) => c.province === code).forEach((city) =>
               markers.push({ type: 'city', lat: city.lat, lng: city.lng, city })
             );
+          } else {
+            const p = byCode(code);
+            markers.push({ type: 'province', lat: p.lat, lng: p.lng, province: p });
+          }
+        };
+
+        const provinceModeMarkers = (): Marker[] => {
+          const markers: Marker[] = [];
+          OVERVIEW_PROVINCES.forEach((code) => pushProvince(markers, code));
+          const atlantic = CLUSTERS[0];
+          if (clusterOpen) {
+            // Cluster opened: its members become individual province bubbles.
+            atlantic.members.forEach((code) => pushProvince(markers, code));
           } else {
             markers.push({ type: 'pcluster', lat: atlantic.lat, lng: atlantic.lng, cluster: atlantic });
           }
@@ -205,15 +208,27 @@ export default function HeroGlobe() {
           }, 950);
         };
 
-        // Expand one province (or the Atlantic group) into its cities while the
-        // other provinces stay as bubbles; centre on it with a moderate zoom.
-        const expand = (code: string, cities: City[]) => {
+        // Expand one province into its cities while the other provinces stay as
+        // bubbles. Centre on it but stay zoomed well out (cities only fill in on
+        // a much deeper zoom).
+        const expandProvince = (code: string) => {
           mode = 'province';
           expanded = code;
+          const cities = ALL_CITIES.filter((c) => c.province === code);
           const cLat = cities.reduce((s, c) => s + c.lat, 0) / cities.length;
           const cLng = cities.reduce((s, c) => s + c.lng, 0) / cities.length;
           renderMarkers();
-          goTo(cLat, cLng, 0.95);
+          goTo(cLat, cLng, 1.35);
+        };
+
+        // Open the Atlantic cluster into its 4 member provinces (still bubbles).
+        const openCluster = () => {
+          const atlantic = CLUSTERS[0];
+          mode = 'province';
+          clusterOpen = true;
+          expanded = null;
+          renderMarkers();
+          goTo(atlantic.lat, atlantic.lng, 1.2);
         };
 
         const buildMarker = (marker: Marker): PinEl => {
@@ -224,12 +239,12 @@ export default function HeroGlobe() {
             el2.style.zIndex = '3';
             el2.dataset.z = '3';
             el2.innerHTML = `<div style="position:relative;width:50px;height:50px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 4px 12px rgba(15,23,41,0.16);background-image:url('${marker.province.image}');background-size:cover;background-position:center;"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,41,0.34);color:#fff;font-family:var(--font-body-sans);font-size:13px;font-weight:600;">${marker.province.code}</div></div>`;
-            el2.__activate = () => expand(marker.province.code, ALL_CITIES.filter((c) => c.province === marker.province.code));
+            el2.__activate = () => expandProvince(marker.province.code);
           } else if (marker.type === 'pcluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
             el2.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9999px;background:#0F1729;color:#fff;box-shadow:0 4px 12px rgba(15,23,41,0.18);font-family:var(--font-body-sans);font-size:14px;font-weight:600;">${marker.cluster.label}</div>`;
-            el2.__activate = () => expand(marker.cluster.code, ALL_CITIES.filter((c) => marker.cluster.members.includes(c.province)));
+            el2.__activate = () => openCluster();
           } else if (marker.type === 'ccluster') {
             el2.style.zIndex = '1';
             el2.dataset.z = '1';
@@ -261,12 +276,15 @@ export default function HeroGlobe() {
         globe.globeMaterial(new THREE.MeshBasicMaterial({ color: 0xffffff }));
         globe.lights([new THREE.AmbientLight(0xffffff, 1.1)]);
 
-        // globe.gl's own init runs after this and overwrites maxDistance with
-        // globeR*100 (10000), which is why the globe used to shrink away on
-        // zoom-out. We keep zoomToCursor on and re-assert the clamp on every
-        // change event below so the zoom-out reliably locks.
-        const MAX_DISTANCE = 310; // → max altitude ≈ 2.1 (globe still fully visible)
-        const MIN_DISTANCE = 78;
+        // globe.gl measures camera distance as globeRadius * (1 + altitude) and
+        // its globe radius is 100 — so a minDistance below the radius puts the
+        // camera INSIDE the sphere (back-face culled → globe vanishes and can't
+        // recover). Derive the clamp from the real radius so we stay safely
+        // outside on zoom-in and locked on zoom-out. globe.gl also resets these
+        // in its own init, so we re-assert them on every change event below.
+        const globeR = (globe as unknown as { getGlobeRadius?: () => number }).getGlobeRadius?.() ?? 100;
+        const MIN_DISTANCE = globeR * 1.08; // ~alt 0.08 — always outside the globe
+        const MAX_DISTANCE = globeR * 3.0; // ~alt 2.0 — locked zoom-out, globe still fully visible
         const controls = globe.controls() as unknown as {
           autoRotate: boolean;
           enableZoom: boolean;
@@ -295,15 +313,17 @@ export default function HeroGlobe() {
           controls.minDistance = MIN_DISTANCE;
           if (Date.now() < suppressUntil) return;
           const alt = globe.pointOfView().altitude ?? 1.86;
-          if (alt > 1.45) {
-            // Zoomed out: province bubbles, nothing expanded.
-            if (mode !== 'province' || expanded !== null) {
+          if (alt > 1.55) {
+            // Zoomed out to the overview: province bubbles, nothing expanded,
+            // Atlantic cluster closed again.
+            if (mode !== 'province' || expanded !== null || clusterOpen) {
               mode = 'province';
               expanded = null;
+              clusterOpen = false;
               renderMarkers();
             }
-          } else if (alt < 0.62) {
-            // Zoomed in a lot: every province shown as its cities, clustered.
+          } else if (alt < 0.5) {
+            // Zoomed in much further: every province shown as its cities, clustered.
             if (mode !== 'cities') {
               mode = 'cities';
               renderMarkers();
@@ -314,6 +334,7 @@ export default function HeroGlobe() {
             // Mid zoom returning from cities mode: back to province bubbles.
             mode = 'province';
             expanded = null;
+            clusterOpen = false;
             renderMarkers();
           }
         });
