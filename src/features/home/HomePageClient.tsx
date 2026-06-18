@@ -273,9 +273,9 @@ export default function HomePageClient() {
             </h2>
             <span
               aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-[transform,background-color] duration-200 group-hover:translate-x-0.5 group-hover:bg-[var(--color-surface-hover)]"
             >
-              <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight size={18} />
             </span>
           </div>
         </motion.section>

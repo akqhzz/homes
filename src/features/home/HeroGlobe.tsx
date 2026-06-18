@@ -544,7 +544,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           hoveredPin = pin;
           if (pin) {
             pin.setAttribute('data-hover', '1');
-            pin.style.setProperty('--pin-scale', String(currentPinScale * 1.14));
+            pin.style.setProperty('--pin-scale', String(currentPinScale * 1.07));
           }
         };
         moveHandler = (event: PointerEvent) => {

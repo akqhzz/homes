@@ -1,4 +1,5 @@
 'use client';
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -22,6 +23,10 @@ interface RenameDeletePopoverProps {
   zIndex?: number;
   /** Close the options menu when the cursor leaves it (for hover-opened popovers). */
   closeOnPointerLeave?: boolean;
+  /** Optional extra action rendered above Rename (e.g. an email-alert toggle). */
+  extraActionLabel?: string;
+  extraActionIcon?: ReactNode;
+  onExtraAction?: () => void;
 }
 
 // Shared overflow menu system for collection/search cards: same menu, same delete confirmation, same portal layering.
@@ -41,6 +46,9 @@ export default function RenameDeletePopover({
   onConfirmDelete,
   zIndex = 100,
   closeOnPointerLeave = false,
+  extraActionLabel,
+  extraActionIcon,
+  onExtraAction,
 }: RenameDeletePopoverProps) {
   if (typeof document === 'undefined' || !open) return null;
   const viewportWidth = window.innerWidth;
@@ -76,12 +84,24 @@ export default function RenameDeletePopover({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="fixed w-36 rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]"
+            className={`fixed ${extraActionLabel ? 'w-48' : 'w-36'} rounded-2xl bg-white p-1.5 text-sm shadow-[0_8px_24px_rgba(15,23,41,0.16)]`}
             style={{ bottom: menuBottom, right: menuRight, zIndex }}
             data-rename-delete-popover="true"
             onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => event.stopPropagation()}
           >
+            {extraActionLabel && onExtraAction && (
+              <ActionRow
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onExtraAction();
+                }}
+              >
+                {extraActionIcon}
+                {extraActionLabel}
+              </ActionRow>
+            )}
             <ActionRow
               onClick={(event) => {
                 event.preventDefault();
