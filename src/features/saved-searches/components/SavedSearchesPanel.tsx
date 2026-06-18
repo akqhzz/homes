@@ -271,6 +271,8 @@ export default function SavedSearchesPanel({
             const criteriaSummary = getSavedSearchCriteriaSummary(search);
             const unseenNewListingsCount = unseenNewCountBySearchId.get(search.id) ?? 0;
             const hasNewListings = unseenNewListingsCount > 0;
+            // Hide the "x New" pill when the Update?/Updated controls need the row.
+            const hideNewForSpace = showUpdatedState || (isSelected && activeSearchDirty);
 
             return (
             <div
@@ -307,53 +309,63 @@ export default function SavedSearchesPanel({
                   </span>
                 )}
               </div>
-              <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  {renamingId === search.id ? (
-                    <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
-                      <input
-                        value={renameName}
-                        onChange={(event) => setRenameName(event.target.value)}
-                        onClick={(event) => event.stopPropagation()}
-                        onKeyDown={(event) => {
-                          event.stopPropagation();
-                          if (event.key === 'Enter') finishRename();
-                          if (event.key === 'Escape') {
-                            setRenamingId(null);
-                            setRenameName('');
-                          }
-                        }}
-                        onBlur={finishRename}
-                        className="type-body min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none"
-                        autoFocus
-                      />
-                      <button
-                        type="button"
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          finishRename();
-                        }}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
-                        aria-label="Finish rename"
-                      >
-                        <Check size={13} />
-                      </button>
-                    </div>
-                  ) : (
-                    <p className="type-heading-sm min-w-0 truncate text-[var(--color-text-primary)]">{search.name}</p>
-                  )}
-                  <div className="mt-0.5">
-                    <p className="min-w-0 flex-1 truncate type-caption text-[var(--color-text-tertiary)]">
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    {renamingId === search.id ? (
+                      <div className="flex h-8 items-center rounded-xl border border-[var(--color-border)] bg-white pl-3 pr-1.5">
+                        <input
+                          value={renameName}
+                          onChange={(event) => setRenameName(event.target.value)}
+                          onClick={(event) => event.stopPropagation()}
+                          onKeyDown={(event) => {
+                            event.stopPropagation();
+                            if (event.key === 'Enter') finishRename();
+                            if (event.key === 'Escape') {
+                              setRenamingId(null);
+                              setRenameName('');
+                            }
+                          }}
+                          onBlur={finishRename}
+                          className="type-body min-w-0 flex-1 bg-transparent text-[var(--color-text-primary)] outline-none"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                          }}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            finishRename();
+                          }}
+                          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                          aria-label="Finish rename"
+                        >
+                          <Check size={13} />
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="type-heading-sm min-w-0 truncate text-[var(--color-text-primary)]">{search.name}</p>
+                    )}
+                    <p className="mt-0.5 min-w-0 truncate type-caption text-[var(--color-text-tertiary)]">
                       {criteriaSummary}
                     </p>
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {hasNewListings && (
-                      <span className="type-micro inline-flex h-7 items-center rounded-full bg-[var(--color-brand-600)] px-2.5 text-[var(--color-text-inverse)]">
+                  <button
+                    type="button"
+                    onClick={(event) => openMenu(event, search.id)}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
+                    aria-label="Saved search options"
+                  >
+                    <Ellipsis size={16} />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    {hasNewListings && !hideNewForSpace && (
+                      <span className="type-micro inline-flex h-6 items-center rounded-full bg-[var(--color-brand-600)] px-2.5 text-[var(--color-text-inverse)]">
                         {unseenNewListingsCount} New
                       </span>
                     )}
@@ -364,66 +376,52 @@ export default function SavedSearchesPanel({
                       onToggle={(rect) => openAlertMenu(search.id, rect)}
                     />
                   </div>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                  <button
-                    type="button"
-                    onClick={(event) => openMenu(event, search.id)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition-colors hover:bg-white hover:text-[var(--color-text-primary)]"
-                    aria-label="Saved search options"
-                  >
-                    <Ellipsis size={16} />
-                  </button>
-                  <div className="flex items-center justify-end gap-2">
-                    {showUpdatedState ? (
-                      <span className="shrink-0 rounded-full border border-[var(--color-brand-600)] bg-[var(--color-brand-50)] px-3 py-2 type-caption text-[var(--color-brand-700)]">
-                        Updated
-                      </span>
-                    ) : isSelected && activeSearchDirty ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleLoadSearch(search);
-                          }}
-                          className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-2 type-caption text-[var(--color-text-primary)]"
-                        >
-                          Unselect
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            onUpdateSearch?.(search.id);
-                            setUpdatedSearchId(search.id);
-                            if (updateFeedbackTimeoutRef.current) {
-                              window.clearTimeout(updateFeedbackTimeoutRef.current);
-                            }
-                            updateFeedbackTimeoutRef.current = window.setTimeout(() => {
-                              setUpdatedSearchId((current) => (current === search.id ? null : current));
-                            }, 1400);
-                          }}
-                          className="shrink-0 rounded-full bg-[var(--color-text-primary)] px-3 py-2 type-caption text-[var(--color-text-inverse)]"
-                        >
-                          Update?
-                        </button>
-                      </>
-                    ) : isSelected ? (
+                  {showUpdatedState ? (
+                    <span className="shrink-0 rounded-full border border-[var(--color-brand-600)] bg-[var(--color-brand-50)] px-3 py-1.5 type-caption text-[var(--color-brand-700)]">
+                      Updated
+                    </span>
+                  ) : isSelected && activeSearchDirty ? (
+                    <div className="flex shrink-0 items-center gap-2">
                       <button
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
                           handleLoadSearch(search);
                         }}
-                        className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-2 type-caption text-[var(--color-text-primary)]"
+                        className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-caption text-[var(--color-text-primary)]"
                       >
                         Unselect
                       </button>
-                    ) : (
-                      <span className="h-8" aria-hidden="true" />
-                    )}
-                  </div>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onUpdateSearch?.(search.id);
+                          setUpdatedSearchId(search.id);
+                          if (updateFeedbackTimeoutRef.current) {
+                            window.clearTimeout(updateFeedbackTimeoutRef.current);
+                          }
+                          updateFeedbackTimeoutRef.current = window.setTimeout(() => {
+                            setUpdatedSearchId((current) => (current === search.id ? null : current));
+                          }, 1400);
+                        }}
+                        className="shrink-0 rounded-full bg-[var(--color-text-primary)] px-3 py-1.5 type-caption text-[var(--color-text-inverse)]"
+                      >
+                        Update?
+                      </button>
+                    </div>
+                  ) : isSelected ? (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleLoadSearch(search);
+                      }}
+                      className="shrink-0 rounded-full bg-[var(--color-surface)] px-3 py-1.5 type-caption text-[var(--color-text-primary)]"
+                    >
+                      Unselect
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -512,7 +510,7 @@ export default function SavedSearchesPanel({
             backdropClassName="z-[110]"
           >
             <DesktopSortMenu
-              options={ALERT_OPTIONS}
+              options={ALERT_MENU_OPTIONS}
               value={value}
               onChange={(frequency) => {
                 setAlertFrequency(alertMenu.searchId, frequency);
@@ -526,12 +524,14 @@ export default function SavedSearchesPanel({
   );
 }
 
-const ALERT_OPTIONS: { value: AlertFrequency; label: string }[] = [
-  { value: 'instant', label: 'Instant' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'none', label: 'No alert' },
+// `label` shows on the badge; `menuLabel` shows in the frequency dropdown.
+const ALERT_OPTIONS: { value: AlertFrequency; label: string; menuLabel: string }[] = [
+  { value: 'instant', label: 'Instant', menuLabel: 'Instant Email Alert' },
+  { value: 'daily', label: 'Daily', menuLabel: 'Daily Email Alert' },
+  { value: 'weekly', label: 'Weekly', menuLabel: 'Weekly Email Alert' },
+  { value: 'none', label: 'No Alert', menuLabel: 'No Alert' },
 ];
+const ALERT_MENU_OPTIONS = ALERT_OPTIONS.map(({ value, menuLabel }) => ({ value, label: menuLabel }));
 
 // Per-card email-alert badge. The frequency picker it opens is owned by the
 // panel (so the dots menu can open it too); this just toggles it via onToggle.
@@ -560,7 +560,7 @@ function AlertBadge({
       className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--color-border)] bg-white px-2.5 type-micro text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)]"
     >
       <Bell size={12} className={muted ? 'text-[var(--color-text-tertiary)]' : 'text-[var(--color-brand-600)]'} />
-      {muted ? 'No alert' : `${current.label} alerts`}
+      {current.label}
       <ChevronDown size={12} className={`text-[var(--color-text-tertiary)] transition-transform ${open ? 'rotate-180' : ''}`} />
     </button>
   );
