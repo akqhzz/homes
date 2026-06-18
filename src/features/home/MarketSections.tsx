@@ -302,7 +302,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
       {/* Cards fill the full width when they fit, scroll one line when they don't */}
       <div
         ref={bindScroller}
-        className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-2 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="mt-5 -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pt-2 pb-6 lg:-mx-12 lg:scroll-px-12 lg:px-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <Panel title="Property Type Distribution" className={CARD}>
           <div className="flex flex-1 items-center">
@@ -377,7 +377,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
       <div
         ref={bindScroller}
-        className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-2 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="mt-5 -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pt-2 pb-6 lg:-mx-12 lg:scroll-px-12 lg:px-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {/* The world in one city */}
         <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] bg-white px-6 pt-6 pb-7 shadow-[0_3px_14px_rgba(15,23,41,0.05)]')}>
@@ -513,7 +513,7 @@ export function AreaFinder({ city = CITY, onSelect }: { city?: string; onSelect?
 
       <div
         ref={bindScroller}
-        className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-2 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="mt-5 -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pt-2 pb-6 lg:-mx-12 lg:scroll-px-12 lg:px-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {MOCK_NEIGHBORHOODS.map((n) => (
           <button

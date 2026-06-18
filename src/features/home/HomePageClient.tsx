@@ -153,7 +153,7 @@ export default function HomePageClient() {
   const renderCarousel = (listings: typeof MOCK_LISTINGS, carousel: ReturnType<typeof useCarouselScroll>) => (
     <div
       ref={carousel.bindScroller}
-      className="mt-2 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pt-2 pb-6 sm:mt-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="mt-2 -mx-5 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-5 px-5 pt-2 pb-6 sm:mt-5 lg:-mx-12 lg:scroll-px-12 lg:px-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {listings.map((listing) => (
         <div key={listing.id} className="shrink-0 snap-start cursor-pointer rounded-2xl transition-transform hover:-translate-y-0.5">
@@ -304,7 +304,7 @@ export default function HomePageClient() {
           <SectionHeader title="News & Guides" onArrow={() => router.push('/for-you')} />
 
           {/* Mobile: horizontal carousel, like the listing cards */}
-          <div className="mt-3 flex gap-5 overflow-x-auto px-1 pt-2 pb-6 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-3 -mx-5 flex gap-5 overflow-x-auto px-5 pt-2 pb-6 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {INSIGHTS.map((article) => (
               <button key={article.title} className="group flex w-[290px] shrink-0 flex-col overflow-hidden rounded-[20px] bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5">
                 <div className="relative aspect-[16/10] overflow-hidden">
