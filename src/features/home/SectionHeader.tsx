@@ -27,6 +27,8 @@ export function SectionHeader({
   onPrev,
   onNext,
   hideNavOnDesktop = false,
+  disablePrev = false,
+  disableNext = false,
 }: {
   title: string;
   city?: string;
@@ -35,6 +37,9 @@ export function SectionHeader({
   onNext?: () => void;
   /** Hide the prev/next carousel arrows at lg+ (use when all cards fit on desktop). */
   hideNavOnDesktop?: boolean;
+  /** Disable arrows at the carousel's start/end. */
+  disablePrev?: boolean;
+  disableNext?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -61,28 +66,49 @@ export function SectionHeader({
           <ArrowRight size={18} />
         </span>
       </div>
-      {onPrev && onNext && <CarouselNav onPrev={onPrev} onNext={onNext} hideOnDesktop={hideNavOnDesktop} />}
+      {onPrev && onNext && (
+        <CarouselNav
+          onPrev={onPrev}
+          onNext={onNext}
+          hideOnDesktop={hideNavOnDesktop}
+          disablePrev={disablePrev}
+          disableNext={disableNext}
+        />
+      )}
     </div>
   );
 }
 
-export function CarouselNav({ onPrev, onNext, hideOnDesktop = false }: { onPrev: () => void; onNext: () => void; hideOnDesktop?: boolean }) {
+export function CarouselNav({
+  onPrev,
+  onNext,
+  hideOnDesktop = false,
+  disablePrev = false,
+  disableNext = false,
+}: {
+  onPrev: () => void;
+  onNext: () => void;
+  hideOnDesktop?: boolean;
+  disablePrev?: boolean;
+  disableNext?: boolean;
+}) {
   return (
     <div className={`hidden shrink-0 items-center gap-1.5 sm:flex ${hideOnDesktop ? 'lg:hidden' : ''}`}>
-      <CarouselArrow direction="left" onClick={onPrev} />
-      <CarouselArrow direction="right" onClick={onNext} />
+      <CarouselArrow direction="left" onClick={onPrev} disabled={disablePrev} />
+      <CarouselArrow direction="right" onClick={onNext} disabled={disableNext} />
     </div>
   );
 }
 
-export function CarouselArrow({ direction, onClick }: { direction: 'left' | 'right'; onClick: () => void }) {
+export function CarouselArrow({ direction, onClick, disabled = false }: { direction: 'left' | 'right'; onClick: () => void; disabled?: boolean }) {
   const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-label={direction === 'left' ? 'Scroll left' : 'Scroll right'}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)]"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-white text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-surface)] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white"
     >
       <Icon size={18} />
     </button>

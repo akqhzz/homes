@@ -153,14 +153,21 @@ function clusterCities(list: City[], thresholdDeg: number, forced: Set<string>):
 
 type PinEl = HTMLElement & { __activate?: () => void };
 
-export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string) => void }) {
+export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?: (city: string) => void; selectedCity?: string }) {
   const router = useRouter();
   const routerRef = useRef(router);
   const onCityClickRef = useRef(onCityClick);
+  const selectedCityRef = useRef(selectedCity);
+  // Lets an external effect re-render the globe's bubbles when the selection changes.
+  const renderMarkersRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     routerRef.current = router;
     onCityClickRef.current = onCityClick;
   }, [router, onCityClick]);
+  useEffect(() => {
+    selectedCityRef.current = selectedCity;
+    renderMarkersRef.current?.();
+  }, [selectedCity]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -254,6 +261,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
             : provinceModeMarkers(thr);
           globe.htmlElementsData(withStableIdentity(raw));
         };
+        renderMarkersRef.current = () => renderMarkers();
 
         const goTo = (lat: number, lng: number, altitude: number) => {
           if (!globe) return;
@@ -327,7 +335,18 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           } else {
             el2.style.zIndex = '2';
             el2.dataset.z = '2';
-            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="background:#fff;border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
+            const isSelected = marker.city.name === selectedCityRef.current;
+            const circleShadow = isSelected
+              ? 'box-shadow:0 0 0 3px var(--color-brand-600),0 5px 16px rgba(15,23,41,0.3);'
+              : 'box-shadow:0 3px 10px rgba(15,23,41,0.15);';
+            const labelStyle = isSelected
+              ? 'background:var(--color-brand-600);color:#fff;'
+              : 'background:#fff;color:#0F1729;';
+            if (isSelected) {
+              el2.style.zIndex = '4';
+              el2.dataset.z = '4';
+            }
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;${circleShadow}background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;${labelStyle}white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => {
               if (onCityClickRef.current) onCityClickRef.current(marker.city.name);
               else routerRef.current.push('/');

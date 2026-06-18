@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { AreaSparkline, HBarChart, PieChart, ScoreRing } from '@/components/ui/charts';
 import { SectionHeader } from '@/features/home/SectionHeader';
+import { useCarouselScroll } from '@/hooks/useCarouselScroll';
 import { MOCK_LISTINGS, MOCK_NEIGHBORHOODS } from '@/lib/mock-data';
 import { formatPriceFull, formatPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
@@ -238,7 +239,7 @@ function MiniStat({ value, unit, label }: { value: string; unit?: string; label:
         {value}
         {unit && <span className="type-caption ml-1 font-medium text-[var(--color-text-secondary)]">{unit}</span>}
       </p>
-      <p className="mt-1 text-[0.72rem] font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)]">{label}</p>
+      <p className="type-body-fine mt-1 font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)]">{label}</p>
     </div>
   );
 }
@@ -251,7 +252,7 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
   const { stats } = useMemo(() => getCityData(city), [city]);
   return (
     <section className="w-full px-5 pt-4 lg:px-12 lg:pt-5">
-      <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5 lg:gap-5 lg:overflow-visible">
+      <div className="flex gap-4 overflow-x-auto px-1 pt-2 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5 lg:gap-5 lg:overflow-visible lg:px-0 lg:pt-0 lg:pb-0">
         {stats.map(({ label, value, format, icon: Icon, tint }) => (
           <div key={label} className="flex min-w-[210px] items-center gap-3 rounded-[20px] bg-white px-5 py-4 shadow-[0_3px_14px_rgba(15,23,41,0.05)] sm:min-w-[240px] sm:gap-4 sm:px-6 sm:py-5 lg:min-w-0">
             <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] sm:h-12 sm:w-12 sm:rounded-[15px]', tint)}>
@@ -259,7 +260,7 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
             </span>
             <div className="min-w-0">
               <CountUp value={value} format={format} className="block truncate type-title !text-[1.15rem] !leading-none text-[var(--color-text-primary)] sm:!text-[1.5rem]" />
-              <p className="mt-1 text-[0.62rem] font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)] sm:mt-1.5 sm:text-[0.8rem]">{label}</p>
+              <p className="type-body-fine mt-1 font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)] sm:mt-1.5">{label}</p>
             </div>
           </div>
         ))}
@@ -274,9 +275,7 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
 
 export function MarketBoard({ city = CITY }: { city?: string }) {
   const router = useRouter();
-  const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: 1 | -1) =>
-    ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
+  const { bindScroller, atStart, atEnd, scrollByDir } = useCarouselScroll(680);
   const { typeSlices, volumeRows, volumeTotal, mostActiveBand, trend, medianPrice, trendDelta, health } = useMemo(() => getCityData(city), [city]);
   // flex-1 + a min width: the four cards stretch to fill the row on wide
   // screens, and fall back to a horizontal scroll when they no longer fit.
@@ -287,14 +286,16 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
         title="Market Insights in"
         city={city}
         onArrow={() => router.push('/for-you')}
-        onPrev={() => scroll(-1)}
-        onNext={() => scroll(1)}
+        onPrev={() => scrollByDir(-1)}
+        onNext={() => scrollByDir(1)}
+        disablePrev={atStart}
+        disableNext={atEnd}
         hideNavOnDesktop
       />
 
       {/* Cards fill the full width when they fit, scroll one line when they don't */}
       <div
-        ref={ref}
+        ref={bindScroller}
         className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-2 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <Panel title="Property Type Distribution" className={CARD}>
@@ -353,9 +354,7 @@ function CountPill({ children }: { children: React.ReactNode }) {
 
 export function DeepDive({ city = CITY }: { city?: string }) {
   const router = useRouter();
-  const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: 1 | -1) =>
-    ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
+  const { bindScroller, atStart, atEnd, scrollByDir } = useCarouselScroll(680);
   const { commute } = useMemo(() => getCityData(city), [city]);
   const CARD = 'shrink-0 snap-start min-h-[312px]';
   return (
@@ -364,12 +363,14 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         title="Deep Dive into"
         city={city}
         onArrow={() => router.push('/for-you')}
-        onPrev={() => scroll(-1)}
-        onNext={() => scroll(1)}
+        onPrev={() => scrollByDir(-1)}
+        onNext={() => scrollByDir(1)}
+        disablePrev={atStart}
+        disableNext={atEnd}
       />
 
       <div
-        ref={ref}
+        ref={bindScroller}
         className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-2 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {/* The world in one city */}
@@ -491,21 +492,21 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
 export function AreaFinder({ city = CITY, onSelect }: { city?: string; onSelect?: (name: string) => void }) {
   const router = useRouter();
-  const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: 1 | -1) =>
-    ref.current?.scrollBy({ left: dir * Math.min(680, ref.current.clientWidth * 0.85), behavior: 'smooth' });
+  const { bindScroller, atStart, atEnd, scrollByDir } = useCarouselScroll(680);
   return (
     <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
       <SectionHeader
         title="Find your area in"
         city={city}
         onArrow={() => router.push('/')}
-        onPrev={() => scroll(-1)}
-        onNext={() => scroll(1)}
+        onPrev={() => scrollByDir(-1)}
+        onNext={() => scrollByDir(1)}
+        disablePrev={atStart}
+        disableNext={atEnd}
       />
 
       <div
-        ref={ref}
+        ref={bindScroller}
         className="mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pt-2 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {MOCK_NEIGHBORHOODS.map((n) => (

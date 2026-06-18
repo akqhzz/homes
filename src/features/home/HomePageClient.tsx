@@ -10,6 +10,7 @@ import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
 import { SectionHeader, AnimatedHeading } from '@/features/home/SectionHeader';
+import { useCarouselScroll } from '@/hooks/useCarouselScroll';
 import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY, getCityData } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -143,17 +144,15 @@ export default function HomePageClient() {
     };
   }, [searchOpen]);
 
-  const newestRef = useRef<HTMLDivElement>(null);
-  const soldRef = useRef<HTMLDivElement>(null);
-  const featuredRef = useRef<HTMLDivElement>(null);
-  const scrollRow = (ref: React.RefObject<HTMLDivElement | null>, dir: 1 | -1) =>
-    ref.current?.scrollBy({ left: dir * Math.min(760, ref.current.clientWidth * 0.85), behavior: 'smooth' });
+  const newestCar = useCarouselScroll();
+  const soldCar = useCarouselScroll();
+  const featuredCar = useCarouselScroll();
 
   const [featuredArticle, ...restArticles] = INSIGHTS;
 
-  const renderCarousel = (listings: typeof MOCK_LISTINGS, ref: React.RefObject<HTMLDivElement | null>) => (
+  const renderCarousel = (listings: typeof MOCK_LISTINGS, carousel: ReturnType<typeof useCarouselScroll>) => (
     <div
-      ref={ref}
+      ref={carousel.bindScroller}
       className="mt-2 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pt-2 pb-6 sm:mt-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {listings.map((listing) => (
@@ -162,6 +161,7 @@ export default function HomePageClient() {
             listing={listing}
             variant="carousel"
             carouselScrollPriority
+            imageTouchMode="vertical-scroll"
             carouselWidth={cardWidth}
             carouselImageHeight={cardImageHeight}
             carouselTotalHeight={cardTotalHeight}
@@ -186,7 +186,7 @@ export default function HomePageClient() {
           {/* Globe fills the hero; the blue glow lives in the background behind it.
               z-0 creates a stacking context so the fade/search bar layer above its pins. */}
           <div className="absolute inset-x-0 -top-[3%] bottom-0 z-0">
-            <HeroGlobe onCityClick={setCity} />
+            <HeroGlobe onCityClick={setCity} selectedCity={city} />
           </div>
 
           {/* Tall, soft white fade so the globe's bottom melts smoothly into the page */}
@@ -287,10 +287,12 @@ export default function HomePageClient() {
             title={`${cityData.newListingsLabel} New Listings in`}
             city={city}
             onArrow={goToMap}
-            onPrev={() => scrollRow(newestRef, -1)}
-            onNext={() => scrollRow(newestRef, 1)}
+            onPrev={() => newestCar.scrollByDir(-1)}
+            onNext={() => newestCar.scrollByDir(1)}
+            disablePrev={newestCar.atStart}
+            disableNext={newestCar.atEnd}
           />
-          {renderCarousel(newest, newestRef)}
+          {renderCarousel(newest, newestCar)}
         </motion.section>
 
         {/* ── Market insights dashboard ──────────────────────── */}
@@ -348,8 +350,8 @@ export default function HomePageClient() {
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title="Sold Prices in" city={city} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
-          {renderCarousel(soldListings, soldRef)}
+          <SectionHeader title="Sold Prices in" city={city} onArrow={goToMap} onPrev={() => soldCar.scrollByDir(-1)} onNext={() => soldCar.scrollByDir(1)} disablePrev={soldCar.atStart} disableNext={soldCar.atEnd} />
+          {renderCarousel(soldListings, soldCar)}
         </motion.section>
 
         {/* ── Find your area (neighbourhoods) ────────────────── */}
@@ -357,8 +359,8 @@ export default function HomePageClient() {
 
         {/* ── Featured listings ──────────────────────────────── */}
         <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader title="Featured Listings in" city={city} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
-          {renderCarousel(featuredListings, featuredRef)}
+          <SectionHeader title="Featured Listings in" city={city} onArrow={goToMap} onPrev={() => featuredCar.scrollByDir(-1)} onNext={() => featuredCar.scrollByDir(1)} disablePrev={featuredCar.atStart} disableNext={featuredCar.atEnd} />
+          {renderCarousel(featuredListings, featuredCar)}
         </motion.section>
         </motion.div>
 

@@ -130,8 +130,9 @@ button,
 .type-12, .type-display     { font-family: var(--font-heading);   font-size: 3.75rem;   font-weight: 450; line-height: 0.96; letter-spacing: -0.02em; text-transform: capitalize; }
 
 /* UI tokens — weight variants for labels and buttons                */
-.type-label   { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1.25; }
-.type-btn     { font-family: var(--font-body-sans); font-size: 0.875rem; font-weight: 500; line-height: 1;    }
+.type-label     { font-family: var(--font-body-sans); font-size: 0.875rem;  font-weight: 500; line-height: 1.25; }
+.type-btn       { font-family: var(--font-body-sans); font-size: 0.875rem;  font-weight: 500; line-height: 1;    }
+.type-body-fine { font-family: var(--font-body-sans); font-size: 0.6875rem; font-weight: 400; line-height: 1.45; }
 .price-currency { font-family: var(--font-currency), var(--font-heading); }
 .card-price,
 .card-price * { font-family: var(--font-body-sans) !important; font-weight: 650; letter-spacing: 0; }
