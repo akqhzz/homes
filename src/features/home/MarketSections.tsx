@@ -77,7 +77,7 @@ const STAT_META = [
 const walkLabel = (v: number) => (v >= 90 ? 'Walker’s Paradise' : v >= 70 ? 'Very Walkable' : v >= 50 ? 'Somewhat Walkable' : 'Car-Dependent');
 const transitLabel = (v: number) => (v >= 90 ? 'Rider’s Paradise' : v >= 70 ? 'Excellent Transit' : v >= 50 ? 'Good Transit' : 'Some Transit');
 const bikeLabel = (v: number) => (v >= 90 ? 'Biker’s Paradise' : v >= 70 ? 'Very Bikeable' : v >= 50 ? 'Bikeable' : 'Somewhat Bikeable');
-const schoolScoreTint = (s: number) =>
+export const schoolScoreTint = (s: number) =>
   (s >= 9.5 ? 'bg-[#e9f9f2] text-[var(--color-success)]' : s >= 9 ? 'bg-[var(--color-brand-50)] text-[var(--color-brand-700)]' : 'bg-[#fdf3df] text-[#d9930b]');
 
 // Toronto baseline, computed from the real mock data.
@@ -156,24 +156,24 @@ export function getCityData(city: string) {
 }
 
 // "Deep dive" city facts (representative figures for the city overview).
-const WORLD_TAGS = ['Urban', 'Global', 'Vibrant'];
-const AMENITIES = [
+export const WORLD_TAGS = ['Urban', 'Global', 'Vibrant'];
+export const AMENITIES = [
   { label: 'Parks', count: '1500+', icon: Trees, color: 'var(--color-success)', tint: '#e9f9f2' },
   { label: 'Fitness Centres', count: '400+', icon: Dumbbell, color: 'var(--color-accent-orange)', tint: '#fdeee0' },
   { label: 'Libraries', count: '100+', icon: BookOpen, color: '#7c5cff', tint: '#f0edff' },
 ];
 const groceryLogo = (domain: string) => `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
-const GROCERIES = { total: '600+', items: [
+export const GROCERIES = { total: '600+', items: [
   { name: 'Loblaws', sub: '60+ in total', logo: groceryLogo('loblaws.ca') },
   { name: 'No Frills', sub: '30+ in total', logo: groceryLogo('nofrills.ca') },
   { name: 'Farm Boy', sub: '20+ in total', logo: groceryLogo('farmboy.ca') },
 ] };
-const FOOD = { total: '8000+', items: [
+export const FOOD = { total: '8000+', items: [
   { name: 'Alo', sub: 'Restaurant', rating: 4.8, icon: Utensils },
   { name: 'Civil Liberties', sub: 'Bar', rating: 4.7, icon: Wine },
   { name: 'Dineen Coffee Co.', sub: 'Café', rating: 4.6, icon: Coffee },
 ] };
-const SCHOOLS = { total: '800+', items: [
+export const SCHOOLS = { total: '800+', items: [
   { name: 'Ursula Franklin Academy', sub: 'Public · 9-12', score: 9.5 },
   { name: 'St. Michael’s Choir School', sub: 'Public/Catholic · 3-12', score: 9.6 },
   { name: 'Northmount School', sub: 'Private · K-8', score: 10 },
@@ -347,7 +347,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
 ══════════════════════════════════════════════════════════════════ */
 
 function CountPill({ children }: { children: React.ReactNode }) {
-  return <span className="inline-block rounded-full bg-[var(--color-brand-100)] px-3 py-1 type-caption font-semibold text-[var(--color-brand-700)]">{children}</span>;
+  return <span className="inline-block rounded-full bg-[var(--color-brand-700)] px-3 py-1 type-caption font-semibold text-white">{children}</span>;
 }
 
 export function DeepDive({ city = CITY }: { city?: string }) {
@@ -425,8 +425,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Groceries */}
         <Panel title="Groceries" className={cn(CARD, 'w-[300px]')}>
-          <div><CountPill>{GROCERIES.total}</CountPill></div>
           <div className="flex flex-1 flex-col justify-center gap-5">
+            <div><CountPill>{GROCERIES.total}</CountPill></div>
             {GROCERIES.items.map((g) => (
               <div key={g.name} className="flex items-center gap-3">
                 <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-[var(--color-border)] bg-white">
@@ -443,8 +443,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Food & drinks */}
         <Panel title="Food & Drinks" className={cn(CARD, 'w-[300px]')}>
-          <div><CountPill>{FOOD.total}</CountPill></div>
           <div className="flex flex-1 flex-col justify-center gap-5">
+            <div><CountPill>{FOOD.total}</CountPill></div>
             {FOOD.items.map(({ name, sub, rating, icon: Icon }) => (
               <div key={name} className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-brand-50)] text-[var(--color-brand-700)]">
@@ -464,8 +464,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Top schools */}
         <Panel title="Top Schools" className={cn(CARD, 'w-[320px]')}>
-          <div><CountPill>{SCHOOLS.total}</CountPill></div>
           <div className="flex flex-1 flex-col justify-center gap-5">
+            <div><CountPill>{SCHOOLS.total}</CountPill></div>
             {SCHOOLS.items.map((s) => (
               <div key={s.name} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">

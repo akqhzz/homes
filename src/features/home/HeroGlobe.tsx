@@ -347,7 +347,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           .backgroundColor('rgba(0,0,0,0)')
           .showGlobe(true)
           .showAtmosphere(false)
-          .htmlElementsData(provinceModeMarkers(thresholdFor(1.86)))
+          .htmlElementsData([]) // bubbles are revealed after the globe has rendered
           .htmlLat((d) => (d as Marker).lat)
           .htmlLng((d) => (d as Marker).lng)
           .htmlAltitude(0.005)
@@ -441,7 +441,19 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
 
         // Slightly larger globe on desktop (lower altitude = closer/bigger).
         const initAltitude = window.innerWidth >= 1024 ? 1.68 : 1.86;
-        globe.pointOfView({ lat: 54, lng: -96, altitude: initAltitude }, 0);
+        // Intro: start a touch further out and ease into place; reveal the
+        // bubbles only once the globe itself has rendered.
+        globe.pointOfView({ lat: 54, lng: -96, altitude: initAltitude + 0.6 }, 0);
+        let revealed = false;
+        const reveal = () => {
+          if (!globe || destroyed || revealed) return;
+          revealed = true;
+          globe.pointOfView({ lat: 54, lng: -96, altitude: initAltitude }, 1300);
+          window.setTimeout(() => { if (!destroyed) renderMarkers(); }, 600);
+        };
+        globe.onGlobeReady(reveal);
+        // Fallback in case onGlobeReady doesn't fire (e.g. no texture to load).
+        window.setTimeout(reveal, 500);
 
         const resize = () => {
           if (!globe) return;
