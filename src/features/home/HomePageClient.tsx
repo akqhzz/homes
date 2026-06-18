@@ -383,7 +383,11 @@ function ViewAllCard({ images, total, width, height, onClick }: { images: string
             <div
               key={i}
               className="absolute left-1/2 top-2 h-[100px] w-[100px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_10px_22px_rgba(15,23,41,0.18)]"
-              style={{ transform: `translateX(-50%) ${hover ? fan[i] : base[i]}`, zIndex: z[i], transition: 'transform 380ms cubic-bezier(0.22,1,0.36,1)' }}
+              style={{
+                transform: `translateX(-50%) ${hover ? fan[i] : base[i]}`,
+                zIndex: z[i],
+                transition: `transform 560ms cubic-bezier(0.25, 1, 0.3, 1) ${(hover ? i : 2 - i) * 55}ms`,
+              }}
             >
               <Image src={src} alt="" fill sizes="100px" className="object-cover" />
             </div>

@@ -57,7 +57,13 @@ const OVERVIEW_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC'];
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
 // Spread each province's cities apart from their centroid so the bubbles
 // don't overlap (exact map position isn't important here).
-const SPREAD = 2.15;
+const SPREAD = 2.55;
+// Bigger/most-searched cities — always shown as their own pin, never folded
+// into a numbered cluster.
+const MAJOR_CITIES = new Set([
+  'Toronto', 'Vancouver', 'Montréal', 'Calgary', 'Edmonton', 'Ottawa',
+  'Winnipeg', 'Québec City', 'Hamilton', 'Halifax', 'Mississauga', 'Victoria',
+]);
 const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
   const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
   const cLng = p.cities.reduce((s, c) => s + c.lng, 0) / p.cities.length;
@@ -125,7 +131,7 @@ function clusterCities(list: City[], thresholdDeg: number, forced: Set<string>):
   const groups: { lat: number; lng: number; items: City[] }[] = [];
   const forcedCities: Marker[] = [];
   for (const city of list) {
-    if (forced.has(city.name)) {
+    if (forced.has(city.name) || MAJOR_CITIES.has(city.name)) {
       forcedCities.push({ type: 'city', lat: city.lat, lng: city.lng, city });
       continue;
     }

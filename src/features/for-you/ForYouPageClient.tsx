@@ -10,7 +10,7 @@ import { AreaSparkline, HBarChart, PieChart, ScoreRing } from '@/components/ui/c
 import { CitySelector } from '@/features/home/CitySelector';
 import {
   getCityData, CITY, CITY_OPTIONS, cityThumb,
-  AMENITIES, GROCERIES, FOOD, SCHOOLS, schoolScoreTint,
+  AMENITIES, GROCERIES, FOOD, SCHOOLS,
 } from '@/features/home/MarketSections';
 import { formatPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
@@ -34,39 +34,86 @@ function Row({ children }: { children: ReactNode }) {
   return <div className="flex items-center gap-3">{children}</div>;
 }
 
+/* ── brand-blue palette (the insights page's own colour theme) ───── */
+const B = {
+  b700: 'var(--color-brand-700)',
+  b600: 'var(--color-brand-600)',
+  b500: 'var(--color-brand-500)',
+  b400: 'var(--color-brand-400)',
+  b300: 'var(--color-brand-300)',
+  b200: 'var(--color-brand-200)',
+  primary: 'var(--color-primary)',
+};
+const RING_SHADES = [B.b600, B.b500, B.b400];
+
 /* ── build the deck from homepage market data ────────────────────── */
 
 function makeCards(city: string): InsightCard[] {
   const d = getCityData(city);
   const trendUp = d.trendDelta >= 0;
+  const [avgListing, active, avgHouse, avgCondo, avgTown] = d.stats.map((s) => s.value);
+  const typeSlices = d.typeSlices.map((s, i) => ({ ...s, color: [B.b500, B.b300, B.b700][i] }));
+  const priceByType = [
+    { label: 'House', value: avgHouse },
+    { label: 'Condo', value: avgCondo },
+    { label: 'Townhouse', value: avgTown },
+  ];
+
   return [
     {
-      id: 'glance', tag: 'At a glance', title: `${city} at a glance`,
-      tone: 'bg-[var(--color-brand-50)]', accent: 'var(--color-brand-700)',
+      // Hero stat — avg price over a filled trend
+      id: 'glance', tag: 'At a glance', title: `${city} market pulse`,
+      tone: 'bg-[var(--color-brand-50)]', accent: B.b700,
       visual: (
-        <div className="flex flex-col gap-2.5">
-          {d.stats.map(({ label, value, format, icon: Icon, tint }) => (
-            <div key={label} className="flex items-center gap-3 rounded-2xl bg-white px-3.5 py-2.5">
-              <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]', tint)}>
-                <Icon className="h-5 w-5" strokeWidth={2.1} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[0.66rem] font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)]">{label}</p>
-                <p className="truncate text-[1.15rem] font-bold leading-tight text-[var(--color-text-primary)]">{format(value)}</p>
-              </div>
+        <div>
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[0.66rem] font-medium uppercase tracking-[0.05em] text-[var(--color-text-tertiary)]">Avg. listing price</p>
+              <p className="type-title-lg !text-[2rem] !leading-none text-[var(--color-text-primary)]">{formatPrice(avgListing)}</p>
             </div>
-          ))}
+            <span className={cn('mb-1 shrink-0 rounded-full px-2 py-0.5 text-[0.78rem] font-semibold', trendUp ? 'bg-[var(--color-brand-100)] text-[var(--color-brand-700)]' : 'bg-[#fdecec] text-[var(--color-accent)]')}>
+              {trendUp ? '↑' : '↓'} {Math.abs(d.trendDelta).toFixed(1)}%
+            </span>
+          </div>
+          <div className="-mx-1 mt-2"><AreaSparkline points={d.trend} color={B.b500} height={78} /></div>
+          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-white px-3.5 py-2.5">
+            <span className="type-title !text-[1.3rem] !leading-none text-[var(--color-text-primary)]">{Math.round(active).toLocaleString()}</span>
+            <span className="type-caption font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">Active listings</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      // Average price by home type — comparison bars
+      id: 'byType', tag: 'Pricing', title: 'Prices by home type',
+      tone: 'bg-[#EEF2F7]', accent: B.b600,
+      visual: (
+        <div className="flex flex-col gap-4">
+          {priceByType.map((t, i) => {
+            const maxV = Math.max(...priceByType.map((x) => x.value)) || 1;
+            return (
+              <div key={t.label}>
+                <div className="mb-1 flex items-baseline justify-between">
+                  <span className="type-heading-sm text-[var(--color-text-primary)]">{t.label}</span>
+                  <span className="type-body font-semibold text-[var(--color-text-primary)]">{formatPrice(t.value)}</span>
+                </div>
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-white">
+                  <div className="h-full rounded-full" style={{ width: `${(t.value / maxV) * 100}%`, background: [B.b500, B.b400, B.b300][i] }} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       ),
     },
     {
       id: 'ptype', tag: 'Inventory', title: 'Property type distribution',
-      tone: 'bg-[var(--color-surface)]', accent: 'var(--color-success)',
-      visual: <PieChart slices={d.typeSlices} legendFontSize={14} />,
+      tone: 'bg-[var(--color-surface)]', accent: B.b700,
+      visual: <PieChart slices={typeSlices} legendFontSize={14} />,
     },
     {
       id: 'volume', tag: 'Volume', title: 'Market volume',
-      tone: 'bg-[#EEF2F7]', accent: 'var(--color-brand-700)',
+      tone: 'bg-[var(--color-brand-50)]', accent: B.b600,
       visual: (
         <div>
           <div className="mb-4 flex items-start justify-between gap-2">
@@ -75,29 +122,29 @@ function makeCards(city: string): InsightCard[] {
             </p>
             <span className="shrink-0 rounded-full bg-[var(--color-brand-100)] px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-wide text-[var(--color-brand-700)]">{d.mostActiveBand.label}</span>
           </div>
-          <HBarChart rows={d.volumeRows} color="var(--color-brand-500)" />
+          <HBarChart rows={d.volumeRows} color={B.b500} />
         </div>
       ),
     },
     {
       id: 'trend', tag: 'Pricing', title: 'Median price trend',
-      tone: 'bg-[var(--color-brand-50)]', accent: 'var(--color-success)',
+      tone: 'bg-[#EEF2F7]', accent: B.b700,
       visual: (
         <div>
           <div className="mb-2 flex items-center gap-2.5">
             <p className="type-title !text-[1.5rem] !leading-none text-[var(--color-text-primary)]">{formatPrice(d.medianPrice)}</p>
-            <span className={cn('rounded-full px-2 py-0.5 text-[0.78rem] font-semibold', trendUp ? 'bg-[#e9f9f2] text-[var(--color-success)]' : 'bg-[#fdecec] text-[var(--color-accent)]')}>
+            <span className={cn('rounded-full px-2 py-0.5 text-[0.78rem] font-semibold', trendUp ? 'bg-[var(--color-brand-100)] text-[var(--color-brand-700)]' : 'bg-[#fdecec] text-[var(--color-accent)]')}>
               {trendUp ? '↑' : '↓'} {Math.abs(d.trendDelta).toFixed(1)}%
             </span>
           </div>
-          <AreaSparkline points={d.trend} color="var(--color-success)" height={84} />
+          <AreaSparkline points={d.trend} color={B.b500} height={84} />
           <div className="mt-1 flex justify-between text-[0.78rem] text-[var(--color-text-tertiary)]"><span>Jul ’25</span><span>Jun ’26</span></div>
         </div>
       ),
     },
     {
       id: 'health', tag: 'Market health', title: 'Market health',
-      tone: 'bg-[#F5F3EF]', accent: 'var(--color-brand-700)',
+      tone: 'bg-[var(--color-brand-50)]', accent: B.b600,
       visual: (
         <div className="grid grid-cols-2 gap-3">
           <Mini value={`${d.health.daysOnMarket}`} unit="days" label="Avg. days on market" />
@@ -109,17 +156,17 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'commute', tag: 'Getting around', title: 'Commute facts',
-      tone: 'bg-[var(--color-brand-100)]', accent: 'var(--color-accent-orange)',
+      tone: 'bg-[#EEF2F7]', accent: B.b700,
       visual: (
         <div className="flex flex-col gap-4">
-          {d.commute.map(({ label, sub, value, color, icon: Icon }) => (
+          {d.commute.map(({ label, sub, value, icon: Icon }, i) => (
             <Row key={label}>
-              <ScoreRing value={value} color={color} size={50} />
+              <ScoreRing value={value} color={RING_SHADES[i]} size={50} />
               <div className="min-w-0 flex-1">
                 <p className="type-heading-sm leading-tight text-[var(--color-text-primary)]">{label}</p>
                 <p className="type-caption text-[var(--color-text-tertiary)]">{sub}</p>
               </div>
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)]" style={{ color }}>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white" style={{ color: RING_SHADES[i] }}>
                 <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
               </span>
             </Row>
@@ -129,13 +176,13 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'amenities', tag: 'Lifestyle', title: 'Top amenities',
-      tone: 'bg-[var(--color-surface)]', accent: 'var(--color-success)',
+      tone: 'bg-[var(--color-surface)]', accent: B.b600,
       visual: (
         <div className="flex flex-col gap-3">
-          {AMENITIES.map(({ label, count, icon: Icon, color, tint }) => (
-            <div key={label} className="flex items-center justify-between gap-3 rounded-full bg-[var(--color-surface)] py-2 pl-2 pr-4">
+          {AMENITIES.map(({ label, count, icon: Icon }) => (
+            <div key={label} className="flex items-center justify-between gap-3 rounded-full bg-white py-2 pl-2 pr-4">
               <span className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: tint, color }}>
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-brand-50)] text-[var(--color-brand-700)]">
                   <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
                 </span>
                 <span className="type-heading-sm text-[var(--color-text-primary)]">{label}</span>
@@ -148,7 +195,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'groceries', tag: 'Daily life', title: 'Groceries',
-      tone: 'bg-[var(--color-brand-50)]', accent: 'var(--color-brand-700)',
+      tone: 'bg-[var(--color-brand-50)]', accent: B.b700,
       visual: (
         <div className="flex flex-col gap-4">
           {GROCERIES.items.map((g) => (
@@ -167,7 +214,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'food', tag: 'Dining', title: 'Food & drinks',
-      tone: 'bg-[#F5F3EF]', accent: 'var(--color-accent-orange)',
+      tone: 'bg-[#EEF2F7]', accent: B.b600,
       visual: (
         <div className="flex flex-col gap-4">
           {FOOD.items.map(({ name, sub, rating, icon: Icon }) => (
@@ -178,7 +225,7 @@ function makeCards(city: string): InsightCard[] {
               <div className="min-w-0">
                 <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{name}</p>
                 <p className="mt-0.5 flex items-center gap-1 type-caption text-[var(--color-text-tertiary)]">
-                  <Star className="h-3 w-3 fill-[var(--color-accent-orange)] text-[var(--color-accent-orange)]" />
+                  <Star className="h-3 w-3 fill-[var(--color-brand-500)] text-[var(--color-brand-500)]" />
                   <span className="font-semibold text-[var(--color-text-secondary)]">{rating}</span> · {sub}
                 </p>
               </div>
@@ -189,7 +236,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'schools', tag: 'Education', title: 'Top schools',
-      tone: 'bg-[#EEF2F7]', accent: 'var(--color-success)',
+      tone: 'bg-[var(--color-surface)]', accent: B.b700,
       visual: (
         <div className="flex flex-col gap-4">
           {SCHOOLS.items.map((s) => (
@@ -198,7 +245,7 @@ function makeCards(city: string): InsightCard[] {
                 <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{s.name}</p>
                 <p className="type-caption text-[var(--color-text-tertiary)]">{s.sub}</p>
               </div>
-              <span className={cn('flex h-9 min-w-9 shrink-0 items-center justify-center rounded-xl px-2 type-heading-sm font-semibold', schoolScoreTint(s.score))}>{s.score}</span>
+              <span className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-brand-50)] px-2 type-heading-sm font-semibold text-[var(--color-brand-700)]">{s.score}</span>
             </div>
           ))}
         </div>
@@ -271,8 +318,8 @@ export default function InsightsPage() {
     <PageShell showDesktopHeader={false} desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-[var(--color-background)]">
 
-        {/* ── Mobile header ── */}
-        <div className="flex flex-shrink-0 flex-wrap items-center justify-center gap-3 px-4 pt-4 pb-0 lg:hidden">
+        {/* ── Mobile header — title, selector below ── */}
+        <div className="flex flex-shrink-0 flex-col items-center gap-2.5 px-4 pt-4 pb-1 lg:hidden">
           <h1 className="type-title text-[var(--color-text-primary)]">Insights</h1>
           <CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} />
         </div>
@@ -321,10 +368,10 @@ export default function InsightsPage() {
 
         {/* ── Desktop masonry ── */}
         <div className="hidden lg:block h-full overflow-y-auto px-6 py-6">
-          <div className="relative mb-8 flex items-center justify-center gap-4">
+          <div className="relative mb-8 flex items-center justify-center">
             <BackButton iconOnly className="absolute left-0 shrink-0" />
             <h1 className="type-title-lg text-[var(--color-text-primary)]">Insights</h1>
-            <CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} />
+            <div className="absolute right-0"><CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} /></div>
           </div>
           <div style={{ columnCount: 3, columnGap: '1.25rem' }} className="3xl:columns-4">
             {CARDS.map((card) => (
