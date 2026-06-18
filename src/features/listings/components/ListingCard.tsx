@@ -40,7 +40,9 @@ interface ListingCardProps {
   className?: string;
   desktopTall?: boolean;
   imageTouchMode?: 'locked' | 'vertical-scroll';
-  contentTouchMode?: 'locked' | 'vertical-scroll';
+  // 'free' allows both axes (pan-x pan-y): horizontal carousel scroll AND
+  // vertical page scroll when the finger is on the card body.
+  contentTouchMode?: 'locked' | 'vertical-scroll' | 'free';
   /** On desktop, let swipes/scrolls over the image bubble to a horizontal
    *  carousel instead of changing the card's photo. */
   carouselScrollPriority?: boolean;
@@ -574,7 +576,7 @@ export default function ListingCard({
         {/* Info — static, touching this area lets horizontal carousel scroll */}
         <button
           className="block min-h-[78px] bg-white px-3.5 pb-4 pt-2 text-left"
-          style={{ touchAction: contentTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'pan-x' }}
+          style={{ touchAction: contentTouchMode === 'free' ? 'pan-x pan-y' : contentTouchMode === 'vertical-scroll' ? 'pan-y pinch-zoom' : 'pan-x' }}
           onClick={openListingPage}
         >
           <div className="flex items-start justify-between gap-2">

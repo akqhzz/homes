@@ -184,8 +184,10 @@ export const SCHOOLS = { total: '800+', items: [
    Shared card chrome
 ══════════════════════════════════════════════════════════════════ */
 
-// Counts up to `value` (eased) the first time it scrolls into view.
-function CountUp({ value, format, className }: { value: number; format: (n: number) => string; className?: string }) {
+// Counts up to `value` (eased). With `eager`, it animates on mount; otherwise
+// the first time it scrolls into view. (`eager` keeps off-screen cards in a
+// horizontal mobile strip from waiting to be swiped into view.)
+function CountUp({ value, format, className, eager = false }: { value: number; format: (n: number) => string; className?: string; eager?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [shown, setShown] = useState(value);
   useEffect(() => {
@@ -207,6 +209,10 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
       setShown(from);
       raf = requestAnimationFrame(step);
     };
+    if (eager) {
+      animate();
+      return () => cancelAnimationFrame(raf);
+    }
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !started) {
@@ -219,7 +225,7 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
     );
     io.observe(el);
     return () => { io.disconnect(); cancelAnimationFrame(raf); };
-  }, [value]);
+  }, [value, eager]);
   return <span ref={ref} className={className}>{format(shown)}</span>;
 }
 
@@ -259,7 +265,7 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
               <Icon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.1} />
             </span>
             <div className="min-w-0">
-              <CountUp value={value} format={format} className="block truncate type-title !text-[1.15rem] !leading-none text-[var(--color-text-primary)] sm:!text-[1.5rem]" />
+              <CountUp value={value} format={format} eager className="block truncate type-title !text-[1.15rem] !leading-none text-[var(--color-text-primary)] sm:!text-[1.5rem]" />
               <p className="type-body-fine mt-1 font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)] sm:mt-1.5">{label}</p>
             </div>
           </div>

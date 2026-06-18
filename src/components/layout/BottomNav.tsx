@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
-import { Bookmark, GalleryHorizontalEnd, Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
+import { useEffect } from 'react';
+import { Bookmark, GalleryHorizontalEnd, Home, Map, Heart, Sparkles, Menu, Plus } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUIStore } from '@/store/uiStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
@@ -8,6 +9,7 @@ import Button from '@/components/ui/Button';
 import { cn } from '@/lib/utils/cn';
 
 const NAV_ITEMS = [
+  { href: '/home', icon: Home, label: 'Home' },
   { href: '/', icon: Map, label: 'Map' },
   { href: '/saved', icon: Heart, label: 'Saved' },
   { href: '/for-you', icon: Sparkles, label: 'For You' },
@@ -17,6 +19,11 @@ const NAV_ITEMS = [
 export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
+
+  // Warm each destination so tapping a nav item navigates instantly.
+  useEffect(() => {
+    NAV_ITEMS.forEach(({ href }) => router.prefetch(href));
+  }, [router]);
   const { setActivePanel } = useUIStore();
   const { searches, activeSearchId, activeSearchDirty } = useSavedSearchStore();
 

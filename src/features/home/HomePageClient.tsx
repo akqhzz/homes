@@ -162,6 +162,7 @@ export default function HomePageClient() {
             variant="carousel"
             carouselScrollPriority
             imageTouchMode="vertical-scroll"
+            contentTouchMode="free"
             carouselWidth={cardWidth}
             carouselImageHeight={cardImageHeight}
             carouselTotalHeight={cardTotalHeight}

@@ -157,7 +157,9 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
   const router = useRouter();
   const routerRef = useRef(router);
   const onCityClickRef = useRef(onCityClick);
-  const selectedCityRef = useRef(selectedCity);
+  // The city the user picked by clicking its bubble. Only this bubble shows the
+  // selected state — and only while it's still the city the homepage displays.
+  const clickedCityRef = useRef<string | null>(null);
   // Lets an external effect re-render the globe's bubbles when the selection changes.
   const renderMarkersRef = useRef<(() => void) | null>(null);
   useEffect(() => {
@@ -165,7 +167,9 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
     onCityClickRef.current = onCityClick;
   }, [router, onCityClick]);
   useEffect(() => {
-    selectedCityRef.current = selectedCity;
+    // If the displayed city changed by some other means (selector, search), the
+    // globe's clicked-selection no longer matches — drop it.
+    if (selectedCity !== clickedCityRef.current) clickedCityRef.current = null;
     renderMarkersRef.current?.();
   }, [selectedCity]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -335,21 +339,22 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
           } else {
             el2.style.zIndex = '2';
             el2.dataset.z = '2';
-            const isSelected = marker.city.name === selectedCityRef.current;
-            const circleShadow = isSelected
-              ? 'box-shadow:0 0 0 3px var(--color-brand-600),0 5px 16px rgba(15,23,41,0.3);'
-              : 'box-shadow:0 3px 10px rgba(15,23,41,0.15);';
+            const isSelected = marker.city.name === clickedCityRef.current;
+            const dim = isSelected ? 54 : 46;
+            const circleBorder = isSelected ? '#0F1729' : '#fff';
             const labelStyle = isSelected
-              ? 'background:var(--color-brand-600);color:#fff;'
+              ? 'background:#0F1729;color:#fff;'
               : 'background:#fff;color:#0F1729;';
             if (isSelected) {
               el2.style.zIndex = '4';
               el2.dataset.z = '4';
             }
-            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:46px;height:46px;border-radius:9999px;overflow:hidden;border:2px solid #fff;${circleShadow}background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;${labelStyle}white-space:nowrap;">${marker.city.name}</span></div>`;
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:${dim}px;height:${dim}px;border-radius:9999px;overflow:hidden;border:2px solid ${circleBorder};box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;${labelStyle}white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => {
+              clickedCityRef.current = marker.city.name;
               if (onCityClickRef.current) onCityClickRef.current(marker.city.name);
               else routerRef.current.push('/');
+              renderMarkers();
             };
           }
           // The bubble circle itself scales with the zoom (via --pin-scale on
