@@ -48,6 +48,16 @@ const INSIGHTS = [
   },
 ];
 
+// Stable empty array so useLocationSearch's effect deps don't churn every render.
+const NO_EXCLUDED: string[] = [];
+
+// Stagger the content sections in when the selected city changes.
+const STAGGER_CONTAINER = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.03 } } };
+const STAGGER_ITEM = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] } },
+};
+
 export default function HomePageClient() {
   const router = useRouter();
   const setActivePanel = useUIStore((s) => s.setActivePanel);
@@ -98,7 +108,8 @@ export default function HomePageClient() {
   const { results: searchResults, isLoading: searchLoading } = useLocationSearch(
     searchQuery,
     selectedLocations,
-    isDesktop && searchOpen
+    isDesktop && searchOpen,
+    NO_EXCLUDED
   );
 
   const positionDropdown = () => {
@@ -245,24 +256,18 @@ export default function HomePageClient() {
           )}
         </section>
 
-        {/* City-dependent content re-animates whenever the selected city changes */}
-        <motion.div
-          key={city}
-          initial={{ opacity: 0, scale: 0.985 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          style={{ transformOrigin: '50% 0%' }}
-        >
+        {/* City-dependent content staggers in whenever the selected city changes */}
+        <motion.div key={city} variants={STAGGER_CONTAINER} initial="hidden" animate="show">
         {/* ── At a glance (city + stats strip) ───────────────── */}
-        <section className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
+        <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
           <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
             <AnimatedCity city={city} /> At A Glance
           </h2>
-        </section>
-        <MarketStatsStrip city={city} />
+        </motion.section>
+        <motion.div variants={STAGGER_ITEM}><MarketStatsStrip city={city} /></motion.div>
 
         {/* ── New listings ───────────────────────────────────── */}
-        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
+        <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader
             title={`${cityData.newListingsLabel} New Listings in`}
             city={city}
@@ -271,14 +276,14 @@ export default function HomePageClient() {
             onNext={() => scrollRow(newestRef, 1)}
           />
           {renderCarousel(newest, newestRef)}
-        </section>
+        </motion.section>
 
         {/* ── Market insights dashboard + deep dive ──────────── */}
-        <MarketBoard city={city} />
-        <DeepDive city={city} />
+        <motion.div variants={STAGGER_ITEM}><MarketBoard city={city} /></motion.div>
+        <motion.div variants={STAGGER_ITEM}><DeepDive city={city} /></motion.div>
 
         {/* ── News & Guides ──────────────────────────────────── */}
-        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
+        <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader title="News & Guides" onArrow={() => router.push('/for-you')} />
 
           {/* Mobile: horizontal carousel, like the listing cards */}
@@ -322,22 +327,22 @@ export default function HomePageClient() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ── Sold Prices ────────────────────────────────────── */}
-        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
+        <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader title="Sold Prices in" city={city} onArrow={goToMap} onPrev={() => scrollRow(soldRef, -1)} onNext={() => scrollRow(soldRef, 1)} />
           {renderCarousel(soldListings, soldRef)}
-        </section>
+        </motion.section>
 
         {/* ── Find your area (neighbourhoods) ────────────────── */}
-        <AreaFinder city={city} onSelect={goToMap} />
+        <motion.div variants={STAGGER_ITEM}><AreaFinder city={city} onSelect={goToMap} /></motion.div>
 
         {/* ── Featured listings ──────────────────────────────── */}
-        <section className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
+        <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
           <SectionHeader title="Featured Listings in" city={city} onArrow={goToMap} onPrev={() => scrollRow(featuredRef, -1)} onNext={() => scrollRow(featuredRef, 1)} />
           {renderCarousel(featuredListings, featuredRef)}
-        </section>
+        </motion.section>
         </motion.div>
 
         {/* ── Footer (matches the map listing view) ──────────── */}
@@ -355,8 +360,8 @@ export default function HomePageClient() {
 function ViewAllCard({ images, total, width, height, onClick }: { images: string[]; total: number; width: number; height: number; onClick: () => void }) {
   const [hover, setHover] = useState(false);
   const pics = images.slice(0, 3);
-  const base = ['rotate(-5deg) translate(-20px,2px)', 'rotate(5deg) translate(20px,2px)', 'rotate(0deg) translate(0,0)'];
-  const fan = ['rotate(-13deg) translate(-64px,4px)', 'rotate(13deg) translate(64px,4px)', 'rotate(0deg) translate(0,-8px) scale(1.05)'];
+  const base = ['rotate(-5deg) translate(-16px,2px)', 'rotate(5deg) translate(16px,2px)', 'rotate(0deg) translate(0,0)'];
+  const fan = ['rotate(-10deg) translate(-44px,3px)', 'rotate(10deg) translate(44px,3px)', 'rotate(0deg) translate(0,-5px) scale(1.03)'];
   const z = [10, 10, 20];
   return (
     <button
@@ -371,14 +376,14 @@ function ViewAllCard({ images, total, width, height, onClick }: { images: string
         className="flex flex-col items-center justify-center rounded-[24px] border border-[var(--color-border)]/60 bg-white"
         style={{ height }}
       >
-        <div className="relative h-[150px] w-[224px]">
+        <div className="relative h-[128px] w-[196px]">
           {pics.map((src, i) => (
             <div
               key={i}
-              className="absolute left-1/2 top-2 h-[120px] w-[120px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_10px_22px_rgba(15,23,41,0.18)]"
+              className="absolute left-1/2 top-2 h-[100px] w-[100px] overflow-hidden rounded-2xl border-[3px] border-white bg-white shadow-[0_10px_22px_rgba(15,23,41,0.18)]"
               style={{ transform: `translateX(-50%) ${hover ? fan[i] : base[i]}`, zIndex: z[i], transition: 'transform 380ms cubic-bezier(0.22,1,0.36,1)' }}
             >
-              <Image src={src} alt="" fill sizes="120px" className="object-cover" />
+              <Image src={src} alt="" fill sizes="100px" className="object-cover" />
             </div>
           ))}
         </div>

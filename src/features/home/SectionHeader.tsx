@@ -7,8 +7,8 @@ export function AnimatedCity({ city }: { city: string }) {
   return (
     <motion.span
       key={city}
-      initial={{ opacity: 0, x: 18 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="inline-block"
     >

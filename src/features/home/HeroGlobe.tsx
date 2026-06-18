@@ -395,7 +395,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           // Grow the bubbles as you zoom in (labels stay small). Only the round
           // bubble uses --pin-scale, so this can be fairly pronounced.
           const altNow = globe.pointOfView().altitude ?? 1.7;
-          el.style.setProperty('--pin-scale', String(Math.max(0.95, Math.min(1.5, 1 + (1.7 - altNow) * 0.4))));
+          el.style.setProperty('--pin-scale', String(Math.max(0.97, Math.min(1.24, 1 + (1.7 - altNow) * 0.2))));
           if (Date.now() < suppressUntil) return;
           const alt = globe.pointOfView().altitude ?? 1.86;
           if (alt > 1.45) {

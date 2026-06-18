@@ -147,10 +147,11 @@ const AMENITIES = [
   { label: 'Fitness Centres', count: '400+', icon: Dumbbell, color: 'var(--color-accent-orange)', tint: '#fdeee0' },
   { label: 'Libraries', count: '100+', icon: BookOpen, color: '#7c5cff', tint: '#f0edff' },
 ];
+const groceryLogo = (domain: string) => `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
 const GROCERIES = { total: '600+', items: [
-  { name: 'Loblaws', sub: '60+ in total', color: '#E03A1B', fg: '#ffffff' },
-  { name: 'No Frills', sub: '30+ in total', color: '#FFDE00', fg: '#1a1a1a' },
-  { name: 'Farm Boy', sub: '20+ in total', color: '#6CB33F', fg: '#ffffff' },
+  { name: 'Loblaws', sub: '60+ in total', logo: groceryLogo('loblaws.ca') },
+  { name: 'No Frills', sub: '30+ in total', logo: groceryLogo('nofrills.ca') },
+  { name: 'Farm Boy', sub: '20+ in total', logo: groceryLogo('farmboy.ca') },
 ] };
 const FOOD = { total: '8000+', items: [
   { name: 'Alo', sub: 'Restaurant', rating: 4.8, icon: Utensils },
@@ -362,7 +363,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
             A global powerhouse of culture, food, and finance — defined by safe, connected, endlessly
             walkable and proudly diverse neighbourhoods.
           </p>
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-auto flex flex-wrap gap-2 pt-6">
             {WORLD_TAGS.map((t, i) => (
               <span key={t} className={cn('rounded-full px-3 py-1.5 type-caption font-semibold uppercase tracking-wide',
                 ['bg-[var(--color-brand-100)] text-[var(--color-brand-700)]', 'bg-[#e1f6ec] text-[var(--color-success)]', 'bg-[#ece7ff] text-[#7c5cff]'][i % 3])}>
@@ -413,8 +414,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
           <div className="flex flex-1 flex-col justify-center gap-5">
             {GROCERIES.items.map((g) => (
               <div key={g.name} className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[0.85rem] font-bold shadow-[var(--shadow-sm)]" style={{ background: g.color, color: g.fg }}>
-                  {g.name[0]}
+                <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-[var(--color-border)] bg-white">
+                  <Image src={g.logo} alt={g.name} fill sizes="40px" className="object-contain p-1.5" />
                 </span>
                 <div className="min-w-0">
                   <p className="truncate type-heading-sm leading-tight text-[var(--color-text-primary)]">{g.name}</p>
