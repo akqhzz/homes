@@ -1,6 +1,7 @@
 'use client';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
+import { motion } from 'framer-motion';
 import { Check, ChevronRight, Ellipsis, Plus } from 'lucide-react';
 import type { Collection } from '@/lib/types';
 import { DEFAULT_COLLECTION_ID } from '@/store/savedStore';
@@ -9,6 +10,7 @@ import CreateInlineField from '@/components/ui/CreateInlineField';
 import AppImageIcon from '@/components/ui/AppImageIcon';
 import ActionRow from '@/components/ui/ActionRow';
 import Button from '@/components/ui/Button';
+import PhotoFanThumbnail from '@/components/ui/PhotoFanThumbnail';
 import { cn } from '@/lib/utils/cn';
 
 interface DesktopCollectionsMenuProps {
@@ -48,12 +50,26 @@ export default function DesktopCollectionsMenu({
   align = 'right',
   placement = 'below',
 }: DesktopCollectionsMenuProps) {
+  const isSideCenter = placement === 'side-center';
+  // Fan thumbnail for the "All collections" row: cover photos from the first
+  // collections, padded with mock listings so there are always three.
+  const allCollectionsThumbs = [
+    ...collections
+      .map((collection) => MOCK_LISTINGS.find((item) => item.id === collection.listings[0]?.listingId)?.images[0])
+      .filter((src): src is string => Boolean(src)),
+    ...MOCK_LISTINGS.map((listing) => listing.images[0]),
+  ].slice(0, 3);
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97, y: isSideCenter ? '-50%' : -4 }}
+      animate={{ opacity: 1, scale: 1, y: isSideCenter ? '-50%' : 0 }}
+      exit={{ opacity: 0, scale: 0.97, y: isSideCenter ? '-50%' : -4 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      style={{ transformOrigin: isSideCenter ? 'left center' : align === 'left' ? 'top left' : 'top right' }}
       className={cn(
         'absolute z-[90] w-80 rounded-3xl bg-white p-4 shadow-[0_14px_40px_rgba(15,23,41,0.16)]',
-        placement === 'side-center'
-          ? "left-[calc(100%+0.25rem)] top-1/2 -translate-y-1/2 before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-['']"
+        isSideCenter
+          ? "left-[calc(100%+0.25rem)] top-1/2 before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-['']"
           : placement === 'side'
           ? "left-[calc(100%+0.25rem)] top-0 before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-['']"
           : align === 'left'
@@ -161,14 +177,8 @@ export default function DesktopCollectionsMenu({
         <ActionRow
           onClick={onShowAllCollections}
           size="md"
-          className="min-h-[84px] gap-3 border border-[var(--color-border)] bg-white px-4 py-3 font-normal hover:border-[var(--color-border-strong)]"
-          leading={
-            <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
-              {MOCK_LISTINGS[0]?.images[0] && (
-                <Image src={MOCK_LISTINGS[0].images[0]} alt="" fill sizes="56px" className="object-cover" />
-              )}
-            </span>
-          }
+          className="group min-h-[84px] gap-3 border border-[var(--color-border)] bg-white px-4 py-3 font-normal hover:border-[var(--color-border-strong)]"
+          leading={<PhotoFanThumbnail images={allCollectionsThumbs} />}
           trailing={<ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />}
         >
           <span className="min-w-0 flex-1">
@@ -177,7 +187,7 @@ export default function DesktopCollectionsMenu({
           </span>
         </ActionRow>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

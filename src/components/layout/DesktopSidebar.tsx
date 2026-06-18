@@ -1,5 +1,6 @@
 'use client';
 import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Accessibility, Briefcase, ChevronDown, DollarSign, Heart, Home, KeyRound, LogOut, Mail, Map, Menu, Newspaper, Sparkles } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -140,8 +141,14 @@ export default function DesktopSidebar() {
           label="Menu"
           onClick={() => setShowMenu(true)}
         />
+        <AnimatePresence>
         {showMenu && (
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97, y: 6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: 6 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: 'bottom left' }}
             className="absolute bottom-0 left-[3.75rem] z-50 w-72 overflow-visible rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)]"
             onMouseLeave={() => setHoveredMenu(null)}
           >
@@ -160,8 +167,14 @@ export default function DesktopSidebar() {
                   <span className="flex-1 type-heading-sm text-[#0F1729]">{item.label}</span>
                   {item.sections && <ChevronDown size={15} className="-rotate-90" />}
                 </ActionRow>
+                <AnimatePresence>
                 {item.sections && hoveredMenu === item.label && (
-                  <div
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.97, x: -6 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.97, x: -6 }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                    style={{ transformOrigin: 'left top' }}
                     className="absolute left-[calc(100%+0.25rem)] top-0 z-50 w-72 rounded-3xl bg-white p-2 shadow-[0_14px_40px_rgba(15,23,41,0.16)] before:absolute before:-left-2 before:top-0 before:h-full before:w-2 before:content-['']"
                     onMouseEnter={() => setHoveredMenu(item.label)}
                   >
@@ -174,8 +187,9 @@ export default function DesktopSidebar() {
                         ))}
                       </div>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
+                </AnimatePresence>
               </div>
             ))}
             <ActionRow size="md" className="mt-1 font-normal">
@@ -190,8 +204,9 @@ export default function DesktopSidebar() {
               </div>
               <span className="type-heading-sm flex-1 text-[var(--color-accent)]">Sign Out</span>
             </ActionRow>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </aside>
   );
@@ -273,6 +288,7 @@ function DesktopSidebarCollectionsNav({ active, onClick }: { active: boolean; on
       onMouseLeave={() => setOpen(false)}
     >
       <NavButton active={active} icon={Heart} label="Collections" onClick={onClick} />
+      <AnimatePresence>
       {open && (
         <DesktopCollectionsMenu
           collections={collections}
@@ -295,6 +311,7 @@ function DesktopSidebarCollectionsNav({ active, onClick }: { active: boolean; on
           placement="side-center"
         />
       )}
+      </AnimatePresence>
       {collectionMenuState && (
         <RenameDeletePopover
           open

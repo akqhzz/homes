@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Bell, BellOff, Check, ChevronDown, ChevronRight, Ellipsis } from 'lucide-react';
+import { Bell, Check, ChevronDown, ChevronRight, Ellipsis } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -15,6 +15,7 @@ import RenameDeletePopover from '@/components/ui/RenameDeletePopover';
 import ActionRow from '@/components/ui/ActionRow';
 import AnchoredPopover from '@/components/ui/AnchoredPopover';
 import DesktopSortMenu from '@/components/ui/DesktopSortMenu';
+import PhotoFanThumbnail from '@/components/ui/PhotoFanThumbnail';
 import { EmptyCollectionIllustration } from '@/features/collections/components/CollectionListingsGrid';
 import { cn } from '@/lib/utils/cn';
 import { getSavedSearchCriteriaSummary } from '@/lib/utils/search-display';
@@ -64,10 +65,18 @@ export default function SavedSearchesPanel({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameName, setRenameName] = useState('');
-  // While a per-card alert dropdown is open, the panel must not treat clicks on
-  // its (portaled) options as outside clicks. The dropdown closes itself via its
-  // own backdrop, so we simply suspend the panel's outside-close during that time.
-  const [alertOpen, setAlertOpen] = useState(false);
+  // The per-card email-alert frequency picker is anchored to its badge and lives
+  // at panel level so the dots-menu "Email alerts" action can open it too. While
+  // it's open the panel suspends its own outside-close: the picker has its own
+  // backdrop, so clicking anywhere (including the picker's options) closes just
+  // the picker, never the panel or the underlying saved-search card.
+  const [alertMenu, setAlertMenu] = useState<{ searchId: string; rect: DOMRect } | null>(null);
+  const openAlertMenu = (searchId: string, rect: DOMRect) =>
+    setAlertMenu((current) => (current?.searchId === searchId ? null : { searchId, rect }));
+  const openAlertMenuForCard = (searchId: string) => {
+    const badge = document.querySelector(`[data-alert-badge="${searchId}"]`) as HTMLElement | null;
+    if (badge) setAlertMenu({ searchId, rect: badge.getBoundingClientRect() });
+  };
   const inputRef = useRef<HTMLInputElement>(null);
   const desktopPanelRef = useRef<HTMLDivElement>(null);
   const updateFeedbackTimeoutRef = useRef<number | null>(null);
@@ -122,7 +131,7 @@ export default function SavedSearchesPanel({
 
   useOutsidePointerDown({
     refs: [desktopPanelRef],
-    enabled: isDesktop && !alertOpen,
+    enabled: isDesktop && !alertMenu,
     ignoreClosestSelectors: ['[data-saved-search-trigger="true"]', '[data-rename-delete-popover="true"]', '.saved-alert-popover'],
     onOutside: () => setActivePanel('none'),
   });
@@ -344,14 +353,15 @@ export default function SavedSearchesPanel({
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {hasNewListings && (
-                      <span className="type-micro inline-flex rounded-full bg-[var(--color-brand-600)] px-2 py-1 text-[var(--color-text-inverse)]">
+                      <span className="type-micro inline-flex items-center rounded-full bg-[var(--color-brand-600)] px-2.5 py-1.5 text-[var(--color-text-inverse)]">
                         {unseenNewListingsCount} new
                       </span>
                     )}
-                    <AlertDropdown
+                    <AlertBadge
+                      searchId={search.id}
                       value={search.alertFrequency ?? 'daily'}
-                      onChange={(frequency) => setAlertFrequency(search.id, frequency)}
-                      onOpenChange={setAlertOpen}
+                      open={alertMenu?.searchId === search.id}
+                      onToggle={(rect) => openAlertMenu(search.id, rect)}
                     />
                   </div>
                 </div>
@@ -423,8 +433,8 @@ export default function SavedSearchesPanel({
             <ActionRow
               onClick={() => { /* All saved searches — not linked yet */ }}
               size="md"
-              className="min-h-[84px] gap-3 border border-[var(--color-border)] bg-white px-4 py-3 font-normal hover:border-[var(--color-border-strong)]"
-              leading={<SavedSearchFan />}
+              className="group min-h-[84px] gap-3 border border-[var(--color-border)] bg-white px-4 py-3 font-normal hover:border-[var(--color-border-strong)]"
+              leading={<PhotoFanThumbnail images={MOCK_LISTINGS.slice(0, 3).map((listing) => listing.images?.[0]).filter(Boolean) as string[]} />}
               trailing={<ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />}
             >
               <span className="min-w-0 flex-1">
@@ -461,8 +471,7 @@ export default function SavedSearchesPanel({
         )
       )}
       {menuState && (() => {
-        const menuSearch = searches.find((search) => search.id === menuState.searchId);
-        const alertsOn = (menuSearch?.alertFrequency ?? 'daily') !== 'none';
+        const menuSearchId = menuState.searchId;
         return (
         <RenameDeletePopover
           open
@@ -473,46 +482,46 @@ export default function SavedSearchesPanel({
           deleteLabel="Delete"
           deleteTitle="Delete saved search?"
           deleteDescription="This will remove it from your saved searches."
-          extraActionLabel={alertsOn ? 'Turn off email alerts' : 'Turn on email alerts'}
-          extraActionIcon={alertsOn ? <BellOff size={14} /> : <Bell size={14} />}
+          extraActionLabel="Email alerts"
+          extraActionIcon={<Bell size={14} />}
           onExtraAction={() => {
-            setAlertFrequency(menuState.searchId, alertsOn ? 'none' : 'daily');
             closeMenu();
+            openAlertMenuForCard(menuSearchId);
           }}
           onClose={closeMenu}
           onRename={() => {
-            const active = searches.find((search) => search.id === menuState.searchId);
+            const active = searches.find((search) => search.id === menuSearchId);
             if (active) startRename(active.id, active.name);
           }}
-          onRequestDelete={() => requestDelete(menuState.searchId)}
+          onRequestDelete={() => requestDelete(menuSearchId)}
           onCancelDelete={() => setConfirmDeleteId(null)}
           onConfirmDelete={confirmDelete}
         />
         );
       })()}
+      {alertMenu && (() => {
+        const target = searches.find((search) => search.id === alertMenu.searchId);
+        const value = target?.alertFrequency ?? 'daily';
+        return (
+          <AnchoredPopover
+            anchorRect={alertMenu.rect}
+            open
+            onClose={() => setAlertMenu(null)}
+            align="left"
+            className="saved-alert-popover fixed z-[120]"
+          >
+            <DesktopSortMenu
+              options={ALERT_OPTIONS}
+              value={value}
+              onChange={(frequency) => {
+                setAlertFrequency(alertMenu.searchId, frequency);
+                setAlertMenu(null);
+              }}
+            />
+          </AnchoredPopover>
+        );
+      })()}
     </>
-  );
-}
-
-// Mini fanned three-photo thumbnail for the "All saved searches" row.
-function SavedSearchFan() {
-  const pics = MOCK_LISTINGS.slice(0, 3)
-    .map((listing) => listing.images?.[0])
-    .filter((src): src is string => Boolean(src));
-  const transforms = ['rotate(-11deg) translate(-8px,1px)', 'rotate(11deg) translate(8px,1px)', 'rotate(0deg)'];
-  const z = [10, 10, 20];
-  return (
-    <span className="relative h-14 w-14 shrink-0">
-      {pics.map((src, i) => (
-        <span
-          key={i}
-          className="absolute left-1/2 top-1/2 h-9 w-9 overflow-hidden rounded-[9px] border-2 border-white bg-white shadow-[0_2px_7px_rgba(15,23,41,0.16)]"
-          style={{ transform: `translate(-50%,-50%) ${transforms[i]}`, zIndex: z[i] }}
-        >
-          <Image src={src} alt="" fill sizes="36px" className="object-cover" />
-        </span>
-      ))}
-    </span>
   );
 }
 
@@ -523,52 +532,36 @@ const ALERT_OPTIONS: { value: AlertFrequency; label: string }[] = [
   { value: 'none', label: 'No alert' },
 ];
 
-// Per-card email-alert frequency picker (anchored dropdown).
-function AlertDropdown({
+// Per-card email-alert badge. The frequency picker it opens is owned by the
+// panel (so the dots menu can open it too); this just toggles it via onToggle.
+function AlertBadge({
+  searchId,
   value,
-  onChange,
-  onOpenChange,
+  open,
+  onToggle,
 }: {
+  searchId: string;
   value: AlertFrequency;
-  onChange: (frequency: AlertFrequency) => void;
-  onOpenChange?: (open: boolean) => void;
+  open: boolean;
+  onToggle: (rect: DOMRect) => void;
 }) {
-  const [rect, setRect] = useState<DOMRect | null>(null);
   const current = ALERT_OPTIONS.find((option) => option.value === value) ?? ALERT_OPTIONS[1];
   const muted = value === 'none';
-  const setOpenRect = (next: DOMRect | null) => {
-    setRect(next);
-    onOpenChange?.(!!next);
-  };
   return (
-    <>
-      <button
-        type="button"
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => {
-          event.stopPropagation();
-          setOpenRect(rect ? null : event.currentTarget.getBoundingClientRect());
-        }}
-        className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border-strong)] bg-white px-2.5 py-1 type-micro text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)]"
-      >
-        <Bell size={12} className={muted ? 'text-[var(--color-text-tertiary)]' : 'text-[var(--color-brand-600)]'} />
-        {muted ? 'No alert' : `${current.label} alerts`}
-        <ChevronDown size={12} className="text-[var(--color-text-tertiary)]" />
-      </button>
-      <AnchoredPopover
-        anchorRect={rect}
-        open={!!rect}
-        onClose={() => setOpenRect(null)}
-        align="left"
-        className="saved-alert-popover fixed z-[120]"
-      >
-        <DesktopSortMenu
-          options={ALERT_OPTIONS}
-          value={value}
-          onChange={(frequency) => { onChange(frequency); setOpenRect(null); }}
-        />
-      </AnchoredPopover>
-    </>
+    <button
+      type="button"
+      data-alert-badge={searchId}
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onToggle(event.currentTarget.getBoundingClientRect());
+      }}
+      className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1.5 type-micro text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)]"
+    >
+      <Bell size={12} className={muted ? 'text-[var(--color-text-tertiary)]' : 'text-[var(--color-brand-600)]'} />
+      {muted ? 'No alert' : `${current.label} alerts`}
+      <ChevronDown size={12} className={`text-[var(--color-text-tertiary)] transition-transform ${open ? 'rotate-180' : ''}`} />
+    </button>
   );
 }
 

@@ -295,7 +295,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
         };
 
         // Scales only the round bubble with the zoom (label pills stay put).
-        const SCALE = 'transform:scale(var(--pin-scale,1));transform-origin:center bottom;transition:transform 160ms ease-out;';
+        const SCALE = 'transform:scale(var(--pin-scale,1));transform-origin:center bottom;transition:transform 280ms cubic-bezier(0.22,1,0.36,1);';
         const buildMarker = (marker: Marker): PinEl => {
           const el2 = document.createElement('div') as PinEl;
           el2.dataset.pin = '1';
@@ -544,7 +544,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           hoveredPin = pin;
           if (pin) {
             pin.setAttribute('data-hover', '1');
-            pin.style.setProperty('--pin-scale', String(currentPinScale * 1.07));
+            pin.style.setProperty('--pin-scale', String(currentPinScale * 1.05));
           }
         };
         moveHandler = (event: PointerEvent) => {

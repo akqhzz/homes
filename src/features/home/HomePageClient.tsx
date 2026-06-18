@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
 import ListingsFooter from '@/features/listings/components/ListingsFooter';
 import HeroGlobe from '@/features/home/HeroGlobe';
-import { SectionHeader, AnimatedCity } from '@/features/home/SectionHeader';
+import { SectionHeader, AnimatedHeading } from '@/features/home/SectionHeader';
 import { MarketStatsStrip, MarketBoard, DeepDive, AreaFinder, CITY, getCityData } from '@/features/home/MarketSections';
 import { useUIStore } from '@/store/uiStore';
 import { useSearchStore } from '@/store/searchStore';
@@ -269,11 +269,11 @@ export default function HomePageClient() {
             className="group flex w-fit cursor-pointer items-center gap-3"
           >
             <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
-              <AnimatedCity city={city} /> At A Glance
+              <AnimatedHeading animateKey={city}>{city} At A Glance</AnimatedHeading>
             </h2>
             <span
               aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-[transform,background-color] duration-200 group-hover:translate-x-0.5 group-hover:bg-[var(--color-surface-hover)]"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-all duration-200 ease-out group-hover:translate-x-1 group-hover:bg-[var(--color-surface-hover)]"
             >
               <ArrowRight size={18} />
             </span>

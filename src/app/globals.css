@@ -160,6 +160,17 @@ main {
    per-frame inline z-index the CSS2D renderer assigns. */
 [data-pin][data-hover='1'] { z-index: 999 !important; }
 
+/* Fanned photo thumbnail (All Saved Searches / All Collections rows). Each
+   photo eases between its resting (--fan-base) and spread (--fan-hover)
+   transform when the surrounding `.group` widget is hovered. */
+.fan-item {
+  transform: translate(-50%, -50%) var(--fan-base);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .fan-item {
+  transform: translate(-50%, -50%) var(--fan-hover);
+}
+
 /* Mapbox overrides */
 .mapboxgl-map {
   font-family: var(--font-body-sans);
