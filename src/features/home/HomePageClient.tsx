@@ -154,7 +154,7 @@ export default function HomePageClient() {
   const renderCarousel = (listings: typeof MOCK_LISTINGS, ref: React.RefObject<HTMLDivElement | null>) => (
     <div
       ref={ref}
-      className="mt-3 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 sm:mt-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="mt-2 flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 pt-2 pb-6 sm:mt-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {listings.map((listing) => (
         <div key={listing.id} className="shrink-0 snap-start cursor-pointer rounded-2xl transition-transform hover:-translate-y-0.5">
@@ -286,9 +286,9 @@ export default function HomePageClient() {
           <SectionHeader title="News & Guides" onArrow={() => router.push('/for-you')} />
 
           {/* Mobile: horizontal carousel, like the listing cards */}
-          <div className="mt-3 flex gap-5 overflow-x-auto pb-4 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-3 flex gap-5 overflow-x-auto px-1 pt-2 pb-6 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {INSIGHTS.map((article) => (
-              <button key={article.title} className="group flex w-[290px] shrink-0 flex-col overflow-hidden rounded-[20px] bg-white text-left shadow-[0_6px_22px_rgba(15,23,41,0.07)]">
+              <button key={article.title} className="group flex w-[290px] shrink-0 flex-col overflow-hidden rounded-[20px] bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5">
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image src={article.image} alt="" fill sizes="290px" className="object-cover" />
                 </div>
@@ -302,7 +302,7 @@ export default function HomePageClient() {
 
           {/* Desktop: featured article + grid */}
           <div className="mt-7 hidden gap-5 sm:grid lg:grid-cols-2">
-            <button className="group flex flex-col overflow-hidden rounded-[24px] bg-white text-left shadow-[0_6px_22px_rgba(15,23,41,0.07)]">
+            <button className="group flex flex-col overflow-hidden rounded-[24px] bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5">
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image src={featuredArticle.image} alt="" fill sizes="(min-width:1024px) 560px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
@@ -314,7 +314,7 @@ export default function HomePageClient() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               {restArticles.map((article) => (
-                <button key={article.title} className="group flex flex-col overflow-hidden rounded-[20px] bg-white text-left shadow-[0_6px_22px_rgba(15,23,41,0.07)]">
+                <button key={article.title} className="group flex flex-col overflow-hidden rounded-[20px] bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <Image src={article.image} alt="" fill sizes="(min-width:1024px) 270px, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>

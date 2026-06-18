@@ -57,13 +57,10 @@ const OVERVIEW_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC'];
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
 // Spread each province's cities apart from their centroid so the bubbles
 // don't overlap (exact map position isn't important here).
-const SPREAD = 3.05;
+const SPREAD = 3.7;
 // Bigger/most-searched cities — always shown as their own pin, never folded
 // into a numbered cluster.
-const MAJOR_CITIES = new Set([
-  'Toronto', 'Vancouver', 'Montréal', 'Calgary', 'Edmonton', 'Ottawa',
-  'Winnipeg', 'Québec City', 'Hamilton', 'Halifax', 'Victoria',
-]);
+const MAJOR_CITIES = new Set(['Toronto', 'Vancouver']);
 const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
   const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
   const cLng = p.cities.reduce((s, c) => s + c.lng, 0) / p.cities.length;
@@ -504,9 +501,12 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
         let hoveredPin: PinEl | null = null;
         const setHovered = (pin: PinEl | null) => {
           if (hoveredPin === pin) return;
-          if (hoveredPin) hoveredPin.style.zIndex = hoveredPin.dataset.z ?? '';
+          // CSS2DRenderer rewrites each pin's inline z-index every frame
+          // (distance-sorted), so we lift via a stylesheet !important rule
+          // toggled by this attribute — that beats the inline z-index.
+          if (hoveredPin) hoveredPin.removeAttribute('data-hover');
           hoveredPin = pin;
-          if (pin) pin.style.zIndex = '60'; // lift the hovered bubble above the rest
+          if (pin) pin.setAttribute('data-hover', '1');
         };
         moveHandler = (event: PointerEvent) => {
           if (event.buttons !== 0) return;
