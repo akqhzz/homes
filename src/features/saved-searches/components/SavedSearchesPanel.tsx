@@ -285,19 +285,19 @@ export default function SavedSearchesPanel({
                 }
               }}
               className={cn(
-                'flex items-start gap-3 rounded-2xl border p-3 text-left transition-colors',
+                'flex items-center gap-3 rounded-2xl border p-3 text-left transition-colors',
                 isSelected
                   ? 'border-[var(--color-text-secondary)] bg-white shadow-[inset_0_0_0_1px_var(--color-text-secondary)]'
                   : 'border-transparent bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)]'
               )}
             >
-              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
+              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-center shadow-[inset_0_0_0_1px_var(--color-border)]">
                 {search.thumbnail ? (
                   <Image
                     src={search.thumbnail}
                     alt=""
-                    width={56}
-                    height={56}
+                    width={64}
+                    height={64}
                     className="h-full w-full object-cover object-center"
                     draggable={false}
                   />
@@ -353,8 +353,8 @@ export default function SavedSearchesPanel({
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {hasNewListings && (
-                      <span className="type-micro inline-flex items-center rounded-full bg-[var(--color-brand-600)] px-2.5 py-1.5 text-[var(--color-text-inverse)]">
-                        {unseenNewListingsCount} new
+                      <span className="type-micro inline-flex h-7 items-center rounded-full bg-[var(--color-brand-600)] px-2.5 text-[var(--color-text-inverse)]">
+                        {unseenNewListingsCount} New
                       </span>
                     )}
                     <AlertBadge
@@ -482,7 +482,7 @@ export default function SavedSearchesPanel({
           deleteLabel="Delete"
           deleteTitle="Delete saved search?"
           deleteDescription="This will remove it from your saved searches."
-          extraActionLabel="Email alerts"
+          extraActionLabel="Email Alerts"
           extraActionIcon={<Bell size={14} />}
           onExtraAction={() => {
             closeMenu();
@@ -509,6 +509,7 @@ export default function SavedSearchesPanel({
             onClose={() => setAlertMenu(null)}
             align="left"
             className="saved-alert-popover fixed z-[120]"
+            backdropClassName="z-[110]"
           >
             <DesktopSortMenu
               options={ALERT_OPTIONS}
@@ -556,7 +557,7 @@ function AlertBadge({
         event.stopPropagation();
         onToggle(event.currentTarget.getBoundingClientRect());
       }}
-      className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1.5 type-micro text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)]"
+      className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--color-border)] bg-white px-2.5 type-micro text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface)]"
     >
       <Bell size={12} className={muted ? 'text-[var(--color-text-tertiary)]' : 'text-[var(--color-brand-600)]'} />
       {muted ? 'No alert' : `${current.label} alerts`}
