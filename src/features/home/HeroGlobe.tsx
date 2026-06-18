@@ -160,6 +160,9 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
   // The city the homepage is currently showing — its bubble gets the selected
   // state whenever it's rendered (i.e. zoomed in enough to show city bubbles).
   const selectedCityRef = useRef(selectedCity);
+  // The previously-selected city, so the bubble that's gaining or losing the
+  // highlight can skip the entrance (grow-in) animation on a selection change.
+  const prevSelectedCityRef = useRef<string | undefined>(undefined);
   // Lets an external effect re-render the globe's bubbles when the selection changes.
   const renderMarkersRef = useRef<(() => void) | null>(null);
   useEffect(() => {
@@ -167,6 +170,7 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
     onCityClickRef.current = onCityClick;
   }, [router, onCityClick]);
   useEffect(() => {
+    prevSelectedCityRef.current = selectedCityRef.current;
     selectedCityRef.current = selectedCity;
     renderMarkersRef.current?.();
   }, [selectedCity]);
@@ -314,6 +318,9 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
           const el2 = document.createElement('div') as PinEl;
           el2.dataset.pin = '1';
           el2.style.pointerEvents = 'none'; // drags/zoom pass through to the globe; clicks via hit-test
+          // City bubbles gaining/losing the highlight should swap state without
+          // replaying the grow-in entrance animation.
+          let suppressEnter = false;
           if (marker.type === 'province') {
             el2.style.zIndex = '3';
             el2.dataset.z = '3';
@@ -343,12 +350,15 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
             el2.dataset.z = '2';
             const isSelected = marker.city.name === selectedCityRef.current;
             const dim = isSelected ? 54 : 46;
-            const circleBorder = isSelected ? '#0F1729' : '#fff';
+            const circleBorder = isSelected ? 'var(--color-brand-500)' : '#fff';
             // Label stays white in both states; only the circle marks selection
-            // (black outline + larger).
+            // (brand outline + larger). Skip the entrance anim when this bubble
+            // is just toggling its selected state.
+            suppressEnter = isSelected || marker.city.name === prevSelectedCityRef.current;
             if (isSelected) {
               el2.style.zIndex = '4';
               el2.dataset.z = '4';
+              el2.dataset.selected = '1';
             }
             el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:${dim}px;height:${dim}px;border-radius:9999px;overflow:hidden;border:2px solid ${circleBorder};box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;background:#fff;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => {
@@ -364,7 +374,7 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
           const content = el2.firstElementChild as HTMLElement | null;
           if (content) {
             const wrap = document.createElement('div');
-            wrap.style.animation = 'globePinIn 320ms cubic-bezier(0.16,0.84,0.44,1) both';
+            if (!suppressEnter) wrap.style.animation = 'globePinIn 320ms cubic-bezier(0.16,0.84,0.44,1) both';
             el2.replaceChild(wrap, content);
             wrap.appendChild(content);
           }
