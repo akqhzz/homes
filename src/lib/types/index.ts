@@ -77,6 +77,8 @@ export interface SearchFilters {
   hasMaintenance?: boolean;
 }
 
+export type AlertFrequency = 'instant' | 'daily' | 'weekly' | 'none';
+
 export interface SavedSearch {
   id: string;
   name: string;
@@ -88,6 +90,7 @@ export interface SavedSearch {
   createdAt: string;
   newListingsCount?: number;
   thumbnail?: string;
+  alertFrequency?: AlertFrequency;
 }
 
 export interface Location {

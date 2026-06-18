@@ -1,17 +1,20 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Check, Ellipsis } from 'lucide-react';
+import { Bell, Check, ChevronDown, ChevronRight, Ellipsis } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useMapStore } from '@/store/mapStore';
 import { useSearchStore } from '@/store/searchStore';
 import { useSavedSearchStore } from '@/store/savedSearchStore';
 import { MOCK_LISTINGS } from '@/lib/mock-data';
-import { Coordinates, Listing, SavedSearch } from '@/lib/types';
+import { AlertFrequency, Coordinates, Listing, SavedSearch } from '@/lib/types';
 import { applyFilters, filterListingsBySearchArea } from '@/lib/search/filters';
 import MobileDrawer from '@/components/ui/MobileDrawer';
 import CreateInlineField from '@/components/ui/CreateInlineField';
 import RenameDeletePopover from '@/components/ui/RenameDeletePopover';
+import ActionRow from '@/components/ui/ActionRow';
+import AnchoredPopover from '@/components/ui/AnchoredPopover';
+import DesktopSortMenu from '@/components/ui/DesktopSortMenu';
 import { EmptyCollectionIllustration } from '@/features/collections/components/CollectionListingsGrid';
 import { cn } from '@/lib/utils/cn';
 import { getSavedSearchCriteriaSummary } from '@/lib/utils/search-display';
@@ -49,7 +52,7 @@ export default function SavedSearchesPanel({
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const { selectedLocations, filters, setLocations, replaceFilters } = useSearchStore();
   const activeFilterCount = useSearchStore((s) => s.activeFilterCount);
-  const { searches, saveSearch, activeSearchId, setActiveSearchId, renameSearch, deleteSearch } = useSavedSearchStore();
+  const { searches, saveSearch, activeSearchId, setActiveSearchId, renameSearch, deleteSearch, setAlertFrequency } = useSavedSearchStore();
   const visitedListingIds = useMapStore((s) => s.visitedListingIds);
   const canSaveCurrent = hasActiveCriteria ?? activeFilterCount() > 0;
   const [newSearchName, setNewSearchName] = useState('');
@@ -335,11 +338,17 @@ export default function SavedSearchesPanel({
                       {criteriaSummary}
                     </p>
                   </div>
-                  {hasNewListings && (
-                    <span className="type-micro mt-2 inline-flex self-start rounded-full bg-[var(--color-brand-600)] px-2 py-1 text-[var(--color-text-inverse)]">
-                      {unseenNewListingsCount} new
-                    </span>
-                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {hasNewListings && (
+                      <span className="type-micro inline-flex rounded-full bg-[var(--color-brand-600)] px-2 py-1 text-[var(--color-text-inverse)]">
+                        {unseenNewListingsCount} new
+                      </span>
+                    )}
+                    <AlertDropdown
+                      value={search.alertFrequency ?? 'daily'}
+                      onChange={(frequency) => setAlertFrequency(search.id, frequency)}
+                    />
+                  </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <button
@@ -405,6 +414,26 @@ export default function SavedSearchesPanel({
             </div>
             );
           })}
+          {searches.length > 0 && (
+            <ActionRow
+              onClick={() => { /* All saved searches — not linked yet */ }}
+              size="md"
+              className="min-h-[84px] gap-3 border border-[var(--color-border)] bg-white px-4 py-3 font-normal hover:border-[var(--color-border-strong)]"
+              leading={
+                <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white shadow-[inset_0_0_0_1px_var(--color-border)]">
+                  {MOCK_LISTINGS[0]?.images[0] && (
+                    <Image src={MOCK_LISTINGS[0].images[0]} alt="" fill sizes="56px" className="object-cover" />
+                  )}
+                </span>
+              }
+              trailing={<ChevronRight size={15} className="shrink-0 text-[var(--color-text-tertiary)]" />}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="type-heading-sm block truncate text-[var(--color-text-primary)]">All Saved Searches</span>
+                <span className="block type-caption text-[var(--color-text-tertiary)]">View Every Search You’ve Saved</span>
+              </span>
+            </ActionRow>
+          )}
         </div>
       </div>
     </>
@@ -452,6 +481,43 @@ export default function SavedSearchesPanel({
           onConfirmDelete={confirmDelete}
         />
       )}
+    </>
+  );
+}
+
+const ALERT_OPTIONS: { value: AlertFrequency; label: string }[] = [
+  { value: 'instant', label: 'Instant' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'none', label: 'No alert' },
+];
+
+// Per-card email-alert frequency picker (anchored dropdown).
+function AlertDropdown({ value, onChange }: { value: AlertFrequency; onChange: (frequency: AlertFrequency) => void }) {
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const current = ALERT_OPTIONS.find((option) => option.value === value) ?? ALERT_OPTIONS[1];
+  const muted = value === 'none';
+  return (
+    <>
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          setRect(rect ? null : event.currentTarget.getBoundingClientRect());
+        }}
+        className="inline-flex items-center gap-1 rounded-full bg-[var(--color-surface)] px-2.5 py-1 type-micro text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)]"
+      >
+        <Bell size={12} className={muted ? 'text-[var(--color-text-tertiary)]' : 'text-[var(--color-brand-600)]'} />
+        {muted ? 'No alert' : `${current.label} alerts`}
+        <ChevronDown size={12} className="text-[var(--color-text-tertiary)]" />
+      </button>
+      <AnchoredPopover anchorRect={rect} open={!!rect} onClose={() => setRect(null)} align="left">
+        <DesktopSortMenu
+          options={ALERT_OPTIONS}
+          value={value}
+          onChange={(frequency) => { onChange(frequency); setRect(null); }}
+        />
+      </AnchoredPopover>
     </>
   );
 }

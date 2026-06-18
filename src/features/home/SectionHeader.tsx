@@ -53,7 +53,7 @@ export function SectionHeader({
           aria-hidden
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
         >
-          <ArrowRight size={18} />
+          <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-0.5" />
         </span>
       </div>
       {onPrev && onNext && <CarouselNav onPrev={onPrev} onNext={onNext} />}

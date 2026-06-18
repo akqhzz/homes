@@ -37,6 +37,7 @@ export function useSavedSearchSession({
   updateSearch,
 }: UseSavedSearchSessionOptions) {
   const previousActiveSearchIdRef = useRef<string | null>(null);
+  const knownSearchIdsRef = useRef<Set<string>>(new Set());
   const [baselineSnapshots, setBaselineSnapshots] = useState<Record<string, SearchSnapshot>>({});
   const activeSavedSearch = useMemo(
     () => searches.find((search) => search.id === activeSearchId) ?? null,
@@ -50,12 +51,22 @@ export function useSavedSearchSession({
   useEffect(() => {
     if (!activeSavedSearch || previousActiveSearchIdRef.current === activeSavedSearch.id) return;
     previousActiveSearchIdRef.current = activeSavedSearch.id;
-    const baselineSnapshot = searchToSnapshot(activeSavedSearch);
+    // A just-created search already reflects the live state, so baseline it from
+    // the current snapshot — otherwise re-deriving from the saved object can
+    // differ slightly and flag it dirty (showing "Update?") the moment it's made.
+    const isFreshlyCreated = !knownSearchIdsRef.current.has(activeSavedSearch.id);
+    const baselineSnapshot = isFreshlyCreated ? currentSnapshot : searchToSnapshot(activeSavedSearch);
     setBaselineSnapshots((snapshots) => ({
       ...snapshots,
       [activeSavedSearch.id]: baselineSnapshot,
     }));
-  }, [activeSavedSearch]);
+  }, [activeSavedSearch, currentSnapshot]);
+
+  // Remember which searches we've already seen so the next activation can tell a
+  // freshly-created search from one that's being loaded.
+  useEffect(() => {
+    searches.forEach((search) => knownSearchIdsRef.current.add(search.id));
+  }, [searches]);
 
   useEffect(() => {
     if (activeSavedSearch) return;

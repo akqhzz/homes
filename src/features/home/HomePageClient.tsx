@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 import PageShell from '@/components/layout/PageShell';
 import Button from '@/components/ui/Button';
 import ListingCard from '@/features/listings/components/ListingCard';
@@ -260,9 +260,24 @@ export default function HomePageClient() {
         <motion.div key={city} variants={STAGGER_CONTAINER} initial="hidden" animate="show">
         {/* ── At a glance (city + stats strip) ───────────────── */}
         <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-3 lg:px-12 lg:pt-5">
-          <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
-            <AnimatedCity city={city} /> At A Glance
-          </h2>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={goToMap}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToMap(); } }}
+            aria-label={`${city} at a glance — see more`}
+            className="group flex w-fit cursor-pointer items-center gap-3"
+          >
+            <h2 className="type-title-lg !text-[1.3rem] text-[var(--color-text-primary)] sm:!text-[1.55rem] lg:!text-[1.8rem]">
+              <AnimatedCity city={city} /> At A Glance
+            </h2>
+            <span
+              aria-hidden
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-text-primary)] transition-colors group-hover:bg-[var(--color-surface-hover)]"
+            >
+              <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+            </span>
+          </div>
         </motion.section>
         <motion.div variants={STAGGER_ITEM}><MarketStatsStrip city={city} /></motion.div>
 
@@ -304,7 +319,7 @@ export default function HomePageClient() {
           <div className="mt-7 hidden gap-5 sm:grid lg:grid-cols-2">
             <button className="group flex flex-col overflow-hidden rounded-[24px] bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5">
               <div className="relative aspect-[16/10] overflow-hidden">
-                <Image src={featuredArticle.image} alt="" fill sizes="(min-width:1024px) 560px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                <Image src={featuredArticle.image} alt="" fill sizes="(min-width:1024px) 560px, 100vw" className="object-cover" />
               </div>
               <div className="flex flex-1 flex-col p-5">
                 <h3 className="type-title !text-[1.55rem] leading-tight text-[var(--color-text-primary)]">{featuredArticle.title}</h3>
@@ -316,7 +331,7 @@ export default function HomePageClient() {
               {restArticles.map((article) => (
                 <button key={article.title} className="group flex flex-col overflow-hidden rounded-[20px] bg-white text-left shadow-[0_2px_12px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] transition-transform hover:-translate-y-0.5">
                   <div className="relative aspect-[16/9] overflow-hidden">
-                    <Image src={article.image} alt="" fill sizes="(min-width:1024px) 270px, 50vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Image src={article.image} alt="" fill sizes="(min-width:1024px) 270px, 50vw" className="object-cover" />
                   </div>
                   <div className="flex flex-1 flex-col p-4">
                     <h3 className="type-heading-sm leading-snug text-[var(--color-text-primary)] line-clamp-3">{article.title}</h3>

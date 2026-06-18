@@ -38,6 +38,7 @@ export function createSavedSearch(input: SaveSearchInput, id: string, createdAt:
     createdAt,
     newListingsCount: 0,
     thumbnail: input.thumbnail ?? DEFAULT_THUMBNAIL,
+    alertFrequency: 'daily',
   };
 }
 

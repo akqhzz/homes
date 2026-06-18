@@ -188,6 +188,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
         let forced = new Set<string>(); // city-cluster members forced to show individually
         let bucket = -1;
         let suppressUntil = 0;
+        let currentPinScale = 1; // latest zoom-driven bubble scale (for hover grow)
         // Below this altitude the Atlantic cluster auto-splits into its provinces.
         const CLUSTER_OPEN_ALT = 1.05;
         const markerCache = new Map<string, Marker>();
@@ -398,7 +399,8 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           // Grow the bubbles as you zoom in (labels stay small). Only the round
           // bubble uses --pin-scale, so this can be fairly pronounced.
           const altNow = globe.pointOfView().altitude ?? 1.7;
-          el.style.setProperty('--pin-scale', String(Math.max(0.97, Math.min(1.24, 1 + (1.7 - altNow) * 0.2))));
+          currentPinScale = Math.max(0.97, Math.min(1.24, 1 + (1.7 - altNow) * 0.2));
+          el.style.setProperty('--pin-scale', String(currentPinScale));
           if (Date.now() < suppressUntil) return;
           const alt = globe.pointOfView().altitude ?? 1.86;
           if (alt > 1.45) {
@@ -466,18 +468,49 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
         resizeObserver = new ResizeObserver(resize);
         resizeObserver.observe(el);
 
-        wheelHandler = (event: WheelEvent) => event.preventDefault();
-        el.addEventListener('wheel', wheelHandler, { passive: false });
+        // Is a screen point over the visible globe sphere? (project the globe
+        // centre + a surface point to get the on-screen circle).
+        const overSphere = (x: number, y: number): boolean => {
+          if (!globe) return false;
+          const cam = (globe as unknown as { camera?: () => import('three').Camera }).camera?.();
+          if (!cam) return true;
+          const w = el.clientWidth, h = el.clientHeight;
+          const rect = el.getBoundingClientRect();
+          const toScreen = (v: import('three').Vector3) => {
+            const p = v.clone().project(cam);
+            return [(p.x * 0.5 + 0.5) * w, (-p.y * 0.5 + 0.5) * h] as const;
+          };
+          const [cxp, cyp] = toScreen(new THREE.Vector3(0, 0, 0));
+          const right = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 0).multiplyScalar(globeR);
+          const [exp, eyp] = toScreen(right);
+          const radius = Math.hypot(exp - cxp, eyp - cyp);
+          return Math.hypot((x - rect.left) - cxp, (y - rect.top) - cyp) <= radius;
+        };
+
+        // Over the sphere → zoom the globe (and swallow the page scroll). Outside
+        // the sphere → let the page scroll and don't zoom.
+        wheelHandler = (event: WheelEvent) => {
+          if (overSphere(event.clientX, event.clientY)) event.preventDefault();
+          else event.stopPropagation();
+        };
+        el.addEventListener('wheel', wheelHandler, { passive: false, capture: true });
 
         // Pins are pointer-events:none so the globe can be dragged/zoomed over them;
         // a tap that doesn't move hit-tests the pins and activates the top-most one.
+        let hoveredPin: PinEl | null = null;
+        const inBox = (pin: PinEl, x: number, y: number) => {
+          const r = pin.getBoundingClientRect();
+          return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+        };
         const hitTest = (x: number, y: number): PinEl | null => {
+          // Sticky: keep the currently-hovered (visually top) bubble as long as
+          // the cursor stays over it, so an overlapping bubble can't steal hover.
+          if (hoveredPin && hoveredPin.isConnected && inBox(hoveredPin, x, y)) return hoveredPin;
           const pins = Array.from(el.querySelectorAll<PinEl>('[data-pin="1"]'));
           let best: PinEl | null = null;
           let bestZ = -1;
           for (const pin of pins) {
-            const r = pin.getBoundingClientRect();
-            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+            if (inBox(pin, x, y)) {
               const z = Number(pin.dataset.z ?? '0');
               if (z >= bestZ) {
                 bestZ = z;
@@ -498,15 +531,21 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           if (Math.hypot(event.clientX - downX, event.clientY - downY) > 6) return;
           hitTest(event.clientX, event.clientY)?.__activate?.();
         };
-        let hoveredPin: PinEl | null = null;
         const setHovered = (pin: PinEl | null) => {
           if (hoveredPin === pin) return;
           // CSS2DRenderer rewrites each pin's inline z-index every frame
           // (distance-sorted), so we lift via a stylesheet !important rule
-          // toggled by this attribute — that beats the inline z-index.
-          if (hoveredPin) hoveredPin.removeAttribute('data-hover');
+          // toggled by this attribute — that beats the inline z-index. We also
+          // bump that pin's --pin-scale a touch for a subtle hover grow.
+          if (hoveredPin) {
+            hoveredPin.removeAttribute('data-hover');
+            hoveredPin.style.removeProperty('--pin-scale');
+          }
           hoveredPin = pin;
-          if (pin) pin.setAttribute('data-hover', '1');
+          if (pin) {
+            pin.setAttribute('data-hover', '1');
+            pin.style.setProperty('--pin-scale', String(currentPinScale * 1.14));
+          }
         };
         moveHandler = (event: PointerEvent) => {
           if (event.buttons !== 0) return;
@@ -558,7 +597,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
     return () => {
       destroyed = true;
       resizeObserver?.disconnect();
-      if (wheelHandler) el.removeEventListener('wheel', wheelHandler);
+      if (wheelHandler) el.removeEventListener('wheel', wheelHandler, { capture: true });
       if (downHandler) el.removeEventListener('pointerdown', downHandler);
       if (upHandler) el.removeEventListener('pointerup', upHandler);
       if (moveHandler) el.removeEventListener('pointermove', moveHandler);

@@ -1,7 +1,7 @@
 'use client';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { SavedSearch } from '@/lib/types';
+import type { AlertFrequency, SavedSearch } from '@/lib/types';
 import {
   createSavedSearch,
   removeSavedSearch,
@@ -20,6 +20,7 @@ interface SavedSearchStore {
   deleteSearch: (id: string) => void;
   setActiveSearchId: (id: string | null) => void;
   setActiveSearchDirty: (value: boolean) => void;
+  setAlertFrequency: (id: string, frequency: AlertFrequency) => void;
 }
 
 export const useSavedSearchStore = create<SavedSearchStore>()(
@@ -55,6 +56,12 @@ export const useSavedSearchStore = create<SavedSearchStore>()(
         })),
       setActiveSearchId: (activeSearchId) => set({ activeSearchId }),
       setActiveSearchDirty: (activeSearchDirty) => set({ activeSearchDirty }),
+      setAlertFrequency: (id, frequency) =>
+        set((state) => ({
+          searches: state.searches.map((search) =>
+            search.id === id ? { ...search, alertFrequency: frequency } : search
+          ),
+        })),
     }),
     {
       name: 'homes-saved-searches-v1',
