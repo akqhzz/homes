@@ -236,7 +236,11 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
         const withStableIdentity = (raw: Marker[]): Marker[] => {
           const live = new Set<string>();
           const result = raw.map((m) => {
-            const key = markerKey(m);
+            // Fold the selected state into the identity so the city losing/gaining
+            // the highlight gets a fresh DOM node (globe.gl keys by object identity
+            // and otherwise reuses the stale, still-highlighted element).
+            const isSel = m.type === 'city' && m.city.name === selectedCityRef.current;
+            const key = isSel ? `${markerKey(m)}:sel` : markerKey(m);
             live.add(key);
             const existing = markerCache.get(key);
             if (existing) {
@@ -340,14 +344,13 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
             const isSelected = marker.city.name === selectedCityRef.current;
             const dim = isSelected ? 54 : 46;
             const circleBorder = isSelected ? '#0F1729' : '#fff';
-            const labelStyle = isSelected
-              ? 'background:#0F1729;color:#fff;'
-              : 'background:#fff;color:#0F1729;';
+            // Label stays white in both states; only the circle marks selection
+            // (black outline + larger).
             if (isSelected) {
               el2.style.zIndex = '4';
               el2.dataset.z = '4';
             }
-            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:${dim}px;height:${dim}px;border-radius:9999px;overflow:hidden;border:2px solid ${circleBorder};box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;${labelStyle}white-space:nowrap;">${marker.city.name}</span></div>`;
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span style="display:block;width:${dim}px;height:${dim}px;border-radius:9999px;overflow:hidden;border:2px solid ${circleBorder};box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;${SCALE}"></span><span style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;background:#fff;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => {
               if (onCityClickRef.current) onCityClickRef.current(marker.city.name);
               else routerRef.current.push('/');

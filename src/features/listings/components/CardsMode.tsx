@@ -608,7 +608,7 @@ export default function CardsMode({ listings, onClose }: CardsModeProps) {
           <X size={20} strokeWidth={2.3} />
         </Button>
 
-        <div className="relative mx-auto flex min-h-0 w-[calc(100%-6.75rem)] max-w-[1580px] flex-1 flex-col justify-start gap-4 3xl:max-w-[1780px]">
+        <div className="relative mx-auto flex min-h-0 w-[calc(100%-6.75rem)] max-w-[1580px] flex-1 flex-col justify-start gap-4 3xl:w-[1780px] 3xl:max-w-[1780px]">
           <div className="pointer-events-none absolute bottom-[7.25rem] left-1/2 z-0 h-10 w-[calc(100%-2.8rem)] max-w-[1490px] -translate-x-1/2 rounded-[22px] bg-white/32 shadow-[0_6px_18px_rgba(15,23,41,0.045)] 3xl:max-w-[1690px]" />
           <div className="pointer-events-none absolute bottom-[6.95rem] left-1/2 z-0 h-10 w-[calc(100%-5.2rem)] max-w-[1430px] -translate-x-1/2 rounded-[20px] bg-white/18 shadow-[0_5px_14px_rgba(15,23,41,0.035)] 3xl:max-w-[1630px]" />
           <div
