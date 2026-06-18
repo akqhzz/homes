@@ -40,6 +40,21 @@ function rand(str: string, salt: number) {
 
 export const CITY = MOCK_NEIGHBORHOODS[0]?.city ?? 'Toronto';
 
+// Cities offered in the insights-page selector, plus a representative thumbnail.
+export const CITY_OPTIONS = ['Toronto', 'Vancouver', 'Calgary', 'Montréal', 'Ottawa', 'Edmonton', 'Halifax', 'Winnipeg'];
+const CITY_THUMBS = [
+  'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=96&q=80',
+  'https://images.unsplash.com/photo-1560814304-4f05b62af116?w=96&q=80',
+  'https://images.unsplash.com/photo-1609825488888-3a766db05542?w=96&q=80',
+  'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=96&q=80',
+  'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=96&q=80',
+  'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=96&q=80',
+];
+export function cityThumb(city: string) {
+  if (city === CITY) return CITY_THUMBS[0];
+  return CITY_THUMBS[Math.floor(rand(city, 99) * CITY_THUMBS.length) % CITY_THUMBS.length];
+}
+
 const TYPE_META = [
   { key: 'house', label: 'House', color: 'var(--color-success)' },
   { key: 'condo', label: 'Condo Apt', color: 'var(--color-brand-400)' },
@@ -209,7 +224,7 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
 
 function Panel({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('flex flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-white p-6', className)}>
+    <div className={cn('flex flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-white px-6 pt-6 pb-7', className)}>
       <h3 className="type-subtitle !text-[1.3rem] text-[var(--color-text-primary)]">{title}</h3>
       <div className="mt-5 flex flex-1 flex-col">{children}</div>
     </div>
@@ -332,7 +347,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
 ══════════════════════════════════════════════════════════════════ */
 
 function CountPill({ children }: { children: React.ReactNode }) {
-  return <span className="inline-block rounded-full bg-[var(--color-primary)] px-3 py-1 type-caption font-semibold text-white">{children}</span>;
+  return <span className="inline-block rounded-full bg-[var(--color-brand-100)] px-3 py-1 type-caption font-semibold text-[var(--color-brand-700)]">{children}</span>;
 }
 
 export function DeepDive({ city = CITY }: { city?: string }) {
@@ -357,7 +372,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {/* The world in one city */}
-        <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-gradient-to-b from-[var(--color-brand-50)] to-white p-6')}>
+        <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-gradient-to-b from-[var(--color-brand-50)] to-white px-6 pt-6 pb-7')}>
           <h3 className="type-subtitle !text-[1.3rem] leading-tight text-[var(--color-text-primary)]">The World in One City</h3>
           <p className="mt-3 type-body text-[var(--color-text-secondary)]">
             A global powerhouse of culture, food, and finance — defined by safe, connected, endlessly

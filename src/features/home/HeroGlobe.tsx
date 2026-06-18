@@ -57,7 +57,7 @@ const OVERVIEW_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC'];
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
 // Spread each province's cities apart from their centroid so the bubbles
 // don't overlap (exact map position isn't important here).
-const SPREAD = 2.6;
+const SPREAD = 1.85;
 const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
   const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
   const cLng = p.cities.reduce((s, c) => s + c.lng, 0) / p.cities.length;
@@ -350,7 +350,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           .htmlElementsData(provinceModeMarkers(thresholdFor(1.86)))
           .htmlLat((d) => (d as Marker).lat)
           .htmlLng((d) => (d as Marker).lng)
-          .htmlAltitude(0.015)
+          .htmlAltitude(0.005)
           .htmlElement((d) => buildMarker(d as Marker));
 
         const THREE = await import('three');
