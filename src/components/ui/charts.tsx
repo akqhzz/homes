@@ -60,7 +60,10 @@ export function HBarChart({ rows, color }: { rows: { label: string; value: numbe
               animate={{ width: `${(r.value / max) * 100}%` }}
               transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             />
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 type-caption font-semibold text-[var(--color-text-primary)]">
+            <span
+              className="absolute right-2 top-1/2 -translate-y-1/2 type-caption font-semibold"
+              style={{ color: r.value / max > 0.82 ? '#fff' : 'var(--color-text-primary)' }}
+            >
               {r.sub ?? r.value}
             </span>
           </div>

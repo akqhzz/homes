@@ -57,12 +57,12 @@ const OVERVIEW_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC'];
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
 // Spread each province's cities apart from their centroid so the bubbles
 // don't overlap (exact map position isn't important here).
-const SPREAD = 2.55;
+const SPREAD = 3.05;
 // Bigger/most-searched cities — always shown as their own pin, never folded
 // into a numbered cluster.
 const MAJOR_CITIES = new Set([
   'Toronto', 'Vancouver', 'Montréal', 'Calgary', 'Edmonton', 'Ottawa',
-  'Winnipeg', 'Québec City', 'Hamilton', 'Halifax', 'Mississauga', 'Victoria',
+  'Winnipeg', 'Québec City', 'Hamilton', 'Halifax', 'Victoria',
 ]);
 const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
   const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
@@ -501,9 +501,18 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
           if (Math.hypot(event.clientX - downX, event.clientY - downY) > 6) return;
           hitTest(event.clientX, event.clientY)?.__activate?.();
         };
+        let hoveredPin: PinEl | null = null;
+        const setHovered = (pin: PinEl | null) => {
+          if (hoveredPin === pin) return;
+          if (hoveredPin) hoveredPin.style.zIndex = hoveredPin.dataset.z ?? '';
+          hoveredPin = pin;
+          if (pin) pin.style.zIndex = '60'; // lift the hovered bubble above the rest
+        };
         moveHandler = (event: PointerEvent) => {
           if (event.buttons !== 0) return;
-          el.style.cursor = hitTest(event.clientX, event.clientY) ? 'pointer' : 'grab';
+          const hit = hitTest(event.clientX, event.clientY);
+          el.style.cursor = hit ? 'pointer' : 'grab';
+          setHovered(hit);
         };
         el.addEventListener('pointerdown', downHandler);
         el.addEventListener('pointerup', upHandler);

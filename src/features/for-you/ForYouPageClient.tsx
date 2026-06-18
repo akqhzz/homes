@@ -318,8 +318,8 @@ export default function InsightsPage() {
     <PageShell showDesktopHeader={false} desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-[var(--color-background)]">
 
-        {/* ── Mobile header — title, selector below ── */}
-        <div className="flex flex-shrink-0 flex-col items-center gap-2.5 px-4 pt-4 pb-1 lg:hidden">
+        {/* ── Mobile header — title left, selector right ── */}
+        <div className="flex flex-shrink-0 items-center justify-between gap-3 px-4 pt-4 pb-1 lg:hidden">
           <h1 className="type-title text-[var(--color-text-primary)]">Insights</h1>
           <CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} />
         </div>

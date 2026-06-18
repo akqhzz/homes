@@ -224,7 +224,7 @@ function CountUp({ value, format, className }: { value: number; format: (n: numb
 
 function Panel({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('flex flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-white px-6 pt-6 pb-7', className)}>
+    <div className={cn('flex flex-col rounded-[24px] bg-white px-6 pt-6 pb-7 shadow-[0_6px_22px_rgba(15,23,41,0.07)]', className)}>
       <h3 className="type-subtitle !text-[1.3rem] text-[var(--color-text-primary)]">{title}</h3>
       <div className="mt-5 flex flex-1 flex-col">{children}</div>
     </div>
@@ -253,13 +253,13 @@ export function MarketStatsStrip({ city = CITY }: { city?: string }) {
     <section className="w-full px-5 pt-4 lg:px-12 lg:pt-5">
       <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5 lg:gap-5 lg:overflow-visible">
         {stats.map(({ label, value, format, icon: Icon, tint }) => (
-          <div key={label} className="flex min-w-[230px] items-center gap-3.5 rounded-[20px] border border-[var(--color-border)]/55 bg-white px-5 py-4 lg:min-w-0">
-            <span className={cn('flex h-12 w-12 shrink-0 items-center justify-center rounded-[15px]', tint)}>
-              <Icon className="h-6 w-6" strokeWidth={2.1} />
+          <div key={label} className="flex min-w-[200px] items-center gap-3 rounded-[20px] bg-white px-4 py-3.5 shadow-[0_6px_22px_rgba(15,23,41,0.07)] sm:min-w-[230px] sm:gap-3.5 sm:px-5 sm:py-4 lg:min-w-0">
+            <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] sm:h-12 sm:w-12 sm:rounded-[15px]', tint)}>
+              <Icon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.1} />
             </span>
             <div className="min-w-0">
-              <CountUp value={value} format={format} className="block truncate type-title !text-[1.5rem] !leading-none text-[var(--color-text-primary)]" />
-              <p className="mt-1.5 text-[0.8rem] font-medium uppercase tracking-[0.045em] text-[var(--color-text-tertiary)]">{label}</p>
+              <CountUp value={value} format={format} className="block truncate type-title !text-[1.15rem] !leading-none text-[var(--color-text-primary)] sm:!text-[1.5rem]" />
+              <p className="mt-1 text-[0.62rem] font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)] sm:mt-1.5 sm:text-[0.8rem]">{label}</p>
             </div>
           </div>
         ))}
@@ -372,7 +372,7 @@ export function DeepDive({ city = CITY }: { city?: string }) {
         className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {/* The world in one city */}
-        <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] border border-[var(--color-border)]/55 bg-gradient-to-b from-[var(--color-brand-50)] to-white px-6 pt-6 pb-7')}>
+        <div className={cn(CARD, 'flex w-[300px] flex-col rounded-[24px] bg-white px-6 pt-6 pb-7 shadow-[0_6px_22px_rgba(15,23,41,0.07)]')}>
           <h3 className="type-subtitle !text-[1.3rem] leading-tight text-[var(--color-text-primary)]">The World in One City</h3>
           <p className="mt-3 type-body text-[var(--color-text-secondary)]">
             A global powerhouse of culture, food, and finance — defined by safe, connected, endlessly
