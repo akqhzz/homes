@@ -26,12 +26,15 @@ export function SectionHeader({
   onArrow,
   onPrev,
   onNext,
+  hideNavOnDesktop = false,
 }: {
   title: string;
   city?: string;
   onArrow: () => void;
   onPrev?: () => void;
   onNext?: () => void;
+  /** Hide the prev/next carousel arrows at lg+ (use when all cards fit on desktop). */
+  hideNavOnDesktop?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -58,14 +61,14 @@ export function SectionHeader({
           <ArrowRight size={18} />
         </span>
       </div>
-      {onPrev && onNext && <CarouselNav onPrev={onPrev} onNext={onNext} />}
+      {onPrev && onNext && <CarouselNav onPrev={onPrev} onNext={onNext} hideOnDesktop={hideNavOnDesktop} />}
     </div>
   );
 }
 
-export function CarouselNav({ onPrev, onNext }: { onPrev: () => void; onNext: () => void }) {
+export function CarouselNav({ onPrev, onNext, hideOnDesktop = false }: { onPrev: () => void; onNext: () => void; hideOnDesktop?: boolean }) {
   return (
-    <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+    <div className={`hidden shrink-0 items-center gap-1.5 sm:flex ${hideOnDesktop ? 'lg:hidden' : ''}`}>
       <CarouselArrow direction="left" onClick={onPrev} />
       <CarouselArrow direction="right" onClick={onNext} />
     </div>

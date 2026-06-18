@@ -289,6 +289,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
         onArrow={() => router.push('/for-you')}
         onPrev={() => scroll(-1)}
         onNext={() => scroll(1)}
+        hideNavOnDesktop
       />
 
       {/* Cards fill the full width when they fit, scroll one line when they don't */}
