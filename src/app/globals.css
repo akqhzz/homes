@@ -179,11 +179,11 @@ main {
 }
 [data-pin][data-selected='1'] .globe-city-circle {
   --sel-scale: 1.17;
-  border-color: var(--color-brand-500);
+  border-color: var(--color-brand-600);
 }
 .globe-city-label { background: #fff; color: #0F1729; }
 [data-pin][data-selected='1'] .globe-city-label {
-  background: var(--color-brand-500);
+  background: var(--color-brand-600);
   color: #fff;
 }
 

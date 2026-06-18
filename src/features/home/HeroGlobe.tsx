@@ -516,10 +516,18 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
         };
 
         // Over the sphere → zoom the globe (and swallow the page scroll). Outside
-        // the sphere → let the page scroll and don't zoom.
+        // the sphere → let the page scroll and don't zoom. A short gesture lock
+        // keeps a continuous zoom captured even after the cursor falls outside the
+        // shrinking sphere mid zoom-out (otherwise the page starts scrolling).
+        let lastWheelZoom = 0;
         wheelHandler = (event: WheelEvent) => {
-          if (overSphere(event.clientX, event.clientY)) event.preventDefault();
-          else event.stopPropagation();
+          const continuingGesture = Date.now() - lastWheelZoom < 220;
+          if (overSphere(event.clientX, event.clientY) || continuingGesture) {
+            event.preventDefault();
+            lastWheelZoom = Date.now();
+          } else {
+            event.stopPropagation();
+          }
         };
         el.addEventListener('wheel', wheelHandler, { passive: false, capture: true });
 
