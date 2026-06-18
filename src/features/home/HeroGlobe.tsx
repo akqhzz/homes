@@ -355,7 +355,7 @@ export default function HeroGlobe({ onCityClick, selectedCity }: { onCityClick?:
               el2.dataset.z = '4';
               el2.dataset.selected = '1';
             }
-            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span class="globe-city-circle" style="border-radius:9999px;overflow:hidden;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;background:#fff;color:#0F1729;white-space:nowrap;">${marker.city.name}</span></div>`;
+            el2.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span class="globe-city-circle" style="border-radius:9999px;overflow:hidden;box-shadow:0 3px 10px rgba(15,23,41,0.15);background-image:url('${marker.city.image}');background-size:cover;background-position:center;"></span><span class="globe-city-label" style="border-radius:9999px;padding:3px 10px;box-shadow:0 2px 8px rgba(15,23,41,0.12);font-family:var(--font-body-sans);font-size:10.5px;font-weight:600;line-height:1.1;white-space:nowrap;">${marker.city.name}</span></div>`;
             el2.__activate = () => {
               if (onCityClickRef.current) onCityClickRef.current(marker.city.name);
               else routerRef.current.push('/');

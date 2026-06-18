@@ -174,11 +174,17 @@ main {
   border: 2px solid #fff;
   transform: scale(calc(var(--pin-scale, 1) * var(--sel-scale, 1)));
   transform-origin: center bottom;
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease;
+  /* Only the size eases; the outline/label colour swaps instantly. */
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 [data-pin][data-selected='1'] .globe-city-circle {
   --sel-scale: 1.17;
-  border-color: #0F1729;
+  border-color: var(--color-brand-500);
+}
+.globe-city-label { background: #fff; color: #0F1729; }
+[data-pin][data-selected='1'] .globe-city-label {
+  background: var(--color-brand-500);
+  color: #fff;
 }
 
 /* Mapbox overrides */
