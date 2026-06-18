@@ -44,11 +44,16 @@ function makeCards(city: string): InsightCard[] {
       id: 'glance', tag: 'At a glance', title: `${city} at a glance`,
       tone: 'bg-[var(--color-brand-50)]', accent: 'var(--color-brand-700)',
       visual: (
-        <div className="grid grid-cols-2 gap-3">
-          {d.stats.map((s) => (
-            <div key={s.label} className="rounded-2xl bg-white/70 p-3.5">
-              <p className="text-[1.15rem] font-bold leading-none text-[var(--color-text-primary)]">{s.format(s.value)}</p>
-              <p className="mt-1 text-[0.66rem] font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)]">{s.label}</p>
+        <div className="flex flex-col gap-2.5">
+          {d.stats.map(({ label, value, format, icon: Icon, tint }) => (
+            <div key={label} className="flex items-center gap-3 rounded-2xl bg-white px-3.5 py-2.5">
+              <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]', tint)}>
+                <Icon className="h-5 w-5" strokeWidth={2.1} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[0.66rem] font-medium uppercase tracking-[0.04em] text-[var(--color-text-tertiary)]">{label}</p>
+                <p className="truncate text-[1.15rem] font-bold leading-tight text-[var(--color-text-primary)]">{format(value)}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -56,12 +61,12 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'ptype', tag: 'Inventory', title: 'Property type distribution',
-      tone: 'bg-white', accent: 'var(--color-success)',
+      tone: 'bg-[var(--color-surface)]', accent: 'var(--color-success)',
       visual: <PieChart slices={d.typeSlices} legendFontSize={14} />,
     },
     {
       id: 'volume', tag: 'Volume', title: 'Market volume',
-      tone: 'bg-white', accent: 'var(--color-brand-700)',
+      tone: 'bg-[#EEF2F7]', accent: 'var(--color-brand-700)',
       visual: (
         <div>
           <div className="mb-4 flex items-start justify-between gap-2">
@@ -76,7 +81,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'trend', tag: 'Pricing', title: 'Median price trend',
-      tone: 'bg-white', accent: 'var(--color-success)',
+      tone: 'bg-[var(--color-brand-50)]', accent: 'var(--color-success)',
       visual: (
         <div>
           <div className="mb-2 flex items-center gap-2.5">
@@ -92,7 +97,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'health', tag: 'Market health', title: 'Market health',
-      tone: 'bg-[var(--color-surface)]', accent: 'var(--color-brand-700)',
+      tone: 'bg-[#F5F3EF]', accent: 'var(--color-brand-700)',
       visual: (
         <div className="grid grid-cols-2 gap-3">
           <Mini value={`${d.health.daysOnMarket}`} unit="days" label="Avg. days on market" />
@@ -104,7 +109,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'commute', tag: 'Getting around', title: 'Commute facts',
-      tone: 'bg-white', accent: 'var(--color-accent-orange)',
+      tone: 'bg-[var(--color-brand-100)]', accent: 'var(--color-accent-orange)',
       visual: (
         <div className="flex flex-col gap-4">
           {d.commute.map(({ label, sub, value, color, icon: Icon }) => (
@@ -124,7 +129,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'amenities', tag: 'Lifestyle', title: 'Top amenities',
-      tone: 'bg-white', accent: 'var(--color-success)',
+      tone: 'bg-[var(--color-surface)]', accent: 'var(--color-success)',
       visual: (
         <div className="flex flex-col gap-3">
           {AMENITIES.map(({ label, count, icon: Icon, color, tint }) => (
@@ -143,7 +148,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'groceries', tag: 'Daily life', title: 'Groceries',
-      tone: 'bg-white', accent: 'var(--color-brand-700)',
+      tone: 'bg-[var(--color-brand-50)]', accent: 'var(--color-brand-700)',
       visual: (
         <div className="flex flex-col gap-4">
           {GROCERIES.items.map((g) => (
@@ -162,7 +167,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'food', tag: 'Dining', title: 'Food & drinks',
-      tone: 'bg-white', accent: 'var(--color-accent-orange)',
+      tone: 'bg-[#F5F3EF]', accent: 'var(--color-accent-orange)',
       visual: (
         <div className="flex flex-col gap-4">
           {FOOD.items.map(({ name, sub, rating, icon: Icon }) => (
@@ -184,7 +189,7 @@ function makeCards(city: string): InsightCard[] {
     },
     {
       id: 'schools', tag: 'Education', title: 'Top schools',
-      tone: 'bg-white', accent: 'var(--color-success)',
+      tone: 'bg-[#EEF2F7]', accent: 'var(--color-success)',
       visual: (
         <div className="flex flex-col gap-4">
           {SCHOOLS.items.map((s) => (
@@ -256,14 +261,20 @@ export default function InsightsPage() {
   const go = (direction: 1 | -1) => setIndex((v) => (v + direction + CARDS.length) % CARDS.length);
   const pickCity = (c: string) => { setCity(c); setIndex(0); };
 
+  // Show at most 5 dots, windowed around the active card.
+  const DOT_WINDOW = 5;
+  const total = CARDS.length;
+  const dotStart = Math.max(0, Math.min(index - 2, total - DOT_WINDOW));
+  const dotEnd = Math.min(total, dotStart + DOT_WINDOW);
+
   return (
     <PageShell showDesktopHeader={false} desktopWide>
       <div className="h-full flex flex-col overflow-hidden bg-[var(--color-background)]">
 
         {/* ── Mobile header ── */}
-        <div className="flex flex-shrink-0 items-center gap-3 px-4 pt-4 pb-0 lg:hidden">
-          <h1 className="type-title text-[var(--color-text-primary)]">Market Insights</h1>
-          <div className="ml-auto"><CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} /></div>
+        <div className="flex flex-shrink-0 flex-wrap items-center justify-center gap-3 px-4 pt-4 pb-0 lg:hidden">
+          <h1 className="type-title text-[var(--color-text-primary)]">Insights</h1>
+          <CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} />
         </div>
 
         {/* ── Mobile swipe stack ── */}
@@ -285,28 +296,35 @@ export default function InsightsPage() {
             </div>
           </div>
           <div className="flex shrink-0 items-center justify-center gap-1.5 pb-1 pt-0.5">
-            {CARDS.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Go to card ${i + 1}`}
-                onClick={() => setIndex(i)}
-                className="transition-all duration-200"
-                style={{
-                  width: i === index ? 14 : 4, height: 4, borderRadius: 9999,
-                  background: i === index ? 'var(--color-brand-600)' : 'var(--color-border-strong)',
-                }}
-              />
-            ))}
+            {CARDS.slice(dotStart, dotEnd).map((_, k) => {
+              const i = dotStart + k;
+              const isEdge = (i === dotStart && dotStart > 0) || (i === dotEnd - 1 && dotEnd < total);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`Go to card ${i + 1}`}
+                  onClick={() => setIndex(i)}
+                  className="transition-all duration-200"
+                  style={{
+                    width: i === index ? 14 : isEdge ? 3 : 4,
+                    height: i === index ? 4 : isEdge ? 3 : 4,
+                    borderRadius: 9999,
+                    opacity: isEdge ? 0.5 : 1,
+                    background: i === index ? 'var(--color-brand-600)' : 'var(--color-border-strong)',
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
 
         {/* ── Desktop masonry ── */}
         <div className="hidden lg:block h-full overflow-y-auto px-6 py-6">
-          <div className="relative mb-8 flex items-center gap-4">
-            <BackButton iconOnly className="shrink-0" />
-            <h1 className="type-title-lg text-[var(--color-text-primary)]">Market Insights</h1>
-            <div className="ml-auto"><CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} /></div>
+          <div className="relative mb-8 flex items-center justify-center gap-4">
+            <BackButton iconOnly className="absolute left-0 shrink-0" />
+            <h1 className="type-title-lg text-[var(--color-text-primary)]">Insights</h1>
+            <CitySelector city={city} options={CITY_OPTIONS} thumb={cityThumb} onChange={pickCity} />
           </div>
           <div style={{ columnCount: 3, columnGap: '1.25rem' }} className="3xl:columns-4">
             {CARDS.map((card) => (

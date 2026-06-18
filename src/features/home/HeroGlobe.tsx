@@ -57,7 +57,7 @@ const OVERVIEW_PROVINCES = ['BC', 'AB', 'SK', 'MB', 'ON', 'QC'];
 const byCode = (code: string) => PROVINCES.find((p) => p.code === code)!;
 // Spread each province's cities apart from their centroid so the bubbles
 // don't overlap (exact map position isn't important here).
-const SPREAD = 1.85;
+const SPREAD = 2.15;
 const ALL_CITIES: City[] = PROVINCES.flatMap((p) => {
   const cLat = p.cities.reduce((s, c) => s + c.lat, 0) / p.cities.length;
   const cLng = p.cities.reduce((s, c) => s + c.lng, 0) / p.cities.length;
@@ -525,7 +525,7 @@ export default function HeroGlobe({ onCityClick }: { onCityClick?: (city: string
               .map((f: object) => ({ ...f, __province: false }));
             const provinceFeatures = provinces.features.map((f: object) => ({ ...f, __province: true }));
             globe
-              .polygonsTransitionDuration(1100)
+              .polygonsTransitionDuration(0) // draw continents instantly (no morph-in)
               .polygonsData([...countryFeatures, ...provinceFeatures])
               .polygonCapColor(() => '#e9eff6')
               .polygonSideColor(() => 'rgba(150,170,198,0.45)')

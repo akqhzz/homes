@@ -347,7 +347,7 @@ export function MarketBoard({ city = CITY }: { city?: string }) {
 ══════════════════════════════════════════════════════════════════ */
 
 function CountPill({ children }: { children: React.ReactNode }) {
-  return <span className="inline-block rounded-full bg-[var(--color-brand-700)] px-3 py-1 type-caption font-semibold text-white">{children}</span>;
+  return <span className="inline-block rounded-full bg-[var(--color-brand-500)] px-3 py-1 type-caption font-semibold text-white">{children}</span>;
 }
 
 export function DeepDive({ city = CITY }: { city?: string }) {
@@ -425,8 +425,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Groceries */}
         <Panel title="Groceries" className={cn(CARD, 'w-[300px]')}>
+          <div className="mb-1"><CountPill>{GROCERIES.total}</CountPill></div>
           <div className="flex flex-1 flex-col justify-center gap-5">
-            <div><CountPill>{GROCERIES.total}</CountPill></div>
             {GROCERIES.items.map((g) => (
               <div key={g.name} className="flex items-center gap-3">
                 <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-[var(--color-border)] bg-white">
@@ -443,8 +443,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Food & drinks */}
         <Panel title="Food & Drinks" className={cn(CARD, 'w-[300px]')}>
+          <div className="mb-1"><CountPill>{FOOD.total}</CountPill></div>
           <div className="flex flex-1 flex-col justify-center gap-5">
-            <div><CountPill>{FOOD.total}</CountPill></div>
             {FOOD.items.map(({ name, sub, rating, icon: Icon }) => (
               <div key={name} className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-brand-50)] text-[var(--color-brand-700)]">
@@ -464,8 +464,8 @@ export function DeepDive({ city = CITY }: { city?: string }) {
 
         {/* Top schools */}
         <Panel title="Top Schools" className={cn(CARD, 'w-[320px]')}>
+          <div className="mb-1"><CountPill>{SCHOOLS.total}</CountPill></div>
           <div className="flex flex-1 flex-col justify-center gap-5">
-            <div><CountPill>{SCHOOLS.total}</CountPill></div>
             {SCHOOLS.items.map((s) => (
               <div key={s.name} className="flex items-center justify-between gap-3">
                 <div className="min-w-0">

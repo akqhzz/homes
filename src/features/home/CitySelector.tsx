@@ -33,7 +33,7 @@ export function CitySelector({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2.5 rounded-full border border-[var(--color-border)] bg-white py-1.5 pl-1.5 pr-3.5 shadow-[var(--shadow-control)] transition-colors hover:bg-[var(--color-surface)]"
+        className="flex items-center gap-2.5 rounded-full bg-[var(--color-brand-surface)] py-1.5 pl-1.5 pr-3.5 transition-colors hover:bg-[var(--color-brand-surface-strong)]"
       >
         <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full">
           <Image src={thumb(city)} alt="" fill sizes="32px" className="object-cover" />
@@ -56,7 +56,7 @@ export function CitySelector({
               <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full">
                 <Image src={thumb(c)} alt="" fill sizes="32px" className="object-cover" />
               </span>
-              <span className="type-body-lg font-medium text-[var(--color-text-primary)]">{c}</span>
+              <span className="type-heading-sm text-[var(--color-text-primary)]">{c}</span>
             </button>
           ))}
         </div>

@@ -278,9 +278,8 @@ export default function HomePageClient() {
           {renderCarousel(newest, newestRef)}
         </motion.section>
 
-        {/* ── Market insights dashboard + deep dive ──────────── */}
+        {/* ── Market insights dashboard ──────────────────────── */}
         <motion.div variants={STAGGER_ITEM}><MarketBoard city={city} /></motion.div>
-        <motion.div variants={STAGGER_ITEM}><DeepDive city={city} /></motion.div>
 
         {/* ── News & Guides ──────────────────────────────────── */}
         <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
@@ -328,6 +327,9 @@ export default function HomePageClient() {
             </div>
           </div>
         </motion.section>
+
+        {/* ── Deep dive ──────────────────────────────────────── */}
+        <motion.div variants={STAGGER_ITEM}><DeepDive city={city} /></motion.div>
 
         {/* ── Sold Prices ────────────────────────────────────── */}
         <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
