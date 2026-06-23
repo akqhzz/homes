@@ -282,17 +282,9 @@ export default function HomePageClient() {
         </motion.section>
         <motion.div variants={STAGGER_ITEM}><MarketStatsStrip city={city} /></motion.div>
 
-        {/* ── New listings ───────────────────────────────────── */}
-        <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-14 lg:px-12 lg:pt-20">
-          <SectionHeader
-            title={`${cityData.newListingsLabel} New Listings in`}
-            city={city}
-            onArrow={goToMap}
-            onPrev={() => newestCar.scrollByDir(-1)}
-            onNext={() => newestCar.scrollByDir(1)}
-            disablePrev={newestCar.atStart}
-            disableNext={newestCar.atEnd}
-          />
+        {/* New listings carousel — sits directly under the stats, no header (part
+            of the At A Glance area). */}
+        <motion.section variants={STAGGER_ITEM} className="w-full px-5 pt-2 lg:px-12 lg:pt-3">
           {renderCarousel(newest, newestCar)}
         </motion.section>
 

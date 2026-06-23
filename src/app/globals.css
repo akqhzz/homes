@@ -172,20 +172,18 @@ main {
   width: 46px;
   height: 46px;
   border: 2px solid #fff;
+  border-radius: 50%;
   transform: scale(calc(var(--pin-scale, 1) * var(--sel-scale, 1)));
   transform-origin: center bottom;
-  /* Only the size eases; the outline/label colour swaps instantly. */
-  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), border-radius 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+/* Selected city: morph the bubble from a circle into a rounded square (and grow
+   it a touch). Outline and label are left unchanged. */
 [data-pin][data-selected='1'] .globe-city-circle {
   --sel-scale: 1.17;
-  border-color: var(--color-brand-600);
+  border-radius: 28%;
 }
 .globe-city-label { background: #fff; color: #0F1729; }
-[data-pin][data-selected='1'] .globe-city-label {
-  background: var(--color-brand-600);
-  color: #fff;
-}
 
 /* Mapbox overrides */
 .mapboxgl-map {
