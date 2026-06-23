@@ -254,7 +254,7 @@ export default function SavedSearchesPanel({
 
       {/* Saved searches list */}
       <div className="px-4 py-4">
-        <p className="mb-3 type-heading text-[var(--color-text-primary)]">My Searches</p>
+        <p className="mb-3 type-heading text-[var(--color-text-primary)]">Latest Searches</p>
         <div className="flex flex-col gap-3">
           {searches.length === 0 && (
             <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-7 text-center">
