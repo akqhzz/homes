@@ -177,7 +177,7 @@ main {
   transform-origin: center bottom;
   /* Quick, symmetric ease so the circle↔rounded-square morph (and size bump)
      glides rather than snaps. */
-  transition: transform 200ms cubic-bezier(0.65, 0, 0.35, 1), border-radius 200ms cubic-bezier(0.65, 0, 0.35, 1);
+  transition: transform 110ms cubic-bezier(0.65, 0, 0.35, 1), border-radius 110ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 /* Selected city: morph the bubble from a circle into a rounded square (and grow
    it a touch). Outline and label are left unchanged. */
