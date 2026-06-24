@@ -26,7 +26,7 @@ import ListingFeatureBadge from '@/features/listings/components/ListingFeatureBa
 const CAROUSEL_IMAGE_HEIGHT = 174;
 const CAROUSEL_TOTAL_HEIGHT = 252;
 const IMAGE_SWIPE_THRESHOLD = 24;
-const CARD_IMAGE_COUNT = 7;
+const CARD_IMAGE_COUNT = 5;
 const LISTING_IMAGE_FALLBACKS = [
   'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80',
   'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
@@ -78,6 +78,9 @@ export default function ListingCard({
   carouselTotalHeight: carouselTotalHeightOverride,
 }: ListingCardProps) {
   const displayImages = getCardImages(listing.images);
+  // Total swipeable slides = the images plus a trailing "see more" slide that
+  // links to the full listing page.
+  const slideCount = displayImages.length + 1;
   const [imgIndex, setImgIndex] = useState(0);
   const [showSavePicker, setShowSavePicker] = useState(false);
   const [saveAnchorRect, setSaveAnchorRect] = useState<DOMRect | null>(null);
@@ -138,7 +141,7 @@ export default function ListingCard({
   }, []);
 
   const showNextImage = () => {
-    setImgIndex((index) => Math.min(index + 1, displayImages.length - 1));
+    setImgIndex((index) => Math.min(index + 1, slideCount - 1));
   };
 
   const showPreviousImage = () => {
@@ -201,14 +204,14 @@ export default function ListingCard({
       imagePointerMoved.current = true;
     }
     // Real-time strip drag — only track dominant horizontal movement
-    if (!stripRef.current || displayImages.length <= 1) return;
+    if (!stripRef.current || slideCount <= 1) return;
     if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 6) return;
     const w = getContainerWidth();
     // Rubber-band resistance at first/last image edges
     let constrainedDx = dx;
     if (imgIndex === 0 && dx > 0) {
       constrainedDx = Math.pow(Math.abs(dx), 0.65) * Math.sign(dx);
-    } else if (imgIndex === displayImages.length - 1 && dx < 0) {
+    } else if (imgIndex === slideCount - 1 && dx < 0) {
       constrainedDx = -Math.pow(Math.abs(dx), 0.65);
     }
     stripRef.current.style.transition = 'none';
@@ -235,7 +238,7 @@ export default function ListingCard({
       return;
     }
 
-    if (dx < 0 && imgIndex < displayImages.length - 1) {
+    if (dx < 0 && imgIndex < slideCount - 1) {
       setImgIndex(imgIndex + 1); // useEffect drives the snap animation from drag position
     } else if (dx > 0 && imgIndex > 0) {
       setImgIndex(imgIndex - 1);
@@ -494,19 +497,30 @@ export default function ListingCard({
           <div
             ref={stripRef}
             className="flex h-full"
-            style={{ width: `${displayImages.length * 100}%`, willChange: 'transform' }}
+            style={{ width: `${slideCount * 100}%`, willChange: 'transform' }}
           >
             {displayImages.map((src, i) => (
-              <div key={i} className="h-full flex-shrink-0" style={{ width: `${100 / displayImages.length}%` }}>
+              <div key={i} className="h-full flex-shrink-0" style={{ width: `${100 / slideCount}%` }}>
                 <ListingImage src={src} alt="" fallbackIndex={i} className="h-full w-full object-cover" />
               </div>
             ))}
+            {/* Trailing "see more" slide → opens the full listing page (tapping the
+                image area is already wired to openListingPage). */}
+            <div className="relative h-full flex-shrink-0" style={{ width: `${100 / slideCount}%` }}>
+              <ListingImage src={displayImages[displayImages.length - 1]} alt="" fallbackIndex={displayImages.length - 1} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 type-caption font-semibold text-[var(--color-text-primary)] shadow-[0_2px_10px_rgba(15,23,41,0.2)]">
+                  See more
+                  <ChevronRight size={14} />
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Image dots */}
-          {displayImages.length > 1 && (
+          {slideCount > 1 && (
             <div className="pointer-events-none absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-1">
-              {getVisibleDotIndexes(displayImages.length, imgIndex).map((i) => (
+              {getVisibleDotIndexes(slideCount, imgIndex).map((i) => (
                 <div
                   key={i}
                   className={cn(
@@ -519,7 +533,7 @@ export default function ListingCard({
           )}
         </div>
 
-        {displayImages.length > 1 && (
+        {slideCount > 1 && (
           <div
             className="pointer-events-none absolute inset-x-3 z-20 hidden -translate-y-1/2 items-center justify-between opacity-0 transition-opacity group-hover:flex group-hover:opacity-100 lg:flex"
             style={{ top: carouselImageHeight / 2 }}
@@ -538,7 +552,7 @@ export default function ListingCard({
                 <ChevronLeft size={14} />
               </Button>
             ) : <span />}
-            {imgIndex < displayImages.length - 1 ? (
+            {imgIndex < slideCount - 1 ? (
               <Button
                 variant="overlay"
                 shape="circle"
