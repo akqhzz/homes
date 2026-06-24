@@ -508,9 +508,9 @@ export default function ListingCard({
                 image area is already wired to openListingPage). */}
             <div className="relative h-full flex-shrink-0" style={{ width: `${100 / slideCount}%` }}>
               <ListingImage src={displayImages[displayImages.length - 1]} alt="" fallbackIndex={displayImages.length - 1} className="h-full w-full object-cover" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 type-caption font-semibold text-[var(--color-text-primary)] shadow-[0_2px_10px_rgba(15,23,41,0.2)]">
-                  See more
+              <div className="absolute inset-0 flex items-center justify-center bg-[rgba(15,23,41,0.18)]">
+                <span className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white px-3.5 py-2 type-caption font-semibold text-[var(--color-text-primary)] shadow-[0_2px_10px_rgba(15,23,41,0.2)] transition-colors duration-150 hover:bg-[var(--color-text-primary)] hover:text-white">
+                  See full listing
                   <ChevronRight size={14} />
                 </span>
               </div>
