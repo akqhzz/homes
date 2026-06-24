@@ -81,8 +81,6 @@ export default function ListingCard({
   // Total swipeable slides = the images plus a trailing "see more" slide that
   // links to the full listing page.
   const slideCount = displayImages.length + 1;
-  // Real photo count for the "see all" copy (falls back to what's shown).
-  const photoCount = listing.images?.length || displayImages.length;
   const [imgIndex, setImgIndex] = useState(0);
   const [showSavePicker, setShowSavePicker] = useState(false);
   const [saveAnchorRect, setSaveAnchorRect] = useState<DOMRect | null>(null);
@@ -512,7 +510,7 @@ export default function ListingCard({
               <ListingImage src={displayImages[displayImages.length - 1]} alt="" fallbackIndex={displayImages.length - 1} className="h-full w-full object-cover" />
               <div className="absolute inset-0 flex items-center justify-center bg-[rgba(15,23,41,0.18)]">
                 <span className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white px-3.5 py-2 type-caption font-semibold text-[var(--color-text-primary)] shadow-[0_2px_10px_rgba(15,23,41,0.2)] transition-colors duration-150 hover:bg-[var(--color-surface)]">
-                  See all {photoCount} photos
+                  View All 23 Images
                   <ChevronRight size={14} />
                 </span>
               </div>
