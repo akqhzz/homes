@@ -3,6 +3,9 @@ import { cn } from '@/lib/utils/cn';
 import { getListingFeatureLabel } from '@/lib/listing-feature-labels';
 
 export default function ListingFeatureBadge({ listing, className }: { listing: Listing; className?: string }) {
+  // Sold listings show the Sold badge in this spot instead — never a feature
+  // label like "Coming Soon".
+  if (listing.listingStatus === 'sold') return null;
   const featureLabel = getListingFeatureLabel(listing);
   if (!featureLabel) return null;
 
